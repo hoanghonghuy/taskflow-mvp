@@ -6,6 +6,7 @@ import { ToastProvider } from './toast-provider'
 import { UserProvider } from './user-provider'
 import { SettingsProvider } from './settings-provider'
 import { ConfirmationProvider } from './confirmation-provider'
+import { TaskManagerProvider } from './task-manager-provider'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -13,11 +14,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <I18nProvider>
         <SettingsProvider>
           <UserProvider>
-            <ToastProvider>
-              <ConfirmationProvider>
-                {children}
-              </ConfirmationProvider>
-            </ToastProvider>
+            <TaskManagerProvider>
+              <ToastProvider>
+                <ConfirmationProvider>
+                  {children}
+                </ConfirmationProvider>
+              </ToastProvider>
+            </TaskManagerProvider>
           </UserProvider>
         </SettingsProvider>
       </I18nProvider>

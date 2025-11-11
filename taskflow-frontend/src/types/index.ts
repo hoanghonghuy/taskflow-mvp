@@ -13,7 +13,7 @@ export interface Task {
   subtasks: Subtask[];
   recurrence?: RecurrencePattern;
   reminderMinutes?: number;
-  assigneeId?: string;
+  assigneeId?: string | null;
   comments: Comment[];
 }
 
@@ -123,4 +123,29 @@ export interface AppState {
   habits: Habit[];
   countdownEvents: CountdownEvent[];
   pomodoro: PomodoroState;
+}
+
+// Add missing fields to AppState
+export interface AppState {
+  view: View;
+  tasks: Task[];
+  lists: List[];
+  columns: Column[];
+  habits: Habit[];
+  countdownEvents: CountdownEvent[];
+  selectedTaskId: string | null;
+  pomodoro: PomodoroState;
+  unlockedAchievements: string[];
+}
+
+// Update PomodoroState to include missing fields
+export interface PomodoroState {
+  isActive: boolean;
+  isPaused: boolean;
+  remainingTime: number;
+  currentSession: 'focus' | 'shortBreak' | 'longBreak';
+  focusedTaskId: string | null;
+  sessionsCompleted: number;
+  focusHistory: FocusSession[];
+  settings: PomodoroSettings;
 }
