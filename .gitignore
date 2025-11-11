@@ -1,0 +1,149 @@
+
+# ============================================
+# Frontend (Next.js)
+# ============================================
+
+# Dependencies
+taskflow-frontend/node_modules/
+taskflow-frontend/.pnp
+taskflow-frontend/.pnp.js
+taskflow-frontend/.yarn/install-state.gz
+
+# Testing
+taskflow-frontend/coverage
+
+# Next.js
+taskflow-frontend/.next/
+taskflow-frontend/out/
+taskflow-frontend/build
+taskflow-frontend/dist
+
+# Production
+taskflow-frontend/build
+
+# Misc
+taskflow-frontend/.DS_Store
+taskflow-frontend/*.pem
+
+# Debug
+taskflow-frontend/npm-debug.log*
+taskflow-frontend/yarn-debug.log*
+taskflow-frontend/yarn-error.log*
+
+# Local env files
+taskflow-frontend/.env
+taskflow-frontend/.env*.local
+taskflow-frontend/.env.production
+
+# Vercel
+taskflow-frontend/.vercel
+
+# TypeScript
+taskflow-frontend/*.tsbuildinfo
+taskflow-frontend/next-env.d.ts
+
+# ============================================
+# Backend (C# .NET) - Để dành cho sau
+# ============================================
+
+# User-specific files
+taskflow-backend/**/*.suo
+taskflow-backend/**/*.user
+taskflow-backend/**/*.userosscache
+taskflow-backend/**/*.sln.docstates
+
+# Build results
+taskflow-backend/**/[Dd]ebug/
+taskflow-backend/**/[Dd]ebugPublic/
+taskflow-backend/**/[Rr]elease/
+taskflow-backend/**/[Rr]eleases/
+taskflow-backend/**/x64/
+taskflow-backend/**/x86/
+taskflow-backend/**/[Ww][Ii][Nn]32/
+taskflow-backend/**/[Aa][Rr][Mm]/
+taskflow-backend/**/[Aa][Rr][Mm]64/
+taskflow-backend/**/bld/
+taskflow-backend/**/[Bb]in/
+taskflow-backend/**/[Oo]bj/
+
+# .NET Core
+taskflow-backend/**/project.lock.json
+taskflow-backend/**/project.fragment.lock.json
+taskflow-backend/**/artifacts/
+
+# ============================================
+# Database
+# ============================================
+
+# PostgreSQL
+*.sql.backup
+*.sql.gz
+
+# ============================================
+# IDE / Editor
+# ============================================
+
+# VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# JetBrains
+.idea/
+*.sln.iml
+*.iml
+*.ipr
+*.iws
+
+# Visual Studio
+.vs/
+
+# ============================================
+# OS
+# ============================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+
+# Linux
+*~
+.nfs*
+
+# ============================================
+# Misc
+# ============================================
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Temporary files
+*.tmp
+*.temp
+.temp/
+.tmp/

@@ -1,0 +1,232 @@
+{
+  "app": {
+    "name": "TaskFlow",
+    "tagline": "Your productivity companion",
+    "description": "Organize your tasks, build habits, and boost productivity"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "list": "Tasks",
+    "board": "Board",
+    "calendar": "Calendar",
+    "matrix": "Matrix",
+    "habits": "Habits",
+    "pomodoro": "Pomodoro",
+    "countdown": "Countdown",
+    "achievements": "Achievements",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "name": "Name",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "welcomeBack": "Welcome back!",
+    "createAccount": "Create your account"
+  },
+  "task": {
+    "new": "New Task",
+    "title": "Title",
+    "description": "Description",
+    "dueDate": "Due Date",
+    "priority": "Priority",
+    "list": "List",
+    "tags": "Tags",
+    "assignee": "Assignee",
+    "subtasks": "Subtasks",
+    "comments": "Comments",
+    "completed": "Completed",
+    "delete": "Delete",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "addSubtask": "Add subtask",
+    "addComment": "Add comment",
+    "noTasks": "No tasks yet",
+    "createFirst": "Create your first task to get started",
+    "markComplete": "Mark as complete",
+    "markIncomplete": "Mark as incomplete",
+    "duplicate": "Duplicate",
+    "move": "Move to",
+    "addToList": "Add to list",
+    "setDueDate": "Set due date",
+    "removeDueDate": "Remove due date",
+    "addTags": "Add tags",
+    "assign": "Assign to",
+    "unassign": "Unassign",
+    "viewDetails": "View details"
+  },
+  "priority": {
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High",
+    "urgent": "Urgent"
+  },
+  "filter": {
+    "all": "All",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "thisWeek": "This Week",
+    "overdue": "Overdue",
+    "completed": "Completed",
+    "incomplete": "Incomplete",
+    "noDueDate": "No Due Date"
+  },
+  "sort": {
+    "dueDate": "Due Date",
+    "priority": "Priority",
+    "title": "Title",
+    "created": "Created",
+    "updated": "Updated"
+  },
+  "habit": {
+    "new": "New Habit",
+    "name": "Habit Name",
+    "today": "Today",
+    "streak": "Streak",
+    "days": "days",
+    "markComplete": "Mark today as complete",
+    "completedToday": "Completed today!",
+    "noHabits": "No habits yet",
+    "createFirst": "Create your first habit to build consistency"
+  },
+  "pomodoro": {
+    "focus": "Focus",
+    "shortBreak": "Short Break",
+    "longBreak": "Long Break",
+    "start": "Start",
+    "pause": "Pause",
+    "resume": "Resume",
+    "reset": "Reset",
+    "settings": "Pomodoro Settings",
+    "focusDuration": "Focus Duration (minutes)",
+    "shortBreakDuration": "Short Break (minutes)",
+    "longBreakDuration": "Long Break (minutes)",
+    "sessionsUntilLongBreak": "Sessions until long break",
+    "selectTask": "Select a task to focus on",
+    "noTask": "No task selected",
+    "session": "Session",
+    "of": "of"
+  },
+  "countdown": {
+    "new": "New Countdown",
+    "title": "Event Title",
+    "targetDate": "Target Date",
+    "color": "Color",
+    "daysLeft": "days left",
+    "hoursLeft": "hours left",
+    "minutesLeft": "minutes left",
+    "eventPassed": "Event passed",
+    "noEvents": "No countdown events",
+    "createFirst": "Create a countdown to track important dates"
+  },
+  "achievement": {
+    "unlocked": "Achievement Unlocked!",
+    "locked": "Locked",
+    "progress": "Progress",
+    "viewAll": "View All Achievements",
+    "earned": "Earned",
+    "notEarned": "Not earned yet"
+  },
+  "settings": {
+    "title": "Settings",
+    "general": "General",
+    "appearance": "Appearance",
+    "notifications": "Notifications",
+    "language": "Language",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "enableNotifications": "Enable notifications",
+    "autoStartPomodoro": "Auto-start next Pomodoro",
+    "defaultPriority": "Default task priority",
+    "defaultList": "Default list",
+    "save": "Save Settings",
+    "saved": "Settings saved successfully"
+  },
+  "profile": {
+    "title": "Profile",
+    "edit": "Edit Profile",
+    "save": "Save Changes",
+    "name": "Name",
+    "email": "Email",
+    "avatar": "Avatar",
+    "changeAvatar": "Change Avatar",
+    "statistics": "Statistics",
+    "tasksCompleted": "Tasks Completed",
+    "habitsTracked": "Habits Tracked",
+    "pomodoroSessions": "Pomodoro Sessions",
+    "achievementsUnlocked": "Achievements Unlocked"
+  },
+  "common": {
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "thisWeek": "This Week",
+    "overdue": "Overdue",
+    "all": "All",
+    "loading": "Loading...",
+    "noResults": "No results found",
+    "close": "Close",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "add": "Add",
+    "remove": "Remove",
+    "delete": "Delete",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "done": "Done",
+    "undo": "Undo",
+    "redo": "Redo"
+  },
+  "landing": {
+    "hero": {
+      "title": "Organize Your Life, One Task at a Time",
+      "subtitle": "The all-in-one productivity app with task management, habits tracking, and focus tools",
+      "cta": "Get Started Free",
+      "login": "Login"
+    },
+    "features": {
+      "title": "Everything You Need to Stay Productive",
+      "task": {
+        "title": "Smart Task Management",
+        "description": "Organize tasks with multiple views: List, Board, Calendar, and Eisenhower Matrix"
+      },
+      "habit": {
+        "title": "Habit Tracking",
+        "description": "Build lasting habits with visual tracking and streaks"
+      },
+      "pomodoro": {
+        "title": "Focus Timer",
+        "description": "Stay focused with built-in Pomodoro timer and session tracking"
+      },
+      "collaboration": {
+        "title": "Team Collaboration",
+        "description": "Share lists, assign tasks, and comment with your team"
+      }
+    },
+    "cta": {
+      "title": "Ready to Boost Your Productivity?",
+      "subtitle": "Join thousands of users who organize their life with TaskFlow",
+      "button": "Start Free Today"
+    }
+  }
+}
