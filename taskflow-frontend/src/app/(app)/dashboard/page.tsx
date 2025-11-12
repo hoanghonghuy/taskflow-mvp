@@ -2,53 +2,61 @@
 
 import { useUser } from '@/components/providers/user-provider'
 import { useTaskManager } from '@/lib/hooks/use-task-manager'
-import { Button } from '@/components/ui/button'
-import { useRouter } from 'next/navigation'
+import { useI18n } from '@/lib/hooks/use-i18n'
 
 export default function DashboardPage() {
-  const { user, logout } = useUser()
+  const { user } = useUser()
   const { state } = useTaskManager()
-  const router = useRouter()
+  const { t } = useI18n()
 
-  const handleLogout = () => {
-    logout()
-    router.push('/')
-  }
+  const completedTasks = state.tasks.filter(t => t.completed).length
+  const activeTasks = state.tasks.length - completedTasks
+  const completionRate = state.tasks.length > 0 
+    ? Math.round((completedTasks / state.tasks.length) * 100) 
+    : 0
 
   return (
-    <div className="container mx-auto p-8">
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-4xl font-bold">Dashboard</h1>
-          <Button onClick={handleLogout} variant="outline">
-            Logout
-          </Button>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-4xl font-bold">{t('nav.dashboard')}</h1>
+        <p className="text-muted-foreground mt-2">
+          Welcome back, {user?.name}! 👋
+        </p>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="p-6 border rounded-lg bg-card">
+          <h3 className="text-sm font-medium text-muted-foreground">Total Tasks</h3>
+          <p className="text-3xl font-bold mt-2">{state.tasks.length}</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-6 border rounded-lg">
-            <h3 className="text-lg font-semibold mb-2">Total Tasks</h3>
-            <p className="text-4xl font-bold text-primary">{state.tasks.length}</p>
-          </div>
-
-          <div className="p-6 border rounded-lg">
-            <h3 className="text-lg font-semibold mb-2">Completed</h3>
-            <p className="text-4xl font-bold text-green-600">
-              {state.tasks.filter(t => t.completed).length}
-            </p>
-          </div>
-
-          <div className="p-6 border rounded-lg">
-            <h3 className="text-lg font-semibold mb-2">Active Habits</h3>
-            <p className="text-4xl font-bold text-purple-600">{state.habits.length}</p>
-          </div>
+        <div className="p-6 border rounded-lg bg-card">
+          <h3 className="text-sm font-medium text-muted-foreground">Active</h3>
+          <p className="text-3xl font-bold mt-2 text-blue-600">{activeTasks}</p>
         </div>
 
-        <div className="p-6 border rounded-lg">
-          <h2 className="text-2xl font-semibold mb-4">Welcome, {user?.name}! 👋</h2>
-          <p className="text-muted-foreground">
-            This is your dashboard. More features coming soon!
-          </p>
+        <div className="p-6 border rounded-lg bg-card">
+          <h3 className="text-sm font-medium text-muted-foreground">Completed</h3>
+          <p className="text-3xl font-bold mt-2 text-green-600">{completedTasks}</p>
+        </div>
+
+        <div className="p-6 border rounded-lg bg-card">
+          <h3 className="text-sm font-medium text-muted-foreground">Completion Rate</h3>
+          <p className="text-3xl font-bold mt-2 text-purple-600">{completionRate}%</p>
+        </div>
+      </div>
+
+      {/* Placeholder sections */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="p-6 border rounded-lg bg-card">
+          <h2 className="text-xl font-semibold mb-4">Recent Tasks</h2>
+          <p className="text-muted-foreground text-sm">Task list will be implemented soon...</p>
+        </div>
+
+        <div className="p-6 border rounded-lg bg-card">
+          <h2 className="text-xl font-semibold mb-4">Habits Progress</h2>
+          <p className="text-muted-foreground text-sm">Habits tracker will be implemented soon...</p>
         </div>
       </div>
     </div>
