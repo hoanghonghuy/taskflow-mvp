@@ -1,29 +1,29 @@
-'use client'
+"use client"
 
-import { ThemeProvider } from './theme-provider'
 import { I18nProvider } from './i18n-provider'
 import { ToastProvider } from './toast-provider'
 import { UserProvider } from './user-provider'
 import { SettingsProvider } from './settings-provider'
 import { ConfirmationProvider } from './confirmation-provider'
 import { TaskManagerProvider } from './task-manager-provider'
+import { GeminiProvider } from './gemini-provider'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <ThemeProvider>
-      <I18nProvider>
-        <SettingsProvider>
-          <UserProvider>
+    <UserProvider>
+      <SettingsProvider>
+        <I18nProvider>
+          <ToastProvider>
             <TaskManagerProvider>
-              <ToastProvider>
-                <ConfirmationProvider>
+              <ConfirmationProvider>
+                <GeminiProvider>
                   {children}
-                </ConfirmationProvider>
-              </ToastProvider>
+                </GeminiProvider>
+              </ConfirmationProvider>
             </TaskManagerProvider>
-          </UserProvider>
-        </SettingsProvider>
-      </I18nProvider>
-    </ThemeProvider>
+          </ToastProvider>
+        </I18nProvider>
+      </SettingsProvider>
+    </UserProvider>
   )
 }
