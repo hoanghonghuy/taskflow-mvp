@@ -42,7 +42,7 @@ export default function RegisterPage() {
       await register(name, email, password)
       success('Account created!', 'Welcome to TaskFlow')
       router.push('/dashboard')
-    } catch (_err) {
+    } catch {
       error('Registration failed', 'Please try again')
     } finally {
       setIsLoading(false)
