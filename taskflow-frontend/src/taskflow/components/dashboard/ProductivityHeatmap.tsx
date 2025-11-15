@@ -9,6 +9,7 @@ const CELL_SIZE = 12; // Corresponds to w-3
 const CELL_GAP = 4;   // Corresponds to gap-1
 const WEEK_WIDTH = CELL_SIZE + CELL_GAP;
 const DAY_LABELS_WIDTH = 30; // Approx width for 'Mon', 'Wed', 'Fri' labels and margin
+const COLOR_SCALE = ['bg-secondary', 'bg-primary/20', 'bg-primary/40', 'bg-primary/70', 'bg-primary'] as const;
 
 const ProductivityHeatmap: React.FC = () => {
     const { state } = useTaskManager();
@@ -19,19 +20,26 @@ const ProductivityHeatmap: React.FC = () => {
 
     // Get container width on resize
     useEffect(() => {
+        const element = containerRef.current;
+        if (!element) {
+            return;
+        }
+
+        const updateWidth = () => setContainerWidth(element.getBoundingClientRect().width);
+        updateWidth();
+
+        if (typeof ResizeObserver === 'undefined') {
+            return;
+        }
+
         const observer = new ResizeObserver(entries => {
             if (entries[0]) {
                 setContainerWidth(entries[0].contentRect.width);
             }
         });
-        const currentRef = containerRef.current;
-        if (currentRef) {
-            observer.observe(currentRef);
-        }
+        observer.observe(element);
         return () => {
-            if (currentRef) {
-                observer.unobserve(currentRef);
-            }
+            observer.disconnect();
         };
     }, []);
 
@@ -116,12 +124,12 @@ const ProductivityHeatmap: React.FC = () => {
     }, [containerWidth, language]);
     
     const getColorClass = (count: number) => {
-        if (count === 0) return 'bg-secondary';
+        if (count === 0) return COLOR_SCALE[0];
         const ratio = count / maxContribution;
-        if (ratio < 0.25) return 'bg-primary/20';
-        if (ratio < 0.5) return 'bg-primary/40';
-        if (ratio < 0.75) return 'bg-primary/70';
-        return 'bg-primary';
+        if (ratio < 0.25) return COLOR_SCALE[1];
+        if (ratio < 0.5) return COLOR_SCALE[2];
+        if (ratio < 0.75) return COLOR_SCALE[3];
+        return COLOR_SCALE[4];
     };
     
     const getTooltipText = (date: Date) => {
@@ -141,14 +149,19 @@ const ProductivityHeatmap: React.FC = () => {
     };
 
     return (
-        <div ref={containerRef} className="bg-card border border-border p-4 rounded-lg overflow-hidden">
+        <div
+            ref={containerRef}
+            className="bg-card border border-border/80 p-4 rounded-2xl shadow-sm"
+            role="figure"
+            aria-label={t('dashboard.heatmapTitle')}
+        >
             <div className="flex flex-col">
-                 {/* Month Labels */}
+                {/* Month Labels */}
                 <div className="h-5 mb-1 relative" style={{ marginLeft: `${DAY_LABELS_WIDTH}px` }}>
                     {monthLabels.map(({ label, index }) => (
                         <div
                             key={label + index}
-                            className="absolute top-0 text-xs text-muted-foreground"
+                            className="absolute top-0 text-[11px] text-muted-foreground"
                             style={{ left: `${index * WEEK_WIDTH}px` }}
                         >
                             {label}
@@ -158,14 +171,18 @@ const ProductivityHeatmap: React.FC = () => {
 
                 <div className="flex gap-3">
                     {/* Day Labels */}
-                    <div className="flex flex-col gap-1 text-xs text-muted-foreground pt-0.5" style={{ minWidth: `${DAY_LABELS_WIDTH - 3}px`, width: `${DAY_LABELS_WIDTH - 3}px` }}>
-                        <div className="h-3"></div> {/* Sun */}
+                    <div
+                        className="flex flex-col gap-1 text-xs text-muted-foreground pt-0.5"
+                        style={{ minWidth: `${DAY_LABELS_WIDTH - 3}px`, width: `${DAY_LABELS_WIDTH - 3}px` }}
+                        aria-hidden="true"
+                    >
+                        <div className="h-3" />
                         <div className="h-3">{dayLabels[1]}</div>
-                        <div className="h-3"></div> {/* Tue */}
+                        <div className="h-3" />
                         <div className="h-3">{dayLabels[3]}</div>
-                        <div className="h-3"></div> {/* Thu */}
+                        <div className="h-3" />
                         <div className="h-3">{dayLabels[5]}</div>
-                        <div className="h-3"></div> {/* Sat */}
+                        <div className="h-3" />
                     </div>
 
                     {/* Heatmap Grid */}
@@ -174,22 +191,39 @@ const ProductivityHeatmap: React.FC = () => {
                             <div key={weekIndex} className="flex flex-col gap-1">
                                 {week.map((day, dayIndex) => {
                                     if (!day) {
-                                        return <div key={`empty-${weekIndex}-${dayIndex}`} className="w-3 h-3" />;
+                                        return <div key={`empty-${weekIndex}-${dayIndex}`} className="w-3 h-3" aria-hidden="true" />;
                                     }
                                     const date = day as Date;
-                                    const count = contributions[date.toISOString().split('T')[0]]?.total || 0;
+                                    const isoDate = date.toISOString().split('T')[0];
+                                    const count = contributions[isoDate]?.total || 0;
                                     const isFuture = date > new Date();
+                                    const tooltip = isFuture ? t('heatmap.tooltip.future') : getTooltipText(date);
 
                                     return (
                                         <div
-                                            key={date.toISOString()}
-                                            className={`w-3 h-3 rounded-sm ${isFuture ? 'bg-muted/20' : getColorClass(count)}`}
-                                            title={isFuture ? t('heatmap.tooltip.future') : getTooltipText(date)}
+                                            key={isoDate}
+                                            className={`w-3 h-3 rounded-sm transition-colors duration-200 ${isFuture ? 'bg-muted/20' : getColorClass(count)}`}
+                                            title={tooltip}
+                                            role="presentation"
+                                            aria-hidden="true"
                                         />
                                     );
                                 })}
                             </div>
                         ))}
+                    </div>
+                </div>
+
+                <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-xs text-muted-foreground">
+                    <span className="font-medium">{t('dashboard.heatmapTitle')}</span>
+                    <div className="flex items-center gap-2">
+                        <span>{t('heatmap.legend.less')}</span>
+                        <div className="flex items-center gap-1" aria-hidden="true">
+                            {COLOR_SCALE.map(color => (
+                                <span key={color} className={`w-3 h-3 rounded-sm ${color}`} />
+                            ))}
+                        </div>
+                        <span>{t('heatmap.legend.more')}</span>
                     </div>
                 </div>
             </div>
