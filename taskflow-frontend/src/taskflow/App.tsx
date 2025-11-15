@@ -132,7 +132,7 @@ const AppContent: React.FC = () => {
                 </header>
 
                 <div className="flex-1 flex overflow-hidden">
-                     <div className="flex-1 flex min-w-0">
+                     <div className="flex-1 flex min-w-0 pb-24 md:pb-0">
                         {renderView()}
                     </div>
                     <div className={`

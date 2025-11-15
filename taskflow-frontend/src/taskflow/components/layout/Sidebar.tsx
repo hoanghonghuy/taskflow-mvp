@@ -105,20 +105,34 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onChatbotToggle, onS
         children: React.ReactNode;
         isActive: boolean;
         onClick: () => void;
-    }> = ({ children, isActive, onClick }) => (
-        <button
-                onClick={() => {
-                onClick();
-                if (typeof window !== 'undefined' && window.innerWidth < 768) { // md breakpoint
-                    onClose();
-                }
-            }}
-            className={`w-full flex items-center justify-between text-sm px-3 py-2 rounded-md transition-colors group ${
-                isActive ? 'bg-primary/10 text-primary font-semibold' : 'hover:bg-muted/50'
+        actions?: React.ReactNode;
+    }> = ({ children, isActive, onClick, actions }) => (
+        <div
+            className={`group w-full flex items-center justify-between gap-3 text-sm px-3 py-2 rounded-md transition-colors ${
+                isActive ? 'bg-primary/10' : 'hover:bg-muted/50'
             }`}
         >
-            {children}
-        </button>
+            <button
+                type="button"
+                onClick={() => {
+                    onClick();
+                    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+                        onClose();
+                    }
+                }}
+                aria-current={isActive ? 'page' : undefined}
+                className={`flex-1 flex items-center gap-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded-md transition-colors ${
+                    isActive ? 'text-primary font-semibold' : ''
+                }`}
+            >
+                {children}
+            </button>
+            {actions && (
+                <div className="flex items-center gap-2">
+                    {actions}
+                </div>
+            )}
+        </div>
     );
 
     return (
@@ -152,10 +166,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onChatbotToggle, onS
                                 isActive={state.activeListId === id && !state.activeTag}
                                 onClick={() => dispatch({ type: 'SET_ACTIVE_LIST', payload: id as any })}
                             >
-                                <div className="flex items-center gap-3">
-                                    {icon}
-                                    <span>{t(name)}</span>
-                                </div>
+                                {icon}
+                                <span className="truncate">{t(name)}</span>
                             </NavItem>
                         ))}
                     </nav>
@@ -177,28 +189,30 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onChatbotToggle, onS
                                                 key={list.id}
                                                 isActive={state.activeListId === list.id && !state.activeTag}
                                                 onClick={() => dispatch({ type: 'SET_ACTIVE_LIST', payload: list.id })}
+                                                actions={
+                                                    <>
+                                                        <span className="text-xs font-medium text-muted-foreground">{taskCount}</span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => onShareList(list.id)}
+                                                            className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 text-muted-foreground hover:text-primary p-1 rounded transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                                                            aria-label={t('sidebar.aria.shareList', { listName: list.name })}
+                                                        >
+                                                            <UserPlusIcon className="h-4 w-4" />
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleDeleteList(list.id, list.name)}
+                                                            className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 text-muted-foreground hover:text-destructive p-1 rounded transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40"
+                                                            aria-label={t('sidebar.aria.deleteList', { listName: list.name })}
+                                                        >
+                                                            <TrashIcon className="h-4 w-4" />
+                                                        </button>
+                                                    </>
+                                                }
                                             >
-                                                <div className="flex items-center gap-3">
-                                                    <ListBulletIcon className="h-5 w-5" />
-                                                    <span className="truncate flex-1 text-left">{list.name}</span>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-xs font-medium text-muted-foreground">{taskCount}</span>
-                                                     <button 
-                                                        onClick={(e) => { e.stopPropagation(); onShareList(list.id); }} 
-                                                        className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-primary p-0.5 rounded"
-                                                        aria-label={t('sidebar.aria.shareList', { listName: list.name })}
-                                                    >
-                                                        <UserPlusIcon className="h-4 w-4" />
-                                                    </button>
-                                                    <button 
-                                                        onClick={(e) => { e.stopPropagation(); handleDeleteList(list.id, list.name); }} 
-                                                        className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive p-0.5 rounded"
-                                                        aria-label={t('sidebar.aria.deleteList', { listName: list.name })}
-                                                    >
-                                                        <TrashIcon className="h-4 w-4" />
-                                                    </button>
-                                                </div>
+                                                <ListBulletIcon className="h-5 w-5 flex-shrink-0" />
+                                                <span className="truncate flex-1">{list.name}</span>
                                             </NavItem>
                                         )
                                     })}

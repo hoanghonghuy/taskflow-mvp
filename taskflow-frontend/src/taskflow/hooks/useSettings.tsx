@@ -19,40 +19,75 @@ const SettingsContext = createContext<SettingsState | undefined>(undefined);
 
 const DEFAULT_BOTTOM_NAV: ViewType[] = ['dashboard', 'list', 'calendar', 'pomodoro'];
 
-export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [theme, setTheme] = useState<Theme>(() => {
-        const storedTheme = localStorage.getItem('taskflowTheme') as Theme | null;
-        if (storedTheme) return storedTheme;
+const getInitialTheme = (): Theme => {
+    if (typeof window === 'undefined') {
+        return 'light';
+    }
+
+    const storedTheme = window.localStorage.getItem('taskflowTheme') as Theme | null;
+    if (storedTheme) return storedTheme;
+
+    try {
         return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    });
+    } catch {
+        return 'light';
+    }
+};
 
-    const [language, setLanguage] = useState<Language>(() => {
-        const storedLanguage = localStorage.getItem('taskflowLanguage') as Language | null;
-        return storedLanguage || 'en';
-    });
+const getInitialLanguage = (): Language => {
+    if (typeof window === 'undefined') {
+        return 'en';
+    }
 
-    const [bottomNavActions, setBottomNavActions] = useState<ViewType[]>(() => {
-        try {
-            const stored = localStorage.getItem('taskflowBottomNav');
-            return stored ? JSON.parse(stored) : DEFAULT_BOTTOM_NAV;
-        } catch {
-            return DEFAULT_BOTTOM_NAV;
-        }
-    });
+    const storedLanguage = window.localStorage.getItem('taskflowLanguage') as Language | null;
+    return storedLanguage || 'en';
+};
+
+const getInitialBottomNavActions = (): ViewType[] => {
+    if (typeof window === 'undefined') {
+        return DEFAULT_BOTTOM_NAV;
+    }
+
+    try {
+        const stored = window.localStorage.getItem('taskflowBottomNav');
+        return stored ? JSON.parse(stored) : DEFAULT_BOTTOM_NAV;
+    } catch {
+        return DEFAULT_BOTTOM_NAV;
+    }
+};
+
+export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+    const [theme, setTheme] = useState<Theme>(getInitialTheme);
+
+    const [language, setLanguage] = useState<Language>(getInitialLanguage);
+
+    const [bottomNavActions, setBottomNavActions] = useState<ViewType[]>(getInitialBottomNavActions);
 
     useEffect(() => {
-        localStorage.setItem('taskflowTheme', theme);
+        if (typeof window === 'undefined') {
+            return;
+        }
+
+        window.localStorage.setItem('taskflowTheme', theme);
         const body = window.document.body;
         body.classList.remove('light', 'dark');
         body.classList.add(theme);
     }, [theme]);
 
     useEffect(() => {
-        localStorage.setItem('taskflowLanguage', language);
+        if (typeof window === 'undefined') {
+            return;
+        }
+
+        window.localStorage.setItem('taskflowLanguage', language);
     }, [language]);
 
     useEffect(() => {
-        localStorage.setItem('taskflowBottomNav', JSON.stringify(bottomNavActions));
+        if (typeof window === 'undefined') {
+            return;
+        }
+
+        window.localStorage.setItem('taskflowBottomNav', JSON.stringify(bottomNavActions));
     }, [bottomNavActions]);
 
 
