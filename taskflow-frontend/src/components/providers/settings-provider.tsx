@@ -1,8 +1,9 @@
 'use client'
 
 import { createContext, useContext, useState, useCallback, useEffect } from 'react'
-import type { Settings } from '@/types'
+import type { Settings, ThemeOption } from '@/types'
 import i18n from '@/lib/i18n/config'
+import { THEME_PRESET_IDS } from '@/lib/theme-presets'
 
 interface SettingsContextType {
   settings: Settings
@@ -27,6 +28,8 @@ const DEFAULT_SETTINGS: Settings = {
   bottomNavActions: ['dashboard', 'list', 'board', 'calendar'],
 }
 
+const THEME_OPTIONS_SET = new Set<ThemeOption>(['system', ...THEME_PRESET_IDS])
+
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined)
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
@@ -35,7 +38,11 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       const savedSettings = localStorage.getItem('settings')
       if (savedSettings) {
         try {
-          return JSON.parse(savedSettings)
+          const parsed = JSON.parse(savedSettings) as Settings
+          if (!THEME_OPTIONS_SET.has(parsed.theme)) {
+            parsed.theme = DEFAULT_SETTINGS.theme
+          }
+          return parsed
         } catch (error) {
           console.error('Failed to parse saved settings:', error)
           localStorage.removeItem('settings')
@@ -44,18 +51,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     }
     return DEFAULT_SETTINGS
   })
-
-  // Apply theme to html and body elements (matching template)
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const html = window.document.documentElement
-      const body = window.document.body
-      html.classList.remove('light', 'dark')
-      body.classList.remove('light', 'dark')
-      html.classList.add(settings.theme)
-      body.classList.add(settings.theme)
-    }
-  }, [settings.theme])
 
   // Sync language changes with i18n outside of setState
   useEffect(() => {

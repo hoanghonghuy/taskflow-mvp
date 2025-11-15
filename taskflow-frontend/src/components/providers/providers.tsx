@@ -12,9 +12,9 @@ import { GeminiProvider } from '@/lib/hooks/use-gemini'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <ThemeProvider>
-      <I18nProvider>
-        <SettingsProvider>
+    <I18nProvider>
+      <SettingsProvider>
+        <ThemeProvider>
           <GeminiProvider>
             <UserProvider>
               <TaskManagerProvider>
@@ -28,8 +28,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
               </TaskManagerProvider>
             </UserProvider>
           </GeminiProvider>
-        </SettingsProvider>
-      </I18nProvider>
-    </ThemeProvider>
+        </ThemeProvider>
+      </SettingsProvider>
+    </I18nProvider>
   )
 }

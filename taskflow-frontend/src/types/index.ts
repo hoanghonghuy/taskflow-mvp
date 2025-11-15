@@ -96,9 +96,25 @@ export interface PomodoroSettings {
   sessionsUntilLongBreak: number;
 }
 
+export type ThemePresetId =
+  | 'light'
+  | 'dark'
+  | 'classic-fog'
+  | 'warm-ivory'
+  | 'cool-slate'
+  | 'minimal-charcoal'
+  | 'soft-pastel'
+  | 'night-indigo'
+  | 'graphite-ember'
+  | 'forest-noir'
+  | 'plum-eclipse'
+  | 'carbon-minimal';
+
+export type ThemeOption = ThemePresetId | 'system';
+
 export interface Settings {
   language: 'en' | 'vi';
-  theme: 'light' | 'dark';
+  theme: ThemeOption;
   notifications: boolean;
   autoStartPomodoro: boolean;
   defaultPriority: Priority;

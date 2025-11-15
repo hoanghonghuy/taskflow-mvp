@@ -1,66 +1,83 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState, useMemo } from 'react'
-
-type Theme = 'light' | 'dark' | 'system'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import type { ThemeOption, ThemePresetId } from '@/types'
+import { useSettings } from './settings-provider'
+import { THEME_PRESET_IDS, isDarkThemeId } from '@/lib/theme-presets'
 
 interface ThemeContextType {
-  theme: Theme
-  setTheme: (theme: Theme) => void
+  theme: ThemeOption
+  setTheme: (theme: ThemeOption) => void
   resolvedTheme: 'light' | 'dark'
+  appliedTheme: ThemePresetId
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
+const THEME_CLASS_NAMES = THEME_PRESET_IDS.map((id) => `theme-${id}`)
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Load initial theme from localStorage
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window !== 'undefined') {
-      const savedTheme = localStorage.getItem('theme') as Theme
-      return savedTheme || 'system'
-    }
-    return 'system'
+  const { theme, setTheme } = useSettings()
+  const [systemTheme, setSystemTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window === 'undefined') return 'light'
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   })
 
-  // ✅ FIX: Calculate resolvedTheme using useMemo instead of useState + useEffect
-  const resolvedTheme = useMemo<'light' | 'dark'>(() => {
-    if (typeof window === 'undefined') return 'light'
-
-    if (theme === 'system') {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-    }
-    return theme
-  }, [theme])
-
-  // Apply theme to DOM
   useEffect(() => {
-    const root = window.document.documentElement
-    root.classList.remove('light', 'dark')
-    root.classList.add(resolvedTheme)
-
-    // Save to localStorage
-    localStorage.setItem('theme', theme)
-  }, [theme, resolvedTheme])
-
-  // Listen for system theme changes
-  useEffect(() => {
-    if (theme !== 'system') return
+    if (typeof window === 'undefined') return
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    
-    const handleChange = () => {
-      const root = window.document.documentElement
-      const systemTheme = mediaQuery.matches ? 'dark' : 'light'
-      root.classList.remove('light', 'dark')
-      root.classList.add(systemTheme)
+
+    const handleChange = (event: MediaQueryListEvent) => {
+      setSystemTheme(event.matches ? 'dark' : 'light')
     }
 
     mediaQuery.addEventListener('change', handleChange)
     return () => mediaQuery.removeEventListener('change', handleChange)
-  }, [theme])
+  }, [])
+
+  const appliedTheme: ThemePresetId = useMemo(() => {
+    if (theme === 'system') {
+      return systemTheme === 'dark' ? 'dark' : 'light'
+    }
+    return theme
+  }, [systemTheme, theme])
+
+  const resolvedTheme = useMemo<'light' | 'dark'>(() => {
+    return isDarkThemeId(appliedTheme) ? 'dark' : 'light'
+  }, [appliedTheme])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    const applyClasses = (element: Element) => {
+      element.classList.remove(...THEME_CLASS_NAMES, 'light', 'dark')
+      element.classList.add(`theme-${appliedTheme}`)
+      if (isDarkThemeId(appliedTheme)) {
+        element.classList.add('dark')
+      } else {
+        element.classList.add('light')
+      }
+    }
+
+    const root = window.document.documentElement
+    const body = window.document.body
+
+    applyClasses(root)
+    if (body) {
+      applyClasses(body)
+    }
+
+    root.setAttribute('data-theme', appliedTheme)
+    if (body) {
+      body.setAttribute('data-theme', appliedTheme)
+    }
+  }, [appliedTheme])
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme, appliedTheme }}>
       {children}
     </ThemeContext.Provider>
   )

@@ -1,11 +1,12 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useSettings } from '@/components/providers/settings-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import { useTaskManager } from '@/lib/hooks/use-task-manager'
-import { SunIcon, MoonIcon, GripVerticalIcon, HomeIcon, ListBulletIcon, CalendarDaysIcon, GridIcon, RepeatIcon, StopwatchIcon, HourglassIcon, ViewColumnsIcon } from '@/lib/constants'
-import type { View } from '@/types'
+import { GripVerticalIcon, HomeIcon, ListBulletIcon, CalendarDaysIcon, GridIcon, RepeatIcon, StopwatchIcon, HourglassIcon, ViewColumnsIcon, CheckIcon } from '@/lib/constants'
+import { THEME_PRESETS } from '@/lib/theme-presets'
+import type { ThemeOption, View } from '@/types'
 
 const ALL_FEATURES: { view: View, icon: React.FC<{className?: string}>, label: string }[] = [
   { view: 'dashboard', icon: HomeIcon, label: 'feature.dashboard' },
@@ -23,8 +24,49 @@ const SettingsView: React.FC = () => {
   const { state: taskState, dispatch: taskDispatch } = useTaskManager()
   const { t } = useI18n()
   const [draggedItem, setDraggedItem] = useState<View | null>(null)
+  const [themeFilter, setThemeFilter] = useState<'all' | 'light' | 'dark'>('all')
 
   const { settings: pomodoroSettings } = taskState.pomodoro
+
+  const themeOptions = useMemo(() => {
+    const modeLabels = {
+      light: t('settings.themePresets.modeLight'),
+      dark: t('settings.themePresets.modeDark'),
+      system: t('settings.themePresets.modeSystem'),
+    }
+
+    const baseOptions = [
+      {
+        id: 'system' as ThemeOption,
+        label: t('settings.themePresets.system'),
+        description: t('settings.themePresets.systemDesc'),
+        mode: 'system' as const,
+        preview: {
+          background: '#101828',
+          card: '#ffffff',
+          accent: '#6366f1',
+        },
+      },
+    ]
+
+    const presetOptions = THEME_PRESETS.map((preset) => ({
+      id: preset.id as ThemeOption,
+      label: t(preset.labelKey),
+      description: t(preset.descriptionKey),
+      mode: preset.mode,
+      preview: preset.preview,
+    }))
+
+    return [...baseOptions, ...presetOptions].map((option) => ({
+      ...option,
+      modeLabel: modeLabels[option.mode] ?? option.mode,
+    }))
+  }, [t])
+
+  const filteredThemeOptions = useMemo(() => {
+    if (themeFilter === 'all') return themeOptions
+    return themeOptions.filter((option) => option.mode === themeFilter)
+  }, [themeFilter, themeOptions])
 
   const handlePomodoroSettingChange = (setting: string, value: string) => {
     const numberValue = parseInt(value, 10)
@@ -96,30 +138,93 @@ const SettingsView: React.FC = () => {
       </header>
       <main className="flex-1 p-4 md:p-6 overflow-y-auto space-y-8 pb-20 md:pb-6">
         <section>
-          <h2 className="text-lg font-semibold mb-4">{t('settings.appearance')}</h2>
+          <h2 className="text-lg font-semibold mb-4">{t('settings.languageLabel')}</h2>
           <div className="bg-card border border-border rounded-lg p-4 max-w-md">
-            <div className="flex flex-col gap-3">
-              <label className="font-medium">{t('settings.themeLabel')}</label>
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  { id: 'light', label: t('settings.theme.light') || t('settings.light'), Icon: SunIcon },
-                  { id: 'dark', label: t('settings.theme.dark') || t('settings.dark'), Icon: MoonIcon },
-                ].map(option => (
-                  <button
-                    key={option.id}
-                    onClick={() => setTheme(option.id as 'light' | 'dark')}
-                    aria-pressed={theme === option.id}
-                    className={`
-                      flex items-center justify-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold transition-all
-                      ${theme === option.id
-                        ? 'border-primary bg-primary/10 text-primary shadow-sm'
-                        : 'border-border text-muted-foreground hover:border-primary/40 hover:text-foreground'}
-                    `}
-                  >
-                    <option.Icon className="h-4 w-4" />
-                    {option.label}
-                  </button>
-                ))}
+            <div className="flex items-center justify-between">
+              <label htmlFor="language-select" className="font-medium text-sm">{t('settings.languageLabel')}</label>
+              <select
+                id="language-select"
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as 'en' | 'vi')}
+                className="p-2 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              >
+                <option value="en">{t('settings.language.en')}</option>
+                <option value="vi">{t('settings.language.vi')}</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2 className="text-lg font-semibold mb-4">{t('settings.appearance')}</h2>
+          <div className="bg-card border border-border rounded-lg p-4 space-y-5">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div>
+                  <label className="font-medium">{t('settings.themeLabel')}</label>
+                  <p className="text-sm text-muted-foreground">{t('settings.themePresets.helper')}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {(['all', 'light', 'dark'] as const).map((filter) => (
+                    <button
+                      key={filter}
+                      type="button"
+                      onClick={() => setThemeFilter(filter)}
+                      className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                        themeFilter === filter
+                          ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                          : 'border-border text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      {filter === 'all'
+                        ? t('settings.themePresets.filterAll')
+                        : filter === 'light'
+                          ? t('settings.themePresets.filterLight')
+                          : t('settings.themePresets.filterDark')}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                {filteredThemeOptions.map((option) => {
+                  const isSelected = theme === option.id
+                  return (
+                    <button
+                      key={option.id}
+                      type="button"
+                      onClick={() => setTheme(option.id)}
+                      aria-pressed={isSelected}
+                      className={`group flex items-center gap-3 rounded-xl border p-3 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                        isSelected
+                          ? 'border-primary bg-primary/5 shadow-sm'
+                          : 'border-border hover:border-primary/60 hover:bg-muted/20'
+                      }`}
+                    >
+                      <div className="w-20">
+                        <div className="h-10 rounded-lg border border-black/5 dark:border-white/5 overflow-hidden bg-muted/40">
+                          <div className="grid grid-cols-3 h-full">
+                            <span className="block h-full w-full" style={{ backgroundColor: option.preview.background }} />
+                            <span className="block h-full w-full" style={{ backgroundColor: option.preview.card }} />
+                            <span className="block h-full w-full" style={{ backgroundColor: option.preview.accent }} />
+                          </div>
+                        </div>
+                        <p className="mt-1 text-[10px] text-center uppercase tracking-wide text-muted-foreground">
+                          {option.modeLabel}
+                        </p>
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-semibold text-sm">{option.label}</p>
+                        <p className="text-xs text-muted-foreground leading-snug line-clamp-2">{option.description}</p>
+                      </div>
+                      {isSelected && (
+                        <span className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-primary text-primary-foreground">
+                          <CheckIcon className="h-4 w-4" />
+                        </span>
+                      )}
+                    </button>
+                  )
+                })}
               </div>
             </div>
           </div>
@@ -202,23 +307,6 @@ const SettingsView: React.FC = () => {
           </div>
         </section>
 
-        <section>
-          <h2 className="text-lg font-semibold mb-4">{t('settings.languageLabel')}</h2>
-          <div className="bg-card border border-border rounded-lg p-4 max-w-md">
-            <div className="flex items-center justify-between">
-              <label htmlFor="language-select" className="font-medium">{t('settings.languageLabel')}</label>
-              <select
-                id="language-select"
-                value={language}
-                onChange={(e) => setLanguage(e.target.value as 'en' | 'vi')}
-                className="p-2 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-              >
-                <option value="en">{t('settings.language.en')}</option>
-                <option value="vi">{t('settings.language.vi')}</option>
-              </select>
-            </div>
-          </div>
-        </section>
       </main>
     </div>
   )

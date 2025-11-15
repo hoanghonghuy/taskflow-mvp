@@ -4,6 +4,8 @@ import React, { useMemo, useRef, useState, useEffect } from 'react'
 import { useTaskManager } from '@/lib/hooks/use-task-manager'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import { useSettings } from '@/components/providers/settings-provider'
+import { useTheme } from '@/components/providers/theme-provider'
+import type { FocusSession } from '@/types'
 
 const CELL_SIZE = 12 // w-3
 const CELL_GAP = 4   // gap-1
@@ -13,11 +15,13 @@ const DAY_LABELS_WIDTH = 30 // width for day labels
 const LIGHT_SCALE = ['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39']
 const DARK_SCALE = ['#161b22', '#0e4429', '#006d32', '#26a641', '#39d353']
 const FUTURE_OPACITY = 0.35
+const EMPTY_FOCUS_HISTORY: FocusSession[] = []
 
 const ProductivityHeatmap: React.FC = () => {
   const { state } = useTaskManager()
   const { t } = useI18n()
   const { settings } = useSettings()
+  const { resolvedTheme } = useTheme()
   const containerRef = useRef<HTMLDivElement>(null)
   const [containerWidth, setContainerWidth] = useState(0)
 
@@ -54,6 +58,8 @@ const ProductivityHeatmap: React.FC = () => {
     }
   }, [])
 
+  const focusHistory = state.pomodoro?.focusHistory ?? EMPTY_FOCUS_HISTORY
+
   const { contributions, maxContribution } = useMemo(() => {
     const contribs: { [date: string]: { tasks: number, pomos: number, total: number } } = {}
     let max = 1
@@ -70,20 +76,18 @@ const ProductivityHeatmap: React.FC = () => {
     })
 
     // Count pomodoro sessions
-    if (state.pomodoro?.focusHistory) {
-      state.pomodoro.focusHistory.forEach(session => {
-        if (session?.startTime) {
-          const dateStr = new Date(session.startTime).toISOString().split('T')[0]
-          if (!contribs[dateStr]) contribs[dateStr] = { tasks: 0, pomos: 0, total: 0 }
-          contribs[dateStr].pomos += 1
-          contribs[dateStr].total += 1
-          if (contribs[dateStr].total > max) max = contribs[dateStr].total
-        }
-      })
-    }
+    focusHistory.forEach(session => {
+      if (session?.startTime) {
+        const dateStr = new Date(session.startTime).toISOString().split('T')[0]
+        if (!contribs[dateStr]) contribs[dateStr] = { tasks: 0, pomos: 0, total: 0 }
+        contribs[dateStr].pomos += 1
+        contribs[dateStr].total += 1
+        if (contribs[dateStr].total > max) max = contribs[dateStr].total
+      }
+    })
 
     return { contributions: contribs, maxContribution: max }
-  }, [state.tasks, state.pomodoro?.focusHistory])
+  }, [state.tasks, focusHistory])
 
   // Calculate which days and month labels to show based on width
   const { weeks, monthLabels, dayLabels } = useMemo(() => {
@@ -149,7 +153,7 @@ const ProductivityHeatmap: React.FC = () => {
   }
 
   const getCellStyle = (count: number, isFuture: boolean) => {
-    const palette = settings.theme === 'dark' ? DARK_SCALE : LIGHT_SCALE
+    const palette = resolvedTheme === 'dark' ? DARK_SCALE : LIGHT_SCALE
     const index = getColorIndex(count)
     const color = palette[index]
     if (isFuture) {
