@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react';
-import { Achievement, AppState, List, Priority, Task } from './types';
+import { Achievement, AppState, Column, CountdownEvent, Habit, List, Priority, Task } from './types';
 
 // Icons
 
@@ -358,8 +358,229 @@ export const TAG_COLORS = [
     'bg-indigo-500', 'bg-purple-500', 'bg-pink-500', 'bg-orange-500'
 ];
 
-export const INITIAL_TASKS: Task[] = [];
-export const INITIAL_LISTS: List[] = [];
+const makeDate = (offsetDays: number) => {
+    const date = new Date();
+    date.setHours(9, 0, 0, 0);
+    date.setDate(date.getDate() + offsetDays);
+    return date.toISOString();
+};
+
+const todayISO = new Date().toISOString();
+
+export const INITIAL_LISTS: List[] = [
+    { id: 'list-1', name: 'Product Roadmap', color: 'bg-blue-500', members: ['user-001', 'user-002'] },
+    { id: 'list-2', name: 'Personal Errands', color: 'bg-emerald-500', members: ['user-001'] },
+    { id: 'list-3', name: 'Shopping List', color: 'bg-amber-500', members: ['user-001', 'user-003'] },
+];
+
+export const INITIAL_COLUMNS: Column[] = [
+    { id: 'col-list-1-1', name: 'Backlog', listId: 'list-1' },
+    { id: 'col-list-1-2', name: 'In Progress', listId: 'list-1' },
+    { id: 'col-list-1-3', name: 'Review', listId: 'list-1' },
+    { id: 'col-list-1-4', name: 'Done', listId: 'list-1' },
+    { id: 'col-list-2-1', name: 'Next Up', listId: 'list-2' },
+    { id: 'col-list-2-2', name: 'Waiting', listId: 'list-2' },
+    { id: 'col-list-3-1', name: 'To Buy', listId: 'list-3' },
+    { id: 'col-list-3-2', name: 'Purchased', listId: 'list-3' },
+];
+
+export const INITIAL_TASKS: Task[] = [
+    {
+        id: 'task-1',
+        title: 'Finalize quarterly roadmap narrative',
+        description: 'Synthesize PM feedback and highlight the three flagship initiatives for Q4.',
+        completed: false,
+        dueDate: makeDate(1),
+        priority: Priority.High,
+        listId: 'list-1',
+        columnId: 'col-list-1-2',
+        tags: ['roadmap', 'executive'],
+        subtasks: [
+            { id: 'task-1-sub-1', title: 'Collect PM summaries', completed: true },
+            { id: 'task-1-sub-2', title: 'Draft narrative outline', completed: false }
+        ],
+        createdAt: todayISO,
+        totalFocusTime: 5400,
+        assigneeId: 'user-002',
+        comments: [
+            {
+                id: 'task-1-comment-1',
+                userId: 'user-002',
+                content: 'Outline looks good, adding finance updates tomorrow.',
+                createdAt: makeDate(-1),
+            }
+        ],
+    },
+    {
+        id: 'task-2',
+        title: 'Design review: mobile checklist experience',
+        description: 'Review Figma prototype with design guild and prepare implementation notes.',
+        completed: false,
+        dueDate: makeDate(3),
+        priority: Priority.Medium,
+        listId: 'list-1',
+        columnId: 'col-list-1-1',
+        tags: ['design', 'mobile'],
+        subtasks: [
+            { id: 'task-2-sub-1', title: 'Leave feedback on Figma', completed: false },
+        ],
+        createdAt: makeDate(-2),
+        totalFocusTime: 1800,
+        assigneeId: 'user-001',
+    },
+    {
+        id: 'task-3',
+        title: 'Create sprint demo deck',
+        description: 'Collect screenshots and prepare narrative for Friday demo.',
+        completed: false,
+        dueDate: makeDate(2),
+        priority: Priority.High,
+        listId: 'list-1',
+        columnId: 'col-list-1-3',
+        tags: ['presentation'],
+        subtasks: [],
+        createdAt: makeDate(-3),
+        totalFocusTime: 2700,
+    },
+    {
+        id: 'task-4',
+        title: 'Inbox zero sweep',
+        description: 'Process remaining action items from team feedback.',
+        completed: false,
+        dueDate: makeDate(0),
+        priority: Priority.Low,
+        listId: 'inbox',
+        tags: ['admin'],
+        subtasks: [],
+        createdAt: todayISO,
+        totalFocusTime: 900,
+    },
+    {
+        id: 'task-5',
+        title: 'Schedule annual physical',
+        description: '',
+        completed: false,
+        dueDate: makeDate(10),
+        priority: Priority.Medium,
+        listId: 'list-2',
+        columnId: 'col-list-2-1',
+        tags: ['health'],
+        subtasks: [],
+        createdAt: todayISO,
+        totalFocusTime: 0,
+    },
+    {
+        id: 'task-6',
+        title: 'Weekend meal prep',
+        description: 'Plan simple meals and prep grocery list.',
+        completed: true,
+        completedAt: makeDate(-1),
+        dueDate: makeDate(-1),
+        priority: Priority.Low,
+        listId: 'list-2',
+        columnId: 'col-list-2-2',
+        tags: ['wellness'],
+        subtasks: [
+            { id: 'task-6-sub-1', title: 'Prep grains', completed: true },
+            { id: 'task-6-sub-2', title: 'Chop vegetables', completed: true },
+        ],
+        createdAt: makeDate(-5),
+        totalFocusTime: 1200,
+    },
+    {
+        id: 'task-7',
+        title: 'Restock coffee beans',
+        description: 'Order the seasonal roast from the local roaster.',
+        completed: false,
+        dueDate: makeDate(4),
+        priority: Priority.None,
+        listId: 'list-3',
+        columnId: 'col-list-3-1',
+        tags: ['shopping'],
+        subtasks: [],
+        createdAt: makeDate(-4),
+        totalFocusTime: 0,
+        assigneeId: 'user-003',
+    },
+    {
+        id: 'task-8',
+        title: 'Renew gym membership',
+        description: 'Membership expires at the end of the month.',
+        completed: false,
+        dueDate: makeDate(12),
+        priority: Priority.Medium,
+        listId: 'list-2',
+        columnId: 'col-list-2-1',
+        tags: ['health'],
+        subtasks: [],
+        createdAt: makeDate(-6),
+        totalFocusTime: 0,
+    },
+    {
+        id: 'task-9',
+        title: 'Plan winter team offsite',
+        description: 'Draft agenda and shortlist potential venues.',
+        completed: false,
+        dueDate: makeDate(20),
+        priority: Priority.Medium,
+        listId: 'list-1',
+        columnId: 'col-list-1-1',
+        tags: ['team', 'planning'],
+        subtasks: [
+            { id: 'task-9-sub-1', title: 'Collect venue quotes', completed: false },
+            { id: 'task-9-sub-2', title: 'Draft agenda outline', completed: true },
+        ],
+        createdAt: makeDate(-7),
+        totalFocusTime: 3600,
+        assigneeId: 'user-001',
+    },
+    {
+        id: 'task-10',
+        title: 'Daily standup sync',
+        description: 'Quick asynchronous update for the engineering pod.',
+        completed: false,
+        dueDate: makeDate(0),
+        priority: Priority.Medium,
+        listId: 'list-1',
+        columnId: 'col-list-1-2',
+        tags: ['ritual'],
+        subtasks: [],
+        createdAt: todayISO,
+        totalFocusTime: 0,
+        recurrence: { rule: 'daily' },
+    },
+];
+
+const deriveInitialTags = () => {
+    const tags = new Set<string>();
+    INITIAL_TASKS.forEach(task => task.tags.forEach(tag => tags.add(tag)));
+    return Array.from(tags);
+};
+
+export const INITIAL_TAGS = deriveInitialTags();
+
+export const INITIAL_HABITS: Habit[] = [
+    {
+        id: 'habit-1',
+        name: 'Morning journaling',
+        completions: [makeDate(-2).split('T')[0], makeDate(-1).split('T')[0]],
+        createdAt: makeDate(-14),
+    },
+    {
+        id: 'habit-2',
+        name: 'Drink 2L of water',
+        completions: [makeDate(-3).split('T')[0], makeDate(-1).split('T')[0]],
+        createdAt: makeDate(-30),
+    },
+];
+
+export const INITIAL_COUNTDOWNS: CountdownEvent[] = [
+    {
+        id: 'countdown-1',
+        name: 'Product launch day',
+        targetDate: makeDate(45),
+    },
+];
 
 export const POMODORO_SETTINGS = {
     pomoDuration: 25 * 60, // 25 minutes

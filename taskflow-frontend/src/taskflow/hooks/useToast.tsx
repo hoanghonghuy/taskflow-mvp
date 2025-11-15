@@ -1,56 +1,47 @@
 'use client'
 
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useCallback, useContext, ReactNode } from 'react';
+import { Toaster, toast } from 'sonner';
 
-type ToastType = 'success' | 'error' | 'info';
+export type ToastType = 'success' | 'error' | 'info';
 
-interface ToastMessage {
-    id: number;
-    message: string;
-    type: ToastType;
-}
-
-interface ToastContextType {
-    addToast: (message: string, type?: ToastType) => void;
-    toasts: ToastMessage[];
-    removeToast: (id: number) => void;
-}
+type ToastContextType = (message: string, type?: ToastType) => void;
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
 export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [toasts, setToasts] = useState<ToastMessage[]>([]);
-
-    const removeToast = useCallback((id: number) => {
-        setToasts(prevToasts => prevToasts.filter(toast => toast.id !== id));
+    const showToast = useCallback<ToastContextType>((message, type = 'info') => {
+        switch (type) {
+            case 'success':
+                toast.success(message);
+                break;
+            case 'error':
+                toast.error(message);
+                break;
+            default:
+                toast(message);
+                break;
+        }
     }, []);
 
-    const addToast = useCallback((message: string, type: ToastType = 'info') => {
-        const id = Date.now();
-        setToasts(prevToasts => [...prevToasts, { id, message, type }]);
-        setTimeout(() => removeToast(id), 5000); // Auto-dismiss after 5 seconds
-    }, [removeToast]);
-    
     return (
-        <ToastContext.Provider value={{ addToast, toasts, removeToast }}>
+        <ToastContext.Provider value={showToast}>
             {children}
+            <Toaster
+                closeButton
+                richColors
+                expand
+                position="top-right"
+                toastOptions={{ duration: 4000 }}
+            />
         </ToastContext.Provider>
     );
 };
 
-export const useToast = (): ((message: string, type?: ToastType) => void) => {
+export const useToast = (): ToastContextType => {
     const context = useContext(ToastContext);
     if (!context) {
         throw new Error('useToast must be used within a ToastProvider');
     }
-    return context.addToast;
+    return context;
 };
-
-// This hook is for the container component to get all toasts
-export const useToastContainer = () => {
-     const context = useContext(ToastContext);
-    if (!context) {
-        throw new Error('useToastContainer must be used within a ToastProvider');
-    }
-    return { toasts: context.toasts, removeToast: context.removeToast };
-}

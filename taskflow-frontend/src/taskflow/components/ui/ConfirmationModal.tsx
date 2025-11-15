@@ -43,7 +43,7 @@ const ConfirmationModal: React.FC = () => {
                     <p className="text-sm text-muted-foreground">{message}</p>
                 </div>
 
-                <footer className="p-4 bg-secondary/50 rounded-b-lg flex justify-end gap-4">
+                <footer className="p-4 bg-secondary rounded-b-lg flex justify-end gap-4">
                     <button 
                         onClick={cancel} 
                         className="px-4 py-2 bg-background border border-border rounded-md text-sm font-semibold hover:bg-muted"

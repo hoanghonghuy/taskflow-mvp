@@ -2,7 +2,17 @@
 
 import React, { createContext, useContext, useReducer, useEffect, ReactNode, useRef } from 'react';
 import { AppState, Action, PomodoroState, List, Habit, CountdownEvent, PomodoroFocusRecord, Task, Priority, Comment, Column } from '../types';
-import { ALL_ACHIEVEMENTS, INITIAL_LISTS, INITIAL_TASKS, POMODORO_SETTINGS, TAG_COLORS } from '../constants';
+import {
+    ALL_ACHIEVEMENTS,
+    INITIAL_COUNTDOWNS,
+    INITIAL_COLUMNS,
+    INITIAL_HABITS,
+    INITIAL_LISTS,
+    INITIAL_TAGS,
+    INITIAL_TASKS,
+    POMODORO_SETTINGS,
+    TAG_COLORS,
+} from '../constants';
 import { useToast } from './useToast';
 import { useTranslation } from './useI18n';
 
@@ -653,67 +663,34 @@ export const TaskManagerProvider: React.FC<{ children: ReactNode }> = ({ childre
                 
                 dispatch({ type: 'LOAD_STATE', payload: loadedState });
             } else {
-                 const mockLists: List[] = [
-                    { id: 'list-1', name: 'Work', color: 'bg-blue-500', members: ['user-001', 'user-002'] },
-                    { id: 'list-2', name: 'Personal', color: 'bg-green-500', members: ['user-001'] },
-                    { id: 'list-3', name: 'Shopping', color: 'bg-yellow-500', members: ['user-001', 'user-003'] },
-                ];
-                
-                const mockColumns: Column[] = [
-                    { id: 'col-list-1-1', name: 'To Do', listId: 'list-1' },
-                    { id: 'col-list-1-2', name: 'In Progress', listId: 'list-1' },
-                    { id: 'col-list-1-3', name: 'Done', listId: 'list-1' },
-                    { id: 'col-list-2-1', name: 'To Buy', listId: 'list-3' },
-                    { id: 'col-list-2-2', name: 'Purchased', listId: 'list-3' },
-                ];
-
-                const today = new Date();
-                const yesterday = new Date(); yesterday.setDate(today.getDate() - 1);
-                const tomorrow = new Date(); tomorrow.setDate(today.getDate() + 1);
-                const nextWeek = new Date(); nextWeek.setDate(today.getDate() + 7);
-
-                const mockTasks: Task[] = [
-                    { id: 'task-1', title: 'Finalize quarterly report', description: 'Compile all data and finalize the Q3 report for the review meeting.', completed: false, dueDate: tomorrow.toISOString(), priority: Priority.High, listId: 'list-1', columnId: 'col-list-1-2', tags: ['reporting', 'urgent'], subtasks: [ {id: 's-1', title: 'Gather sales data', completed: true}, {id: 's-2', title: 'Get marketing feedback', completed: false}], createdAt: new Date().toISOString(), totalFocusTime: 3600, assigneeId: 'user-002', comments: [{id: 'c-1', userId: 'user-002', content: "I'll get the marketing feedback by EOD.", createdAt: new Date().toISOString()}] },
-                    { id: 'task-2', title: 'Call the vet for appointment', description: '', completed: false, dueDate: today.toISOString(), priority: Priority.Medium, listId: 'list-2', tags: [], subtasks: [], createdAt: new Date().toISOString(), totalFocusTime: 0 },
-                    { id: 'task-3', title: 'Buy groceries', description: 'Milk, bread, eggs, and cheese.', completed: true, completedAt: yesterday.toISOString(), dueDate: yesterday.toISOString(), priority: Priority.Low, listId: 'list-3', columnId: 'col-list-2-2', tags: [], subtasks: [], createdAt: new Date().toISOString(), totalFocusTime: 0, assigneeId: 'user-003' },
-                    { id: 'task-4', title: 'Daily Standup Meeting', description: 'Quick sync with the team.', completed: false, dueDate: today.toISOString(), priority: Priority.Medium, listId: 'list-1', columnId: 'col-list-1-1', tags: [], subtasks: [], createdAt: new Date().toISOString(), totalFocusTime: 0, recurrence: { rule: 'daily' } },
-                    { id: 'task-5', title: 'Pay electricity bill', description: 'Due by the end of the week', completed: false, dueDate: nextWeek.toISOString(), priority: Priority.High, listId: 'inbox', tags: ['bills'], subtasks: [], createdAt: new Date().toISOString(), totalFocusTime: 0 },
-                    { id: 'task-6', title: 'Research new project ideas', description: '', completed: false, priority: Priority.Low, listId: 'list-1', columnId: 'col-list-1-1', tags: ['research'], subtasks: [], createdAt: new Date().toISOString(), totalFocusTime: 7200, assigneeId: 'user-001' },
-                    { id: 'task-7', title: 'Schedule dentist appointment', description: '', completed: true, completedAt: today.toISOString(), priority: Priority.None, listId: 'list-2', tags: [], subtasks: [], createdAt: new Date().toISOString(), totalFocusTime: 0 },
-                    { id: 'task-8', title: 'Renew gym membership', description: 'Membership expires next month.', completed: false, dueDate: nextWeek.toISOString(), priority: Priority.Medium, listId: 'list-2', tags: [], subtasks: [], createdAt: new Date().toISOString(), totalFocusTime: 0 },
-                    { id: 'task-9', title: 'Submit TPS reports', description: 'Remember the new cover sheet.', completed: false, dueDate: yesterday.toISOString(), priority: Priority.High, listId: 'list-1', columnId: 'col-list-1-3', tags: ['reporting'], subtasks: [], createdAt: new Date().toISOString(), totalFocusTime: 0, assigneeId: 'user-002' },
-                ];
-                
-                const allMockTags = new Set<string>();
-                mockTasks.forEach(task => task.tags.forEach(tag => allMockTags.add(tag)));
-
-                const dayBeforeYesterday = new Date(); dayBeforeYesterday.setDate(today.getDate() - 2);
-                const mockHabits: Habit[] = [
-                    { id: 'habit-1', name: 'Read for 15 minutes', completions: [toYYYYMMDD(yesterday), toYYYYMMDD(dayBeforeYesterday)], createdAt: new Date().toISOString() },
-                    { id: 'habit-2', name: 'Drink 8 glasses of water', completions: [toYYYYMMDD(yesterday)], createdAt: new Date().toISOString() }
-                ];
-
-                const nextYear = new Date(); nextYear.setFullYear(today.getFullYear()); nextYear.setMonth(11); nextYear.setDate(31);
-                const mockCountdowns: CountdownEvent[] = [
-                    { id: 'cd-1', name: 'New Year\'s Eve', targetDate: nextYear.toISOString() }
-                ];
-
                 const mockDataState: AppState = {
                     ...initialAppState,
-                    tasks: mockTasks,
-                    tags: Array.from(allMockTags),
-                    lists: mockLists,
-                    columns: mockColumns,
-                    habits: mockHabits,
-                    countdownEvents: mockCountdowns,
+                    tasks: INITIAL_TASKS,
+                    tags: INITIAL_TAGS,
+                    lists: INITIAL_LISTS,
+                    columns: INITIAL_COLUMNS,
+                    habits: INITIAL_HABITS,
+                    countdownEvents: INITIAL_COUNTDOWNS,
                     view: 'dashboard',
                 };
-                
+
                 dispatch({ type: 'LOAD_STATE', payload: mockDataState });
             }
         } catch (error) {
             console.error("Could not load state from localStorage", error);
-            dispatch({ type: 'LOAD_STATE', payload: { ...initialAppState, tasks: INITIAL_TASKS, lists: INITIAL_LISTS, view: 'dashboard' } });
+            dispatch({
+                type: 'LOAD_STATE',
+                payload: {
+                    ...initialAppState,
+                    tasks: INITIAL_TASKS,
+                    lists: INITIAL_LISTS,
+                    columns: INITIAL_COLUMNS,
+                    tags: INITIAL_TAGS,
+                    habits: INITIAL_HABITS,
+                    countdownEvents: INITIAL_COUNTDOWNS,
+                    view: 'dashboard',
+                },
+            });
         }
     }, []);
 

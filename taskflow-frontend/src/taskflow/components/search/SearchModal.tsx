@@ -46,7 +46,10 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose }) => {
     };
 
     return (
-        <div className="fixed inset-0 bg-background/90 z-40 flex justify-center p-4 sm:p-6 md:p-12 animate-fade-in" onClick={onClose}>
+        <div
+            className="fixed inset-0 bg-black/60 supports-[backdrop-filter]:bg-black/40 backdrop-blur-sm z-40 flex justify-center p-4 sm:p-6 md:p-12 animate-fade-in"
+            onClick={onClose}
+        >
             <div className="bg-card rounded-lg shadow-xl w-full max-w-2xl flex flex-col h-full max-h-[80vh]" onClick={e => e.stopPropagation()}>
                 <header className="p-4 flex items-center border-b border-border">
                     <SearchIcon className="h-5 w-5 text-muted-foreground mr-3" />

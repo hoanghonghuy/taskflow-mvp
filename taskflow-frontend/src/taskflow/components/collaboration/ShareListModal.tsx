@@ -102,7 +102,7 @@ const ShareListModal: React.FC<ShareListModalProps> = ({ list, onClose }) => {
                     </div>
                 </div>
 
-                <footer className="p-4 bg-secondary/50 rounded-b-lg flex justify-end">
+                <footer className="p-4 bg-secondary rounded-b-lg flex justify-end">
                     <button 
                         onClick={handleSave} 
                         className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-semibold hover:bg-primary/90"

@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import Sidebar from './components/layout/Sidebar';
 import MainContent from './components/layout/MainContent';
 import TaskDetail from './components/task/TaskDetail';
@@ -16,7 +17,6 @@ import CountdownView from './components/countdown/CountdownView';
 import SettingsView from './components/settings/SettingsView';
 import { useSettings } from './hooks/useSettings';
 import DailyBriefingModal from './components/briefing/DailyBriefingModal';
-import { ToastContainer } from './components/ui/Toast';
 import ConfirmationModal from './components/ui/ConfirmationModal';
 import DashboardView from './components/dashboard/DashboardView';
 import { useGemini } from './hooks/useGemini';
@@ -31,10 +31,32 @@ import RegisterView from './components/auth/RegisterView';
 import ProfileView from './components/profile/ProfileView';
 import { MenuIcon } from './constants';
 import BottomNavBar from './components/layout/BottomNavBar';
+import { ViewType } from './types';
+
+const VIEW_TO_PATH: Record<ViewType, string> = {
+    dashboard: '/dashboard',
+    list: '/tasks',
+    board: '/board',
+    calendar: '/calendar',
+    matrix: '/matrix',
+    habit: '/habits',
+    pomodoro: '/pomodoro',
+    countdown: '/countdown',
+    settings: '/settings',
+    achievements: '/achievements',
+    profile: '/profile',
+};
+
+const PATH_TO_VIEW: Record<string, ViewType> = Object.entries(VIEW_TO_PATH).reduce((acc, [view, path]) => {
+    acc[path] = view as ViewType;
+    return acc;
+}, {} as Record<string, ViewType>);
+
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 
 const AppContent: React.FC = () => {
-    const { state } = useTaskManager();
+    const { state, dispatch } = useTaskManager();
     const { theme } = useSettings();
     const { isAvailable: isGeminiAvailable } = useGemini();
     const [isChatbotOpen, setChatbotOpen] = useState(false);
@@ -43,6 +65,10 @@ const AppContent: React.FC = () => {
     const [isBriefingOpen, setBriefingOpen] = useState(false);
     const [shareListModal, setShareListModal] = useState<{ isOpen: boolean; listId: string | null }>({ isOpen: false, listId: null });
     const [taskForm, setTaskForm] = useState<{ isOpen: boolean; defaultValues?: { listId?: string; columnId?: string; } }>({ isOpen: false });
+    const router = useRouter();
+    const pathname = usePathname();
+    const normalizedPath = pathname && pathname.endsWith('/') && pathname !== '/' ? pathname.slice(0, -1) : pathname || '/dashboard';
+    const targetView = PATH_TO_VIEW[normalizedPath] ?? 'dashboard';
 
     const handleOpenTaskForm = (defaultValues?: { listId?: string; columnId?: string; }) => {
         setTaskForm({ isOpen: true, defaultValues });
@@ -52,6 +78,19 @@ const AppContent: React.FC = () => {
         setTaskForm({ isOpen: false });
     };
     
+    useIsomorphicLayoutEffect(() => {
+        if (targetView !== state.view) {
+            dispatch({ type: 'SET_VIEW', payload: targetView });
+        }
+    }, [targetView, state.view, dispatch]);
+
+    useEffect(() => {
+        const desiredPath = VIEW_TO_PATH[state.view] ?? '/dashboard';
+        if (normalizedPath !== desiredPath) {
+            router.push(desiredPath);
+        }
+    }, [state.view, normalizedPath, router]);
+
     useEffect(() => {
         if (typeof window !== 'undefined') {
             setSidebarOpen(window.innerWidth > 768);
@@ -132,7 +171,7 @@ const AppContent: React.FC = () => {
                 </header>
 
                 <div className="flex-1 flex overflow-hidden">
-                     <div className="flex-1 flex min-w-0">
+                     <div className="flex-1 flex min-w-0 pb-24 md:pb-0">
                         {renderView()}
                     </div>
                     <div className={`
@@ -151,12 +190,11 @@ const AppContent: React.FC = () => {
             {isBriefingOpen && <DailyBriefingModal onClose={() => setBriefingOpen(false)} />}
             {taskForm.isOpen && <TaskForm onClose={handleCloseTaskForm} defaultValues={taskForm.defaultValues} />}
             {shareListModal.isOpen && listToShare && (
-                <ShareListModal 
-                    list={listToShare} 
-                    onClose={() => setShareListModal({ isOpen: false, listId: null })} 
+                <ShareListModal
+                    list={listToShare}
+                    onClose={() => setShareListModal({ isOpen: false, listId: null })}
                 />
             )}
-            <ToastContainer />
             <ConfirmationModal />
         </div>
     );
