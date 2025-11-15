@@ -7,6 +7,7 @@ import { CalendarDayIcon, CalendarIcon, RepeatIcon, SparklesIcon } from '@/lib/c
 import ProductivityHeatmap from '@/components/dashboard/ProductivityHeatmap'
 import { useRouter } from 'next/navigation'
 import { useModal } from '@/components/providers/modal-provider'
+import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
 
 const useCountUp = (end: number, duration = 1200) => {
   const [count, setCount] = useState(0)
@@ -92,12 +93,14 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-y-auto">
-      <header className="p-6 border-b border-border shrink-0">
-        <h1 className="text-3xl font-bold">{getGreeting()}</h1>
-        <p className="text-muted-foreground">{t('dashboard.subtitle')}</p>
-      </header>
-      <main className="flex-1 p-4 md:p-6 space-y-8 overflow-y-auto pb-20 md:pb-6">
+    <AppPage>
+      <AppPageContainer>
+        <header className="py-6 border-b border-border shrink-0">
+          <h1 className="text-3xl font-bold">{getGreeting()}</h1>
+          <p className="text-muted-foreground">{t('dashboard.subtitle')}</p>
+        </header>
+      </AppPageContainer>
+      <AppPageMain className="py-6 space-y-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <button 
             onClick={() => {
@@ -167,7 +170,7 @@ export default function DashboardPage() {
             {t('dashboard.cta.button')}
           </button>
         </div>
-      </main>
-    </div>
+      </AppPageMain>
+    </AppPage>
   )
 }

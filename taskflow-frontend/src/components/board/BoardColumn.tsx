@@ -65,7 +65,7 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
   return (
     <div
       className={`
-        w-72 flex-shrink-0 rounded-lg flex flex-col h-full max-h-full
+        w-full md:w-72 md:shrink-0 rounded-lg flex flex-col min-h-[260px] md:min-h-[calc(100vh-220px)]
         border border-border
         transition-colors duration-200
         ${isDragOver ? 'bg-primary/10 border-primary' : 'bg-secondary'}
@@ -115,7 +115,7 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
           ×
         </button>
       </div>
-      <div className="flex-1 p-2 space-y-2 overflow-y-auto min-h-0">
+      <div className="p-2 space-y-2">
         {tasks.map(task => (
           <TaskItem
             key={task.id}

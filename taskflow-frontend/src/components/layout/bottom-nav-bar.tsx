@@ -20,6 +20,12 @@ const ALL_FEATURES: { view: View, icon: React.FC<{className?: string}>, label: T
   { view: 'countdown', icon: HourglassIcon, label: 'feature.countdown' },
 ]
 
+const getPathForView = (view: View) => {
+  if (view === 'dashboard') return '/dashboard'
+  if (view === 'habit') return '/habits'
+  return `/${view}`
+}
+
 const MoreMenu: React.FC<{ hiddenViews: View[], onClose: () => void }> = ({ hiddenViews, onClose }) => {
   const router = useRouter()
   const { t } = useI18n()
@@ -36,7 +42,7 @@ const MoreMenu: React.FC<{ hiddenViews: View[], onClose: () => void }> = ({ hidd
   }, [onClose])
 
   const handleSelect = (view: View) => {
-    router.push(`/${view === 'dashboard' ? 'dashboard' : view}`)
+    router.push(getPathForView(view))
     onClose()
   }
 
@@ -79,6 +85,7 @@ export default function BottomNavBar() {
   
   const getCurrentView = () => {
     if (pathname === '/dashboard' || pathname === '/') return 'dashboard'
+    if (pathname === '/habits') return 'habit'
     return pathname.slice(1) as View
   }
 
@@ -91,7 +98,7 @@ export default function BottomNavBar() {
     const Icon = feature.icon
     return (
       <button
-        onClick={() => router.push(`/${feature.view === 'dashboard' ? 'dashboard' : feature.view}`)}
+        onClick={() => router.push(getPathForView(feature.view))}
         className={`flex flex-col items-center justify-center gap-1 flex-1 transition-colors p-1 ${
           isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
         }`}

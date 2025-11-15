@@ -7,6 +7,7 @@ import { useTaskManager } from '@/lib/hooks/use-task-manager'
 import { GripVerticalIcon, HomeIcon, ListBulletIcon, CalendarDaysIcon, GridIcon, RepeatIcon, StopwatchIcon, HourglassIcon, ViewColumnsIcon, CheckIcon } from '@/lib/constants'
 import { THEME_PRESETS } from '@/lib/theme-presets'
 import type { ThemeOption, View } from '@/types'
+import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
 
 const ALL_FEATURES: { view: View, icon: React.FC<{className?: string}>, label: string }[] = [
   { view: 'dashboard', icon: HomeIcon, label: 'feature.dashboard' },
@@ -131,12 +132,14 @@ const SettingsView: React.FC = () => {
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
-      <header className="p-6 border-b border-border flex-shrink-0">
-        <h1 className="text-2xl font-bold">{t('settings.title')}</h1>
-        <p className="text-muted-foreground">{t('settings.subtitle')}</p>
-      </header>
-      <main className="flex-1 p-4 md:p-6 overflow-y-auto space-y-8 pb-20 md:pb-6">
+    <AppPage>
+      <AppPageContainer>
+        <header className="py-6 border-b border-border flex-shrink-0">
+          <h1 className="text-2xl font-bold">{t('settings.title')}</h1>
+          <p className="text-muted-foreground">{t('settings.subtitle')}</p>
+        </header>
+      </AppPageContainer>
+      <AppPageMain className="py-4 md:py-6 space-y-8">
         <section>
           <h2 className="text-lg font-semibold mb-4">{t('settings.languageLabel')}</h2>
           <div className="bg-card border border-border rounded-lg p-4 max-w-md">
@@ -307,8 +310,8 @@ const SettingsView: React.FC = () => {
           </div>
         </section>
 
-      </main>
-    </div>
+      </AppPageMain>
+    </AppPage>
   )
 }
 

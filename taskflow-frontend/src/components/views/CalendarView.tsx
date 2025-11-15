@@ -7,6 +7,7 @@ import { isSameDay } from '@/lib/utils/date-helpers'
 import { CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react'
 import { PRIORITY_MAP } from '@/lib/constants'
 import type { Task } from '@/types'
+import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
 
 type ViewMode = 'month' | 'agenda'
 
@@ -15,11 +16,13 @@ const DAY_LABELS = Array.from({ length: 7 }).map((_, index) =>
 )
 
 const CalendarView: React.FC = () => {
-  const { state } = useTaskManager()
+  const { state, dispatch } = useTaskManager()
   const { t } = useI18n()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [viewMode, setViewMode] = useState<ViewMode>('month')
+  const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null)
+  const [dragOverDateKey, setDragOverDateKey] = useState<string | null>(null)
 
   const year = currentDate.getFullYear()
   const month = currentDate.getMonth()
@@ -53,7 +56,7 @@ const CalendarView: React.FC = () => {
     state.tasks.forEach(task => {
       if (task.dueDate) {
         const date = new Date(task.dueDate)
-        const key = date.toISOString().split('T')[0]
+        const key = date.toDateString()
         if (!map.has(key)) {
           map.set(key, [])
         }
@@ -84,7 +87,7 @@ const CalendarView: React.FC = () => {
 
   const getTasksForDate = useCallback(
     (date: Date) => {
-      const key = date.toISOString().split('T')[0]
+      const key = date.toDateString()
       return tasksByDate.get(key) || []
     },
     [tasksByDate]
@@ -104,14 +107,49 @@ const CalendarView: React.FC = () => {
     return agenda
   }, [getTasksForDate])
 
+  const moveTaskToDate = (taskId: string, targetDate: Date) => {
+    const task = state.tasks.find(t => t.id === taskId)
+    if (!task) return
+
+    const originalDate = task.dueDate ? new Date(task.dueDate) : new Date()
+    const newDueDate = new Date(targetDate)
+    // Preserve original time component
+    newDueDate.setHours(originalDate.getHours(), originalDate.getMinutes(), originalDate.getSeconds(), originalDate.getMilliseconds())
+
+    dispatch({
+      type: 'UPDATE_TASK',
+      payload: {
+        ...task,
+        dueDate: newDueDate.toISOString(),
+      },
+    })
+  }
+
+  const handleTaskDragStart = (e: React.DragEvent<HTMLDivElement>, taskId: string) => {
+    e.dataTransfer.setData('taskId', taskId)
+    setDraggedTaskId(taskId)
+  }
+
+  const handleTaskDragEnd = () => {
+    setDraggedTaskId(null)
+    setDragOverDateKey(null)
+  }
+
   const renderTaskPill = (task: Task) => {
     const priority = PRIORITY_MAP[task.priority || 'none']
     const bg = priority.checkboxBorderValue
 
+    const isDraggingThis = draggedTaskId === task.id
+
     return (
       <div
         key={task.id}
-        className="text-xs px-2 py-1 rounded-full text-background truncate"
+        draggable
+        onDragStart={(e) => handleTaskDragStart(e, task.id)}
+        onDragEnd={handleTaskDragEnd}
+        className={`text-xs px-2 py-1 rounded-full text-background truncate cursor-grab active:cursor-grabbing transition-opacity ${
+          isDraggingThis ? 'opacity-60' : ''
+        }`}
         style={{ backgroundColor: bg }}
         title={task.title}
       >
@@ -121,54 +159,59 @@ const CalendarView: React.FC = () => {
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-y-auto">
-      <header className="p-6 border-b border-border flex-shrink-0">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold">{t('nav.calendar')}</h1>
-            <p className="text-muted-foreground">{t('calendar.subtitle') || 'Calendar view of your tasks'}</p>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <button
-              onClick={handlePrevMonth}
-              className="p-2 rounded-lg hover:bg-secondary transition-colors"
-              aria-label="Previous month"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <button
-              onClick={handleToday}
-              className="px-4 py-2 bg-secondary rounded-lg hover:bg-muted transition-colors text-sm font-medium"
-            >
-              {t('calendar.today') || 'Today'}
-            </button>
-            <button
-              onClick={handleNextMonth}
-              className="p-2 rounded-lg hover:bg-secondary transition-colors"
-              aria-label="Next month"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
-            <div className="flex items-center rounded-lg border border-border bg-card">
-              {(['month', 'agenda'] as ViewMode[]).map(mode => (
-                <button
-                  key={mode}
-                  onClick={() => setViewMode(mode)}
-                  className={`px-3 py-1 text-sm font-medium rounded-lg transition-colors ${
-                    viewMode === mode ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground'
-                  }`}
-                >
-                  {mode === 'month' ? t('calendar.view.month') || 'Month' : t('calendar.view.agenda') || 'Agenda'}
-                </button>
-              ))}
+    <AppPage>
+      <AppPageContainer>
+        <header className="py-4 md:py-6 border-b border-border shrink-0">
+          <div className="flex flex-col gap-2 md:gap-4 md:flex-row md:items-center md:justify-between mb-3 md:mb-6">
+            <div>
+              <h1 className="text-xl md:text-3xl font-bold">{t('nav.calendar')}</h1>
+              <p className="text-sm text-muted-foreground hidden md:block">{t('calendar.subtitle') || 'Calendar view of your tasks'}</p>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap justify-end md:justify-start">
+              <span className="text-sm font-medium text-muted-foreground md:hidden">
+                {currentDate.toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
+              </span>
+              <button
+                onClick={handlePrevMonth}
+                className="p-1.5 md:p-2 rounded-lg hover:bg-secondary transition-colors"
+                aria-label="Previous month"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button
+                onClick={handleToday}
+                className="px-3 py-1.5 md:px-4 md:py-2 bg-secondary rounded-lg hover:bg-muted transition-colors text-sm font-medium"
+              >
+                {t('calendar.today') || 'Today'}
+              </button>
+              <button
+                onClick={handleNextMonth}
+                className="p-1.5 md:p-2 rounded-lg hover:bg-secondary transition-colors"
+                aria-label="Next month"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+              <div className="flex items-center rounded-lg border border-border bg-card">
+                {(['month', 'agenda'] as ViewMode[]).map(mode => (
+                  <button
+                    key={mode}
+                    onClick={() => setViewMode(mode)}
+                    className={`px-3 py-1 text-sm font-medium rounded-lg transition-colors ${
+                      viewMode === mode ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground'
+                    }`}
+                  >
+                    {mode === 'month' ? t('calendar.view.month') || 'Month' : t('calendar.view.agenda') || 'Agenda'}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-        <h2 className="text-2xl font-semibold">
-          {currentDate.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
-        </h2>
-      </header>
-      <main className="flex-1 p-4 md:p-6 overflow-y-auto pb-20 md:pb-6 space-y-6">
+          <h2 className="hidden md:block text-2xl font-semibold">
+            {currentDate.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
+          </h2>
+        </header>
+      </AppPageContainer>
+      <AppPageMain className="py-4 md:py-6 space-y-4 md:space-y-6">
         {viewMode === 'month' ? (
           <>
             <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
@@ -185,15 +228,37 @@ const CalendarView: React.FC = () => {
                   const isTodayDate = isToday(date)
                   const isCurrentMonthDate = isCurrentMonth(date)
                   const isSelected = isSameDay(date, selectedDate)
+                  const dateKey = date.toDateString()
+                  const isDragOverDay = dragOverDateKey === dateKey
 
                   return (
                     <button
                       key={index}
                       onClick={() => setSelectedDate(date)}
+                      onDragOver={(e) => {
+                        e.preventDefault()
+                        setDragOverDateKey(dateKey)
+                      }}
+                      onDragLeave={(e) => {
+                        e.preventDefault()
+                        if (dragOverDateKey === dateKey) {
+                          setDragOverDateKey(null)
+                        }
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault()
+                        const taskId = e.dataTransfer.getData('taskId')
+                        if (taskId) {
+                          moveTaskToDate(taskId, date)
+                        }
+                        setDraggedTaskId(null)
+                        setDragOverDateKey(null)
+                      }}
                       className={`min-h-[130px] border-r border-b border-border p-2 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring
                         ${isCurrentMonthDate ? 'bg-card' : 'bg-muted/30'}
                         ${isTodayDate ? 'bg-primary/10 border-primary' : ''}
                         ${isSelected ? 'ring-2 ring-primary/70 z-10 relative' : ''}
+                        ${isDragOverDay ? 'outline-2 outline-primary/60 bg-primary/5 relative z-10' : ''}
                       `}
                     >
                       <div
@@ -313,8 +378,8 @@ const CalendarView: React.FC = () => {
             </div>
           </div>
         )}
-      </main>
-    </div>
+      </AppPageMain>
+    </AppPage>
   )
 }
 

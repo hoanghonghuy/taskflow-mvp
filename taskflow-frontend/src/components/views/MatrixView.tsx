@@ -5,6 +5,7 @@ import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import TaskItem from '@/components/task/TaskItem'
 import type { Task, Priority } from '@/types'
+import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
 
 interface QuadrantProps {
   title: string
@@ -107,41 +108,32 @@ const MatrixView: React.FC = () => {
   }, [tasks])
 
   return (
-    <div className="flex-1 flex flex-col overflow-y-auto">
-      <header className="p-6 border-b border-border flex-shrink-0">
-        <h1 className="text-3xl font-bold">{t('matrix.title') || 'Eisenhower Matrix'}</h1>
-        <p className="text-muted-foreground">{t('matrix.subtitle') || 'Prioritize your tasks'}</p>
-      </header>
-      <main className="flex-1 overflow-y-auto pb-20 md:pb-6">
-        <div className="relative h-full px-4 md:px-6 pt-12 pb-10">
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 text-xs uppercase tracking-wide text-muted-foreground">
-            {t('matrix.axis.urgent') || 'Urgent'}
-          </div>
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs uppercase tracking-wide text-muted-foreground">
-            {t('matrix.axis.notUrgent') || 'Not Urgent'}
-          </div>
-          <div className="absolute top-1/2 left-2 -translate-y-1/2 -rotate-90 origin-left text-xs uppercase tracking-wide text-muted-foreground">
-            {t('matrix.axis.important') || 'Important'}
-          </div>
-          <div className="absolute top-1/2 right-2 -translate-y-1/2 rotate-90 origin-right text-xs uppercase tracking-wide text-muted-foreground">
-            {t('matrix.axis.notImportant') || 'Not Important'}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 md:grid-rows-2 gap-4 h-full">
-            {QUADRANT_CONFIG.map(config => (
-              <Quadrant
-                key={config.id}
-                title={t(config.titleKey)}
-                subtitle={t(config.subtitleKey)}
-                tasks={tasksByQuadrant[config.id] || []}
-                borderClass={config.border}
-                backgroundClass={config.background}
-              />
-            ))}
+    <AppPage>
+      <AppPageContainer>
+        <header className="py-6 border-b border-border flex-shrink-0">
+          <h1 className="text-2xl md:text-3xl font-bold">{t('matrix.title') || 'Eisenhower Matrix'}</h1>
+          <p className="text-muted-foreground">{t('matrix.subtitle') || 'Prioritize your tasks'}</p>
+        </header>
+      </AppPageContainer>
+      <AppPageMain className="h-full py-4 md:py-6 md:max-w-none">
+        <div className="h-full flex items-stretch">
+          <div className="w-full h-full">
+            <div className="grid grid-cols-1 md:grid-cols-2 md:grid-rows-2 gap-4 h-full">
+              {QUADRANT_CONFIG.map(config => (
+                <Quadrant
+                  key={config.id}
+                  title={t(config.titleKey)}
+                  subtitle={t(config.subtitleKey)}
+                  tasks={tasksByQuadrant[config.id] || []}
+                  borderClass={config.border}
+                  backgroundClass={config.background}
+                />
+              ))}
+            </div>
           </div>
         </div>
-      </main>
-    </div>
+      </AppPageMain>
+    </AppPage>
   )
 }
 

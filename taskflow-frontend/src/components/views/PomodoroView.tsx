@@ -6,6 +6,7 @@ import { usePomodoroActions } from '@/components/providers/task-manager-provider
 import { useI18n } from '@/lib/hooks/use-i18n'
 import { PlusIcon, CheckCircleIcon } from '@/lib/constants'
 import { toYYYYMMDD } from '@/lib/utils/date-helpers'
+import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
 
 const PomodoroView: React.FC = () => {
   const { state, dispatch } = useTaskManager()
@@ -68,12 +69,14 @@ const PomodoroView: React.FC = () => {
   }, [state.tasks])
 
   return (
-    <div className="flex-1 flex flex-col overflow-y-auto">
-      <header className="p-6 border-b border-border flex-shrink-0">
-        <h1 className="text-3xl font-bold">{t('nav.pomodoro')}</h1>
-        <p className="text-muted-foreground">Focus timer</p>
-      </header>
-      <main className="flex-1 p-4 md:p-8 overflow-y-auto pb-20 md:pb-6">
+    <AppPage>
+      <AppPageContainer>
+        <header className="py-6 border-b border-border flex-shrink-0">
+          <h1 className="text-3xl font-bold">{t('nav.pomodoro')}</h1>
+          <p className="text-muted-foreground">Focus timer</p>
+        </header>
+      </AppPageContainer>
+      <AppPageMain className="py-4 md:py-8">
         <div className="flex flex-col md:flex-row h-full gap-8">
           <div className="flex-1 flex flex-col items-center justify-center">
             <div className="text-center mb-6">
@@ -203,8 +206,8 @@ const PomodoroView: React.FC = () => {
             </div>
           </div>
         )}
-      </main>
-    </div>
+      </AppPageMain>
+    </AppPage>
   )
 }
 

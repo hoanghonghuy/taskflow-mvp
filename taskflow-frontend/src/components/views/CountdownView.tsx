@@ -6,6 +6,7 @@ import { useI18n } from '@/lib/hooks/use-i18n'
 import { PlusIcon, TrashIcon, CalendarDaysIcon } from '@/lib/constants'
 import type { CountdownEvent } from '@/types'
 import { DateTimePicker } from '@/components/ui/date-time-picker'
+import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
 
 const CountdownView: React.FC = () => {
   const { state, dispatch } = useTaskManager()
@@ -118,62 +119,64 @@ const CountdownView: React.FC = () => {
   }, [state.countdownEvents, tick])
 
   return (
-    <div className="flex-1 flex flex-col overflow-y-auto">
-      <header className="p-6 border-b border-border flex-shrink-0">
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div>
-              <h1 className="text-3xl font-bold">{t('nav.countdown')}</h1>
-              <p className="text-muted-foreground">{t('countdown.subtitle') || 'Countdown to important events'}</p>
+    <AppPage>
+      <AppPageContainer>
+        <header className="py-6 border-b border-border flex-shrink-0">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div>
+                <h1 className="text-3xl font-bold">{t('nav.countdown')}</h1>
+                <p className="text-muted-foreground">{t('countdown.subtitle') || 'Countdown to important events'}</p>
+              </div>
+              {!isAdding && (
+                <button
+                  onClick={() => setIsAdding(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                >
+                  <PlusIcon className="h-5 w-5" />
+                  <span>{t('countdown.add')}</span>
+                </button>
+              )}
             </div>
-            {!isAdding && (
-              <button
-                onClick={() => setIsAdding(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-              >
-                <PlusIcon className="h-5 w-5" />
-                <span>{t('countdown.add')}</span>
-              </button>
+            {isAdding && (
+              <div className="flex flex-col md:flex-row gap-3">
+                <input
+                  type="text"
+                  value={newCountdownName}
+                  onChange={(e) => setNewCountdownName(e.target.value)}
+                  placeholder={t('countdown.namePlaceholder')}
+                  className="flex-1 px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <DateTimePicker
+                  value={newCountdownDate}
+                  onChange={setNewCountdownDate}
+                  min={new Date()}
+                  placeholder={t('countdown.selectDate') || 'Select date & time'}
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleAddCountdown}
+                    className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                  >
+                    {t('countdown.add')}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsAdding(false)
+                      setNewCountdownName('')
+                      setNewCountdownDate('')
+                    }}
+                    className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-muted transition-colors"
+                  >
+                    {t('countdown.cancel')}
+                  </button>
+                </div>
+              </div>
             )}
           </div>
-          {isAdding && (
-            <div className="flex flex-col md:flex-row gap-3">
-              <input
-                type="text"
-                value={newCountdownName}
-                onChange={(e) => setNewCountdownName(e.target.value)}
-                placeholder={t('countdown.namePlaceholder')}
-                className="flex-1 px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-              <DateTimePicker
-                value={newCountdownDate}
-                onChange={setNewCountdownDate}
-                min={new Date()}
-                placeholder={t('countdown.selectDate') || 'Select date & time'}
-              />
-              <div className="flex gap-2">
-                <button
-                  onClick={handleAddCountdown}
-                  className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-                >
-                  {t('countdown.add')}
-                </button>
-                <button
-                  onClick={() => {
-                    setIsAdding(false)
-                    setNewCountdownName('')
-                    setNewCountdownDate('')
-                  }}
-                  className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-muted transition-colors"
-                >
-                  {t('countdown.cancel')}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </header>
-      <main className="flex-1 p-4 md:p-6 overflow-y-auto pb-20 md:pb-6">
+        </header>
+      </AppPageContainer>
+      <AppPageMain className="py-4 md:py-6">
         {state.countdownEvents.length === 0 ? (
           <div className="text-center text-muted-foreground py-12">
             <p className="text-lg">{t('countdown.noCountdowns')}</p>
@@ -304,8 +307,8 @@ const CountdownView: React.FC = () => {
             )}
           </div>
         )}
-      </main>
-    </div>
+      </AppPageMain>
+    </AppPage>
   )
 }
 

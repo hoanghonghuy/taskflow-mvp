@@ -6,6 +6,7 @@ import { useI18n } from '@/lib/hooks/use-i18n'
 import { useHabitActions } from '@/components/providers/task-manager-provider'
 import { PlusIcon, TrashIcon } from '@/lib/constants'
 import { toYYYYMMDD } from '@/lib/utils/date-helpers'
+import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
 
 const calculateStreak = (completions: string[]): number => {
   if (completions.length === 0) return 0
@@ -109,60 +110,62 @@ const HabitsView: React.FC = () => {
   ]
 
   return (
-    <div className="flex-1 flex flex-col overflow-y-auto">
-      <header className="p-6 border-b border-border flex-shrink-0">
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">{t('nav.habits')}</h1>
-            <p className="text-muted-foreground">{t('habits.subtitle') || 'Track your daily habits'}</p>
+    <AppPage>
+      <AppPageContainer>
+        <header className="py-6 border-b border-border flex-shrink-0">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div>
+              <h1 className="text-3xl font-bold">{t('nav.habits')}</h1>
+              <p className="text-muted-foreground">{t('habits.subtitle') || 'Track your daily habits'}</p>
+            </div>
+            {!isAdding && (
+              <button
+                onClick={() => setIsAdding(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+              >
+                <PlusIcon className="h-5 w-5" />
+                <span>{t('habits.add')}</span>
+              </button>
+            )}
           </div>
-          {!isAdding && (
-            <button
-              onClick={() => setIsAdding(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-            >
-              <PlusIcon className="h-5 w-5" />
-              <span>{t('habits.add')}</span>
-            </button>
-          )}
-        </div>
-        {isAdding && (
-          <div className="mt-4 flex gap-2">
-            <input
-              type="text"
-              value={newHabitName}
-              onChange={(e) => setNewHabitName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleAddHabit()
-                } else if (e.key === 'Escape') {
+          {isAdding && (
+            <div className="mt-4 flex gap-2">
+              <input
+                type="text"
+                value={newHabitName}
+                onChange={(e) => setNewHabitName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleAddHabit()
+                  } else if (e.key === 'Escape') {
+                    setIsAdding(false)
+                    setNewHabitName('')
+                  }
+                }}
+                placeholder={t('habits.namePlaceholder')}
+                className="flex-1 px-4 py-2 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                autoFocus
+              />
+              <button
+                onClick={handleAddHabit}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+              >
+                {t('habits.add')}
+              </button>
+              <button
+                onClick={() => {
                   setIsAdding(false)
                   setNewHabitName('')
-                }
-              }}
-              placeholder={t('habits.namePlaceholder')}
-              className="flex-1 px-4 py-2 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              autoFocus
-            />
-            <button
-              onClick={handleAddHabit}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-            >
-              {t('habits.add')}
-            </button>
-            <button
-              onClick={() => {
-                setIsAdding(false)
-                setNewHabitName('')
-              }}
-              className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-muted transition-colors"
-            >
-              {t('habits.cancel')}
-            </button>
-          </div>
-        )}
-      </header>
-      <main className="flex-1 p-4 md:p-6 overflow-y-auto pb-20 md:pb-6 space-y-6">
+                }}
+                className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-muted transition-colors"
+              >
+                {t('habits.cancel')}
+              </button>
+            </div>
+          )}
+        </header>
+      </AppPageContainer>
+      <AppPageMain className="py-4 md:py-6 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {summaryCards.map(card => (
             <div
@@ -269,8 +272,8 @@ const HabitsView: React.FC = () => {
             })}
           </div>
         )}
-      </main>
-    </div>
+      </AppPageMain>
+    </AppPage>
   )
 }
 

@@ -9,6 +9,7 @@ import TaskList from '@/components/task/TaskList'
 import TaskListHeader from '@/components/task/TaskListHeader'
 import { SPECIAL_LISTS_CONFIG, PlusIcon } from '@/lib/constants'
 import type { SortOrder } from '@/lib/utils/task-helpers'
+import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
 
 const ListView: React.FC = () => {
   const { state, dispatch, canUndo, canRedo } = useTaskManager()
@@ -72,23 +73,25 @@ const ListView: React.FC = () => {
   }
 
   return (
-    <main className="flex-1 flex flex-col">
-      <TaskListHeader
-        title={getActiveListName()}
-        listMembers={listMembers}
-        onSearch={openSearch}
-        onBriefing={openBriefing}
-        onSortToggle={handleSortToggle}
-        sortOrder={state.sortOrder}
-        canUndo={canUndo}
-        canRedo={canRedo}
-        onUndo={handleUndo}
-        onRedo={handleRedo}
-        onClearHistory={handleClearHistory}
-      />
-      <div className="flex-1 overflow-y-auto p-4 md:p-6 pb-20 md:pb-6">
+    <AppPage>
+      <AppPageContainer>
+        <TaskListHeader
+          title={getActiveListName()}
+          listMembers={listMembers}
+          onSearch={openSearch}
+          onBriefing={openBriefing}
+          onSortToggle={handleSortToggle}
+          sortOrder={state.sortOrder}
+          canUndo={canUndo}
+          canRedo={canRedo}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
+          onClearHistory={handleClearHistory}
+        />
+      </AppPageContainer>
+      <AppPageMain className="py-4 md:py-6">
         <TaskList onAddTask={openTaskForm} />
-      </div>
+      </AppPageMain>
 
       <button
         onClick={() => openTaskForm()}
@@ -97,7 +100,7 @@ const ListView: React.FC = () => {
       >
         <PlusIcon className="h-6 w-6" />
       </button>
-    </main>
+    </AppPage>
   )
 }
 

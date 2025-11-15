@@ -89,7 +89,7 @@ export default function AppLayout({
         </header>
 
         <div className="flex-1 flex overflow-hidden">
-          <div className="flex-1 flex min-w-0 overflow-y-auto">
+          <div className="flex-1 flex min-w-0 overflow-hidden">
             {children}
           </div>
           {/* TaskDetail panel */}

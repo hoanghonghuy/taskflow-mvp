@@ -7,6 +7,7 @@ import { useI18n } from '@/lib/hooks/use-i18n'
 import { Avatar } from '@/components/ui/avatar'
 import { CalendarIcon, CheckCircleIcon, ClockIcon, TrophyIcon } from 'lucide-react'
 import { toYYYYMMDD } from '@/lib/utils/date-helpers'
+import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
 
 const ProfileView: React.FC = () => {
   const { user } = useUser()
@@ -43,12 +44,14 @@ const ProfileView: React.FC = () => {
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-y-auto">
-      <header className="p-6 border-b border-border flex-shrink-0">
-        <h1 className="text-3xl font-bold">{t('nav.profile')}</h1>
-        <p className="text-muted-foreground">Your profile and statistics</p>
-      </header>
-      <main className="flex-1 p-4 md:p-6 overflow-y-auto pb-20 md:pb-6">
+    <AppPage>
+      <AppPageContainer>
+        <header className="py-6 border-b border-border flex-shrink-0">
+          <h1 className="text-3xl font-bold">{t('nav.profile')}</h1>
+          <p className="text-muted-foreground">Your profile and statistics</p>
+        </header>
+      </AppPageContainer>
+      <AppPageMain className="py-4 md:py-6">
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Profile Card */}
           <div className="bg-card border border-border rounded-lg p-6">
@@ -108,8 +111,8 @@ const ProfileView: React.FC = () => {
             </div>
           </div>
         </div>
-      </main>
-    </div>
+      </AppPageMain>
+    </AppPage>
   )
 }
 

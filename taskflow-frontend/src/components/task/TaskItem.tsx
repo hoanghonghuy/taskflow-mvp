@@ -167,7 +167,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
             </button>
           )}
         </div>
-        <div className="flex items-center gap-3 ml-auto text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 ml-auto text-sm text-muted-foreground">
           {!task.completed && (
             <button
               onClick={handleStartFocus}
@@ -177,12 +177,12 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
               <PlayCircleIcon className="h-6 w-6" />
             </button>
           )}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {progressIndicator()}
             {dueDateLabel()}
             {task.recurrence && <RepeatIcon className="h-4 w-4" title={t('taskItem.title.repeats', { rule: task.recurrence.type })} />}
             {task.reminderMinutes && <BellIcon className="h-4 w-4" title={t('taskItem.title.reminder', { minutes: task.reminderMinutes })} />}
-            {assignee && <Avatar user={assignee} className="w-6 h-6" />}
+            {assignee && <Avatar user={assignee} className="h-5 w-5 md:h-6 md:w-6 shrink-0" />}
           </div>
         </div>
       </div>
