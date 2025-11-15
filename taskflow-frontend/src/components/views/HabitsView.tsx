@@ -7,6 +7,41 @@ import { useHabitActions } from '@/components/providers/task-manager-provider'
 import { PlusIcon, TrashIcon } from '@/lib/constants'
 import { toYYYYMMDD } from '@/lib/utils/date-helpers'
 
+const calculateStreak = (completions: string[]): number => {
+  if (completions.length === 0) return 0
+
+  const sortedDates = completions
+    .map(date => new Date(date))
+    .sort((a, b) => b.getTime() - a.getTime())
+
+  let streak = 0
+  const today = new Date()
+  const todayStr = toYYYYMMDD(today)
+  const yesterday = new Date()
+  yesterday.setDate(yesterday.getDate() - 1)
+  const yesterdayStr = toYYYYMMDD(yesterday)
+
+  const latestStr = toYYYYMMDD(sortedDates[0])
+  if (latestStr !== todayStr && latestStr !== yesterdayStr) return 0
+
+  streak = 1
+  let currentDate = sortedDates[0]
+
+  for (let i = 1; i < sortedDates.length; i++) {
+    const expected = new Date(currentDate)
+    expected.setDate(expected.getDate() - 1)
+
+    if (toYYYYMMDD(sortedDates[i]) === toYYYYMMDD(expected)) {
+      streak++
+      currentDate = sortedDates[i]
+    } else {
+      break
+    }
+  }
+
+  return streak
+}
+
 const HabitsView: React.FC = () => {
   const { state } = useTaskManager()
   const { addHabit, deleteHabit, toggleHabitCompletion } = useHabitActions()
@@ -44,13 +79,42 @@ const HabitsView: React.FC = () => {
     return Math.round((completedInLast30 / 30) * 100)
   }
 
+  const longestStreak = useMemo(() => {
+    return state.habits.reduce((max, habit) => {
+      const streak = calculateStreak(habit.completions)
+      return Math.max(max, streak)
+    }, 0)
+  }, [state.habits])
+
+  const completedTodayCount = useMemo(() => {
+    return state.habits.filter(habit => habit.completions.includes(today)).length
+  }, [state.habits, today])
+
+  const summaryCards = [
+    {
+      label: t('habits.summary.total'),
+      value: state.habits.length,
+      accent: 'from-purple-500/20 to-purple-500/5 text-purple-500',
+    },
+    {
+      label: t('habits.summary.completedToday'),
+      value: completedTodayCount,
+      accent: 'from-emerald-500/20 to-emerald-500/5 text-emerald-500',
+    },
+    {
+      label: t('habits.summary.longestStreak'),
+      value: `${longestStreak} ${t('habits.summary.days')}`,
+      accent: 'from-amber-500/20 to-amber-500/5 text-amber-500',
+    },
+  ]
+
   return (
     <div className="flex-1 flex flex-col overflow-y-auto">
       <header className="p-6 border-b border-border flex-shrink-0">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <h1 className="text-3xl font-bold">{t('nav.habits')}</h1>
-            <p className="text-muted-foreground">Track your daily habits</p>
+            <p className="text-muted-foreground">{t('habits.subtitle') || 'Track your daily habits'}</p>
           </div>
           {!isAdding && (
             <button
@@ -98,7 +162,18 @@ const HabitsView: React.FC = () => {
           </div>
         )}
       </header>
-      <main className="flex-1 p-4 md:p-6 overflow-y-auto pb-20 md:pb-6">
+      <main className="flex-1 p-4 md:p-6 overflow-y-auto pb-20 md:pb-6 space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {summaryCards.map(card => (
+            <div
+              key={card.label}
+              className={`rounded-2xl border border-border bg-gradient-to-br ${card.accent} p-4 backdrop-blur-sm`}
+            >
+              <p className="text-sm text-muted-foreground">{card.label}</p>
+              <p className="text-2xl font-semibold">{card.value}</p>
+            </div>
+          ))}
+        </div>
         {state.habits.length === 0 ? (
           <div className="text-center text-muted-foreground py-12">
             <p className="text-lg">{t('habits.noHabits')}</p>
@@ -110,54 +185,84 @@ const HabitsView: React.FC = () => {
               const isCompletedToday = habit.completions.includes(today)
 
               return (
-                <div key={habit.id} className="bg-card border border-border rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex-1">
+                <div key={habit.id} className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+                    <div>
                       <h3 className="font-semibold text-lg">{habit.name}</h3>
                       <p className="text-sm text-muted-foreground">
                         {t('habits.completionRate', { rate: completionRate, days: 30 })}
                       </p>
                     </div>
-                    <button
-                      onClick={() => deleteHabit(habit.id)}
-                      className="p-2 text-muted-foreground hover:text-destructive transition-colors"
-                      aria-label={t('habits.aria.deleteHabit')}
-                    >
-                      <TrashIcon className="h-5 w-5" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleToggleCompletion(habit.id, today)}
+                        className={`
+                          px-4 py-2 rounded-lg font-medium transition-all border
+                          ${isCompletedToday
+                            ? 'bg-primary text-primary-foreground border-primary shadow'
+                            : 'bg-card text-muted-foreground border-border hover:border-primary/50'}
+                        `}
+                      >
+                        {isCompletedToday ? t('habits.completed') : t('habits.markComplete')}
+                      </button>
+                      <button
+                        onClick={() => deleteHabit(habit.id)}
+                        className="p-2 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                        aria-label={t('habits.aria.deleteHabit')}
+                      >
+                        <TrashIcon className="h-5 w-5" />
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 mb-4">
-                    <button
-                      onClick={() => handleToggleCompletion(habit.id, today)}
-                      className={`
-                        px-4 py-2 rounded-lg font-medium transition-colors
-                        ${isCompletedToday
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-secondary text-secondary-foreground hover:bg-muted'
-                        }
-                      `}
-                    >
-                      {isCompletedToday ? t('habits.completed') : t('habits.markComplete')}
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-[repeat(30,minmax(0,1fr))] gap-1">
-                    {last30Days.map(date => {
-                      const isCompleted = habit.completions.includes(date)
-                      const isTodayDate = date === today
-                      return (
-                        <div
-                          key={date}
-                          className={`
-                            aspect-square rounded
-                            ${isCompleted ? 'bg-primary' : 'bg-secondary'}
-                            ${isTodayDate ? 'ring-2 ring-primary ring-offset-1' : ''}
-                            cursor-pointer hover:opacity-80 transition-opacity
-                          `}
-                          onClick={() => handleToggleCompletion(habit.id, date)}
-                          title={new Date(date).toLocaleDateString()}
-                        />
-                      )
-                    })}
+
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground uppercase mb-2">{t('habits.weeklyOverview') || 'This week'}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {Array.from({ length: 7 }).map((_, idx) => {
+                          const date = new Date()
+                          date.setDate(date.getDate() - (6 - idx))
+                          const dateKey = toYYYYMMDD(date)
+                          const isCompleted = habit.completions.includes(dateKey)
+                          return (
+                            <button
+                              key={dateKey}
+                              onClick={() => toggleHabitCompletion(habit.id, dateKey)}
+                              className={`w-10 h-10 rounded-xl border flex flex-col items-center justify-center text-xs font-semibold transition
+                                ${isCompleted
+                                  ? 'border-emerald-500 bg-emerald-500/90 text-white shadow-sm'
+                                  : 'border-border bg-card text-muted-foreground hover:border-emerald-400 hover:text-foreground'}
+                              `}
+                            >
+                              <span>{date.toLocaleDateString(undefined, { weekday: 'short' }).slice(0, 2)}</span>
+                              <span>{date.getDate()}</span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground uppercase mb-2">{t('habits.last30Days') || 'Last 30 days'}</p>
+                      <div className="grid grid-cols-[repeat(30,minmax(0,1fr))] gap-1.5">
+                        {last30Days.map(date => {
+                          const isCompleted = habit.completions.includes(date)
+                          const isTodayDate = date === today
+                          return (
+                            <div
+                              key={date}
+                              className={`
+                                aspect-square rounded-md border transition-all cursor-pointer
+                                ${isCompleted ? 'bg-emerald-500 border-emerald-500 hover:bg-emerald-400' : 'bg-muted border-border hover:border-emerald-300'}
+                                ${isTodayDate ? 'ring-2 ring-primary ring-offset-1' : ''}
+                              `}
+                              onClick={() => handleToggleCompletion(habit.id, date)}
+                              title={new Date(date).toLocaleDateString()}
+                            />
+                          )
+                        })}
+                      </div>
+                    </div>
                   </div>
                 </div>
               )

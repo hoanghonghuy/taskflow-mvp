@@ -204,9 +204,18 @@
     "cancel": "Cancel",
     "namePlaceholder": "Habit name",
     "noHabits": "No habits yet. Add one to get started!",
-    "completed": "Completed",
-    "markComplete": "Mark Complete",
+    "completed": "Completed today",
+    "markComplete": "Mark complete",
     "completionRate": "{{rate}}% completion rate (last {{days}} days)",
+    "subtitle": "Build consistent routines with visual streak tracking.",
+    "summary": {
+      "total": "Tracked habits",
+      "completedToday": "Completed today",
+      "longestStreak": "Longest streak",
+      "days": "days"
+    },
+    "weeklyOverview": "This week",
+    "last30Days": "Last 30 days",
     "aria": {
       "deleteHabit": "Delete habit"
     }
@@ -257,6 +266,13 @@
     "minutesLeft": "minutes left",
     "eventPassed": "Event passed",
     "past": "Event has passed",
+    "subtitle": "Track launches, trips, and milestones effortlessly.",
+    "upcomingSection": "Upcoming events",
+    "completedSection": "Completed events",
+    "noUpcoming": "No upcoming countdowns.",
+    "events": "events",
+    "delete": "Delete",
+    "selectDate": "Select date & time",
     "noCountdowns": "No countdowns yet. Add one to get started!",
     "noEvents": "No countdown events",
     "createFirst": "Create a countdown to track important dates",

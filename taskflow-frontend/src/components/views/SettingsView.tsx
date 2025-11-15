@@ -98,21 +98,28 @@ const SettingsView: React.FC = () => {
         <section>
           <h2 className="text-lg font-semibold mb-4">{t('settings.appearance')}</h2>
           <div className="bg-card border border-border rounded-lg p-4 max-w-md">
-            <div className="flex items-center justify-between">
-              <label htmlFor="theme" className="font-medium">{t('settings.themeLabel')}</label>
-              <div className="flex items-center gap-2 bg-secondary p-1 rounded-md">
-                <button
-                  onClick={() => setTheme('light')}
-                  className={`flex items-center gap-2 px-3 py-1 text-sm font-semibold rounded ${theme === 'light' ? 'bg-background shadow-sm' : 'hover:bg-background/50'}`}
-                >
-                  <SunIcon className="h-4 w-4" /> {t('settings.theme.light') || t('settings.light')}
-                </button>
-                <button
-                  onClick={() => setTheme('dark')}
-                  className={`flex items-center gap-2 px-3 py-1 text-sm font-semibold rounded ${theme === 'dark' ? 'bg-background shadow-sm' : 'hover:bg-background/50'}`}
-                >
-                  <MoonIcon className="h-4 w-4" /> {t('settings.theme.dark') || t('settings.dark')}
-                </button>
+            <div className="flex flex-col gap-3">
+              <label className="font-medium">{t('settings.themeLabel')}</label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { id: 'light', label: t('settings.theme.light') || t('settings.light'), Icon: SunIcon },
+                  { id: 'dark', label: t('settings.theme.dark') || t('settings.dark'), Icon: MoonIcon },
+                ].map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => setTheme(option.id as 'light' | 'dark')}
+                    aria-pressed={theme === option.id}
+                    className={`
+                      flex items-center justify-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold transition-all
+                      ${theme === option.id
+                        ? 'border-primary bg-primary/10 text-primary shadow-sm'
+                        : 'border-border text-muted-foreground hover:border-primary/40 hover:text-foreground'}
+                    `}
+                  >
+                    <option.Icon className="h-4 w-4" />
+                    {option.label}
+                  </button>
+                ))}
               </div>
             </div>
           </div>

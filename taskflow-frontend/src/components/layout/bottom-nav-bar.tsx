@@ -41,17 +41,20 @@ const MoreMenu: React.FC<{ hiddenViews: View[], onClose: () => void }> = ({ hidd
   }
 
   return (
-    <div ref={menuRef} className="absolute bottom-full right-0 mb-2 w-48 bg-popover rounded-lg shadow-2xl border border-border animate-fade-in p-2">
-      <div className="space-y-1">
+    <div
+      ref={menuRef}
+      className="absolute bottom-full right-0 mb-2 w-48 rounded-xl border border-border/80 bg-card shadow-xl backdrop-blur-xl animate-fade-in"
+    >
+      <div className="p-2 space-y-1">
         {hiddenViews.map(view => {
           const feature = ALL_FEATURES.find(f => f.view === view)
           if (!feature) return null
           const Icon = feature.icon
           return (
-            <button 
-              key={view} 
+            <button
+              key={view}
               onClick={() => handleSelect(view)}
-              className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-md hover:bg-secondary"
+              className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg text-foreground hover:bg-muted"
             >
               <Icon className="h-5 w-5 text-muted-foreground" />
               <span>{t(feature.label)}</span>

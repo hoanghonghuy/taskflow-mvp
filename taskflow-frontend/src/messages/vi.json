@@ -204,9 +204,18 @@
     "cancel": "Hủy",
     "namePlaceholder": "Tên thói quen",
     "noHabits": "Chưa có thói quen nào. Thêm một cái để bắt đầu!",
-    "completed": "Đã hoàn thành",
+    "completed": "Đã hoàn thành hôm nay",
     "markComplete": "Đánh dấu hoàn thành",
-    "completionRate": "{{rate}}% tỷ lệ hoàn thành ({{days}} ngày qua)",
+    "completionRate": "{{rate}}% hoàn thành trong {{days}} ngày qua",
+    "subtitle": "Xây dựng thói quen tích cực với đồ thị streak trực quan.",
+    "summary": {
+      "total": "Thói quen đang theo dõi",
+      "completedToday": "Đã hoàn thành hôm nay",
+      "longestStreak": "Chuỗi dài nhất",
+      "days": "ngày"
+    },
+    "weeklyOverview": "Tuần này",
+    "last30Days": "30 ngày gần nhất",
     "aria": {
       "deleteHabit": "Xóa thói quen"
     }
@@ -246,6 +255,13 @@
     "minutesLeft": "phút còn lại",
     "eventPassed": "Sự kiện đã qua",
     "past": "Sự kiện đã qua",
+    "subtitle": "Theo dõi buổi ra mắt, chuyến đi và những cột mốc quan trọng.",
+    "upcomingSection": "Sự kiện sắp tới",
+    "completedSection": "Sự kiện đã qua",
+    "noUpcoming": "Chưa có đếm ngược sắp tới.",
+    "events": "sự kiện",
+    "delete": "Xóa",
+    "selectDate": "Chọn ngày giờ",
     "noCountdowns": "Chưa có đếm ngược nào. Thêm một cái để bắt đầu!",
     "noEvents": "Không có sự kiện đếm ngược",
     "createFirst": "Tạo đếm ngược để theo dõi các ngày quan trọng",
