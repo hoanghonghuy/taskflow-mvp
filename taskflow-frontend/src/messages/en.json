@@ -494,10 +494,24 @@
   },
   "calendar": {
     "today": "Today",
+    "subtitle": "Plan and review every task visually.",
     "month": "Month",
     "week": "Week",
     "allDay": "All-day",
-    "moreTasks": "+ {{count}} more"
+    "moreTasks": "+ {{count}} more",
+    "view": {
+      "month": "Month",
+      "agenda": "Agenda"
+    },
+    "selectedDayTasks": "Tasks for selected day",
+    "noTasks": "No tasks scheduled for this day.",
+    "legend": {
+      "title": "Priority legend"
+    },
+    "upcomingAgenda": "Upcoming agenda",
+    "upcomingSubtitle": "Next 10 days of scheduled work.",
+    "taskCountSingle": "task",
+    "taskCountPlural": "{{count}} tasks"
   },
   "taskForm": {
     "newTask": "New Task",

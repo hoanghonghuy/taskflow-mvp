@@ -476,10 +476,24 @@
   },
   "calendar": {
     "today": "Hôm nay",
+    "subtitle": "Lên kế hoạch và theo dõi công việc trực quan.",
     "month": "Tháng",
     "week": "Tuần",
     "allDay": "Cả ngày",
-    "moreTasks": "+ {{count}} nhiệm vụ nữa"
+    "moreTasks": "+ {{count}} nhiệm vụ nữa",
+    "view": {
+      "month": "Tháng",
+      "agenda": "Lịch trình"
+    },
+    "selectedDayTasks": "Các nhiệm vụ trong ngày đã chọn",
+    "noTasks": "Chưa có nhiệm vụ nào trong ngày này.",
+    "legend": {
+      "title": "Chú thích mức độ ưu tiên"
+    },
+    "upcomingAgenda": "Lịch trình sắp tới",
+    "upcomingSubtitle": "10 ngày làm việc tiếp theo.",
+    "taskCountSingle": "nhiệm vụ",
+    "taskCountPlural": "{{count}} nhiệm vụ"
   },
   "taskForm": {
     "newTask": "Nhiệm vụ mới",
