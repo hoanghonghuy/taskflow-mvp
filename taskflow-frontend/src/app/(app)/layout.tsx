@@ -9,6 +9,7 @@ import BottomNavBar from '@/components/layout/bottom-nav-bar'
 import { MenuIcon } from '@/lib/constants'
 import { useTaskManager } from '@/lib/hooks/use-task-manager'
 import { useSettings } from '@/components/providers/settings-provider'
+import TaskDetail from '@/components/task/TaskDetail'
 
 export default function AppLayout({
   children,
@@ -33,11 +34,7 @@ export default function AppLayout({
     }
   }, [isAuthenticated, router])
 
-  useEffect(() => {
-    const body = window.document.body
-    body.classList.remove('light', 'dark')
-    body.classList.add(settings.theme)
-  }, [settings.theme])
+  // Theme is handled by SettingsProvider
 
   if (!isAuthenticated) {
     return (
@@ -58,7 +55,7 @@ export default function AppLayout({
 
       <div className="flex-1 flex flex-col overflow-hidden relative">
         {/* Mobile Header */}
-        <header className="md:hidden flex-shrink-0 p-4 border-b border-border flex items-center justify-between z-10 bg-card/80 backdrop-blur-lg">
+        <header className="md:hidden flex-shrink-0 p-4 border-b border-border flex items-center justify-between z-10 bg-card shadow-sm">
           <button onClick={() => setSidebarOpen(true)} aria-label="Open sidebar">
             <MenuIcon className="h-6 w-6" />
           </button>
@@ -76,13 +73,13 @@ export default function AppLayout({
           <div className="flex-1 flex min-w-0 overflow-y-auto">
             {children}
           </div>
-          {/* TaskDetail panel - sẽ được thêm sau khi có TaskDetail component */}
-          {/* <div className={`
+          {/* TaskDetail panel */}
+          <div className={`
             fixed inset-0 z-20 md:relative md:z-auto md:inset-auto transition-transform duration-300 ease-in-out bg-card md:bg-transparent
-            ${state.selectedTaskId ? 'translate-x-0 md:animate-slide-in' : 'translate-x-full'}
+            ${state.selectedTaskId ? 'translate-x-0' : 'translate-x-full'}
           `}>
             {state.selectedTaskId && <TaskDetail taskId={state.selectedTaskId} />}
-          </div> */}
+          </div>
         </div>
       </div>
 

@@ -19,7 +19,9 @@ export default function FeatureBar({ onSidebarToggle }: FeatureBarProps) {
   const { t } = useI18n()
   const router = useRouter()
   const [isDropdownOpen, setDropdownOpen] = useState(false)
+  const [currentView, setCurrentView] = useState<string>('dashboard')
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const pathname = usePathname()
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -32,6 +34,15 @@ export default function FeatureBar({ onSidebarToggle }: FeatureBarProps) {
       document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [])
+
+  // Update currentView only on client side to avoid hydration mismatch
+  useEffect(() => {
+    if (pathname === '/dashboard' || pathname === '/') {
+      setCurrentView('dashboard')
+    } else {
+      setCurrentView(pathname.slice(1))
+    }
+  }, [pathname])
 
   const handleViewClick = (view: string) => {
     router.push(`/${view === 'dashboard' ? 'dashboard' : view}`)
@@ -55,14 +66,6 @@ export default function FeatureBar({ onSidebarToggle }: FeatureBarProps) {
       {children}
     </button>
   )
-
-  const pathname = usePathname()
-  const getCurrentView = () => {
-    if (pathname === '/dashboard' || pathname === '/') return 'dashboard'
-    return pathname.slice(1) as any
-  }
-
-  const currentView = getCurrentView()
 
   return (
     <nav className="hidden md:flex flex-col flex-shrink-0 w-16 h-full border-r border-border items-center py-4 justify-between bg-card">

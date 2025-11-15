@@ -91,7 +91,78 @@
     "unassign": "Bỏ giao",
     "viewDetails": "Xem chi tiết"
   },
+  "taskList": {
+    "allDone": "Tất cả đã xong!",
+    "noTasks": "Bạn chưa có nhiệm vụ nào ở đây. Thêm một cái để bắt đầu.",
+    "addTask": "Thêm Nhiệm vụ",
+    "completed": "Đã hoàn thành"
+  },
+  "taskDetail": {
+    "completed": "Đã hoàn thành",
+    "markComplete": "Đánh dấu hoàn thành",
+    "descriptionLabel": "Mô tả",
+    "descriptionPlaceholder": "Thêm mô tả...",
+    "assigneeLabel": "Người được giao",
+    "unassigned": "Chưa giao",
+    "priorityLabel": "Độ ưu tiên",
+    "dueDateLabel": "Hạn chót",
+    "reminderLabel": "Nhắc nhở",
+    "noReminder": "Không nhắc nhở",
+    "minutes": "phút",
+    "hour": "giờ",
+    "tagsLabel": "Thẻ",
+    "tagsPlaceholder": "Thêm thẻ...",
+    "tagsHelper": "Nhấn Enter để thêm thẻ",
+    "subtasksLabel": "Nhiệm vụ con",
+    "progressLabel": "Tiến độ",
+    "addSubtaskPlaceholder": "Thêm nhiệm vụ con...",
+    "addButton": "Thêm",
+    "commentsLabel": "Bình luận",
+    "addCommentPlaceholder": "Thêm bình luận...",
+    "startFocusButton": "Bắt đầu Tập trung",
+    "recurringInfo": "Lặp lại {{rule}}",
+    "focusTime": "Thời gian tập trung: {{time}}",
+    "generateButton": "Tạo",
+    "getInfoButton": "Lấy thông tin",
+    "sourcesLabel": "Nguồn"
+  },
+  "taskItem": {
+    "aria": {
+      "markComplete": "Đánh dấu nhiệm vụ hoàn thành",
+      "markIncomplete": "Đánh dấu nhiệm vụ chưa hoàn thành",
+      "startFocus": "Bắt đầu phiên tập trung cho nhiệm vụ này"
+    },
+    "title": {
+      "repeats": "Lặp lại {{rule}}",
+      "reminder": "Nhắc nhở đặt {{minutes}} phút trước"
+    }
+  },
+  "board": {
+    "title": "Chế độ xem bảng Kanban",
+    "noLists": "Không có danh sách nào. Tạo danh sách trước.",
+    "addTask": "Thêm Nhiệm vụ",
+    "addColumn": "Thêm Cột",
+    "columnName": "Tên cột",
+    "add": "Thêm",
+    "cancel": "Hủy",
+    "column": {
+      "cancel": "Hủy"
+    }
+  },
+  "specialLists": {
+    "inbox": "Hộp thư đến",
+    "today": "Hôm nay",
+    "upcoming": "Sắp tới"
+  },
+  "lists": {
+    "work": "Công việc",
+    "personal": "Cá nhân",
+    "shopping": "Mua sắm",
+    "healthFitness": "Sức khỏe & Thể dục",
+    "learning": "Học tập"
+  },
   "priority": {
+    "none": "Không",
     "low": "Thấp",
     "medium": "Trung bình",
     "high": "Cao",
@@ -145,13 +216,22 @@
   },
   "countdown": {
     "new": "Đếm ngược mới",
+    "add": "Thêm Đếm ngược",
+    "cancel": "Hủy",
+    "namePlaceholder": "Tên sự kiện",
     "title": "Tiêu đề sự kiện",
     "targetDate": "Ngày đích",
     "color": "Màu sắc",
+    "days": "Ngày",
+    "hours": "Giờ",
+    "minutes": "Phút",
+    "seconds": "Giây",
     "daysLeft": "ngày còn lại",
     "hoursLeft": "giờ còn lại",
     "minutesLeft": "phút còn lại",
     "eventPassed": "Sự kiện đã qua",
+    "past": "Sự kiện đã qua",
+    "noCountdowns": "Chưa có đếm ngược nào. Thêm một cái để bắt đầu!",
     "noEvents": "Không có sự kiện đếm ngược",
     "createFirst": "Tạo đếm ngược để theo dõi các ngày quan trọng"
   },
@@ -165,11 +245,16 @@
   },
   "settings": {
     "title": "Cài đặt",
+    "subtitle": "Tùy chỉnh cài đặt ứng dụng",
     "general": "Chung",
     "appearance": "Giao diện",
     "notifications": "Thông báo",
     "language": "Ngôn ngữ",
     "theme": "Chủ đề",
+    "theme": {
+      "light": "Sáng",
+      "dark": "Tối"
+    },
     "light": "Sáng",
     "dark": "Tối",
     "system": "Hệ thống",
@@ -178,7 +263,24 @@
     "defaultPriority": "Độ ưu tiên mặc định",
     "defaultList": "Danh sách mặc định",
     "save": "Lưu cài đặt",
-    "saved": "Đã lưu cài đặt thành công"
+    "saved": "Đã lưu cài đặt thành công",
+    "bottomNav": {
+      "title": "Thanh điều hướng dưới",
+      "subtitle": "Kéo và thả để tùy chỉnh các tính năng xuất hiện trong thanh điều hướng dưới",
+      "visible": "Hiển thị",
+      "hidden": "Ẩn"
+    },
+    "pomodoro": {
+      "title": "Cài đặt Pomodoro",
+      "focusDuration": "Thời gian tập trung (phút)",
+      "shortBreak": "Nghỉ ngắn (phút)",
+      "longBreak": "Nghỉ dài (phút)",
+      "longBreakInterval": "Số phiên trước khi nghỉ dài"
+    },
+    "language": {
+      "en": "English",
+      "vi": "Tiếng Việt"
+    }
   },
   "profile": {
     "title": "Hồ sơ",
@@ -209,6 +311,58 @@
     "pomodoro": "Pomodoro",
     "countdown": "Đếm ngược",
     "more": "Thêm"
+  },
+  "sidebar": {
+    "myLists": "Danh sách của tôi",
+    "addNewList": "Thêm danh sách mới...",
+    "tags": "Thẻ",
+    "addNewTag": "Thêm thẻ mới...",
+    "chatWithGemini": "Trò chuyện với Gemini",
+    "deleteList": {
+      "confirm": {
+        "title": "Xóa \"{{listName}}\"?",
+        "message": "Hành động này sẽ xóa vĩnh viễn danh sách và tất cả các nhiệm vụ của nó. Hành động này không thể hoàn tác.",
+        "button": "Xóa danh sách"
+      },
+      "success": "Danh sách \"{{listName}}\" đã được xóa"
+    },
+    "deleteTag": {
+      "confirm": {
+        "title": "Xóa thẻ \"#{{tagName}}\"?",
+        "message": "Hành động này sẽ xóa vĩnh viễn thẻ khỏi tất cả các nhiệm vụ. Hành động này không thể hoàn tác.",
+        "button": "Xóa thẻ"
+      },
+      "success": "Thẻ \"#{{tagName}}\" đã được xóa"
+    },
+    "aria": {
+      "shareList": "Chia sẻ danh sách {{listName}}",
+      "deleteList": "Xóa danh sách {{listName}}",
+      "deleteTag": "Xóa thẻ {{tagName}}"
+    }
+  },
+  "mainContent": {
+    "dailyBriefing": "Báo cáo trong ngày",
+    "tasksDefault": "Nhiệm vụ",
+    "searchTasks": "Tìm kiếm nhiệm vụ",
+    "sortTasks": "Sắp xếp nhiệm vụ",
+    "undo": "Hoàn tác",
+    "redo": "Làm lại",
+    "clearHistory": "Xóa lịch sử"
+  },
+  "recurrence": {
+    "title": "Lặp lại",
+    "none": "Không có",
+    "daily": "Hàng ngày",
+    "weekly": "Hàng tuần",
+    "monthly": "Hàng tháng"
+  },
+  "reminder": {
+    "title": "Lời nhắc",
+    "none": "Không có",
+    "5min": "5 phút trước",
+    "15min": "15 phút trước",
+    "30min": "30 phút trước",
+    "1hour": "1 giờ trước"
   },
   "common": {
     "search": "Tìm kiếm",
@@ -270,5 +424,104 @@
       "subtitle": "Tham gia cùng hàng ngàn người dùng đã sắp xếp cuộc sống với TaskFlow",
       "button": "Bắt đầu miễn phí ngay hôm nay"
     }
+  },
+  "matrix": {
+    "title": "Ma trận Eisenhower",
+    "subtitle": "Sắp xếp ưu tiên nhiệm vụ dựa trên tính khẩn cấp và quan trọng.",
+    "q1": {
+      "title": "Khẩn cấp & Quan trọng",
+      "subtitle": "Làm những nhiệm vụ này trước."
+    },
+    "q2": {
+      "title": "Không khẩn cấp & Quan trọng",
+      "subtitle": "Lên lịch cho những nhiệm vụ này."
+    },
+    "q3": {
+      "title": "Khẩn cấp & Không quan trọng",
+      "subtitle": "Ủy thác những nhiệm vụ này."
+    },
+    "q4": {
+      "title": "Không khẩn cấp & Không quan trọng",
+      "subtitle": "Loại bỏ những nhiệm vụ này."
+    },
+    "empty": "Không có nhiệm vụ nào trong góc phần tư này."
+  },
+  "calendar": {
+    "today": "Hôm nay",
+    "month": "Tháng",
+    "week": "Tuần",
+    "allDay": "Cả ngày",
+    "moreTasks": "+ {{count}} nhiệm vụ nữa"
+  },
+  "taskForm": {
+    "newTask": "Nhiệm vụ mới",
+    "createWithGemini": "Tạo nhiệm vụ từ văn bản với Gemini",
+    "geminiPlaceholder": "ví dụ: Nhắc tôi gọi cho John về đề xuất dự án vào ngày mai lúc 2 giờ chiều",
+    "analyzeAndFill": "Phân tích và Điền",
+    "titleLabel": "Tiêu đề",
+    "titlePlaceholder": "ví dụ: Thanh toán hóa đơn điện",
+    "descriptionLabel": "Mô tả",
+    "descriptionPlaceholder": "Thêm chi tiết...",
+    "dueDateLabel": "Hạn chót",
+    "priorityLabel": "Độ ưu tiên",
+    "listLabel": "Danh sách",
+    "createTask": "Tạo Nhiệm vụ"
+  },
+  "briefing": {
+    "title": "Báo cáo hàng ngày AI của bạn",
+    "loading": "Gemini đang phân tích ngày của bạn...",
+    "error": {
+      "unavailable": "Gemini API không khả dụng.",
+      "failed": "Không thể tạo báo cáo"
+    },
+    "button": {
+      "gotIt": "Đã hiểu!"
+    }
+  },
+  "assigneePicker": {
+    "label": "Người được giao",
+    "unassigned": "Chưa giao",
+    "unassign": "Bỏ giao"
+  },
+  "comments": {
+    "title": "Hoạt động",
+    "unknownUser": "Người dùng không xác định",
+    "empty": "Chưa có bình luận nào.",
+    "placeholder": "Thêm bình luận..."
+  },
+  "timeAgo": {
+    "year": "{{count}} năm trước",
+    "month": "{{count}} tháng trước",
+    "day": "{{count}} ngày trước",
+    "hour": "{{count}} giờ trước",
+    "minute": "{{count}} phút trước",
+    "now": "vừa xong"
+  },
+  "shareList": {
+    "title": "Chia sẻ \"{{listName}}\"",
+    "subtitle": "Quản lý ai có thể truy cập danh sách này.",
+    "members": "Thành viên",
+    "owner": "Chủ sở hữu",
+    "invite": "Mời người khác",
+    "empty": "Mọi người đã có trong danh sách này.",
+    "done": "Xong"
+  },
+  "search": {
+    "placeholder": "Tìm kiếm nhiệm vụ theo tiêu đề, mô tả hoặc thẻ...",
+    "noResults": "Không tìm thấy nhiệm vụ nào cho \"{{searchTerm}}\""
+  },
+  "datePicker": {
+    "placeholder": "Chọn ngày",
+    "aria": {
+      "clear": "Xóa ngày"
+    },
+    "today": "Hôm nay"
+  },
+  "toast": {
+    "close": "Đóng"
+  },
+  "focusPicker": {
+    "title": "Chọn Nhiệm vụ để Tập trung",
+    "general": "Tập trung chung (Không có nhiệm vụ cụ thể)"
   }
 }

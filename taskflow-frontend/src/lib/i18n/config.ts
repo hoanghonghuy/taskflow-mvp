@@ -20,7 +20,19 @@ i18n
       }
     },
     lng: typeof window !== 'undefined' 
-      ? localStorage.getItem('language') || 'en'
+      ? (() => {
+          // Try to get from settings first, then localStorage, then default
+          try {
+            const settings = localStorage.getItem('settings')
+            if (settings) {
+              const parsed = JSON.parse(settings)
+              if (parsed.language) return parsed.language
+            }
+          } catch (e) {
+            // Ignore parse errors
+          }
+          return localStorage.getItem('language') || 'en'
+        })()
       : 'en', // Default language
     fallbackLng: 'en', // Fallback nếu translation thiếu
     
@@ -36,11 +48,23 @@ i18n
     }
   })
 
-// Listen for language changes và save to localStorage
+// Listen for language changes và save to localStorage + settings
 i18n.on('languageChanged', (lng) => {
   if (typeof window !== 'undefined') {
     localStorage.setItem('language', lng)
     document.documentElement.lang = lng
+    
+    // Sync with settings
+    try {
+      const settings = localStorage.getItem('settings')
+      if (settings) {
+        const parsed = JSON.parse(settings)
+        parsed.language = lng
+        localStorage.setItem('settings', JSON.stringify(parsed))
+      }
+    } catch (e) {
+      // Ignore parse errors
+    }
   }
 })
 

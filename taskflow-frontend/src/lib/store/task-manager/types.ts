@@ -12,6 +12,10 @@ import type {
 export type Action =
   | { type: 'SET_VIEW'; payload: View }
   | { type: 'SET_SELECTED_TASK'; payload: string | null }
+  | { type: 'SET_ACTIVE_LIST'; payload: string }
+  | { type: 'SET_ACTIVE_TAG'; payload: string | null }
+  | { type: 'ADD_TAG'; payload: { name: string } }
+  | { type: 'DELETE_TAG'; payload: string }
   | { type: 'ADD_TASK'; payload: Task }
   | { type: 'UPDATE_TASK'; payload: Task }
   | { type: 'DELETE_TASK'; payload: string }

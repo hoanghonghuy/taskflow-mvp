@@ -1,12 +1,20 @@
 'use client'
 
-import { createContext, useContext, useState, useCallback } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 import type { Settings } from '@/types'
+import i18n from '@/lib/i18n/config'
 
 interface SettingsContextType {
   settings: Settings
   updateSettings: (updates: Partial<Settings>) => void
   resetSettings: () => void
+  // Direct setters for convenience (matching template API)
+  theme: Settings['theme']
+  setTheme: (theme: Settings['theme']) => void
+  language: Settings['language']
+  setLanguage: (language: Settings['language']) => void
+  bottomNavActions: Settings['bottomNavActions']
+  setBottomNavActions: (actions: Settings['bottomNavActions']) => void
 }
 
 const DEFAULT_SETTINGS: Settings = {
@@ -37,6 +45,27 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     return DEFAULT_SETTINGS
   })
 
+  // Apply theme to html and body elements (matching template)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const html = window.document.documentElement
+      const body = window.document.body
+      html.classList.remove('light', 'dark')
+      body.classList.remove('light', 'dark')
+      html.classList.add(settings.theme)
+      body.classList.add(settings.theme)
+    }
+  }, [settings.theme])
+
+  // Sync language changes with i18n outside of setState
+  useEffect(() => {
+    if (typeof window !== 'undefined' && settings.language) {
+      if (i18n.language !== settings.language) {
+        i18n.changeLanguage(settings.language)
+      }
+    }
+  }, [settings.language])
+
   const updateSettings = useCallback((updates: Partial<Settings>) => {
     setSettings((prev) => {
       const updated = { ...prev, ...updates }
@@ -50,8 +79,31 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('settings', JSON.stringify(DEFAULT_SETTINGS))
   }, [])
 
+  // Direct setters for convenience (matching template API)
+  const setTheme = useCallback((theme: Settings['theme']) => {
+    updateSettings({ theme })
+  }, [updateSettings])
+
+  const setLanguage = useCallback((language: Settings['language']) => {
+    updateSettings({ language })
+  }, [updateSettings])
+
+  const setBottomNavActions = useCallback((bottomNavActions: Settings['bottomNavActions']) => {
+    updateSettings({ bottomNavActions })
+  }, [updateSettings])
+
   return (
-    <SettingsContext.Provider value={{ settings, updateSettings, resetSettings }}>
+    <SettingsContext.Provider value={{ 
+      settings, 
+      updateSettings, 
+      resetSettings,
+      theme: settings.theme,
+      setTheme,
+      language: settings.language,
+      setLanguage,
+      bottomNavActions: settings.bottomNavActions || DEFAULT_SETTINGS.bottomNavActions,
+      setBottomNavActions,
+    }}>
       {children}
     </SettingsContext.Provider>
   )

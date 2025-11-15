@@ -3,8 +3,31 @@
 import { createContext, useContext, useState, useCallback } from 'react'
 import type { User } from '@/types'
 
+// Mock users for development
+const MOCK_USERS: User[] = [
+  {
+    id: 'user-001',
+    name: 'John Doe',
+    email: 'john@example.com',
+    avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=john',
+  },
+  {
+    id: 'user-002',
+    name: 'Jane Smith',
+    email: 'jane@example.com',
+    avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=jane',
+  },
+  {
+    id: 'user-003',
+    name: 'Bob Johnson',
+    email: 'bob@example.com',
+    avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=bob',
+  },
+]
+
 interface UserContextType {
   user: User | null
+  allUsers: User[]
   isAuthenticated: boolean
   login: (email: string, password: string) => Promise<void>
   register: (name: string, email: string, password: string) => Promise<void>
@@ -80,6 +103,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     <UserContext.Provider
       value={{
         user,
+        allUsers: MOCK_USERS,
         isAuthenticated: !!user,
         login,
         register,

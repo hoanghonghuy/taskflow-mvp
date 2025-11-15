@@ -7,21 +7,24 @@ import { UserProvider } from './user-provider'
 import { SettingsProvider } from './settings-provider'
 import { ConfirmationProvider } from './confirmation-provider'
 import { TaskManagerProvider } from './task-manager-provider'
+import { GeminiProvider } from '@/lib/hooks/use-gemini'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
       <I18nProvider>
         <SettingsProvider>
-          <UserProvider>
-            <TaskManagerProvider>
-              <ToastProvider>
-                <ConfirmationProvider>
-                  {children}
-                </ConfirmationProvider>
-              </ToastProvider>
-            </TaskManagerProvider>
-          </UserProvider>
+          <GeminiProvider>
+            <UserProvider>
+              <TaskManagerProvider>
+                <ToastProvider>
+                  <ConfirmationProvider>
+                    {children}
+                  </ConfirmationProvider>
+                </ToastProvider>
+              </TaskManagerProvider>
+            </UserProvider>
+          </GeminiProvider>
         </SettingsProvider>
       </I18nProvider>
     </ThemeProvider>

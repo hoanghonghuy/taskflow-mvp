@@ -10,6 +10,33 @@ export function taskManagerReducer(state: AppState, action: Action): AppState {
     case 'SET_SELECTED_TASK':
       return { ...state, selectedTaskId: action.payload }
 
+    case 'SET_ACTIVE_LIST':
+      return { ...state, activeListId: action.payload, activeTag: null, selectedTaskId: null, view: 'list' }
+
+    case 'SET_ACTIVE_TAG':
+      return { ...state, activeTag: action.payload, activeListId: 'inbox', selectedTaskId: null, view: 'list' }
+
+    case 'ADD_TAG': {
+      const newTagName = action.payload.name.trim().toLowerCase()
+      if (newTagName && !state.tags.includes(newTagName)) {
+        return { ...state, tags: [...state.tags, newTagName] }
+      }
+      return state
+    }
+
+    case 'DELETE_TAG': {
+      const tagToDelete = action.payload
+      return {
+        ...state,
+        tags: state.tags.filter(tag => tag !== tagToDelete),
+        tasks: state.tasks.map(task => ({
+          ...task,
+          tags: task.tags.filter(tag => tag !== tagToDelete)
+        })),
+        activeTag: state.activeTag === tagToDelete ? null : state.activeTag,
+      }
+    }
+
     case 'ADD_TASK': {
       const newTask = { ...action.payload, id: action.payload.id || generateId() }
       return { ...state, tasks: [...state.tasks, newTask] }

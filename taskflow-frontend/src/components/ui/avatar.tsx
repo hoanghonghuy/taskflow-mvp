@@ -16,7 +16,7 @@ const getInitials = (name: string): string => {
   return name.substring(0, 2).toUpperCase()
 }
 
-export default function Avatar({ user, className }: AvatarProps) {
+function Avatar({ user, className }: AvatarProps) {
   if (!user) {
     return (
       <div className={`flex items-center justify-center w-10 h-10 rounded-full bg-secondary text-muted-foreground ${className || ''}`}>
@@ -41,3 +41,7 @@ export default function Avatar({ user, className }: AvatarProps) {
     </div>
   )
 }
+
+// Export both default and named for flexibility
+export default Avatar
+export { Avatar }

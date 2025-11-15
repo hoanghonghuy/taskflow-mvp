@@ -58,7 +58,12 @@ export function MobileNav() {
               </button>
             </SheetTrigger>
             <SheetContent side="left" className="p-0 w-64">
-              <Sidebar />
+              <Sidebar 
+                isOpen={open} 
+                onClose={() => setOpen(false)}
+                onChatbotToggle={() => {}}
+                onShareList={() => {}}
+              />
             </SheetContent>
           </Sheet>
         </div>

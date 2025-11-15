@@ -6,9 +6,10 @@ import { useSettings } from '@/components/providers/settings-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import { StopwatchIcon, ListBulletIcon, CalendarDaysIcon, GridIcon, RepeatIcon, HourglassIcon, HomeIcon, ViewColumnsIcon } from '@/lib/constants'
 import type { View } from '@/types'
+import type { TranslationKey } from '@/lib/i18n/types'
 import { useRouter, usePathname } from 'next/navigation'
 
-const ALL_FEATURES: { view: View, icon: React.FC<{className?: string}>, label: string }[] = [
+const ALL_FEATURES: { view: View, icon: React.FC<{className?: string}>, label: TranslationKey }[] = [
   { view: 'dashboard', icon: HomeIcon, label: 'feature.dashboard' },
   { view: 'list', icon: ListBulletIcon, label: 'feature.listView' },
   { view: 'board', icon: ViewColumnsIcon, label: 'feature.boardView' },
@@ -99,7 +100,7 @@ export default function BottomNavBar() {
   }
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-card/80 backdrop-blur-lg border-t border-border flex items-stretch justify-around z-30">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-card border-t border-border flex items-stretch justify-around z-30 shadow-lg">
       {visibleFeatures.map(feature => (
         <NavButton key={feature.view} feature={feature} isActive={currentView === feature.view} />
       ))}

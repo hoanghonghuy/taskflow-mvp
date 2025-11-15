@@ -17,21 +17,39 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
       present: INITIAL_STATE,
       future: []
     },
-    // Lazy initialization - load from localStorage
+    // Lazy initialization - load from localStorage or use mock data
     (initial): HistoryState => {
       if (typeof window !== 'undefined') {
         const saved = localStorage.getItem('taskflowState')
         if (saved) {
           try {
             const parsed = JSON.parse(saved)
-            return {
-              past: [],
-              present: parsed,
-              future: []
+            // Only use saved state if it has tasks or other meaningful data
+            if (parsed.tasks && parsed.tasks.length > 0) {
+              return {
+                past: [],
+                present: parsed,
+                future: []
+              }
             }
           } catch (error) {
             console.error('Failed to parse saved state:', error)
           }
+        }
+        // Load mock data if no saved state
+        const { generateMockData } = require('@/lib/mock-data')
+        const mockData = generateMockData()
+        return {
+          past: [],
+          present: {
+            ...INITIAL_STATE,
+            ...mockData,
+            pomodoro: {
+              ...INITIAL_STATE.pomodoro,
+              focusHistory: mockData.focusHistory,
+            },
+          },
+          future: []
         }
       }
       return initial

@@ -91,7 +91,78 @@
     "unassign": "Unassign",
     "viewDetails": "View details"
   },
+  "taskItem": {
+    "aria": {
+      "markComplete": "Mark task as complete",
+      "markIncomplete": "Mark task as incomplete",
+      "startFocus": "Start focus session for this task"
+    },
+    "title": {
+      "repeats": "Repeats {{rule}}",
+      "reminder": "Reminder set {{minutes}} minutes before"
+    }
+  },
+  "taskDetail": {
+    "completed": "Completed",
+    "markComplete": "Mark Complete",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Add description...",
+    "assigneeLabel": "Assignee",
+    "unassigned": "Unassigned",
+    "priorityLabel": "Priority",
+    "dueDateLabel": "Due Date",
+    "reminderLabel": "Reminder",
+    "noReminder": "No reminder",
+    "minutes": "minutes",
+    "hour": "hour",
+    "tagsLabel": "Tags",
+    "tagsPlaceholder": "Add tag...",
+    "tagsHelper": "Press Enter to add a tag",
+    "subtasksLabel": "Subtasks",
+    "progressLabel": "Progress",
+    "addSubtaskPlaceholder": "Add subtask...",
+    "addButton": "Add",
+    "commentsLabel": "Comments",
+    "addCommentPlaceholder": "Add comment...",
+    "startFocusButton": "Start Focus",
+    "recurringInfo": "Repeats {{rule}}",
+    "focusTime": "Focus Time: {{time}}",
+    "generateButton": "Generate",
+    "getInfoButton": "Get Info",
+    "sourcesLabel": "Sources"
+  },
+  "taskList": {
+    "allDone": "All done!",
+    "noTasks": "You have no tasks here. Add one to get started.",
+    "addTask": "Add Task",
+    "completed": "Completed"
+  },
+  "board": {
+    "title": "Kanban board view",
+    "noLists": "No lists available. Create a list first.",
+    "addTask": "Add Task",
+    "addColumn": "Add Column",
+    "columnName": "Column name",
+    "add": "Add",
+    "cancel": "Cancel",
+    "column": {
+      "cancel": "Cancel"
+    }
+  },
+  "specialLists": {
+    "inbox": "Inbox",
+    "today": "Today",
+    "upcoming": "Upcoming"
+  },
+  "lists": {
+    "work": "Work",
+    "personal": "Personal",
+    "shopping": "Shopping",
+    "healthFitness": "Health & Fitness",
+    "learning": "Learning"
+  },
   "priority": {
+    "none": "None",
     "low": "Low",
     "medium": "Medium",
     "high": "High",
@@ -133,25 +204,45 @@
     "pause": "Pause",
     "resume": "Resume",
     "reset": "Reset",
+    "stop": "Stop",
     "settings": "Pomodoro Settings",
     "focusDuration": "Focus Duration (minutes)",
     "shortBreakDuration": "Short Break (minutes)",
     "longBreakDuration": "Long Break (minutes)",
     "sessionsUntilLongBreak": "Sessions until long break",
     "selectTask": "Select a task to focus on",
+    "focusingOn": "Focusing on: {{taskTitle}}",
     "noTask": "No task selected",
     "session": "Session",
-    "of": "of"
+    "of": "of",
+    "today": "Today",
+    "sessions": "Sessions",
+    "focusTime": "Focus Time",
+    "todayPomos": "Today's Pomodoros",
+    "totalFocus": "Total Focus Time"
+  },
+  "focusPicker": {
+    "title": "Select Task",
+    "general": "General Focus"
   },
   "countdown": {
     "new": "New Countdown",
+    "add": "Add Countdown",
+    "cancel": "Cancel",
+    "namePlaceholder": "Event name",
     "title": "Event Title",
     "targetDate": "Target Date",
     "color": "Color",
+    "days": "Days",
+    "hours": "Hours",
+    "minutes": "Minutes",
+    "seconds": "Seconds",
     "daysLeft": "days left",
     "hoursLeft": "hours left",
     "minutesLeft": "minutes left",
     "eventPassed": "Event passed",
+    "past": "Event has passed",
+    "noCountdowns": "No countdowns yet. Add one to get started!",
     "noEvents": "No countdown events",
     "createFirst": "Create a countdown to track important dates"
   },
@@ -163,13 +254,24 @@
     "earned": "Earned",
     "notEarned": "Not earned yet"
   },
+  "achievements": {
+    "locked": {
+      "description": "Locked",
+      "status": "Locked"
+    },
+    "ready": "Ready to unlock!"
+  },
   "settings": {
     "title": "Settings",
+    "subtitle": "Customize your app settings",
     "general": "General",
     "appearance": "Appearance",
     "notifications": "Notifications",
     "language": "Language",
-    "theme": "Theme",
+    "theme": {
+      "light": "Light",
+      "dark": "Dark"
+    },
     "light": "Light",
     "dark": "Dark",
     "system": "System",
@@ -178,7 +280,24 @@
     "defaultPriority": "Default task priority",
     "defaultList": "Default list",
     "save": "Save Settings",
-    "saved": "Settings saved successfully"
+    "saved": "Settings saved successfully",
+    "bottomNav": {
+      "title": "Bottom Navigation",
+      "subtitle": "Drag and drop to customize which features appear in the bottom navigation bar",
+      "visible": "Visible",
+      "hidden": "Hidden"
+    },
+    "pomodoro": {
+      "title": "Pomodoro Settings",
+      "focusDuration": "Focus Duration (minutes)",
+      "shortBreak": "Short Break (minutes)",
+      "longBreak": "Long Break (minutes)",
+      "longBreakInterval": "Sessions until long break"
+    },
+    "language": {
+      "en": "English",
+      "vi": "Tiếng Việt"
+    }
   },
   "profile": {
     "title": "Profile",
@@ -209,6 +328,58 @@
     "pomodoro": "Pomodoro",
     "countdown": "Countdown",
     "more": "More"
+  },
+  "sidebar": {
+    "myLists": "My Lists",
+    "addNewList": "Add a new list...",
+    "tags": "Tags",
+    "addNewTag": "Add a new tag...",
+    "chatWithGemini": "Chat with Gemini",
+    "deleteList": {
+      "confirm": {
+        "title": "Delete \"{{listName}}\"?",
+        "message": "This will permanently delete the list and all of its tasks. This action cannot be undone.",
+        "button": "Delete List"
+      },
+      "success": "List \"{{listName}}\" deleted"
+    },
+    "deleteTag": {
+      "confirm": {
+        "title": "Delete tag \"#{{tagName}}\"?",
+        "message": "This will permanently remove the tag from all tasks. This action cannot be undone.",
+        "button": "Delete Tag"
+      },
+      "success": "Tag \"#{{tagName}}\" deleted"
+    },
+    "aria": {
+      "shareList": "Share list {{listName}}",
+      "deleteList": "Delete list {{listName}}",
+      "deleteTag": "Delete tag {{tagName}}"
+    }
+  },
+  "mainContent": {
+    "dailyBriefing": "Daily Briefing",
+    "tasksDefault": "Tasks",
+    "searchTasks": "Search tasks",
+    "sortTasks": "Sort tasks",
+    "undo": "Undo",
+    "redo": "Redo",
+    "clearHistory": "Clear History"
+  },
+  "recurrence": {
+    "title": "Recurrence",
+    "none": "None",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "monthly": "Monthly"
+  },
+  "reminder": {
+    "title": "Reminder",
+    "none": "None",
+    "5min": "5 minutes before",
+    "15min": "15 minutes before",
+    "30min": "30 minutes before",
+    "1hour": "1 hour before"
   },
   "common": {
     "search": "Search",
@@ -270,5 +441,104 @@
       "subtitle": "Join thousands of users who organize their life with TaskFlow",
       "button": "Start Free Today"
     }
+  },
+  "matrix": {
+    "title": "Eisenhower Matrix",
+    "subtitle": "Prioritize your tasks based on urgency and importance.",
+    "q1": {
+      "title": "Urgent & Important",
+      "subtitle": "Do these tasks first."
+    },
+    "q2": {
+      "title": "Not Urgent & Important",
+      "subtitle": "Schedule these tasks."
+    },
+    "q3": {
+      "title": "Urgent & Not Important",
+      "subtitle": "Delegate these tasks."
+    },
+    "q4": {
+      "title": "Not Urgent & Not Important",
+      "subtitle": "Eliminate these tasks."
+    },
+    "empty": "No tasks in this quadrant."
+  },
+  "calendar": {
+    "today": "Today",
+    "month": "Month",
+    "week": "Week",
+    "allDay": "All-day",
+    "moreTasks": "+ {{count}} more"
+  },
+  "taskForm": {
+    "newTask": "New Task",
+    "createWithGemini": "Create task from text with Gemini",
+    "geminiPlaceholder": "e.g., Remind me to call John about the project proposal tomorrow at 2 PM",
+    "analyzeAndFill": "Analyze and Fill",
+    "titleLabel": "Title",
+    "titlePlaceholder": "e.g., Pay electricity bill",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Add details...",
+    "dueDateLabel": "Due Date",
+    "priorityLabel": "Priority",
+    "listLabel": "List",
+    "createTask": "Create Task"
+  },
+  "briefing": {
+    "title": "Your AI Daily Briefing",
+    "loading": "Gemini is analyzing your day...",
+    "error": {
+      "unavailable": "Gemini API is not available.",
+      "failed": "Failed to generate briefing"
+    },
+    "button": {
+      "gotIt": "Got it!"
+    }
+  },
+  "assigneePicker": {
+    "label": "Assignee",
+    "unassigned": "Unassigned",
+    "unassign": "Unassign"
+  },
+  "comments": {
+    "title": "Activity",
+    "unknownUser": "Unknown User",
+    "empty": "No comments yet.",
+    "placeholder": "Add a comment..."
+  },
+  "timeAgo": {
+    "year": "{{count}}y ago",
+    "month": "{{count}}mo ago",
+    "day": "{{count}}d ago",
+    "hour": "{{count}}h ago",
+    "minute": "{{count}}m ago",
+    "now": "just now"
+  },
+  "shareList": {
+    "title": "Share \"{{listName}}\"",
+    "subtitle": "Manage who can access this list.",
+    "members": "Members",
+    "owner": "Owner",
+    "invite": "Invite others",
+    "empty": "Everyone is already in this list.",
+    "done": "Done"
+  },
+  "search": {
+    "placeholder": "Search tasks by title, description, or tag...",
+    "noResults": "No tasks found for \"{{searchTerm}}\""
+  },
+  "datePicker": {
+    "placeholder": "Select a date",
+    "aria": {
+      "clear": "Clear date"
+    },
+    "today": "Today"
+  },
+  "toast": {
+    "close": "Close"
+  },
+  "focusPicker": {
+    "title": "Select a Task to Focus On",
+    "general": "General Focus (No specific task)"
   }
 }

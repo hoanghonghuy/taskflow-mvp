@@ -9,6 +9,9 @@ export const INITIAL_STATE: AppState = {
   habits: [],
   countdownEvents: [],
   selectedTaskId: null,
+  activeListId: 'inbox',
+  activeTag: null,
+  tags: [],
   pomodoro: {
     isActive: false,
     isPaused: false,

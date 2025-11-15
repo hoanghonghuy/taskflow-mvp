@@ -1,4 +1,4 @@
-export type Priority = 'low' | 'medium' | 'high' | 'urgent';
+export type Priority = 'none' | 'low' | 'medium' | 'high' | 'urgent';
 
 export interface Task {
   id: string;
@@ -126,18 +126,10 @@ export interface AppState {
   columns: Column[];
   habits: Habit[];
   countdownEvents: CountdownEvent[];
-  pomodoro: PomodoroState;
-}
-
-// Add missing fields to AppState
-export interface AppState {
-  view: View;
-  tasks: Task[];
-  lists: List[];
-  columns: Column[];
-  habits: Habit[];
-  countdownEvents: CountdownEvent[];
   selectedTaskId: string | null;
+  activeListId: string;
+  activeTag: string | null;
+  tags: string[];
   pomodoro: PomodoroState;
   unlockedAchievements: string[];
 }
