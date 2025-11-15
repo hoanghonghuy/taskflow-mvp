@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import TaskItem from '@/components/task/TaskItem'
@@ -11,7 +11,6 @@ interface BoardColumnProps {
   column: Column
   tasks: Task[]
   onTaskDragStart: (taskId: string) => void
-  onTaskDragEnd: () => void
   onDropOnColumn: (columnId: string) => void
   onOpenTaskForm?: (defaultValues?: { listId?: string; columnId?: string }) => void
   onColumnDragStart: (columnId: string) => void
@@ -21,7 +20,6 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
   column,
   tasks,
   onTaskDragStart,
-  onTaskDragEnd,
   onDropOnColumn,
   onOpenTaskForm,
   onColumnDragStart,
@@ -31,10 +29,6 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
   const [isDragOver, setIsDragOver] = useState(false)
   const [isRenaming, setIsRenaming] = useState(false)
   const [columnName, setColumnName] = useState(column.name)
-
-  useEffect(() => {
-    setColumnName(column.name)
-  }, [column.name])
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
@@ -74,7 +68,7 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      <div className="p-3 flex items-center gap-1 flex-shrink-0">
+      <div className="p-3 flex items-center gap-1 shrink-0">
         <div
           draggable
           onDragStart={() => onColumnDragStart(column.id)}
@@ -84,7 +78,7 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
           <GripVerticalIcon className="h-5 w-5" />
         </div>
         {isRenaming ? (
-          <form onSubmit={handleRenameSubmit} className="flex-grow">
+          <form onSubmit={handleRenameSubmit} className="grow">
             <input
               type="text"
               value={columnName}
@@ -96,7 +90,7 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
           </form>
         ) : (
           <h3
-            className="font-semibold text-sm cursor-pointer flex-grow"
+            className="font-semibold text-sm cursor-pointer grow"
             onClick={() => setIsRenaming(true)}
           >
             {column.name} <span className="text-muted-foreground ml-1">{tasks.length}</span>
@@ -127,7 +121,7 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
         ))}
       </div>
       {onOpenTaskForm && (
-        <div className="p-2 flex-shrink-0">
+        <div className="p-2 shrink-0">
           <button
             onClick={() => onOpenTaskForm({ listId: column.listId, columnId: column.id })}
             className="w-full flex items-center gap-2 p-2 rounded-md text-muted-foreground hover:bg-secondary hover:text-primary transition-colors"

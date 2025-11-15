@@ -42,7 +42,7 @@ const Quadrant: React.FC<QuadrantProps> = ({
           ))
         ) : (
           <div className="text-center text-sm text-muted-foreground pt-8">
-            {t('matrix.empty') || 'No tasks'}
+            {t('matrix.empty')}
           </div>
         )}
       </div>
@@ -110,9 +110,9 @@ const MatrixView: React.FC = () => {
   return (
     <AppPage>
       <AppPageContainer>
-        <header className="py-6 border-b border-border flex-shrink-0">
-          <h1 className="text-2xl md:text-3xl font-bold">{t('matrix.title') || 'Eisenhower Matrix'}</h1>
-          <p className="text-muted-foreground">{t('matrix.subtitle') || 'Prioritize your tasks'}</p>
+        <header className="py-6 border-b border-border shrink-0">
+          <h1 className="text-2xl md:text-3xl font-bold">{t('matrix.title')}</h1>
+          <p className="text-muted-foreground">{t('matrix.subtitle')}</p>
         </header>
       </AppPageContainer>
       <AppPageMain className="h-full py-4 md:py-6 md:max-w-none">

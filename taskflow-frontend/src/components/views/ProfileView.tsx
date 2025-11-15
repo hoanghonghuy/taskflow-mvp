@@ -46,7 +46,7 @@ const ProfileView: React.FC = () => {
   return (
     <AppPage>
       <AppPageContainer>
-        <header className="py-6 border-b border-border flex-shrink-0">
+        <header className="py-6 border-b border-border shrink-0">
           <h1 className="text-3xl font-bold">{t('nav.profile')}</h1>
           <p className="text-muted-foreground">Your profile and statistics</p>
         </header>
@@ -69,7 +69,7 @@ const ProfileView: React.FC = () => {
             <div className="bg-card border border-border rounded-lg p-6">
               <div className="flex items-center gap-3 mb-2">
                 <CheckCircleIcon className="h-6 w-6 text-primary" />
-                <h3 className="font-semibold">{t('profile.tasks')}</h3>
+                <h3 className="font-semibold">{t('profile.tasksCompleted')}</h3>
               </div>
               <p className="text-3xl font-bold">{stats.completedTasks}/{stats.totalTasks}</p>
               <p className="text-sm text-muted-foreground mt-1">
@@ -80,7 +80,7 @@ const ProfileView: React.FC = () => {
             <div className="bg-card border border-border rounded-lg p-6">
               <div className="flex items-center gap-3 mb-2">
                 <CalendarIcon className="h-6 w-6 text-green-500" />
-                <h3 className="font-semibold">{t('profile.habits')}</h3>
+                <h3 className="font-semibold">{t('dashboard.stat.habits')}</h3>
               </div>
               <p className="text-3xl font-bold">{stats.completedHabitsToday}/{stats.totalHabits}</p>
               <p className="text-sm text-muted-foreground mt-1">
@@ -91,7 +91,7 @@ const ProfileView: React.FC = () => {
             <div className="bg-card border border-border rounded-lg p-6">
               <div className="flex items-center gap-3 mb-2">
                 <ClockIcon className="h-6 w-6 text-blue-500" />
-                <h3 className="font-semibold">{t('profile.focusTime')}</h3>
+                <h3 className="font-semibold">{t('pomodoro.focusTime')}</h3>
               </div>
               <p className="text-3xl font-bold">{formatDuration(stats.totalFocusTime)}</p>
               <p className="text-sm text-muted-foreground mt-1">

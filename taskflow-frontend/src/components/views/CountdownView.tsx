@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
@@ -7,6 +7,8 @@ import { PlusIcon, TrashIcon, CalendarDaysIcon } from '@/lib/constants'
 import type { CountdownEvent } from '@/types'
 import { DateTimePicker } from '@/components/ui/date-time-picker'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
+
+const INITIAL_TICK = Date.now()
 
 const CountdownView: React.FC = () => {
   const { state, dispatch } = useTaskManager()
@@ -69,8 +71,9 @@ const CountdownView: React.FC = () => {
     dispatch({ type: 'DELETE_COUNTDOWN', payload: id })
   }
 
-  const calculateTimeRemaining = (targetDate: string) => {
-    const now = new Date().getTime()
+  const [tick, setTick] = useState(INITIAL_TICK)
+
+  const calculateTimeRemaining = (targetDate: string, now: number) => {
     const target = new Date(targetDate).getTime()
     const diff = target - now
 
@@ -85,8 +88,6 @@ const CountdownView: React.FC = () => {
 
     return { days, hours, minutes, seconds, isPast: false }
   }
-
-  const [tick, setTick] = useState(() => Date.now())
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -111,7 +112,7 @@ const CountdownView: React.FC = () => {
     const upcoming: CountdownEvent[] = []
     const completed: CountdownEvent[] = []
     state.countdownEvents.forEach(event => {
-      const { isPast } = calculateTimeRemaining(event.targetDate)
+      const { isPast } = calculateTimeRemaining(event.targetDate, tick)
       if (isPast) completed.push(event)
       else upcoming.push(event)
     })
@@ -121,12 +122,12 @@ const CountdownView: React.FC = () => {
   return (
     <AppPage>
       <AppPageContainer>
-        <header className="py-6 border-b border-border flex-shrink-0">
+        <header className="py-6 border-b border-border shrink-0">
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
                 <h1 className="text-3xl font-bold">{t('nav.countdown')}</h1>
-                <p className="text-muted-foreground">{t('countdown.subtitle') || 'Countdown to important events'}</p>
+                <p className="text-muted-foreground">{t('countdown.subtitle')}</p>
               </div>
               {!isAdding && (
                 <button
@@ -151,7 +152,7 @@ const CountdownView: React.FC = () => {
                   value={newCountdownDate}
                   onChange={setNewCountdownDate}
                   min={new Date()}
-                  placeholder={t('countdown.selectDate') || 'Select date & time'}
+                  placeholder={t('countdown.selectDate')}
                 />
                 <div className="flex gap-2">
                   <button
@@ -164,7 +165,7 @@ const CountdownView: React.FC = () => {
                     onClick={() => {
                       setIsAdding(false)
                       setNewCountdownName('')
-                      setNewCountdownDate('')
+                      setNewCountdownDate(null)
                     }}
                     className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-muted transition-colors"
                   >
@@ -186,17 +187,17 @@ const CountdownView: React.FC = () => {
             <section>
               <div className="flex items-center gap-2 mb-4">
                 <CalendarDaysIcon className="h-5 w-5 text-primary" />
-                <h2 className="text-lg font-semibold">{t('countdown.upcomingSection') || 'Upcoming events'}</h2>
+                <h2 className="text-lg font-semibold">{t('countdown.upcomingSection')}</h2>
                 <span className="ml-auto text-sm text-muted-foreground">
-                  {groupedCountdowns.upcoming.length} {t('countdown.events') || 'events'}
+                  {groupedCountdowns.upcoming.length} {t('countdown.events')}
                 </span>
               </div>
               {groupedCountdowns.upcoming.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{t('countdown.noUpcoming') || 'No upcoming countdowns.'}</p>
+                <p className="text-sm text-muted-foreground">{t('countdown.noUpcoming')}</p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {groupedCountdowns.upcoming.map(event => {
-                    const timeRemaining = calculateTimeRemaining(event.targetDate)
+                    const timeRemaining = calculateTimeRemaining(event.targetDate, tick)
 
                     return (
                       <div
@@ -223,7 +224,7 @@ const CountdownView: React.FC = () => {
                                 value={editDate}
                                 onChange={setEditDate}
                                 min={new Date()}
-                                placeholder={t('countdown.selectDate') || 'Select date & time'}
+                                placeholder={t('countdown.selectDate')}
                               />
                               <div className="flex gap-2">
                                 <button
@@ -284,7 +285,7 @@ const CountdownView: React.FC = () => {
 
             {groupedCountdowns.completed.length > 0 && (
               <section>
-                <h2 className="text-lg font-semibold mb-3">{t('countdown.completedSection') || 'Completed events'}</h2>
+                <h2 className="text-lg font-semibold mb-3">{t('countdown.completedSection')}</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {groupedCountdowns.completed.map(event => (
                     <div key={event.id} className="bg-card border border-border rounded-2xl p-4 text-center">

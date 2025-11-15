@@ -1,9 +1,10 @@
 import type { ThemePresetId } from '@/types'
+import type { TranslationKey } from '@/lib/i18n/types'
 
 export interface ThemePreset {
   id: ThemePresetId
-  labelKey: string
-  descriptionKey: string
+  labelKey: TranslationKey
+  descriptionKey: TranslationKey
   mode: 'light' | 'dark'
   preview: {
     background: string

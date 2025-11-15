@@ -112,11 +112,11 @@ const HabitsView: React.FC = () => {
   return (
     <AppPage>
       <AppPageContainer>
-        <header className="py-6 border-b border-border flex-shrink-0">
+        <header className="py-6 border-b border-border shrink-0">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
               <h1 className="text-3xl font-bold">{t('nav.habits')}</h1>
-              <p className="text-muted-foreground">{t('habits.subtitle') || 'Track your daily habits'}</p>
+              <p className="text-muted-foreground">{t('habits.subtitle')}</p>
             </div>
             {!isAdding && (
               <button
@@ -170,7 +170,7 @@ const HabitsView: React.FC = () => {
           {summaryCards.map(card => (
             <div
               key={card.label}
-              className={`rounded-2xl border border-border bg-gradient-to-br ${card.accent} p-4 backdrop-blur-sm`}
+              className={`rounded-2xl border border-border bg-linear-to-br ${card.accent} p-4 backdrop-blur-sm`}
             >
               <p className="text-sm text-muted-foreground">{card.label}</p>
               <p className="text-2xl font-semibold">{card.value}</p>
@@ -220,7 +220,7 @@ const HabitsView: React.FC = () => {
 
                   <div className="space-y-3">
                     <div>
-                      <p className="text-xs font-medium text-muted-foreground uppercase mb-2">{t('habits.weeklyOverview') || 'This week'}</p>
+                      <p className="text-xs font-medium text-muted-foreground uppercase mb-2">{t('habits.weeklyOverview')}</p>
                       <div className="flex flex-wrap gap-2">
                         {Array.from({ length: 7 }).map((_, idx) => {
                           const date = new Date()
@@ -246,8 +246,8 @@ const HabitsView: React.FC = () => {
                     </div>
 
                     <div>
-                      <p className="text-xs font-medium text-muted-foreground uppercase mb-2">{t('habits.last30Days') || 'Last 30 days'}</p>
-                      <div className="grid grid-cols-[repeat(30,minmax(0,1fr))] gap-1.5">
+                      <p className="text-xs font-medium text-muted-foreground uppercase mb-2">{t('habits.last30Days')}</p>
+                      <div className="grid grid-cols-30 gap-1.5">
                         {last30Days.map(date => {
                           const isCompleted = habit.completions.includes(date)
                           const isTodayDate = date === today

@@ -66,7 +66,7 @@ export const sortTasks = (tasks: Task[], sortOrder: SortOrder, allTasks: Task[])
 
 export const groupUpcomingTasks = (
   tasks: Task[],
-  t: (key: any, options?: Record<string, string | number>) => string
+  t: (key: string, options?: Record<string, string | number>) => string
 ): { [key: string]: Task[] } => {
   const groups: { [key: string]: Task[] } = {}
   const today = new Date()
@@ -90,7 +90,7 @@ export const groupUpcomingTasks = (
     let groupKey: string
 
     if (isTomorrow(dueDate)) {
-      groupKey = t('specialLists.tomorrow') || 'Tomorrow'
+      groupKey = t('specialLists.tomorrow')
     } else if (dueDate > tomorrow && dueDate <= endOfWeek) {
       groupKey = dueDate.toLocaleDateString(undefined, { weekday: 'long' })
     } else {

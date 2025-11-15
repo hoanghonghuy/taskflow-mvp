@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { CalendarDaysIcon } from '@/lib/constants'
+import { useI18n } from '@/lib/hooks/use-i18n'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
@@ -32,6 +33,7 @@ export function DateTimePicker({
   placeholder,
 }: DateTimePickerProps) {
   const [open, setOpen] = React.useState(false)
+  const { t } = useI18n()
 
   const handleDateSelect = (date?: Date) => {
     if (!date) return
@@ -65,7 +67,7 @@ export function DateTimePicker({
             !value && 'text-muted-foreground'
           )}
         >
-          {value ? formatDateTime(value) : placeholder || 'Select date & time'}
+          {value ? formatDateTime(value) : (placeholder ?? t('datePicker.placeholder'))}
           <CalendarDaysIcon className="h-4 w-4 opacity-70" />
         </Button>
       </PopoverTrigger>
@@ -102,7 +104,7 @@ export function DateTimePicker({
             variant="secondary"
             onClick={() => onChange(min ? new Date(min) : new Date())}
           >
-            Now
+            {t('common.today')}
           </Button>
         </div>
       </PopoverContent>

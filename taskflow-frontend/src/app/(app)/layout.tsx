@@ -1,14 +1,13 @@
-'use client'
+"use client"
 
 import { useEffect, useState } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useUser } from '@/components/providers/user-provider'
 import { Sidebar } from '@/components/layout/sidebar'
 import FeatureBar from '@/components/layout/feature-bar'
 import BottomNavBar from '@/components/layout/bottom-nav-bar'
 import { MenuIcon } from '@/lib/constants'
 import { useTaskManager } from '@/lib/hooks/use-task-manager'
-import { useSettings } from '@/components/providers/settings-provider'
 import TaskDetail from '@/components/task/TaskDetail'
 import SearchModal from '@/components/search/SearchModal'
 import DailyBriefingModal from '@/components/briefing/DailyBriefingModal'
@@ -23,26 +22,21 @@ export default function AppLayout({
   children: React.ReactNode
 }) {
   const router = useRouter()
-  const pathname = usePathname()
   const { isAuthenticated } = useUser()
   const { state } = useTaskManager()
-  const { settings } = useSettings()
   const modal = useModal()
-  const [isSidebarOpen, setSidebarOpen] = useState(() => {
+  const [isSidebarOpen, setSidebarOpen] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       return window.innerWidth > 768
     }
     return false
   })
 
-  const [isClient, setIsClient] = useState(false)
+  const isClient = typeof window !== 'undefined'
 
   useEffect(() => {
-    setIsClient(true)
-  }, [])
-
-  useEffect(() => {
-    if (isClient && !isAuthenticated) {
+    if (!isClient) return
+    if (!isAuthenticated) {
       router.push('/login')
     }
   }, [isClient, isAuthenticated, router])
@@ -74,7 +68,7 @@ export default function AppLayout({
 
       <div className="flex-1 flex flex-col overflow-hidden relative">
         {/* Mobile Header */}
-        <header className="md:hidden flex-shrink-0 p-4 border-b border-border flex items-center justify-between z-10 bg-card shadow-sm">
+        <header className="md:hidden shrink-0 p-4 border-b border-border flex items-center justify-between z-10 bg-card shadow-sm">
           <button onClick={() => setSidebarOpen(true)} aria-label="Open sidebar">
             <MenuIcon className="h-6 w-6" />
           </button>

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { ListBulletIcon, RepeatIcon, StopwatchIcon, UserGroupIcon } from '@/lib/constants'
 
 interface LandingPageProps {
-  onLaunch: () => void
+  onLaunch?: () => void
 }
 
 const LandingPage: React.FC<LandingPageProps> = ({ onLaunch }) => {
@@ -14,13 +14,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLaunch }) => {
   const router = useRouter()
 
   const handleGetStarted = () => {
-    onLaunch()
-    router.push('/auth/login')
+    onLaunch?.()
+    router.push('/login')
   }
 
   const handleLogin = () => {
-    onLaunch()
-    router.push('/auth/login')
+    onLaunch?.()
+    router.push('/login')
   }
 
   return (
@@ -28,29 +28,29 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLaunch }) => {
       {/* Navigation */}
       <nav className="p-6 flex items-center justify-between">
         <div className="text-2xl font-bold text-primary">
-          {t('app.name') || 'TaskFlow'}
+          {t('app.name')}
         </div>
         <button
           onClick={handleLogin}
           className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md text-sm font-semibold hover:bg-muted"
         >
-          {t('landing.hero.login') || t('auth.login') || 'Login'}
+          {t('landing.hero.login')}
         </button>
       </nav>
 
       {/* Hero Section */}
       <section className="flex-1 flex flex-col items-center justify-center px-6 py-12 text-center">
         <h1 className="text-4xl md:text-6xl font-bold mb-4">
-          {t('landing.hero.title') || 'Organize Your Life, One Task at a Time'}
+          {t('landing.hero.title')}
         </h1>
         <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl">
-          {t('landing.hero.subtitle') || 'The all-in-one productivity app with task management, habits tracking, and focus tools'}
+          {t('landing.hero.subtitle')}
         </p>
         <button
           onClick={handleGetStarted}
           className="px-8 py-4 bg-primary text-primary-foreground rounded-lg text-lg font-semibold hover:bg-primary/90 transition-colors"
         >
-          {t('landing.hero.cta') || 'Get Started Free'}
+          {t('landing.hero.cta')}
         </button>
       </section>
 
@@ -58,10 +58,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLaunch }) => {
       <section className="px-6 py-12 bg-card border-t border-border">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-2">
-            {t('landing.features.title') || 'Everything You Need to Stay Productive'}
+            {t('landing.features.title')}
           </h2>
           <p className="text-muted-foreground text-center mb-12">
-            {t('landing.features.subtitle') || 'Powerful features to help you stay organized and focused'}
+            {t('landing.features.subtitle')}
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -70,10 +70,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLaunch }) => {
                 <ListBulletIcon className="h-6 w-6" />
               </div>
               <h3 className="text-xl font-bold mb-2">
-                {t('landing.features.task.title') || 'Smart Task Management'}
+                {t('landing.features.task.title')}
               </h3>
               <p className="text-muted-foreground text-sm">
-                {t('landing.features.task.description') || 'Organize tasks with multiple views: List, Board, Calendar, and Eisenhower Matrix'}
+                {t('landing.features.task.description')}
               </p>
             </div>
 
@@ -82,10 +82,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLaunch }) => {
                 <RepeatIcon className="h-6 w-6" />
               </div>
               <h3 className="text-xl font-bold mb-2">
-                {t('landing.features.habit.title') || 'Habit Tracking'}
+                {t('landing.features.habit.title')}
               </h3>
               <p className="text-muted-foreground text-sm">
-                {t('landing.features.habit.description') || 'Build lasting habits with visual tracking and streaks'}
+                {t('landing.features.habit.description')}
               </p>
             </div>
 
@@ -94,10 +94,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLaunch }) => {
                 <StopwatchIcon className="h-6 w-6" />
               </div>
               <h3 className="text-xl font-bold mb-2">
-                {t('landing.features.pomodoro.title') || 'Focus Timer'}
+                {t('landing.features.pomodoro.title')}
               </h3>
               <p className="text-muted-foreground text-sm">
-                {t('landing.features.pomodoro.description') || 'Stay focused with built-in Pomodoro timer and session tracking'}
+                {t('landing.features.pomodoro.description')}
               </p>
             </div>
 
@@ -106,10 +106,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLaunch }) => {
                 <UserGroupIcon className="h-6 w-6" />
               </div>
               <h3 className="text-xl font-bold mb-2">
-                {t('landing.features.collaboration.title') || 'Team Collaboration'}
+                {t('landing.features.collaboration.title')}
               </h3>
               <p className="text-muted-foreground text-sm">
-                {t('landing.features.collaboration.description') || 'Share lists, assign tasks, and comment with your team'}
+                {t('landing.features.collaboration.description')}
               </p>
             </div>
           </div>
@@ -119,16 +119,16 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLaunch }) => {
       {/* CTA Section */}
       <section className="px-6 py-12 text-center bg-secondary/50">
         <h2 className="text-3xl md:text-4xl font-bold mb-4">
-          {t('landing.cta.title') || 'Ready to Boost Your Productivity?'}
+          {t('landing.cta.title')}
         </h2>
         <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
-          {t('landing.cta.subtitle') || 'Join thousands of users who organize their life with TaskFlow'}
+          {t('landing.cta.subtitle')}
         </p>
         <button
           onClick={handleGetStarted}
           className="px-8 py-4 bg-primary text-primary-foreground rounded-lg text-lg font-semibold hover:bg-primary/90 transition-colors"
         >
-          {t('landing.cta.button') || 'Start Free Today'}
+          {t('landing.cta.button')}
         </button>
       </section>
     </div>

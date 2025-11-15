@@ -5,7 +5,6 @@ import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import BoardColumn from '@/components/board/BoardColumn'
 import { PlusIcon } from '@/lib/constants'
-import type { Column } from '@/types'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
 
 interface BoardViewProps {
@@ -38,11 +37,6 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
 
   const handleTaskDragStart = (taskId: string) => {
     setDraggedTaskId(taskId)
-  }
-
-  const handleTaskDragEnd = () => {
-    setDraggedTaskId(null)
-    setDragOverColumnId(null)
   }
 
   const handleDropOnColumn = (columnId: string) => {
@@ -82,18 +76,11 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
     }
   }
 
-  const handleDeleteColumn = (columnId: string) => {
-    dispatch({
-      type: 'DELETE_COLUMN',
-      payload: { columnId, listId: selectedListId },
-    })
-  }
-
   if (availableLists.length === 0) {
     return (
       <AppPage>
         <AppPageContainer>
-          <header className="py-6 border-b border-border flex-shrink-0">
+          <header className="py-6 border-b border-border shrink-0">
             <h1 className="text-3xl font-bold">{t('nav.board')}</h1>
             <p className="text-muted-foreground">{t('board.title')}</p>
           </header>
@@ -110,7 +97,7 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
   return (
     <AppPage>
       <AppPageContainer>
-        <header className="py-4 md:py-6 border-b border-border flex-shrink-0">
+        <header className="py-4 md:py-6 border-b border-border shrink-0">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold">{t('nav.board')}</h1>
@@ -123,15 +110,17 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
                 className="w-full sm:w-auto px-4 py-2 bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm md:text-base text-foreground dark:bg-card dark:text-foreground"
               >
                 {availableLists.map(list => {
-                  const listKey = list.id === 'inbox' ? 'specialLists.inbox' : 
-                                 list.id === 'list-1' ? 'lists.work' :
-                                 list.id === 'list-2' ? 'lists.personal' :
-                                 list.id === 'list-3' ? 'lists.shopping' :
-                                 list.id === 'list-4' ? 'lists.healthFitness' :
-                                 list.id === 'list-5' ? 'lists.learning' : list.name
+                  const listKey =
+                    list.id === 'inbox' ? 'specialLists.inbox' :
+                    list.id === 'list-1' ? 'lists.work' :
+                    list.id === 'list-2' ? 'lists.personal' :
+                    list.id === 'list-3' ? 'lists.shopping' :
+                    list.id === 'list-4' ? 'lists.healthFitness' :
+                    list.id === 'list-5' ? 'lists.learning' : null
+
                   return (
                     <option key={list.id} value={list.id}>
-                      {listKey.startsWith('specialLists.') || listKey.startsWith('lists.') ? t(listKey) : listKey}
+                      {listKey ? t(listKey) : list.name}
                     </option>
                   )
                 })}
@@ -152,8 +141,6 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
             const columnTasks = tasksForList.filter(
               t => t.columnId === column.id || (!t.columnId && columnsForList.findIndex(c => c.id === column.id) === 0)
             )
-            const isDragOver = dragOverColumnId === column.id
-
             return (
               <div
                 key={column.id}
@@ -180,7 +167,6 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
                   column={column}
                   tasks={columnTasks}
                   onTaskDragStart={handleTaskDragStart}
-                  onTaskDragEnd={handleTaskDragEnd}
                   onDropOnColumn={handleDropOnColumn}
                   onOpenTaskForm={onOpenTaskForm}
                   onColumnDragStart={handleColumnDragStart}
@@ -188,7 +174,7 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
               </div>
             )
           })}
-          <div className="w-full md:w-72 md:flex-shrink-0">
+          <div className="w-full md:w-72 md:shrink-0">
             {isAddingColumn ? (
               <form onSubmit={handleAddColumn} className="bg-card border border-border p-2 rounded-lg h-full flex flex-col">
                 <input

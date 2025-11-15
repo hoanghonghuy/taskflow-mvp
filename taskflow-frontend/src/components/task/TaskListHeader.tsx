@@ -66,11 +66,11 @@ const TaskListHeader: React.FC<TaskListHeaderProps> = ({
             className="flex items-center gap-2 px-3 py-2 bg-secondary rounded-md cursor-pointer hover:bg-muted transition-colors"
             role="button"
             tabIndex={0}
-            aria-label="Get AI Daily Briefing"
+            aria-label={t('mainContent.dailyBriefing')}
           >
             <SparklesIcon className="h-5 w-5 text-primary" />
             <span className="text-sm text-muted-foreground hidden sm:inline">
-              {t('mainContent.dailyBriefing') || 'Daily Briefing'}
+              {t('mainContent.dailyBriefing')}
             </span>
           </button>
         )}
@@ -81,7 +81,7 @@ const TaskListHeader: React.FC<TaskListHeaderProps> = ({
           <button
             onClick={onSearch}
             className="p-1.5 rounded-md hover:bg-secondary"
-            aria-label={t('mainContent.searchTasks') || 'Search tasks'}
+            aria-label={t('mainContent.searchTasks')}
           >
             <SearchIcon className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
           </button>
@@ -90,7 +90,7 @@ const TaskListHeader: React.FC<TaskListHeaderProps> = ({
           <button
             onClick={onSortToggle}
             className="p-1.5 rounded-md hover:bg-secondary"
-            aria-label={t('mainContent.sortTasks') || 'Sort tasks'}
+            aria-label={t('mainContent.sortTasks')}
           >
             {renderSortIcon()}
           </button>
@@ -101,7 +101,7 @@ const TaskListHeader: React.FC<TaskListHeaderProps> = ({
               onClick={onUndo} 
               disabled={!canUndo} 
               className="p-2 rounded-md hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
-              aria-label={t('mainContent.undo') || 'Undo'}
+              aria-label={t('mainContent.undo')}
             >
               <UndoIcon className="h-5 w-5 text-muted-foreground" />
             </button>
@@ -111,7 +111,7 @@ const TaskListHeader: React.FC<TaskListHeaderProps> = ({
               onClick={onRedo} 
               disabled={!canRedo} 
               className="p-2 rounded-md hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
-              aria-label={t('mainContent.redo') || 'Redo'}
+              aria-label={t('mainContent.redo')}
             >
               <RedoIcon className="h-5 w-5 text-muted-foreground" />
             </button>
@@ -121,7 +121,7 @@ const TaskListHeader: React.FC<TaskListHeaderProps> = ({
               onClick={onClearHistory}
               disabled={!canUndo && !canRedo}
               className="p-2 rounded-md hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
-              aria-label={t('mainContent.clearHistory') || 'Clear history'}
+              aria-label={t('mainContent.clearHistory')}
             >
               <TrashIcon className="h-5 w-5 text-muted-foreground" />
             </button>

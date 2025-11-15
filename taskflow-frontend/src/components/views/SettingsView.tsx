@@ -134,7 +134,7 @@ const SettingsView: React.FC = () => {
   return (
     <AppPage>
       <AppPageContainer>
-        <header className="py-6 border-b border-border flex-shrink-0">
+        <header className="py-6 border-b border-border shrink-0">
           <h1 className="text-2xl font-bold">{t('settings.title')}</h1>
           <p className="text-muted-foreground">{t('settings.subtitle')}</p>
         </header>

@@ -35,13 +35,30 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
   const { t } = useI18n()
   const { allUsers } = useUser()
   const [isDragOver, setIsDragOver] = useState(false)
-  const [isSubtasksOpen, setIsSubtasksOpen] = useState(true)
+  const [isSubtasksOpen, setIsSubtasksOpen] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    const originalId = task.id.split('_')[0]
+    const stored = window.localStorage.getItem(`task-subtasks-open-${originalId}`)
+    return stored === 'true'
+  })
 
   const assignee = allUsers?.find(u => u.id === task.assigneeId) || null
 
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation()
     dispatch({ type: 'TOGGLE_TASK_COMPLETION', payload: { taskId: task.id } })
+  }
+
+  const handleToggleSubtasksVisibility = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setIsSubtasksOpen(prev => {
+      const next = !prev
+      if (typeof window !== 'undefined') {
+        const originalId = task.id.split('_')[0]
+        window.localStorage.setItem(`task-subtasks-open-${originalId}`, next ? 'true' : 'false')
+      }
+      return next
+    })
   }
 
   const handleSubtaskToggle = (e: React.MouseEvent, subtaskId: string) => {
@@ -144,7 +161,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
           onClick={handleToggle}
           aria-label={task.completed ? t('taskItem.aria.markIncomplete') : t('taskItem.aria.markComplete')}
           className={`
-            h-5 w-5 rounded flex-shrink-0
+            h-5 w-5 rounded shrink-0
             flex items-center justify-center 
             transition-all duration-150 transform hover:scale-110
             focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
@@ -157,12 +174,17 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
         >
           {task.completed && <CheckIcon className="h-3.5 w-3.5 text-primary-foreground" />}
         </button>
-        <div className="ml-4 flex-grow flex items-center gap-2">
-          <p className={`text-sm ${task.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
-            {task.title}
-          </p>
+        <div className="ml-4 grow flex items-center gap-2">
+          <div className="flex flex-col">
+            <p className={`text-sm ${task.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+              {task.title}
+            </p>
+            {listName && (
+              <span className="text-[11px] text-muted-foreground">{listName}</span>
+            )}
+          </div>
           {task.subtasks.length > 0 && (
-            <button onClick={(e) => { e.stopPropagation(); setIsSubtasksOpen(!isSubtasksOpen); }} className="p-1 rounded-full opacity-0 group-hover:opacity-100 hover:bg-secondary transition-opacity">
+            <button onClick={handleToggleSubtasksVisibility} className="p-1 rounded-full opacity-0 group-hover:opacity-100 hover:bg-secondary transition-opacity">
               {isSubtasksOpen ? <ArrowUpIcon className="h-4 w-4 text-muted-foreground" /> : <ArrowDownIcon className="h-4 w-4 text-muted-foreground" />}
             </button>
           )}
@@ -195,7 +217,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
                   onClick={(e) => handleSubtaskToggle(e, subtask.id)}
                   aria-label={subtask.completed ? t('taskItem.aria.markIncomplete') : t('taskItem.aria.markComplete')}
                   className={`
-                    h-4 w-4 rounded-sm flex-shrink-0
+                    h-4 w-4 rounded-sm shrink-0
                     flex items-center justify-center 
                     transition-all duration-150
                     focus:outline-none focus:ring-1 focus:ring-ring
@@ -207,7 +229,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
                 >
                   {subtask.completed && <CheckIcon className="h-2.5 w-2.5 text-primary-foreground" />}
                 </button>
-                <p className={`text-sm flex-grow ${subtask.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                <p className={`text-sm grow ${subtask.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
                   {subtask.title}
                 </p>
               </div>

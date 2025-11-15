@@ -4,12 +4,12 @@ import React, { useState, useMemo } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { usePomodoroActions } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
-import { PlusIcon, CheckCircleIcon } from '@/lib/constants'
+import { CheckCircleIcon } from '@/lib/constants'
 import { toYYYYMMDD } from '@/lib/utils/date-helpers'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
 
 const PomodoroView: React.FC = () => {
-  const { state, dispatch } = useTaskManager()
+  const { state } = useTaskManager()
   const { startTimer, pauseTimer, resetTimer, setFocusedTask } = usePomodoroActions()
   const { t } = useI18n()
   const { pomodoro } = state
@@ -71,7 +71,7 @@ const PomodoroView: React.FC = () => {
   return (
     <AppPage>
       <AppPageContainer>
-        <header className="py-6 border-b border-border flex-shrink-0">
+        <header className="py-6 border-b border-border shrink-0">
           <h1 className="text-3xl font-bold">{t('nav.pomodoro')}</h1>
           <p className="text-muted-foreground">Focus timer</p>
         </header>
@@ -84,7 +84,7 @@ const PomodoroView: React.FC = () => {
                 {getSessionName()}
               </p>
               <div 
-                className="text-xl md:text-2xl font-semibold min-h-[32px] cursor-pointer hover:bg-secondary p-2 rounded-md"
+                className="text-xl md:text-2xl font-semibold min-h-8 cursor-pointer hover:bg-secondary p-2 rounded-md"
                 onClick={() => setTaskPickerOpen(true)}
               >
                 {focusedTask 
@@ -176,7 +176,7 @@ const PomodoroView: React.FC = () => {
                   ×
                 </button>
               </header>
-              <div className="flex-grow p-4 overflow-y-auto">
+              <div className="grow p-4 overflow-y-auto">
                 <ul className="space-y-2">
                   <li 
                     onClick={() => {

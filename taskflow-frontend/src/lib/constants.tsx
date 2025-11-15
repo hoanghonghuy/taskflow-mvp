@@ -1,6 +1,7 @@
 // src/lib/constants.tsx
 import React from 'react'
 import { Priority, PomodoroSettings, AppState } from '@/types'
+import type { TranslationKey } from '@/lib/i18n/types'
 
 // Icons
 export const CalendarDayIcon: React.FC<{ className?: string }> = ({ className }) => (
@@ -22,9 +23,20 @@ export const SparklesIcon: React.FC<{ className?: string }> = ({ className }) =>
 )
 
 export const RepeatIcon: React.FC<{ className?: string; title?: string }> = ({ className, title }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth={1.5}
+    stroke="currentColor"
+    className={className}
+  >
     {title && <title>{title}</title>}
-    <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.664 0l3.18-3.182m-3.182-4.991v4.99" />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M5 20v-3M9 20v-6M13 20v-9M17 20v-12M4 20h14"
+    />
   </svg>
 )
 
@@ -65,8 +77,19 @@ export const GridIcon: React.FC<{ className?: string }> = ({ className }) => (
 )
 
 export const HourglassIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.092 1.21-.138 2.43-.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7z" />
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth={1.5}
+    stroke="currentColor"
+    className={className}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M8 4h8M8 20h8M9 4v3l3 3-3 3v3m6-12v3l-3 3 3 3v3"
+    />
   </svg>
 )
 
@@ -269,6 +292,7 @@ export const DEFAULT_POMODORO_SETTINGS: PomodoroSettings = {
 }
 
 export const PRIORITY_COLORS: Record<Priority, string> = {
+  none: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
   low: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
   medium: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
   high: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-yellow-300',
@@ -277,7 +301,7 @@ export const PRIORITY_COLORS: Record<Priority, string> = {
 
 export const PRIORITY_MAP: {
   [key in Priority]: {
-    label: string
+    label: TranslationKey
     icon: React.FC<{ className?: string }>
     color: string
     checkboxBorderColor: string
@@ -386,10 +410,9 @@ export const ACHIEVEMENT_DEFINITIONS = [
     title: 'Week Warrior',
     description: 'Complete tasks 7 days in a row',
     icon: '⚡',
-    condition: (_state: AppState) => {  // ← Prefix unused param with _
+    condition: () => {
       // TODO: Implement streak logic
       return false
     },
   },
 ]
-

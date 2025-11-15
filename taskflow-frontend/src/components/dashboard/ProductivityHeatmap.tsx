@@ -132,7 +132,10 @@ const ProductivityHeatmap: React.FC = () => {
           const lastLabelIndex = labels.length > 0 ? labels[labels.length - 1].index : -5
           // Heuristic to prevent label overlap on smaller screens
           if (i > lastLabelIndex + 3) {
-            labels.push({ label: firstDayOfWeek.toLocaleDateString(settings.language, { month: 'short' }), index: i })
+            const monthLabel = settings.language === 'vi'
+              ? `T${month + 1}`
+              : firstDayOfWeek.toLocaleDateString(settings.language, { month: 'short' })
+            labels.push({ label: monthLabel, index: i })
             lastMonth = month
           }
         }

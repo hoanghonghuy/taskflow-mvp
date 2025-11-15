@@ -165,7 +165,7 @@ const CalendarView: React.FC = () => {
           <div className="flex flex-col gap-2 md:gap-4 md:flex-row md:items-center md:justify-between mb-3 md:mb-6">
             <div>
               <h1 className="text-xl md:text-3xl font-bold">{t('nav.calendar')}</h1>
-              <p className="text-sm text-muted-foreground hidden md:block">{t('calendar.subtitle') || 'Calendar view of your tasks'}</p>
+              <p className="text-sm text-muted-foreground hidden md:block">{t('calendar.subtitle')}</p>
             </div>
             <div className="flex items-center gap-2 flex-wrap justify-end md:justify-start">
               <span className="text-sm font-medium text-muted-foreground md:hidden">
@@ -182,7 +182,7 @@ const CalendarView: React.FC = () => {
                 onClick={handleToday}
                 className="px-3 py-1.5 md:px-4 md:py-2 bg-secondary rounded-lg hover:bg-muted transition-colors text-sm font-medium"
               >
-                {t('calendar.today') || 'Today'}
+                {t('calendar.today')}
               </button>
               <button
                 onClick={handleNextMonth}
@@ -200,7 +200,7 @@ const CalendarView: React.FC = () => {
                       viewMode === mode ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground'
                     }`}
                   >
-                    {mode === 'month' ? t('calendar.view.month') || 'Month' : t('calendar.view.agenda') || 'Agenda'}
+                    {mode === 'month' ? t('calendar.view.month') : t('calendar.view.agenda')}
                   </button>
                 ))}
               </div>
@@ -277,7 +277,7 @@ const CalendarView: React.FC = () => {
                         {tasks.slice(0, 2).map(task => renderTaskPill(task))}
                         {tasks.length > 2 && (
                           <div className="text-[11px] text-muted-foreground">
-                            +{tasks.length - 2} {t('calendar.moreTasks', { count: tasks.length - 2 })}
+                            {t('calendar.moreTasks', { count: tasks.length - 2 })}
                           </div>
                         )}
                       </div>
@@ -292,14 +292,14 @@ const CalendarView: React.FC = () => {
                 <div className="flex items-center gap-2 mb-4">
                   <CalendarIcon className="h-5 w-5 text-primary" />
                   <div>
-                    <h3 className="font-semibold">{t('calendar.selectedDayTasks') || 'Tasks for selected day'}</h3>
+                    <h3 className="font-semibold">{t('calendar.selectedDayTasks')}</h3>
                     <p className="text-sm text-muted-foreground">
                       {selectedDate.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
                     </p>
                   </div>
                 </div>
                 {selectedTasks.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">{t('calendar.noTasks') || 'No tasks scheduled for this day.'}</p>
+                  <p className="text-sm text-muted-foreground">{t('calendar.noTasks')}</p>
                 ) : (
                   <div className="space-y-2">
                     {selectedTasks.map(task => (
@@ -327,7 +327,7 @@ const CalendarView: React.FC = () => {
                 )}
               </div>
               <div className="bg-card border border-border rounded-2xl p-4 shadow-sm">
-                <h3 className="font-semibold mb-4">{t('calendar.legend.title') || 'Priority Legend'}</h3>
+                <h3 className="font-semibold mb-4">{t('calendar.legend.title')}</h3>
                 <div className="space-y-3 text-sm">
                   {(['urgent', 'high', 'medium', 'low', 'none'] as const).map(priority => (
                     <div key={priority} className="flex items-center justify-between">
@@ -359,15 +359,15 @@ const CalendarView: React.FC = () => {
                         {date.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {tasks.length} {tasks.length === 1 ? t('calendar.taskCountSingle') || 'task' : t('calendar.taskCountPlural', { count: tasks.length }) || 'tasks'}
+                        {tasks.length} {tasks.length === 1 ? t('calendar.taskCountSingle') : t('calendar.taskCountPlural', { count: tasks.length })}
                       </p>
                     </div>
                     <span className="text-sm text-muted-foreground">
-                      {isToday(date) ? t('calendar.today') || 'Today' : ''}
+                      {isToday(date) ? t('calendar.today') : ''}
                     </span>
                   </div>
                   {tasks.length === 0 ? (
-                    <p className="text-xs text-muted-foreground">{t('calendar.noTasks') || 'No tasks scheduled.'}</p>
+                    <p className="text-xs text-muted-foreground">{t('calendar.noTasks')}</p>
                   ) : (
                     <div className="flex flex-wrap gap-2">
                       {tasks.map(task => renderTaskPill(task))}
