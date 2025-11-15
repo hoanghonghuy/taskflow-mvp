@@ -17,6 +17,32 @@
     "profile": "Hồ sơ",
     "settings": "Cài đặt"
   },
+  "dashboard": {
+    "greeting": {
+      "morning": "Chào buổi sáng!",
+      "afternoon": "Chào buổi chiều!",
+      "evening": "Chào buổi tối!"
+    },
+    "subtitle": "Đây là bảng điều khiển năng suất của bạn hôm nay.",
+    "stat": {
+      "today": "Công việc hôm nay",
+      "upcoming": "Công việc sắp tới",
+      "habits": "Thói quen đã hoàn thành"
+    },
+    "heatmapTitle": "Bản đồ nhiệt Năng suất",
+    "cta": {
+      "title": "Sẵn sàng để lên kế hoạch cho ngày của bạn?",
+      "subtitle": "Hãy để Gemini phân tích công việc và thói quen của bạn để tạo ra một kế hoạch được cá nhân hóa, có thể hành động để giúp bạn tập trung và làm việc hiệu quả.",
+      "button": "Nhận báo cáo trong ngày"
+    }
+  },
+  "heatmap": {
+    "tooltip": {
+      "noActivity": "Không có hoạt động vào ngày {{date}}",
+      "activity": "{{date}}\n- {{tasksCount}} công việc đã hoàn thành\n- {{pomosCount}} phiên Pomodoro",
+      "future": "Ngày trong tương lai"
+    }
+  },
   "auth": {
     "login": "Đăng nhập",
     "register": "Đăng ký",
@@ -166,7 +192,23 @@
     "tasksCompleted": "Nhiệm vụ đã hoàn thành",
     "habitsTracked": "Thói quen đã theo dõi",
     "pomodoroSessions": "Phiên Pomodoro",
-    "achievementsUnlocked": "Thành tích đã mở khóa"
+    "achievementsUnlocked": "Thành tích đã mở khóa",
+    "viewProfile": "Xem hồ sơ",
+    "settings": "Cài đặt",
+    "achievements": "Thành tích",
+    "logout": "Đăng xuất"
+  },
+  "feature": {
+    "toggleSidebar": "Bật/tắt thanh bên",
+    "dashboard": "Bảng điều khiển",
+    "listView": "Chế độ danh sách",
+    "boardView": "Chế độ bảng",
+    "calendarView": "Chế độ lịch",
+    "matrixView": "Chế độ ma trận",
+    "habitTracker": "Theo dõi thói quen",
+    "pomodoro": "Pomodoro",
+    "countdown": "Đếm ngược",
+    "more": "Thêm"
   },
   "common": {
     "search": "Tìm kiếm",

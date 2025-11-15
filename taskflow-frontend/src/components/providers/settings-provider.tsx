@@ -16,6 +16,7 @@ const DEFAULT_SETTINGS: Settings = {
   autoStartPomodoro: false,
   defaultPriority: 'medium',
   defaultListId: 'inbox',
+  bottomNavActions: ['dashboard', 'list', 'board', 'calendar'],
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined)

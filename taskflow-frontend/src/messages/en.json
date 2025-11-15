@@ -17,6 +17,32 @@
     "profile": "Profile",
     "settings": "Settings"
   },
+  "dashboard": {
+    "greeting": {
+      "morning": "Good morning!",
+      "afternoon": "Good afternoon!",
+      "evening": "Good evening!"
+    },
+    "subtitle": "Here's your productivity dashboard for today.",
+    "stat": {
+      "today": "Tasks for Today",
+      "upcoming": "Upcoming Tasks",
+      "habits": "Habits Completed"
+    },
+    "heatmapTitle": "Productivity Heatmap",
+    "cta": {
+      "title": "Ready to plan your day?",
+      "subtitle": "Let Gemini analyze your tasks and habits to create a personalized, actionable plan to help you stay focused and productive.",
+      "button": "Get My Daily Briefing"
+    }
+  },
+  "heatmap": {
+    "tooltip": {
+      "noActivity": "No activity on {{date}}",
+      "activity": "{{date}}\n- {{tasksCount}} task(s) completed\n- {{pomosCount}} Pomodoro session(s)",
+      "future": "Future date"
+    }
+  },
   "auth": {
     "login": "Login",
     "register": "Register",
@@ -166,7 +192,23 @@
     "tasksCompleted": "Tasks Completed",
     "habitsTracked": "Habits Tracked",
     "pomodoroSessions": "Pomodoro Sessions",
-    "achievementsUnlocked": "Achievements Unlocked"
+    "achievementsUnlocked": "Achievements Unlocked",
+    "viewProfile": "View Profile",
+    "settings": "Settings",
+    "achievements": "Achievements",
+    "logout": "Logout"
+  },
+  "feature": {
+    "toggleSidebar": "Toggle Sidebar",
+    "dashboard": "Dashboard",
+    "listView": "List View",
+    "boardView": "Board View",
+    "calendarView": "Calendar View",
+    "matrixView": "Matrix View",
+    "habitTracker": "Habit Tracker",
+    "pomodoro": "Pomodoro",
+    "countdown": "Countdown",
+    "more": "More"
   },
   "common": {
     "search": "Search",

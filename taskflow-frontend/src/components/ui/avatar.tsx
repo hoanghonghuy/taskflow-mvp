@@ -1,53 +1,43 @@
-"use client"
+'use client'
 
-import * as React from "react"
-import * as AvatarPrimitive from "@radix-ui/react-avatar"
+import React from 'react'
+import type { User } from '@/types'
 
-import { cn } from "@/lib/utils"
-
-function Avatar({
-  className,
-  ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Root>) {
-  return (
-    <AvatarPrimitive.Root
-      data-slot="avatar"
-      className={cn(
-        "relative flex size-8 shrink-0 overflow-hidden rounded-full",
-        className
-      )}
-      {...props}
-    />
-  )
+interface AvatarProps {
+  user: User | null
+  className?: string
 }
 
-function AvatarImage({
-  className,
-  ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Image>) {
-  return (
-    <AvatarPrimitive.Image
-      data-slot="avatar-image"
-      className={cn("aspect-square size-full", className)}
-      {...props}
-    />
-  )
+const getInitials = (name: string): string => {
+  const names = name.split(' ')
+  if (names.length > 1) {
+    return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase()
+  }
+  return name.substring(0, 2).toUpperCase()
 }
 
-function AvatarFallback({
-  className,
-  ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Fallback>) {
+export default function Avatar({ user, className }: AvatarProps) {
+  if (!user) {
+    return (
+      <div className={`flex items-center justify-center w-10 h-10 rounded-full bg-secondary text-muted-foreground ${className || ''}`}>
+        ?
+      </div>
+    )
+  }
+
+  if (user.avatarUrl) {
+    return (
+      <img
+        src={user.avatarUrl}
+        alt={user.name}
+        className={`w-10 h-10 rounded-full object-cover ${className || ''}`}
+      />
+    )
+  }
+
   return (
-    <AvatarPrimitive.Fallback
-      data-slot="avatar-fallback"
-      className={cn(
-        "bg-muted flex size-full items-center justify-center rounded-full",
-        className
-      )}
-      {...props}
-    />
+    <div className={`flex items-center justify-center w-10 h-10 rounded-full bg-primary/20 text-primary font-bold ${className || ''}`}>
+      {getInitials(user.name)}
+    </div>
   )
 }
-
-export { Avatar, AvatarImage, AvatarFallback }

@@ -5,6 +5,7 @@ export interface Task {
   title: string;
   description: string;
   completed: boolean;
+  completedAt?: string;
   dueDate?: string;
   priority: Priority;
   listId: string;
@@ -15,6 +16,8 @@ export interface Task {
   reminderMinutes?: number;
   assigneeId?: string | null;
   comments: Comment[];
+  createdAt?: string;
+  totalFocusTime?: number;
 }
 
 export interface Subtask {
@@ -81,7 +84,7 @@ export interface PomodoroState {
 }
 
 export interface FocusSession {
-  date: string;
+  startTime: string;
   duration: number;
   taskId?: string;
 }
@@ -100,6 +103,7 @@ export interface Settings {
   autoStartPomodoro: boolean;
   defaultPriority: Priority;
   defaultListId: string;
+  bottomNavActions?: View[];
 }
 
 export type View = 
