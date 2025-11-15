@@ -36,20 +36,31 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
             console.error('Failed to parse saved state:', error)
           }
         }
-        // Load mock data if no saved state
-        const { generateMockData } = require('@/lib/mock-data')
-        const mockData = generateMockData()
-        return {
-          past: [],
-          present: {
-            ...INITIAL_STATE,
-            ...mockData,
-            pomodoro: {
-              ...INITIAL_STATE.pomodoro,
-              focusHistory: mockData.focusHistory,
+        // Load mock data if no saved state or saved state has no tasks
+        try {
+          const { generateMockData } = require('@/lib/mock-data')
+          const mockData = generateMockData()
+          console.log('📦 Loading mock data:', {
+            tasks: mockData.tasks.length,
+            lists: mockData.lists.length,
+            habits: mockData.habits.length,
+            countdowns: mockData.countdownEvents.length,
+          })
+          return {
+            past: [],
+            present: {
+              ...INITIAL_STATE,
+              ...mockData,
+              pomodoro: {
+                ...INITIAL_STATE.pomodoro,
+                focusHistory: mockData.focusHistory,
+              },
             },
-          },
-          future: []
+            future: []
+          }
+        } catch (error) {
+          console.error('❌ Failed to load mock data:', error)
+          return initial
         }
       }
       return initial

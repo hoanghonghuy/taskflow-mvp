@@ -58,7 +58,7 @@ const HabitsView: React.FC = () => {
               className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
             >
               <PlusIcon className="h-5 w-5" />
-              <span>{t('habits.add') || 'Add Habit'}</span>
+              <span>{t('habits.add')}</span>
             </button>
           )}
         </div>
@@ -76,7 +76,7 @@ const HabitsView: React.FC = () => {
                   setNewHabitName('')
                 }
               }}
-              placeholder={t('habits.namePlaceholder') || 'Habit name'}
+              placeholder={t('habits.namePlaceholder')}
               className="flex-1 px-4 py-2 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               autoFocus
             />
@@ -84,7 +84,7 @@ const HabitsView: React.FC = () => {
               onClick={handleAddHabit}
               className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
             >
-              {t('habits.add') || 'Add'}
+              {t('habits.add')}
             </button>
             <button
               onClick={() => {
@@ -93,7 +93,7 @@ const HabitsView: React.FC = () => {
               }}
               className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-muted transition-colors"
             >
-              {t('habits.cancel') || 'Cancel'}
+              {t('habits.cancel')}
             </button>
           </div>
         )}
@@ -101,7 +101,7 @@ const HabitsView: React.FC = () => {
       <main className="flex-1 p-4 md:p-6 overflow-y-auto pb-20 md:pb-6">
         {state.habits.length === 0 ? (
           <div className="text-center text-muted-foreground py-12">
-            <p className="text-lg">{t('habits.noHabits') || 'No habits yet. Add one to get started!'}</p>
+            <p className="text-lg">{t('habits.noHabits')}</p>
           </div>
         ) : (
           <div className="space-y-6">
@@ -115,13 +115,13 @@ const HabitsView: React.FC = () => {
                     <div className="flex-1">
                       <h3 className="font-semibold text-lg">{habit.name}</h3>
                       <p className="text-sm text-muted-foreground">
-                        {completionRate}% completion rate (last 30 days)
+                        {t('habits.completionRate', { rate: completionRate, days: 30 })}
                       </p>
                     </div>
                     <button
                       onClick={() => deleteHabit(habit.id)}
                       className="p-2 text-muted-foreground hover:text-destructive transition-colors"
-                      aria-label="Delete habit"
+                      aria-label={t('habits.aria.deleteHabit')}
                     >
                       <TrashIcon className="h-5 w-5" />
                     </button>
@@ -137,7 +137,7 @@ const HabitsView: React.FC = () => {
                         }
                       `}
                     >
-                      {isCompletedToday ? t('habits.completed') || 'Completed' : t('habits.markComplete') || 'Mark Complete'}
+                      {isCompletedToday ? t('habits.completed') : t('habits.markComplete')}
                     </button>
                   </div>
                   <div className="grid grid-cols-[repeat(30,minmax(0,1fr))] gap-1">

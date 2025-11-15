@@ -66,44 +66,44 @@ const ProfileView: React.FC = () => {
             <div className="bg-card border border-border rounded-lg p-6">
               <div className="flex items-center gap-3 mb-2">
                 <CheckCircleIcon className="h-6 w-6 text-primary" />
-                <h3 className="font-semibold">{t('profile.tasks') || 'Tasks'}</h3>
+                <h3 className="font-semibold">{t('profile.tasks')}</h3>
               </div>
               <p className="text-3xl font-bold">{stats.completedTasks}/{stats.totalTasks}</p>
               <p className="text-sm text-muted-foreground mt-1">
-                {stats.completionRate}% completion rate
+                {stats.completionRate}% {t('profile.completionRate')}
               </p>
             </div>
 
             <div className="bg-card border border-border rounded-lg p-6">
               <div className="flex items-center gap-3 mb-2">
                 <CalendarIcon className="h-6 w-6 text-green-500" />
-                <h3 className="font-semibold">{t('profile.habits') || 'Habits'}</h3>
+                <h3 className="font-semibold">{t('profile.habits')}</h3>
               </div>
               <p className="text-3xl font-bold">{stats.completedHabitsToday}/{stats.totalHabits}</p>
               <p className="text-sm text-muted-foreground mt-1">
-                Completed today
+                {t('profile.completedToday')}
               </p>
             </div>
 
             <div className="bg-card border border-border rounded-lg p-6">
               <div className="flex items-center gap-3 mb-2">
                 <ClockIcon className="h-6 w-6 text-blue-500" />
-                <h3 className="font-semibold">{t('profile.focusTime') || 'Focus Time'}</h3>
+                <h3 className="font-semibold">{t('profile.focusTime')}</h3>
               </div>
               <p className="text-3xl font-bold">{formatDuration(stats.totalFocusTime)}</p>
               <p className="text-sm text-muted-foreground mt-1">
-                {stats.totalPomos} sessions
+                {stats.totalPomos} {t('profile.sessions')}
               </p>
             </div>
 
             <div className="bg-card border border-border rounded-lg p-6">
               <div className="flex items-center gap-3 mb-2">
                 <TrophyIcon className="h-6 w-6 text-yellow-500" />
-                <h3 className="font-semibold">{t('profile.achievements') || 'Achievements'}</h3>
+                <h3 className="font-semibold">{t('profile.achievements')}</h3>
               </div>
               <p className="text-3xl font-bold">{stats.unlockedAchievements}</p>
               <p className="text-sm text-muted-foreground mt-1">
-                Unlocked
+                {t('profile.unlocked')}
               </p>
             </div>
           </div>

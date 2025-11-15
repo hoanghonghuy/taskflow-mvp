@@ -146,13 +146,16 @@
     "add": "Thêm",
     "cancel": "Hủy",
     "column": {
-      "cancel": "Hủy"
+      "cancel": "Hủy",
+      "dragHandle": "Kéo để sắp xếp lại cột",
+      "delete": "Xóa cột"
     }
   },
   "specialLists": {
     "inbox": "Hộp thư đến",
     "today": "Hôm nay",
-    "upcoming": "Sắp tới"
+    "upcoming": "Sắp tới",
+    "tomorrow": "Ngày mai"
   },
   "lists": {
     "work": "Công việc",
@@ -196,6 +199,18 @@
     "noHabits": "Chưa có thói quen nào",
     "createFirst": "Tạo thói quen đầu tiên để xây dựng sự kiên định"
   },
+  "habits": {
+    "add": "Thêm Thói quen",
+    "cancel": "Hủy",
+    "namePlaceholder": "Tên thói quen",
+    "noHabits": "Chưa có thói quen nào. Thêm một cái để bắt đầu!",
+    "completed": "Đã hoàn thành",
+    "markComplete": "Đánh dấu hoàn thành",
+    "completionRate": "{{rate}}% tỷ lệ hoàn thành ({{days}} ngày qua)",
+    "aria": {
+      "deleteHabit": "Xóa thói quen"
+    }
+  },
   "pomodoro": {
     "focus": "Tập trung",
     "shortBreak": "Nghỉ ngắn",
@@ -233,7 +248,10 @@
     "past": "Sự kiện đã qua",
     "noCountdowns": "Chưa có đếm ngược nào. Thêm một cái để bắt đầu!",
     "noEvents": "Không có sự kiện đếm ngược",
-    "createFirst": "Tạo đếm ngược để theo dõi các ngày quan trọng"
+    "createFirst": "Tạo đếm ngược để theo dõi các ngày quan trọng",
+    "aria": {
+      "deleteCountdown": "Xóa đếm ngược"
+    }
   },
   "achievement": {
     "unlocked": "Mở khóa thành tích!",
@@ -249,8 +267,8 @@
     "general": "Chung",
     "appearance": "Giao diện",
     "notifications": "Thông báo",
-    "language": "Ngôn ngữ",
-    "theme": "Chủ đề",
+    "languageLabel": "Ngôn ngữ",
+    "themeLabel": "Chủ đề",
     "theme": {
       "light": "Sáng",
       "dark": "Tối"
@@ -298,7 +316,11 @@
     "viewProfile": "Xem hồ sơ",
     "settings": "Cài đặt",
     "achievements": "Thành tích",
-    "logout": "Đăng xuất"
+    "logout": "Đăng xuất",
+    "completionRate": "tỷ lệ hoàn thành",
+    "completedToday": "Đã hoàn thành hôm nay",
+    "sessions": "phiên",
+    "unlocked": "Đã mở khóa"
   },
   "feature": {
     "toggleSidebar": "Bật/tắt thanh bên",
@@ -428,6 +450,12 @@
   "matrix": {
     "title": "Ma trận Eisenhower",
     "subtitle": "Sắp xếp ưu tiên nhiệm vụ dựa trên tính khẩn cấp và quan trọng.",
+    "axis": {
+      "urgent": "Khẩn cấp",
+      "notUrgent": "Không khẩn cấp",
+      "important": "Quan trọng",
+      "notImportant": "Không quan trọng"
+    },
     "q1": {
       "title": "Khẩn cấp & Quan trọng",
       "subtitle": "Làm những nhiệm vụ này trước."
@@ -523,5 +551,13 @@
   "focusPicker": {
     "title": "Chọn Nhiệm vụ để Tập trung",
     "general": "Tập trung chung (Không có nhiệm vụ cụ thể)"
+  },
+  "chatbot": {
+    "title": "Trò chuyện với Gemini",
+    "initialMessage": "Xin chào! Tôi là trợ lý AI của bạn. Tôi có thể giúp gì cho bạn hôm nay?",
+    "placeholder": "Nhập tin nhắn của bạn...",
+    "thinkingMode": "Chế độ Suy nghĩ",
+    "searchWeb": "Tìm kiếm Web",
+    "sources": "Nguồn"
   }
 }

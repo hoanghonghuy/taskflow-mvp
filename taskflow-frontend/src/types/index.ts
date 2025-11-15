@@ -145,3 +145,16 @@ export interface PomodoroState {
   focusHistory: FocusSession[];
   settings: PomodoroSettings;
 }
+
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'model';
+  text: string;
+  timestamp: number;
+  groundingSources?: GroundingSource[];
+}
+
+export interface GroundingSource {
+  uri: string;
+  title: string;
+}

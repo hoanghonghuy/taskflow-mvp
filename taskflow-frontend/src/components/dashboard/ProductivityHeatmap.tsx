@@ -5,10 +5,14 @@ import { useTaskManager } from '@/lib/hooks/use-task-manager'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import { useSettings } from '@/components/providers/settings-provider'
 
-const CELL_SIZE = 12 // Corresponds to w-3
-const CELL_GAP = 4   // Corresponds to gap-1
+const CELL_SIZE = 12 // w-3
+const CELL_GAP = 4   // gap-1
 const WEEK_WIDTH = CELL_SIZE + CELL_GAP
-const DAY_LABELS_WIDTH = 30 // Approx width for 'Mon', 'Wed', 'Fri' labels and margin
+const DAY_LABELS_WIDTH = 30 // width for day labels
+
+const LIGHT_SCALE = ['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39']
+const DARK_SCALE = ['#161b22', '#0e4429', '#006d32', '#26a641', '#39d353']
+const FUTURE_OPACITY = 0.35
 
 const ProductivityHeatmap: React.FC = () => {
   const { state } = useTaskManager()
@@ -19,6 +23,21 @@ const ProductivityHeatmap: React.FC = () => {
 
   // Get container width on resize
   useEffect(() => {
+    // Set initial width with a small delay to ensure DOM is ready
+    const setInitialWidth = () => {
+      if (containerRef.current) {
+        const width = containerRef.current.offsetWidth
+        if (width > 0) {
+          setContainerWidth(width)
+        } else {
+          // Retry if width is still 0
+          setTimeout(setInitialWidth, 100)
+        }
+      }
+    }
+    
+    setInitialWidth()
+    
     const observer = new ResizeObserver(entries => {
       if (entries[0]) {
         setContainerWidth(entries[0].contentRect.width)
@@ -39,6 +58,7 @@ const ProductivityHeatmap: React.FC = () => {
     const contribs: { [date: string]: { tasks: number, pomos: number, total: number } } = {}
     let max = 1
 
+    // Count completed tasks
     state.tasks.forEach(task => {
       if (task.completed && task.completedAt) {
         const dateStr = new Date(task.completedAt).toISOString().split('T')[0]
@@ -49,16 +69,21 @@ const ProductivityHeatmap: React.FC = () => {
       }
     })
 
-    state.pomodoro.focusHistory.forEach(session => {
-      const dateStr = new Date(session.startTime).toISOString().split('T')[0]
-      if (!contribs[dateStr]) contribs[dateStr] = { tasks: 0, pomos: 0, total: 0 }
-      contribs[dateStr].pomos += 1
-      contribs[dateStr].total += 1
-      if (contribs[dateStr].total > max) max = contribs[dateStr].total
-    })
+    // Count pomodoro sessions
+    if (state.pomodoro?.focusHistory) {
+      state.pomodoro.focusHistory.forEach(session => {
+        if (session?.startTime) {
+          const dateStr = new Date(session.startTime).toISOString().split('T')[0]
+          if (!contribs[dateStr]) contribs[dateStr] = { tasks: 0, pomos: 0, total: 0 }
+          contribs[dateStr].pomos += 1
+          contribs[dateStr].total += 1
+          if (contribs[dateStr].total > max) max = contribs[dateStr].total
+        }
+      })
+    }
 
     return { contributions: contribs, maxContribution: max }
-  }, [state.tasks, state.pomodoro.focusHistory])
+  }, [state.tasks, state.pomodoro?.focusHistory])
 
   // Calculate which days and month labels to show based on width
   const { weeks, monthLabels, dayLabels } = useMemo(() => {
@@ -68,11 +93,10 @@ const ProductivityHeatmap: React.FC = () => {
       return day.toLocaleDateString(settings.language, { weekday: 'short' })
     })
 
-    if (containerWidth === 0) {
-      return { weeks: [], monthLabels: [], dayLabels: localDayLabels }
-    }
+    // Use a minimum width if containerWidth is 0 to ensure heatmap renders
+    const effectiveWidth = containerWidth > 0 ? containerWidth : 400
 
-    const availableWidth = containerWidth > DAY_LABELS_WIDTH ? containerWidth - DAY_LABELS_WIDTH : 0
+    const availableWidth = effectiveWidth > DAY_LABELS_WIDTH ? effectiveWidth - DAY_LABELS_WIDTH : 0
     const numWeeks = Math.max(1, Math.min(52, Math.floor(availableWidth / WEEK_WIDTH)))
     
     const today = new Date()
@@ -115,13 +139,31 @@ const ProductivityHeatmap: React.FC = () => {
 
   }, [containerWidth, settings.language])
   
-  const getColorClass = (count: number) => {
-    if (count === 0) return 'bg-secondary'
+  const getColorIndex = (count: number) => {
+    if (count === 0) return 0
     const ratio = count / maxContribution
-    if (ratio < 0.25) return 'bg-primary/20'
-    if (ratio < 0.5) return 'bg-primary/40'
-    if (ratio < 0.75) return 'bg-primary/70'
-    return 'bg-primary'
+    if (ratio < 0.25) return 1
+    if (ratio < 0.5) return 2
+    if (ratio < 0.75) return 3
+    return 4
+  }
+
+  const getCellStyle = (count: number, isFuture: boolean) => {
+    const palette = settings.theme === 'dark' ? DARK_SCALE : LIGHT_SCALE
+    const index = getColorIndex(count)
+    const color = palette[index]
+    if (isFuture) {
+      return {
+        backgroundColor: palette[0],
+        borderColor: palette[0],
+        opacity: FUTURE_OPACITY,
+      }
+    }
+    return {
+      backgroundColor: color,
+      borderColor: palette[index === 0 ? 0 : index],
+      opacity: 1,
+    }
   }
   
   const getTooltipText = (date: Date) => {
@@ -183,7 +225,8 @@ const ProductivityHeatmap: React.FC = () => {
                   return (
                     <div
                       key={date.toISOString()}
-                      className={`w-3 h-3 rounded-sm ${isFuture ? 'bg-muted/20' : getColorClass(count)}`}
+                      className="w-3 h-3 rounded-[3px] border transition-all duration-200"
+                      style={getCellStyle(count, isFuture)}
                       title={isFuture ? t('heatmap.tooltip.future') : getTooltipText(date)}
                     />
                   )

@@ -10,46 +10,38 @@ import { filterTasksByList, sortTasks, groupUpcomingTasks, type SortOrder } from
 
 interface TaskListProps {
   onAddTask?: () => void
-  activeListId?: string | null
-  activeTag?: string | null
-  sortOrder?: SortOrder
 }
 
-const TaskList: React.FC<TaskListProps> = ({ 
-  onAddTask, 
-  activeListId = null, 
-  activeTag = null,
-  sortOrder = 'default'
-}) => {
+const TaskList: React.FC<TaskListProps> = ({ onAddTask }) => {
   const { state } = useTaskManager()
   const { t } = useI18n()
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null)
   const [isCompletedOpen, setIsCompletedOpen] = useState(false)
 
   const filteredTasks = useMemo(() => {
-    return filterTasksByList(state.tasks, activeListId || null, activeTag || null)
-  }, [state.tasks, activeListId, activeTag])
+    return filterTasksByList(state.tasks, state.activeListId, state.activeTag)
+  }, [state.tasks, state.activeListId, state.activeTag])
 
   const uncompletedTasks = useMemo(() => {
     return sortTasks(
       filteredTasks.filter(task => !task.completed),
-      sortOrder,
+      state.sortOrder,
       state.tasks
     )
-  }, [filteredTasks, sortOrder, state.tasks])
+  }, [filteredTasks, state.sortOrder, state.tasks])
 
   const completedTasks = useMemo(() => {
     return sortTasks(
       filteredTasks.filter(task => task.completed),
-      sortOrder,
+      state.sortOrder,
       state.tasks
     )
-  }, [filteredTasks, sortOrder, state.tasks])
+  }, [filteredTasks, state.sortOrder, state.tasks])
 
   const groupedUpcomingTasks = useMemo(() => {
-    if (activeListId !== 'upcoming') return null
+    if (state.activeListId !== 'upcoming') return null
     return groupUpcomingTasks(uncompletedTasks, t)
-  }, [activeListId, uncompletedTasks, t])
+  }, [state.activeListId, uncompletedTasks, t])
 
   const upcomingGroupOrder = useMemo(() => {
     if (!groupedUpcomingTasks) return []
@@ -76,15 +68,15 @@ const TaskList: React.FC<TaskListProps> = ({
     return (
       <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground py-12">
         {EMPTY_STATE_ILLUSTRATIONS.noTasks}
-        <h2 className="text-xl font-semibold mt-4">{t('taskList.allDone') || 'All done!'}</h2>
-        <p className="text-sm mt-2">{t('taskList.noTasks') || 'No tasks found'}</p>
+        <h2 className="text-xl font-semibold mt-4">{t('taskList.allDone')}</h2>
+        <p className="text-sm mt-2">{t('taskList.noTasks')}</p>
         {onAddTask && (
           <button
             onClick={onAddTask}
             className="mt-6 flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
           >
             <PlusIcon className="h-5 w-5" />
-            <span>{t('taskList.addTask') || 'Add Task'}</span>
+            <span>{t('taskList.addTask')}</span>
           </button>
         )}
       </div>
@@ -96,7 +88,7 @@ const TaskList: React.FC<TaskListProps> = ({
       <TaskItem 
         key={task.id} 
         task={task}
-        isDraggable={sortOrder === 'default' && activeListId !== 'upcoming'}
+        isDraggable={state.sortOrder === 'default' && state.activeListId !== 'upcoming'}
         onDragStart={handleDragStart}
         onDrop={handleDrop}
       />

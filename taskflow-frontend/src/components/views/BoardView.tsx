@@ -3,9 +3,9 @@
 import React, { useState, useMemo } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
-import TaskItem from '@/components/task/TaskItem'
-import { PlusIcon, GripVerticalIcon } from '@/lib/constants'
-import type { Task, Column } from '@/types'
+import BoardColumn from '@/components/board/BoardColumn'
+import { PlusIcon } from '@/lib/constants'
+import type { Column } from '@/types'
 
 interface BoardViewProps {
   onOpenTaskForm?: (defaultValues?: { listId?: string; columnId?: string }) => void
@@ -69,8 +69,9 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
     setDraggedColumnId(null)
   }
 
-  const handleAddColumn = () => {
-    if (newColumnName.trim()) {
+  const handleAddColumn = (e?: React.FormEvent) => {
+    e?.preventDefault()
+    if (newColumnName.trim() && selectedListId) {
       dispatch({
         type: 'ADD_COLUMN',
         payload: { listId: selectedListId, name: newColumnName.trim() },
@@ -96,7 +97,7 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
         </header>
         <main className="flex-1 p-4 md:p-6 overflow-y-auto pb-20 md:pb-6">
           <div className="text-center text-muted-foreground">
-            <p>{t('board.noLists') || 'No lists available. Create a list first.'}</p>
+            <p>{t('board.noLists')}</p>
           </div>
         </main>
       </div>
@@ -115,7 +116,7 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
             <select
               value={selectedListId}
               onChange={handleListChange}
-              className="w-full sm:w-auto px-4 py-2 bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm md:text-base"
+              className="w-full sm:w-auto px-4 py-2 bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm md:text-base text-foreground dark:bg-card dark:text-foreground"
             >
               {availableLists.map(list => {
                 const listKey = list.id === 'inbox' ? 'specialLists.inbox' : 
@@ -134,118 +135,84 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
           </div>
         </div>
       </header>
-      <main className="flex-1 p-4 md:p-6 overflow-y-auto pb-20 md:pb-6">
-        <div className="flex gap-3 md:gap-4 overflow-x-auto pb-4 scrollbar-thin">
-          {columnsForList.map(column => {
-            const columnTasks = tasksForList.filter(t => t.columnId === column.id)
-            const isDragOver = dragOverColumnId === column.id
+      <main className="flex-1 flex gap-4 overflow-x-auto bg-background p-4 md:p-6 pb-20 md:pb-6" onDragEnd={() => { setDraggedColumnId(null); setDragOverColumnId(null); }}>
+        {columnsForList.map(column => {
+          const columnTasks = tasksForList.filter(
+            t => t.columnId === column.id || (!t.columnId && columnsForList.findIndex(c => c.id === column.id) === 0)
+          )
+          const isDragOver = dragOverColumnId === column.id
 
-            return (
-              <div
-                key={column.id}
-                className={`
-                  flex-shrink-0 w-72 md:w-80 bg-card border border-border rounded-lg p-3 md:p-4 flex flex-col
-                  ${isDragOver ? 'border-primary border-2' : ''}
-                  transition-all
-                `}
-                onDragOver={(e) => {
-                  e.preventDefault()
-                  if (draggedTaskId) {
-                    setDragOverColumnId(column.id)
-                  }
-                }}
-                onDragLeave={() => {
-                  if (draggedTaskId) {
-                    setDragOverColumnId(null)
-                  }
-                }}
-                onDrop={(e) => {
-                  e.preventDefault()
-                  handleDropOnColumn(column.id)
-                }}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold">{column.name}</h3>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground bg-secondary px-2 py-1 rounded">
-                      {columnTasks.length}
-                    </span>
-                    <button
-                      onClick={() => handleDeleteColumn(column.id)}
-                      className="text-muted-foreground hover:text-destructive transition-colors"
-                      aria-label="Delete column"
-                    >
-                      ×
-                    </button>
-                  </div>
-                </div>
-                <div className="flex-1 space-y-2 min-h-[200px]">
-                  {columnTasks.map(task => (
-                    <TaskItem
-                      key={task.id}
-                      task={task}
-                      isDraggable={true}
-                      onDragStart={handleTaskDragStart}
-                      onDrop={() => {}}
-                    />
-                  ))}
-                  {onOpenTaskForm && (
-                    <button
-                      onClick={() => onOpenTaskForm({ listId: selectedListId, columnId: column.id })}
-                      className="w-full p-3 border-2 border-dashed border-border rounded-lg text-muted-foreground hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2"
-                    >
-                      <PlusIcon className="h-5 w-5" />
-                      <span className="text-sm">{t('board.addTask') || 'Add Task'}</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-            )
-          })}
-
+          return (
+            <div
+              key={column.id}
+              onDrop={() => {
+                handleColumnDrop(column.id)
+                setDragOverColumnId(null)
+              }}
+              onDragOver={(e) => {
+                e.preventDefault()
+                if (draggedColumnId && draggedColumnId !== column.id) {
+                  setDragOverColumnId(column.id)
+                }
+              }}
+              onDragLeave={() => {
+                setDragOverColumnId(null)
+              }}
+              className={`
+                transition-all duration-200 p-1 rounded-lg
+                ${draggedColumnId === column.id ? 'opacity-30' : ''}
+                ${draggedColumnId && dragOverColumnId === column.id ? 'bg-primary/10' : ''}
+              `}
+            >
+              <BoardColumn
+                column={column}
+                tasks={columnTasks}
+                onTaskDragStart={handleTaskDragStart}
+                onTaskDragEnd={handleTaskDragEnd}
+                onDropOnColumn={handleDropOnColumn}
+                onOpenTaskForm={onOpenTaskForm}
+                onColumnDragStart={handleColumnDragStart}
+              />
+            </div>
+          )
+        })}
+        <div className="w-72 flex-shrink-0">
           {isAddingColumn ? (
-            <div className="flex-shrink-0 w-72 md:w-80 bg-card border border-border rounded-lg p-3 md:p-4">
+            <form onSubmit={handleAddColumn} className="bg-card border border-border p-2 rounded-lg h-full flex flex-col">
               <input
+                autoFocus
                 type="text"
                 value={newColumnName}
-                onChange={(e) => setNewColumnName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    handleAddColumn()
-                  } else if (e.key === 'Escape') {
-                    setIsAddingColumn(false)
-                    setNewColumnName('')
-                  }
-                }}
-                placeholder={t('board.columnName') || 'Column name'}
-                className="w-full px-3 py-2 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary mb-2 text-sm md:text-base"
-                autoFocus
+                onChange={e => setNewColumnName(e.target.value)}
+                placeholder={t('board.columnName')}
+                className="w-full p-2 bg-secondary border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 mb-2"
               />
-              <div className="flex gap-2">
+              <div className="flex items-center gap-2 mt-auto">
                 <button
-                  onClick={handleAddColumn}
-                  className="flex-1 px-3 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm md:text-base"
+                  type="submit"
+                  className="px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-semibold hover:bg-primary/90"
                 >
-                  {t('board.add') || 'Add'}
+                  {t('board.add')}
                 </button>
                 <button
+                  type="button"
                   onClick={() => {
                     setIsAddingColumn(false)
                     setNewColumnName('')
                   }}
-                  className="flex-1 px-3 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-muted transition-colors text-sm md:text-base"
+                  className="text-sm text-muted-foreground hover:text-foreground"
                 >
-                  {t('board.cancel') || 'Cancel'}
+                  {t('board.cancel')}
                 </button>
               </div>
-            </div>
+            </form>
           ) : (
             <button
               onClick={() => setIsAddingColumn(true)}
-              className="flex-shrink-0 w-72 md:w-80 border-2 border-dashed border-border rounded-lg p-3 md:p-4 text-muted-foreground hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2 text-sm md:text-base"
+              className="w-full h-full min-h-[200px] border-2 border-dashed border-border rounded-lg text-muted-foreground hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2"
             >
               <PlusIcon className="h-5 w-5" />
-              <span>{t('board.addColumn') || 'Add Column'}</span>
+              <span>{t('board.addColumn')}</span>
             </button>
           )}
         </div>

@@ -62,29 +62,29 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
 
   const handleDeleteList = async (listId: string, listName: string) => {
     const isConfirmed = await confirm({
-      title: t('sidebar.deleteList.confirm.title', { listName }) || `Delete "${listName}"?`,
-      description: t('sidebar.deleteList.confirm.message') || 'This will permanently delete the list and all of its tasks. This action cannot be undone.',
-      confirmText: t('sidebar.deleteList.confirm.button') || 'Delete List',
+      title: t('sidebar.deleteList.confirm.title', { listName }),
+      description: t('sidebar.deleteList.confirm.message'),
+      confirmText: t('sidebar.deleteList.confirm.button'),
       variant: 'destructive',
     })
 
     if (isConfirmed) {
       dispatch({ type: 'DELETE_LIST', payload: listId })
-      addToast.success(t('sidebar.deleteList.success', { listName }) || `List "${listName}" deleted`)
+      addToast.success(t('sidebar.deleteList.success', { listName }))
     }
   }
 
   const handleDeleteTag = async (tagName: string) => {
     const isConfirmed = await confirm({
-      title: t('sidebar.deleteTag.confirm.title', { tagName }) || `Delete tag "#${tagName}"?`,
-      description: t('sidebar.deleteTag.confirm.message') || 'This will permanently remove the tag from all tasks. This action cannot be undone.',
-      confirmText: t('sidebar.deleteTag.confirm.button') || 'Delete Tag',
+      title: t('sidebar.deleteTag.confirm.title', { tagName }),
+      description: t('sidebar.deleteTag.confirm.message'),
+      confirmText: t('sidebar.deleteTag.confirm.button'),
       variant: 'destructive',
     })
 
     if (isConfirmed) {
       dispatch({ type: 'DELETE_TAG', payload: tagName })
-      addToast.success(t('sidebar.deleteTag.success', { tagName }) || `Tag "#${tagName}" deleted`)
+      addToast.success(t('sidebar.deleteTag.success', { tagName }))
     }
   }
 
@@ -105,21 +105,35 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
     children: React.ReactNode
     isActive: boolean
     onClick: () => void
-  }> = ({ children, isActive, onClick }) => (
-    <button
-      onClick={() => {
-        onClick()
-        if (window.innerWidth < 768) {
-          onClose()
-        }
-      }}
-      className={`w-full flex items-center justify-between text-sm px-3 py-2 rounded-md transition-colors group ${
-        isActive ? 'bg-primary/10 text-primary font-semibold' : 'hover:bg-muted/50'
-      }`}
-    >
-      {children}
-    </button>
-  )
+  }> = ({ children, isActive, onClick }) => {
+    const handleClick = () => {
+      onClick()
+      if (typeof window !== 'undefined' && window.innerWidth < 768) {
+        onClose()
+      }
+    }
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        handleClick()
+      }
+    }
+
+    return (
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+        className={`w-full flex items-center justify-between text-sm px-3 py-2 rounded-md transition-colors group cursor-pointer ${
+          isActive ? 'bg-primary/10 text-primary font-semibold' : 'hover:bg-muted/50'
+        }`}
+      >
+        {children}
+      </div>
+    )
+  }
 
   return (
     <>
@@ -165,7 +179,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
 
           <div className="pt-4">
             <div className="flex items-center justify-between px-3 mb-2">
-              <h2 className="text-xs font-semibold text-muted-foreground">{t('sidebar.myLists') || 'My Lists'}</h2>
+                    <h2 className="text-xs font-semibold text-muted-foreground">{t('sidebar.myLists')}</h2>
               <button onClick={() => setIsListsExpanded(!isListsExpanded)} className="p-1 rounded-md hover:bg-muted/50">
                 <ArrowDownIcon className={`h-4 w-4 text-muted-foreground transition-transform ${!isListsExpanded && '-rotate-90'}`} />
               </button>
@@ -194,7 +208,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                             <button 
                               onClick={(e) => { e.stopPropagation(); onShareList(list.id); }} 
                               className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-primary p-0.5 rounded"
-                              aria-label={t('sidebar.aria.shareList', { listName: list.name }) || `Share list ${list.name}`}
+                              aria-label={t('sidebar.aria.shareList', { listName: list.name })}
                             >
                               <UserPlusIcon className="h-4 w-4" />
                             </button>
@@ -202,7 +216,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                           <button 
                             onClick={(e) => { e.stopPropagation(); handleDeleteList(list.id, list.name); }} 
                             className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive p-0.5 rounded"
-                            aria-label={t('sidebar.aria.deleteList', { listName: list.name }) || `Delete list ${list.name}`}
+                            aria-label={t('sidebar.aria.deleteList', { listName: list.name })}
                           >
                             <TrashIcon className="h-4 w-4" />
                           </button>
@@ -217,7 +231,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                     type="text"
                     value={newList}
                     onChange={e => setNewList(e.target.value)}
-                    placeholder={t('sidebar.addNewList') || 'Add a new list...'}
+                    placeholder={t('sidebar.addNewList')}
                     className="w-full bg-transparent text-sm placeholder-muted-foreground focus:outline-none"
                   />
                 </form>
@@ -227,7 +241,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
 
           <div className="pt-4">
             <div className="flex items-center justify-between px-3 mb-2">
-              <h2 className="text-xs font-semibold text-muted-foreground">{t('sidebar.tags') || 'Tags'}</h2>
+                    <h2 className="text-xs font-semibold text-muted-foreground">{t('sidebar.tags')}</h2>
               <button onClick={() => setIsTagsExpanded(!isTagsExpanded)} className="p-1 rounded-md hover:bg-muted/50">
                 <ArrowDownIcon className={`h-4 w-4 text-muted-foreground transition-transform ${!isTagsExpanded && '-rotate-90'}`} />
               </button>
@@ -263,7 +277,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                           <button 
                             onClick={() => handleDeleteTag(tag)} 
                             className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive p-0.5 rounded"
-                            aria-label={t('sidebar.aria.deleteTag', { tagName: tag }) || `Delete tag ${tag}`}
+                            aria-label={t('sidebar.aria.deleteTag', { tagName: tag })}
                           >
                             <TrashIcon className="h-4 w-4" />
                           </button>
@@ -278,7 +292,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                     type="text"
                     value={newTag}
                     onChange={e => setNewTag(e.target.value)}
-                    placeholder={t('sidebar.addNewTag') || 'Add a new tag...'}
+                    placeholder={t('sidebar.addNewTag')}
                     className="w-full bg-transparent text-sm placeholder-muted-foreground focus:outline-none"
                   />
                 </form>
@@ -294,7 +308,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
               className="w-full flex items-center justify-center gap-2 text-sm px-3 py-2 rounded-md bg-secondary hover:bg-muted transition-colors"
             >
               <ChatBubbleLeftRightIcon className="h-5 w-5" />
-              {t('sidebar.chatWithGemini') || 'Chat with Gemini'}
+                    {t('sidebar.chatWithGemini')}
             </button>
           </div>
         )}

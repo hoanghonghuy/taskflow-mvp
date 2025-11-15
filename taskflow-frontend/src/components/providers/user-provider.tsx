@@ -3,25 +3,33 @@
 import { createContext, useContext, useState, useCallback } from 'react'
 import type { User } from '@/types'
 
-// Mock users for development
+// Mock users for development - matching template
+const MOCK_USER: User = {
+  id: 'user-001',
+  name: 'Alex Ryder',
+  email: 'alex.ryder@example.com',
+  avatarUrl: 'https://api.dicebear.com/8.x/initials/svg?seed=Alex%20Ryder',
+}
+
 const MOCK_USERS: User[] = [
-  {
-    id: 'user-001',
-    name: 'John Doe',
-    email: 'john@example.com',
-    avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=john',
-  },
+  MOCK_USER,
   {
     id: 'user-002',
-    name: 'Jane Smith',
-    email: 'jane@example.com',
-    avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=jane',
+    name: 'Jane Doe',
+    email: 'jane.doe@example.com',
+    avatarUrl: 'https://api.dicebear.com/8.x/initials/svg?seed=Jane%20Doe',
   },
   {
     id: 'user-003',
-    name: 'Bob Johnson',
-    email: 'bob@example.com',
-    avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=bob',
+    name: 'John Smith',
+    email: 'john.smith@example.com',
+    avatarUrl: 'https://api.dicebear.com/8.x/initials/svg?seed=John%20Smith',
+  },
+  {
+    id: 'user-004',
+    name: 'Emily White',
+    email: 'emily.white@example.com',
+    avatarUrl: 'https://api.dicebear.com/8.x/initials/svg?seed=Emily%20White',
   },
 ]
 
@@ -55,31 +63,20 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const login = useCallback(async (email: string, _password: string) => {
-    // TODO: Replace with real API call when backend is ready
-    const mockUser: User = {
-      id: 'user-1',
-      name: email.split('@')[0],
-      email,
-      avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`,
-    }
-    
-    setUser(mockUser)
-    localStorage.setItem('user', JSON.stringify(mockUser))
+    // Mock login - in a real app, you'd call an API
+    // For mock, use the default user
+    setUser(MOCK_USER)
+    localStorage.setItem('user', JSON.stringify(MOCK_USER))
     localStorage.setItem('isAuthenticated', 'true')
   }, [])
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const register = useCallback(async (name: string, email: string, _password: string) => {
-    // TODO: Replace with real API call when backend is ready
-    const mockUser: User = {
-      id: 'user-1',
-      name,
-      email,
-      avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`,
-    }
-    
-    setUser(mockUser)
-    localStorage.setItem('user', JSON.stringify(mockUser))
+    // Mock register - logs info and then logs in the user
+    console.log('Mock registration:', { name, email })
+    // Use default user for mock
+    setUser(MOCK_USER)
+    localStorage.setItem('user', JSON.stringify(MOCK_USER))
     localStorage.setItem('isAuthenticated', 'true')
   }, [])
 

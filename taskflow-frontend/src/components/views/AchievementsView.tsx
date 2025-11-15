@@ -38,7 +38,7 @@ const AchievementsView: React.FC = () => {
                   transition-all duration-300
                   ${isUnlocked ? 'opacity-100 shadow-md' : 'opacity-50 filter grayscale'}
                 `}
-                title={isUnlocked ? achievement.description : (t('achievements.locked.description') || 'Locked')}
+                title={isUnlocked ? achievement.description : t('achievements.locked.description')}
               >
                 <div className={`
                   p-4 rounded-full mb-4 text-4xl
@@ -50,12 +50,12 @@ const AchievementsView: React.FC = () => {
                 <p className="text-sm text-muted-foreground mb-2">{achievement.description}</p>
                 {!isUnlocked && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    {t('achievements.locked.status') || 'Locked'}
+                    {t('achievements.locked.status')}
                   </p>
                 )}
                 {isCompleted && !isUnlocked && (
                   <p className="text-xs text-primary mt-2 font-semibold">
-                    {t('achievements.ready') || 'Ready to unlock!'}
+                    {t('achievements.ready')}
                   </p>
                 )}
               </div>

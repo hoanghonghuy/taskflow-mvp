@@ -10,6 +10,12 @@ import { MenuIcon } from '@/lib/constants'
 import { useTaskManager } from '@/lib/hooks/use-task-manager'
 import { useSettings } from '@/components/providers/settings-provider'
 import TaskDetail from '@/components/task/TaskDetail'
+import SearchModal from '@/components/search/SearchModal'
+import DailyBriefingModal from '@/components/briefing/DailyBriefingModal'
+import TaskForm from '@/components/task/TaskForm'
+import ShareListModal from '@/components/collaboration/ShareListModal'
+import Chatbot from '@/components/chatbot/Chatbot'
+import { useModal } from '@/components/providers/modal-provider'
 
 export default function AppLayout({
   children,
@@ -21,6 +27,7 @@ export default function AppLayout({
   const { isAuthenticated } = useUser()
   const { state } = useTaskManager()
   const { settings } = useSettings()
+  const modal = useModal()
   const [isSidebarOpen, setSidebarOpen] = useState(() => {
     if (typeof window !== 'undefined') {
       return window.innerWidth > 768
@@ -28,15 +35,22 @@ export default function AppLayout({
     return false
   })
 
+  const [isClient, setIsClient] = useState(false)
+
   useEffect(() => {
-    if (!isAuthenticated) {
+    setIsClient(true)
+  }, [])
+
+  useEffect(() => {
+    if (isClient && !isAuthenticated) {
       router.push('/login')
     }
-  }, [isAuthenticated, router])
+  }, [isClient, isAuthenticated, router])
 
   // Theme is handled by SettingsProvider
 
-  if (!isAuthenticated) {
+  // Show loading state during hydration to prevent mismatch
+  if (!isClient || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -51,7 +65,12 @@ export default function AppLayout({
     <div className="flex h-screen bg-background text-foreground overflow-hidden">
       <FeatureBar onSidebarToggle={() => setSidebarOpen(prev => !prev)} />
       
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar 
+        isOpen={isSidebarOpen} 
+        onClose={() => setSidebarOpen(false)}
+        onChatbotToggle={modal.openChatbot}
+        onShareList={modal.openShareList}
+      />
 
       <div className="flex-1 flex flex-col overflow-hidden relative">
         {/* Mobile Header */}
@@ -84,6 +103,21 @@ export default function AppLayout({
       </div>
 
       <BottomNavBar />
+      
+      {/* Modals */}
+      {modal.isSearchOpen && <SearchModal onClose={modal.closeSearch} />}
+      {modal.isBriefingOpen && <DailyBriefingModal onClose={modal.closeBriefing} />}
+      {modal.isChatbotOpen && <Chatbot onClose={modal.closeChatbot} />}
+      {modal.taskForm.isOpen && <TaskForm onClose={modal.closeTaskForm} defaultValues={modal.taskForm.defaultValues} />}
+      {modal.shareListModal.isOpen && (() => {
+        const listToShare = state.lists.find(l => l.id === modal.shareListModal.listId)
+        return listToShare ? (
+          <ShareListModal 
+            list={listToShare} 
+            onClose={modal.closeShareList} 
+          />
+        ) : null
+      })()}
     </div>
   )
 }

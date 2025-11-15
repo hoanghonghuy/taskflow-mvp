@@ -29,11 +29,11 @@ const SettingsView: React.FC = () => {
   const handlePomodoroSettingChange = (setting: string, value: string) => {
     const numberValue = parseInt(value, 10)
     if (!isNaN(numberValue) && numberValue >= 1) {
-      // UI shows minutes, state stores seconds
-      const valueInSeconds = setting.includes('Interval') ? numberValue : numberValue * 60
+      // UI shows minutes, state stores minutes (not seconds)
+      // Only convert to seconds for remainingTime, not for settings
       taskDispatch({
         type: 'UPDATE_POMODORO_SETTINGS',
-        payload: { [setting]: valueInSeconds }
+        payload: { [setting]: numberValue }
       })
     }
   }
@@ -92,14 +92,14 @@ const SettingsView: React.FC = () => {
     <div className="flex-1 flex flex-col overflow-hidden">
       <header className="p-6 border-b border-border flex-shrink-0">
         <h1 className="text-2xl font-bold">{t('settings.title')}</h1>
-        <p className="text-muted-foreground">{t('settings.subtitle') || 'Customize your app settings'}</p>
+        <p className="text-muted-foreground">{t('settings.subtitle')}</p>
       </header>
       <main className="flex-1 p-4 md:p-6 overflow-y-auto space-y-8 pb-20 md:pb-6">
         <section>
           <h2 className="text-lg font-semibold mb-4">{t('settings.appearance')}</h2>
           <div className="bg-card border border-border rounded-lg p-4 max-w-md">
             <div className="flex items-center justify-between">
-              <label htmlFor="theme" className="font-medium">{t('settings.theme')}</label>
+              <label htmlFor="theme" className="font-medium">{t('settings.themeLabel')}</label>
               <div className="flex items-center gap-2 bg-secondary p-1 rounded-md">
                 <button
                   onClick={() => setTheme('light')}
@@ -119,15 +119,15 @@ const SettingsView: React.FC = () => {
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold mb-2">{t('settings.bottomNav.title') || 'Bottom Navigation'}</h2>
-          <p className="text-sm text-muted-foreground mb-4 max-w-xl">{t('settings.bottomNav.subtitle') || 'Drag and drop to customize which features appear in the bottom navigation bar'}</p>
+          <h2 className="text-lg font-semibold mb-2">{t('settings.bottomNav.title')}</h2>
+          <p className="text-sm text-muted-foreground mb-4 max-w-xl">{t('settings.bottomNav.subtitle')}</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-xl">
             <div 
               onDragOver={(e) => e.preventDefault()}
               onDrop={() => handleDrop('visible')}
               className="bg-card border border-border rounded-lg p-4"
             >
-              <h3 className="font-semibold mb-3">{t('settings.bottomNav.visible') || 'Visible'}</h3>
+              <h3 className="font-semibold mb-3">{t('settings.bottomNav.visible')}</h3>
               <div className="space-y-2 min-h-[100px]">
                 {currentActions.map(view => <DraggableItem key={view} view={view} />)}
               </div>
@@ -137,7 +137,7 @@ const SettingsView: React.FC = () => {
               onDrop={() => handleDrop('hidden')}
               className="bg-card border border-border rounded-lg p-4"
             >
-              <h3 className="font-semibold mb-3">{t('settings.bottomNav.hidden') || 'Hidden'}</h3>
+              <h3 className="font-semibold mb-3">{t('settings.bottomNav.hidden')}</h3>
               <div className="space-y-2 min-h-[100px]">
                 {hiddenNavActions.map(view => <DraggableItem key={view} view={view} />)}
               </div>
@@ -146,43 +146,43 @@ const SettingsView: React.FC = () => {
         </section>
         
         <section>
-          <h2 className="text-lg font-semibold mb-4">{t('settings.pomodoro.title') || 'Pomodoro Settings'}</h2>
+          <h2 className="text-lg font-semibold mb-4">{t('settings.pomodoro.title')}</h2>
           <div className="bg-card border border-border rounded-lg p-4 max-w-md space-y-4">
             <div className="flex items-center justify-between">
-              <label htmlFor="focus-duration" className="font-medium text-sm">{t('settings.pomodoro.focusDuration') || t('pomodoro.focusDuration')}</label>
+              <label htmlFor="focus-duration" className="font-medium text-sm">{t('settings.pomodoro.focusDuration')}</label>
               <input
                 id="focus-duration"
                 type="number"
                 min="1"
-                value={pomodoroSettings.focusDuration / 60}
+                value={pomodoroSettings.focusDuration}
                 onChange={(e) => handlePomodoroSettingChange('focusDuration', e.target.value)}
                 className="w-20 p-1.5 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-center"
               />
             </div>
             <div className="flex items-center justify-between">
-              <label htmlFor="short-break" className="font-medium text-sm">{t('settings.pomodoro.shortBreak') || t('pomodoro.shortBreakDuration')}</label>
+              <label htmlFor="short-break" className="font-medium text-sm">{t('settings.pomodoro.shortBreak')}</label>
               <input
                 id="short-break"
                 type="number"
                 min="1"
-                value={pomodoroSettings.shortBreakDuration / 60}
+                value={pomodoroSettings.shortBreakDuration}
                 onChange={(e) => handlePomodoroSettingChange('shortBreakDuration', e.target.value)}
                 className="w-20 p-1.5 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-center"
               />
             </div>
             <div className="flex items-center justify-between">
-              <label htmlFor="long-break" className="font-medium text-sm">{t('settings.pomodoro.longBreak') || t('pomodoro.longBreakDuration')}</label>
+              <label htmlFor="long-break" className="font-medium text-sm">{t('settings.pomodoro.longBreak')}</label>
               <input
                 id="long-break"
                 type="number"
                 min="1"
-                value={pomodoroSettings.longBreakDuration / 60}
+                value={pomodoroSettings.longBreakDuration}
                 onChange={(e) => handlePomodoroSettingChange('longBreakDuration', e.target.value)}
                 className="w-20 p-1.5 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-center"
               />
             </div>
             <div className="flex items-center justify-between">
-              <label htmlFor="long-break-interval" className="font-medium text-sm">{t('settings.pomodoro.longBreakInterval') || 'Sessions until long break'}</label>
+              <label htmlFor="long-break-interval" className="font-medium text-sm">{t('settings.pomodoro.longBreakInterval')}</label>
               <input
                 id="long-break-interval"
                 type="number"
@@ -196,18 +196,18 @@ const SettingsView: React.FC = () => {
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold mb-4">{t('settings.language')}</h2>
+          <h2 className="text-lg font-semibold mb-4">{t('settings.languageLabel')}</h2>
           <div className="bg-card border border-border rounded-lg p-4 max-w-md">
             <div className="flex items-center justify-between">
-              <label htmlFor="language-select" className="font-medium">{t('settings.language')}</label>
+              <label htmlFor="language-select" className="font-medium">{t('settings.languageLabel')}</label>
               <select
                 id="language-select"
                 value={language}
                 onChange={(e) => setLanguage(e.target.value as 'en' | 'vi')}
                 className="p-2 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
               >
-                <option value="en">{t('settings.language.en') || 'English'}</option>
-                <option value="vi">{t('settings.language.vi') || 'Tiếng Việt'}</option>
+                <option value="en">{t('settings.language.en')}</option>
+                <option value="vi">{t('settings.language.vi')}</option>
               </select>
             </div>
           </div>

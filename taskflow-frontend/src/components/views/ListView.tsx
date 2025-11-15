@@ -1,82 +1,56 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
+import { useUser } from '@/components/providers/user-provider'
+import { useModal } from '@/components/providers/modal-provider'
 import TaskList from '@/components/task/TaskList'
 import TaskListHeader from '@/components/task/TaskListHeader'
-import { SPECIAL_LISTS_CONFIG } from '@/lib/constants'
+import { SPECIAL_LISTS_CONFIG, PlusIcon } from '@/lib/constants'
 import type { SortOrder } from '@/lib/utils/task-helpers'
 
-interface ListViewProps {
-  onSearchToggle?: () => void
-  onBriefingToggle?: () => void
-  onOpenTaskForm?: () => void
-}
-
-const ListView: React.FC<ListViewProps> = ({
-  onSearchToggle,
-  onBriefingToggle,
-  onOpenTaskForm,
-}) => {
+const ListView: React.FC = () => {
   const { state, dispatch, canUndo, canRedo } = useTaskManager()
   const { t } = useI18n()
-  const [sortOrder, setSortOrder] = useState<SortOrder>('default')
-
-  const activeListId = useMemo(() => {
-    // Get active list from URL or default to 'inbox'
-    if (typeof window !== 'undefined') {
-      const path = window.location.pathname
-      if (path.includes('/list')) {
-        // Could parse query params for listId
-        return 'inbox'
-      }
-    }
-    return 'inbox'
-  }, [])
+  const { allUsers } = useUser()
+  const { openSearch, openBriefing, openTaskForm } = useModal()
 
   const activeList = useMemo(() => {
-    if (activeListId in SPECIAL_LISTS_CONFIG || state.activeTag) {
+    if (state.activeListId in SPECIAL_LISTS_CONFIG || state.activeTag) {
       return null
     }
-    return state.lists.find(l => l.id === activeListId)
-  }, [activeListId, state.lists, state.activeTag])
-
-  // Mock users for list members
-  const mockUsers = [
-    { id: 'user-001', name: 'You', email: 'you@example.com' },
-    { id: 'user-002', name: 'John Doe', email: 'john@example.com' },
-    { id: 'user-003', name: 'Jane Smith', email: 'jane@example.com' },
-  ]
+    return state.lists.find(l => l.id === state.activeListId)
+  }, [state.activeListId, state.lists, state.activeTag])
 
   const listMembers = useMemo(() => {
     if (!activeList || !activeList.members) return []
     return activeList.members
-      .map(memberId => mockUsers.find(u => u.id === memberId))
-      .filter(Boolean) as Array<{ id: string; name: string; email: string }>
-  }, [activeList])
+      .map(memberId => allUsers.find(u => u.id === memberId))
+      .filter(Boolean) as typeof allUsers
+  }, [activeList, allUsers])
 
   const getActiveListName = () => {
     if (state.activeTag) {
       return `#${state.activeTag}`
     }
-    if (activeListId in SPECIAL_LISTS_CONFIG) {
-      const configKey = activeListId as keyof typeof SPECIAL_LISTS_CONFIG
-      return t(SPECIAL_LISTS_CONFIG[configKey].name) || activeListId
+    if (state.activeListId in SPECIAL_LISTS_CONFIG) {
+      const configKey = state.activeListId as keyof typeof SPECIAL_LISTS_CONFIG
+      return t(SPECIAL_LISTS_CONFIG[configKey].name)
     }
-    return activeList ? activeList.name : t('mainContent.tasksDefault') || 'Tasks'
+    return activeList ? activeList.name : t('mainContent.tasksDefault')
   }
 
   const handleSortToggle = () => {
     let nextSortOrder: SortOrder
-    if (sortOrder === 'default') {
+    if (state.sortOrder === 'default') {
       nextSortOrder = 'dueDateAsc'
-    } else if (sortOrder === 'dueDateAsc') {
+    } else if (state.sortOrder === 'dueDateAsc') {
       nextSortOrder = 'dueDateDesc'
     } else {
       nextSortOrder = 'default'
     }
-    setSortOrder(nextSortOrder)
+    dispatch({ type: 'SET_SORT_ORDER', payload: nextSortOrder })
   }
 
   const handleUndo = () => {
@@ -92,34 +66,38 @@ const ListView: React.FC<ListViewProps> = ({
   }
 
   const handleClearHistory = () => {
-    // TODO: Implement clear history
-    console.log('Clear history')
+    if (canUndo || canRedo) {
+      dispatch({ type: 'CLEAR_HISTORY' })
+    }
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
+    <main className="flex-1 flex flex-col">
       <TaskListHeader
         title={getActiveListName()}
         listMembers={listMembers}
-        onSearch={onSearchToggle}
-        onBriefing={onBriefingToggle}
+        onSearch={openSearch}
+        onBriefing={openBriefing}
         onSortToggle={handleSortToggle}
-        sortOrder={sortOrder}
+        sortOrder={state.sortOrder}
         canUndo={canUndo}
         canRedo={canRedo}
         onUndo={handleUndo}
         onRedo={handleRedo}
         onClearHistory={handleClearHistory}
       />
-      <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-20 md:pb-6">
-        <TaskList
-          onAddTask={onOpenTaskForm}
-          activeListId={activeListId}
-          activeTag={state.activeTag || null}
-          sortOrder={sortOrder}
-        />
-      </main>
-    </div>
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 pb-20 md:pb-6">
+        <TaskList onAddTask={openTaskForm} />
+      </div>
+
+      <button
+        onClick={() => openTaskForm()}
+        className="fixed md:absolute bottom-20 md:bottom-8 right-4 md:right-8 bg-primary text-primary-foreground rounded-full p-4 shadow-lg hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-transform hover:scale-105 z-10"
+        aria-label={t('taskList.addTask')}
+      >
+        <PlusIcon className="h-6 w-6" />
+      </button>
+    </main>
   )
 }
 

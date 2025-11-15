@@ -29,6 +29,9 @@ export function generateMockData() {
     { id: 'list-4', name: 'Health & Fitness', color: '#ef4444', members: ['user-001'] },
     { id: 'list-5', name: 'Learning', color: '#8b5cf6', members: ['user-001'] },
   ]
+  
+  // Note: Template uses 'bg-blue-500' format for colors, but we use hex colors
+  // This is fine as long as the UI components handle it correctly
 
   const mockColumns: Column[] = [
     { id: 'col-inbox-1', name: 'To Do', listId: 'inbox' },

@@ -45,7 +45,7 @@ export default function ProfileDropdown({ user, onClose }: ProfileDropdownProps)
   return (
     <div className="
       absolute bottom-full mb-2 md:bottom-4 md:left-full md:ml-2 md:mb-0
-      w-64 bg-popover rounded-lg shadow-2xl border border-border
+      w-64 bg-card rounded-lg shadow-2xl border border-border
       animate-fade-in
       origin-bottom md:origin-bottom-left z-50
     ">

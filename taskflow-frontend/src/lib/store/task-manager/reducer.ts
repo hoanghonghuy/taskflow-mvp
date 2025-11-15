@@ -55,13 +55,23 @@ export function taskManagerReducer(state: AppState, action: Action): AppState {
         selectedTaskId: state.selectedTaskId === action.payload ? null : state.selectedTaskId
       }
 
-    case 'TOGGLE_TASK_COMPLETION':
+    case 'TOGGLE_TASK_COMPLETION': {
+      const { taskId } = action.payload
       return {
         ...state,
-        tasks: state.tasks.map(t =>
-          t.id === action.payload.taskId ? { ...t, completed: !t.completed } : t
-        )
+        tasks: state.tasks.map(t => {
+          if (t.id === taskId) {
+            const isCompleting = !t.completed
+            return {
+              ...t,
+              completed: isCompleting,
+              completedAt: isCompleting ? new Date().toISOString() : undefined
+            }
+          }
+          return t
+        })
       }
+    }
 
     case 'ADD_LIST': {
       const newList: List = { ...action.payload, id: generateId() }

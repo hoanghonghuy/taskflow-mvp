@@ -51,9 +51,9 @@ const PomodoroView: React.FC = () => {
 
   const getSessionName = () => {
     switch (pomodoro.currentSession) {
-      case 'focus': return t('pomodoro.focus') || 'Focus'
-      case 'shortBreak': return t('pomodoro.shortBreak') || 'Short Break'
-      case 'longBreak': return t('pomodoro.longBreak') || 'Long Break'
+      case 'focus': return t('pomodoro.focus')
+      case 'shortBreak': return t('pomodoro.shortBreak')
+      case 'longBreak': return t('pomodoro.longBreak')
     }
   }
 
@@ -85,8 +85,8 @@ const PomodoroView: React.FC = () => {
                 onClick={() => setTaskPickerOpen(true)}
               >
                 {focusedTask 
-                  ? (t('pomodoro.focusingOn', { taskTitle: focusedTask.title }) || `Focusing on: ${focusedTask.title}`)
-                  : (t('pomodoro.selectTask') || 'Select a task to focus on')
+                  ? t('pomodoro.focusingOn', { taskTitle: focusedTask.title })
+                  : t('pomodoro.selectTask')
                 }
               </div>
             </div>
@@ -118,45 +118,45 @@ const PomodoroView: React.FC = () => {
                 onClick={handleStop}
                 className="px-6 py-3 bg-secondary text-secondary-foreground rounded-full text-md md:text-lg font-semibold hover:bg-muted transition-colors"
               >
-                {t('pomodoro.stop') || 'Stop'}
+                {t('pomodoro.stop')}
               </button>
               <button 
                 onClick={handlePauseResume}
                 className="px-6 py-3 bg-primary text-primary-foreground rounded-full text-md md:text-lg font-semibold hover:bg-primary/90 w-32 transition-colors"
               >
-                {pomodoro.isPaused || !pomodoro.isActive ? (t('pomodoro.start') || 'Start') : (t('pomodoro.pause') || 'Pause')}
+                {pomodoro.isPaused || !pomodoro.isActive ? t('pomodoro.start') : t('pomodoro.pause')}
               </button>
             </div>
           </div>
 
           <div className="w-full md:w-80 space-y-6">
             <div className="bg-card border border-border rounded-lg p-6">
-              <h3 className="font-semibold mb-4">{t('pomodoro.today') || 'Today'}</h3>
+              <h3 className="font-semibold mb-4">{t('pomodoro.today')}</h3>
               <div className="space-y-3">
                 <div>
-                  <p className="text-sm text-muted-foreground">{t('pomodoro.sessions') || 'Sessions'}</p>
+                  <p className="text-sm text-muted-foreground">{t('pomodoro.sessions')}</p>
                   <p className="text-2xl font-bold">{totalPomosToday}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">{t('pomodoro.focusTime') || 'Focus Time'}</p>
+                  <p className="text-sm text-muted-foreground">{t('pomodoro.focusTime')}</p>
                   <p className="text-2xl font-bold">{formatDuration(totalFocusDurationToday)}</p>
                 </div>
               </div>
             </div>
 
             <div className="bg-card border border-border rounded-lg p-6">
-              <h3 className="font-semibold mb-4">{t('pomodoro.settings') || 'Settings'}</h3>
+              <h3 className="font-semibold mb-4">{t('pomodoro.settings')}</h3>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t('pomodoro.focusDuration') || 'Focus'}</span>
+                  <span className="text-muted-foreground">{t('pomodoro.focusDuration')}</span>
                   <span>{pomodoro.settings.focusDuration} min</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t('pomodoro.shortBreak') || 'Short Break'}</span>
+                  <span className="text-muted-foreground">{t('pomodoro.shortBreak')}</span>
                   <span>{pomodoro.settings.shortBreakDuration} min</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t('pomodoro.longBreak') || 'Long Break'}</span>
+                  <span className="text-muted-foreground">{t('pomodoro.longBreak')}</span>
                   <span>{pomodoro.settings.longBreakDuration} min</span>
                 </div>
               </div>
@@ -168,7 +168,7 @@ const PomodoroView: React.FC = () => {
           <div className="fixed inset-0 bg-black/50 z-30 flex items-center justify-center p-4">
             <div className="bg-card border border-border rounded-lg shadow-xl w-full max-w-lg flex flex-col max-h-[70vh]">
               <header className="p-4 border-b border-border flex items-center justify-between">
-                <h2 className="text-lg font-semibold">{t('focusPicker.title') || 'Select Task'}</h2>
+                <h2 className="text-lg font-semibold">{t('focusPicker.title')}</h2>
                 <button onClick={() => setTaskPickerOpen(false)} className="p-1 rounded-full hover:bg-secondary">
                   ×
                 </button>
@@ -182,7 +182,7 @@ const PomodoroView: React.FC = () => {
                     }}
                     className="p-3 flex items-center justify-between rounded-md cursor-pointer hover:bg-secondary"
                   >
-                    <span>{t('focusPicker.general') || 'General Focus'}</span>
+                    <span>{t('focusPicker.general')}</span>
                     {!pomodoro.focusedTaskId && <CheckCircleIcon className="h-5 w-5 text-primary" />}
                   </li>
                   {uncompletedTasks.map(task => (

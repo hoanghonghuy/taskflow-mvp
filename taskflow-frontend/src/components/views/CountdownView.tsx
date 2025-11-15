@@ -64,7 +64,7 @@ const CountdownView: React.FC = () => {
               className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
             >
               <PlusIcon className="h-5 w-5" />
-              <span>{t('countdown.add') || 'Add Countdown'}</span>
+              <span>{t('countdown.add')}</span>
             </button>
           )}
         </div>
@@ -74,7 +74,7 @@ const CountdownView: React.FC = () => {
               type="text"
               value={newCountdownName}
               onChange={(e) => setNewCountdownName(e.target.value)}
-              placeholder={t('countdown.namePlaceholder') || 'Event name'}
+              placeholder={t('countdown.namePlaceholder')}
               className="flex-1 px-4 py-2 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             />
             <input
@@ -87,7 +87,7 @@ const CountdownView: React.FC = () => {
               onClick={handleAddCountdown}
               className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
             >
-              {t('countdown.add') || 'Add'}
+              {t('countdown.add')}
             </button>
             <button
               onClick={() => {
@@ -97,7 +97,7 @@ const CountdownView: React.FC = () => {
               }}
               className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-muted transition-colors"
             >
-              {t('countdown.cancel') || 'Cancel'}
+              {t('countdown.cancel')}
             </button>
           </div>
         )}
@@ -105,7 +105,7 @@ const CountdownView: React.FC = () => {
       <main className="flex-1 p-4 md:p-6 overflow-y-auto pb-20 md:pb-6">
         {state.countdownEvents.length === 0 ? (
           <div className="text-center text-muted-foreground py-12">
-            <p className="text-lg">{t('countdown.noCountdowns') || 'No countdowns yet. Add one to get started!'}</p>
+            <p className="text-lg">{t('countdown.noCountdowns')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -119,7 +119,7 @@ const CountdownView: React.FC = () => {
                     <button
                       onClick={() => handleDeleteCountdown(event.id)}
                       className="p-2 text-muted-foreground hover:text-destructive transition-colors"
-                      aria-label="Delete countdown"
+                      aria-label={t('countdown.aria.deleteCountdown')}
                     >
                       <TrashIcon className="h-5 w-5" />
                     </button>
@@ -127,26 +127,26 @@ const CountdownView: React.FC = () => {
                   {timeRemaining.isPast ? (
                     <div className="text-center py-4">
                       <p className="text-2xl font-bold text-muted-foreground">
-                        {t('countdown.past') || 'Event has passed'}
+                        {t('countdown.past')}
                       </p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-4 gap-2">
                       <div className="text-center">
                         <p className="text-2xl font-bold">{timeRemaining.days}</p>
-                        <p className="text-xs text-muted-foreground">{t('countdown.days') || 'Days'}</p>
+                        <p className="text-xs text-muted-foreground">{t('countdown.days')}</p>
                       </div>
                       <div className="text-center">
                         <p className="text-2xl font-bold">{timeRemaining.hours}</p>
-                        <p className="text-xs text-muted-foreground">{t('countdown.hours') || 'Hours'}</p>
+                        <p className="text-xs text-muted-foreground">{t('countdown.hours')}</p>
                       </div>
                       <div className="text-center">
                         <p className="text-2xl font-bold">{timeRemaining.minutes}</p>
-                        <p className="text-xs text-muted-foreground">{t('countdown.minutes') || 'Minutes'}</p>
+                        <p className="text-xs text-muted-foreground">{t('countdown.minutes')}</p>
                       </div>
                       <div className="text-center">
                         <p className="text-2xl font-bold">{timeRemaining.seconds}</p>
-                        <p className="text-xs text-muted-foreground">{t('countdown.seconds') || 'Seconds'}</p>
+                        <p className="text-xs text-muted-foreground">{t('countdown.seconds')}</p>
                       </div>
                     </div>
                   )}

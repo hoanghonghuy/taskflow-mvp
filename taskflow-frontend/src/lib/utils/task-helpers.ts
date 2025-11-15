@@ -3,7 +3,7 @@
  */
 
 import type { Task } from '@/types'
-import { isToday, isFuture, isOverdue } from './date-helpers'
+import { isToday, isTomorrow, isFuture, isOverdue } from './date-helpers'
 
 export type SortOrder = 'default' | 'dueDateAsc' | 'dueDateDesc'
 

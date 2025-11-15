@@ -91,7 +91,42 @@ body {
     background-color: hsl(var(--color-card));
   }
   
-  /* Scrollbar */
+  /* Global Scrollbar Styling */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--color-border) / 0.3) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--color-border) / 0.4);
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--color-muted-foreground) / 0.6);
+  }
+
+  /* Dark mode scrollbar */
+  .dark *::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--color-muted-foreground) / 0.3);
+  }
+
+  .dark *::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--color-muted-foreground) / 0.5);
+  }
+
+  /* Custom scrollbar utility */
   .scrollbar-thin::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -102,12 +137,33 @@ body {
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: hsl(var(--color-border));
-    border-radius: 9999px;
+    background-color: hsl(var(--color-border) / 0.4);
+    border-radius: 8px;
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background-color: hsl(var(--color-muted-foreground) / 0.5);
+    background-color: hsl(var(--color-muted-foreground) / 0.6);
+  }
+
+  /* Select dropdown styling for dark mode */
+  select {
+    background-color: hsl(var(--color-card));
+    color: hsl(var(--color-foreground));
+  }
+
+  select option {
+    background-color: hsl(var(--color-card));
+    color: hsl(var(--color-foreground));
+  }
+
+  .dark select {
+    background-color: hsl(var(--color-card));
+    color: hsl(var(--color-foreground));
+  }
+
+  .dark select option {
+    background-color: hsl(var(--color-card));
+    color: hsl(var(--color-foreground));
   }
 }
 

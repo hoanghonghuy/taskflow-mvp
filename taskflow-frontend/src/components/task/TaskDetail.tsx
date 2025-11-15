@@ -184,7 +184,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
             onClick={() => dispatch({ type: 'TOGGLE_TASK_COMPLETION', payload: { taskId: task.id } })}
             className="text-sm text-muted-foreground cursor-pointer"
           >
-            {task.completed ? (t('taskDetail.completed') || 'Completed') : (t('taskDetail.markComplete') || 'Mark Complete')}
+            {task.completed ? t('taskDetail.completed') : t('taskDetail.markComplete')}
           </label>
         </div>
         <div className="flex items-center gap-2">
@@ -205,28 +205,28 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
         {task.recurrence && (
           <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground p-2 bg-secondary/50 rounded-md">
             <RepeatIcon className="h-4 w-4" />
-            <span>{t('taskDetail.recurringInfo') || `Repeats ${task.recurrence.type}`}</span>
+            <span>{t('taskDetail.recurringInfo', { rule: task.recurrence.type })}</span>
           </div>
         )}
 
         {task.totalFocusTime && task.totalFocusTime > 0 && (
           <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground p-2">
             <StopwatchIcon className="h-5 w-5" />
-            <span>{t('taskDetail.focusTime') || `Focus Time: ${formatFocusTime(task.totalFocusTime)}`}</span>
+            <span>{t('taskDetail.focusTime', { time: formatFocusTime(task.totalFocusTime) })}</span>
           </div>
         )}
 
         <div className="mt-6 space-y-4">
           <div>
             <label htmlFor="task-description" className="text-sm font-medium text-muted-foreground">
-              {t('taskDetail.descriptionLabel') || 'Description'}
+              {t('taskDetail.descriptionLabel')}
             </label>
             <textarea
               id="task-description"
               value={task.description || ''}
               onChange={(e) => updateTask({ description: e.target.value })}
               rows={4}
-              placeholder={t('taskDetail.descriptionPlaceholder') || 'Add description...'}
+              placeholder={t('taskDetail.descriptionPlaceholder')}
               className="mt-1 w-full p-2 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
           </div>
@@ -234,7 +234,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                {t('taskDetail.assigneeLabel') || 'Assignee'}
+                {t('taskDetail.assigneeLabel')}
               </label>
               <div className="flex items-center gap-2">
                 {assignee ? (
@@ -248,7 +248,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                     onChange={(e) => handleAssignTask(e.target.value || null)}
                     className="w-full p-2 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                   >
-                    <option value="">{t('taskDetail.unassigned') || 'Unassigned'}</option>
+                    <option value="">{t('taskDetail.unassigned')}</option>
                     {allUsers?.map(user => (
                       <option key={user.id} value={user.id}>{user.name}</option>
                     )) || []}
@@ -258,7 +258,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
             </div>
             <div>
               <label htmlFor="task-priority" className="text-sm font-medium text-muted-foreground">
-                {t('taskDetail.priorityLabel') || 'Priority'}
+                {t('taskDetail.priorityLabel')}
               </label>
               <select
                 id="task-priority"
@@ -276,7 +276,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                {t('taskDetail.dueDateLabel') || 'Due Date'}
+                {t('taskDetail.dueDateLabel')}
               </label>
               <input
                 type="date"
@@ -287,25 +287,25 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
             </div>
             <div>
               <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                {t('taskDetail.reminderLabel') || 'Reminder'}
+                {t('taskDetail.reminderLabel')}
               </label>
               <select
                 value={task.reminderMinutes || ''}
                 onChange={(e) => updateTask({ reminderMinutes: e.target.value ? parseInt(e.target.value) : undefined })}
                 className="w-full p-2 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
               >
-                <option value="">{t('taskDetail.noReminder') || 'No reminder'}</option>
-                <option value="5">5 {t('taskDetail.minutes') || 'minutes'} before</option>
-                <option value="15">15 {t('taskDetail.minutes') || 'minutes'} before</option>
-                <option value="30">30 {t('taskDetail.minutes') || 'minutes'} before</option>
-                <option value="60">1 {t('taskDetail.hour') || 'hour'} before</option>
+                <option value="">{t('taskDetail.noReminder')}</option>
+                <option value="5">5 {t('taskDetail.minutes')} before</option>
+                <option value="15">15 {t('taskDetail.minutes')} before</option>
+                <option value="30">30 {t('taskDetail.minutes')} before</option>
+                <option value="60">1 {t('taskDetail.hour')} before</option>
               </select>
             </div>
           </div>
 
           <div>
             <label htmlFor="tag-input" className="text-sm font-medium text-muted-foreground">
-              {t('taskDetail.tagsLabel') || 'Tags'}
+              {t('taskDetail.tagsLabel')}
             </label>
             <div className="mt-2 flex flex-wrap gap-2 items-center p-2 bg-secondary/50 rounded-md">
               {task.tags.map((tag, index) => (
@@ -330,7 +330,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                 value={newTag}
                 onChange={(e) => setNewTag(e.target.value)}
                 onKeyDown={handleAddTag}
-                placeholder={t('taskDetail.tagsPlaceholder') || 'Add tag...'}
+                placeholder={t('taskDetail.tagsPlaceholder')}
                 className="flex-grow bg-transparent text-sm focus:outline-none"
               />
             </div>
@@ -339,7 +339,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
           <div>
             <div className="flex items-center justify-between mb-1">
               <h3 className="text-sm font-medium text-muted-foreground">
-                {t('taskDetail.subtasksLabel') || 'Subtasks'}
+                {t('taskDetail.subtasksLabel')}
               </h3>
               {isGeminiAvailable && (
                 <button 
@@ -348,14 +348,14 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                   className="text-xs flex items-center gap-1 text-primary hover:text-primary/80 disabled:opacity-50"
                 >
                   {isGenerating ? '...' : <SparklesIcon className="h-4 w-4" />}
-                  {t('taskDetail.generateButton' as any) || 'Generate'}
+                  {t('taskDetail.generateButton')}
                 </button>
               )}
             </div>
             {task.subtasks.length > 0 && (
               <div className="my-2">
                 <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                  <span>{t('taskDetail.progressLabel') || 'Progress'}</span>
+                  <span>{t('taskDetail.progressLabel')}</span>
                   <span>{completedSubtasks} / {task.subtasks.length}</span>
                 </div>
                 <div className="w-full bg-secondary rounded-full h-2">
@@ -407,11 +407,11 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                   type="text" 
                   value={newSubtask} 
                   onChange={(e) => setNewSubtask(e.target.value)} 
-                  placeholder={t('taskDetail.addSubtaskPlaceholder') || 'Add subtask...'} 
+                  placeholder={t('taskDetail.addSubtaskPlaceholder')} 
                   className="flex-grow bg-transparent text-sm focus:outline-none" 
                 />
                 <button type="submit" className="text-primary text-sm font-semibold">
-                  {t('taskDetail.addButton') || 'Add'}
+                  {t('taskDetail.addButton')}
                 </button>
               </form>
             </div>
@@ -420,7 +420,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
           {task.comments && task.comments.length > 0 && (
             <div className="border-t border-border pt-4">
               <h3 className="text-sm font-medium text-muted-foreground mb-2">
-                {t('taskDetail.commentsLabel') || 'Comments'}
+                {t('taskDetail.commentsLabel')}
               </h3>
               <div className="space-y-2">
                 {task.comments.map((comment) => {
@@ -429,7 +429,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                     <div key={comment.id} className="flex gap-2 p-2 bg-secondary/50 rounded-md">
                       <Avatar user={commentUser || null} className="w-6 h-6" />
                       <div className="flex-1">
-                        <p className="text-xs text-muted-foreground">{commentUser?.name || 'Unknown'}</p>
+                        <p className="text-xs text-muted-foreground">{commentUser?.name || t('comments.unknownUser')}</p>
                         <p className="text-sm">{comment.content}</p>
                         <p className="text-xs text-muted-foreground mt-1">
                           {new Date(comment.timestamp).toLocaleString()}
@@ -452,11 +452,11 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
               >
                 <input
                   type="text"
-                  placeholder={t('taskDetail.addCommentPlaceholder') || 'Add comment...'}
+                  placeholder={t('taskDetail.addCommentPlaceholder')}
                   className="flex-1 p-2 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                 />
                 <button type="submit" className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:bg-primary/90">
-                  {t('taskDetail.addButton') || 'Add'}
+                  {t('taskDetail.addButton')}
                 </button>
               </form>
             </div>
@@ -471,14 +471,14 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
           className="text-sm w-full flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-secondary hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {/* TODO: Add GlobeAltIcon */}
-          <span>{t('taskDetail.getInfoButton' as any) || 'Get Info'}</span>
+          <span>{t('taskDetail.getInfoButton')}</span>
         </button>
         <button 
           onClick={handleStartFocus} 
           className="text-sm w-full flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
         >
           <PlayCircleIcon className="h-5 w-5" /> 
-          {t('taskDetail.startFocusButton') || 'Start Focus'}
+          {t('taskDetail.startFocusButton')}
         </button>
       </div>
     </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Task } from '@/types'
+import { Task, Priority } from '@/types'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { PRIORITY_MAP, PlayCircleIcon, BellIcon, RepeatIcon, CheckCircleIcon, ArrowUpIcon, ArrowDownIcon, CheckIcon } from '@/lib/constants'
 import { useUser } from '@/components/providers/user-provider'
@@ -101,7 +101,12 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
     return <span className={`text-xs ${color}`}>{date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
   }
   
-  const priorityClasses = PRIORITY_MAP[task.priority] || PRIORITY_MAP['none']
+  // Ensure task has a priority, default to 'none'
+  const taskPriority = (task.priority || 'none') as Priority
+  const priorityClasses = PRIORITY_MAP[taskPriority] || PRIORITY_MAP['none']
+  const checkboxStyle = !task.completed
+    ? { borderColor: priorityClasses.checkboxBorderValue }
+    : undefined
 
   const progressIndicator = () => {
     if (task.subtasks && task.subtasks.length > 0) {
@@ -148,6 +153,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
               : `bg-transparent border-2 ${priorityClasses.checkboxBorderColor}`
             }
           `}
+          style={checkboxStyle}
         >
           {task.completed && <CheckIcon className="h-3.5 w-3.5 text-primary-foreground" />}
         </button>

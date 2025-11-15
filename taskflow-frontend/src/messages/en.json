@@ -146,13 +146,16 @@
     "add": "Add",
     "cancel": "Cancel",
     "column": {
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "dragHandle": "Drag to reorder column",
+      "delete": "Delete column"
     }
   },
   "specialLists": {
     "inbox": "Inbox",
     "today": "Today",
-    "upcoming": "Upcoming"
+    "upcoming": "Upcoming",
+    "tomorrow": "Tomorrow"
   },
   "lists": {
     "work": "Work",
@@ -195,6 +198,18 @@
     "completedToday": "Completed today!",
     "noHabits": "No habits yet",
     "createFirst": "Create your first habit to build consistency"
+  },
+  "habits": {
+    "add": "Add Habit",
+    "cancel": "Cancel",
+    "namePlaceholder": "Habit name",
+    "noHabits": "No habits yet. Add one to get started!",
+    "completed": "Completed",
+    "markComplete": "Mark Complete",
+    "completionRate": "{{rate}}% completion rate (last {{days}} days)",
+    "aria": {
+      "deleteHabit": "Delete habit"
+    }
   },
   "pomodoro": {
     "focus": "Focus",
@@ -244,7 +259,10 @@
     "past": "Event has passed",
     "noCountdowns": "No countdowns yet. Add one to get started!",
     "noEvents": "No countdown events",
-    "createFirst": "Create a countdown to track important dates"
+    "createFirst": "Create a countdown to track important dates",
+    "aria": {
+      "deleteCountdown": "Delete countdown"
+    }
   },
   "achievement": {
     "unlocked": "Achievement Unlocked!",
@@ -267,7 +285,8 @@
     "general": "General",
     "appearance": "Appearance",
     "notifications": "Notifications",
-    "language": "Language",
+    "languageLabel": "Language",
+    "themeLabel": "Theme",
     "theme": {
       "light": "Light",
       "dark": "Dark"
@@ -315,7 +334,11 @@
     "viewProfile": "View Profile",
     "settings": "Settings",
     "achievements": "Achievements",
-    "logout": "Logout"
+    "logout": "Logout",
+    "completionRate": "completion rate",
+    "completedToday": "Completed today",
+    "sessions": "sessions",
+    "unlocked": "Unlocked"
   },
   "feature": {
     "toggleSidebar": "Toggle Sidebar",
@@ -445,6 +468,12 @@
   "matrix": {
     "title": "Eisenhower Matrix",
     "subtitle": "Prioritize your tasks based on urgency and importance.",
+    "axis": {
+      "urgent": "Urgent",
+      "notUrgent": "Not Urgent",
+      "important": "Important",
+      "notImportant": "Not Important"
+    },
     "q1": {
       "title": "Urgent & Important",
       "subtitle": "Do these tasks first."
@@ -540,5 +569,13 @@
   "focusPicker": {
     "title": "Select a Task to Focus On",
     "general": "General Focus (No specific task)"
+  },
+  "chatbot": {
+    "title": "Chat with Gemini",
+    "initialMessage": "Hello! I'm your AI assistant. How can I help you today?",
+    "placeholder": "Type your message...",
+    "thinkingMode": "Thinking Mode",
+    "searchWeb": "Search Web",
+    "sources": "Sources"
   }
 }
