@@ -57,7 +57,7 @@ export const ACHIEVEMENT_DEFINITIONS = [
     title: 'Week Warrior',
     description: 'Complete tasks 7 days in a row',
     icon: '⚡',
-    condition: (_state: AppState) => {  // ← Prefix unused param with _
+    condition: () => {
       // TODO: Implement streak logic
       return false
     },

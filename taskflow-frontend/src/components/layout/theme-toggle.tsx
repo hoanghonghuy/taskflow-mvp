@@ -1,7 +1,7 @@
 'use client'
 
 import { Moon, Sun } from 'lucide-react'
-import { useTheme } from '@/components/providers/theme-provider'
+import { useSettings } from '@/taskflow/hooks/useSettings'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme()
+  const { setTheme } = useSettings()
 
   return (
     <DropdownMenu>
@@ -29,8 +29,8 @@ export function ThemeToggle() {
         <DropdownMenuItem onClick={() => setTheme('dark')}>
           Dark
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme('system')}>
-          System
+        <DropdownMenuItem onClick={() => setTheme('dark')}>
+          Dark
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

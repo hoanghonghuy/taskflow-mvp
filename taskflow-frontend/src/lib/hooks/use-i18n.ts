@@ -38,7 +38,7 @@ export function useTranslate() {
   return useCallback((key: string, defaultValue?: string) => {
     try {
       return t(key, defaultValue || key)
-    } catch (error) {
+    } catch {
       console.warn(`Translation missing for key: ${key}`)
       return defaultValue || key
     }
