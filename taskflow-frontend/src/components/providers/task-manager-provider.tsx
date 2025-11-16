@@ -1,15 +1,25 @@
 'use client'
 
 import { createContext, useContext, useReducer, useCallback, useEffect } from 'react'
-import { INITIAL_STATE, historyReducer } from '@/lib/store/task-manager'
-import type { TaskManagerContextType, HistoryState } from '@/lib/store/task-manager'
-import type { Task, List, Habit, Comment, PomodoroState } from '@/types'
+import { useI18n } from '@/lib/hooks/use-i18n'
 import { taskActions, listActions, habitActions, pomodoroActions } from '@/lib/store/task-manager/actions'
+import { historyReducer } from '@/lib/store/task-manager/history-reducer'
+import { INITIAL_STATE } from '@/lib/store/task-manager/initial-state'
+import { useToast } from '@/lib/hooks/use-toast'
+import type { Task, List, Habit, Comment, PomodoroState, AppState } from '@/types'
+import type { TaskManagerContextType } from '@/lib/store/task-manager/types'
 import { generateMockData } from '@/lib/mock-data'
+
+interface HistoryState {
+  past: AppState[]
+  present: AppState
+  future: AppState[]
+}
 
 const TaskManagerContext = createContext<TaskManagerContextType | undefined>(undefined)
 
 export function TaskManagerProvider({ children }: { children: React.ReactNode }) {
+  const { t } = useI18n()
   // Initialize with history state
   const [historyState, dispatch] = useReducer(
     historyReducer,
@@ -34,13 +44,13 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
               }
             }
           } catch (error) {
-            console.error('Failed to parse saved state:', error)
+            console.error(t('console.failedParseState'), error)
           }
         }
         // Load mock data if no saved state or saved state has no tasks
         try {
           const mockData = generateMockData()
-          console.log('📦 Loading mock data:', {
+          console.log(t('console.loadingMockData'), {
             tasks: mockData.tasks.length,
             lists: mockData.lists.length,
             habits: mockData.habits.length,
@@ -59,7 +69,7 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
             future: []
           }
         } catch (error) {
-          console.error('❌ Failed to load mock data:', error)
+          console.error(t('console.failedLoadMockData'), error)
           return initial
         }
       }
@@ -73,12 +83,12 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
       try {
         localStorage.setItem('taskflowState', JSON.stringify(historyState.present))
       } catch (error) {
-        console.error('Failed to save state to localStorage:', error)
+        console.error(t('console.failedSaveState'), error)
       }
     }, 500)
 
     return () => clearTimeout(timeoutId)
-  }, [historyState.present])
+  }, [historyState.present, t])
 
   // Pomodoro timer tick
   useEffect(() => {
@@ -91,13 +101,13 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [historyState.present.pomodoro.isActive, historyState.present.pomodoro.isPaused])
+  }, [historyState.present.pomodoro.isActive, historyState.present.pomodoro.isPaused, dispatch])
 
   // Check for task reminders
   useEffect(() => {
     const checkReminders = () => {
       const now = new Date()
-      historyState.present.tasks.forEach(task => {
+      historyState.present.tasks.forEach((task: Task) => {
         if (!task.completed && task.dueDate && task.reminderMinutes) {
           const dueDate = new Date(task.dueDate)
           const reminderTime = new Date(dueDate.getTime() - task.reminderMinutes * 60 * 1000)
@@ -122,7 +132,7 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
     checkReminders()
 
     return () => clearInterval(interval)
-  }, [historyState.present.tasks])
+  }, [historyState.present.tasks, t])
 
   // Request notification permission on mount
   useEffect(() => {
@@ -160,31 +170,40 @@ export function useTaskManager() {
 // Convenience hooks using action creators
 export function useTaskActions() {
   const { dispatch } = useTaskManager()
+  const { success } = useToast()
 
   return {
     addTask: useCallback((task: Omit<Task, 'id'>) => {
       dispatch(taskActions.add(task))
-    }, [dispatch]),
+      success('Task Added', `${task.title} has been created successfully`)
+    }, [dispatch, success]),
 
     updateTask: useCallback((task: Task) => {
       dispatch(taskActions.update(task))
-    }, [dispatch]),
+      success('Task Updated', `${task.title} has been updated`)
+    }, [dispatch, success]),
 
     deleteTask: useCallback((taskId: string) => {
+      // Note: We can't get the task title here without accessing state
+      // This is a limitation of the current action structure
       dispatch(taskActions.delete(taskId))
-    }, [dispatch]),
+      success('Task Deleted', 'Task has been removed')
+    }, [dispatch, success]),
 
     toggleTask: useCallback((taskId: string) => {
       dispatch(taskActions.toggle(taskId))
+      // Toast will be handled by the reducer since we need the task state
     }, [dispatch]),
 
     assignTask: useCallback((taskId: string, userId: string | null) => {
       dispatch(taskActions.assign(taskId, userId))
-    }, [dispatch]),
+      success('Task Assigned', userId ? 'Task has been assigned' : 'Task assignment removed')
+    }, [dispatch, success]),
 
     addComment: useCallback((taskId: string, comment: Comment) => {
       dispatch(taskActions.addComment(taskId, comment))
-    }, [dispatch]),
+      success('Comment Added', 'Your comment has been posted')
+    }, [dispatch, success]),
 
     moveToColumn: useCallback((taskId: string, newColumnId: string, listId: string) => {
       dispatch(taskActions.moveToColumn(taskId, newColumnId, listId))
@@ -254,6 +273,10 @@ export function usePomodoroActions() {
 
     resetTimer: useCallback(() => {
       dispatch(pomodoroActions.reset())
+    }, [dispatch]),
+
+    skipBreak: useCallback(() => {
+      dispatch(pomodoroActions.skipBreak())
     }, [dispatch]),
 
     setFocusedTask: useCallback((taskId: string | null) => {

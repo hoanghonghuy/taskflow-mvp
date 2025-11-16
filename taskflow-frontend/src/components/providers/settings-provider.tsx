@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, useCallback, useEffect } from 'react'
+import { useI18n } from '@/lib/hooks/use-i18n'
 import type { Settings, ThemeOption } from '@/types'
 import i18n from '@/lib/i18n/config'
 import { THEME_PRESET_IDS } from '@/lib/theme-presets'
@@ -22,6 +23,7 @@ const DEFAULT_SETTINGS: Settings = {
   language: 'en',
   theme: 'light',
   notifications: true,
+  soundEnabled: false,
   autoStartPomodoro: false,
   defaultPriority: 'medium',
   defaultListId: 'inbox',
@@ -33,6 +35,7 @@ const THEME_OPTIONS_SET = new Set<ThemeOption>(['system', ...THEME_PRESET_IDS])
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined)
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
+  const { t } = useI18n()
   const [settings, setSettings] = useState<Settings>(() => {
     if (typeof window !== 'undefined') {
       const savedSettings = localStorage.getItem('settings')
@@ -44,7 +47,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
           }
           return parsed
         } catch (error) {
-          console.error('Failed to parse saved settings:', error)
+          console.error(t('console.failedParseSettings'), error)
           localStorage.removeItem('settings')
         }
       }

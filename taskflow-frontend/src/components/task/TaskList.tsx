@@ -124,7 +124,7 @@ const TaskList: React.FC<TaskListProps> = ({ onAddTask }) => {
   const handleDrop = (droppedOnId: string) => {
     if (draggedTaskId && draggedTaskId !== droppedOnId) {
       // TODO: Implement reorder action
-      console.log('Reorder task', draggedTaskId, droppedOnId)
+      console.log(t('console.reorderTask'), draggedTaskId, droppedOnId)
     }
     setDraggedTaskId(null)
   }

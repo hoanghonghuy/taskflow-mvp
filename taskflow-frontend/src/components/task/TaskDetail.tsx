@@ -4,7 +4,17 @@ import React, { useState, useMemo } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import type { Task, Subtask, Priority, Comment } from '@/types'
-import { PRIORITY_MAP, CloseIcon, GripVerticalIcon, PlayCircleIcon, StopwatchIcon, RepeatIcon, CheckIcon, SparklesIcon } from '@/lib/constants'
+import { 
+  CheckIcon, 
+  GlobeAltIcon,
+  CloseIcon,
+  RepeatIcon,
+  StopwatchIcon,
+  SparklesIcon,
+  GripVerticalIcon,
+  PlayCircleIcon
+} from '@/lib/constants'
+import { PRIORITY_MAP } from '@/lib/constants'
 import { useGemini } from '@/lib/hooks/use-gemini'
 import { useRouter } from 'next/navigation'
 import { Avatar } from '@/components/ui/avatar'
@@ -140,7 +150,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => e.preventDefault()
   const handleDrop = (e: React.DragEvent<HTMLDivElement>, dropIndex: number) => {
     e.preventDefault()
-    if (draggedIndex === null || draggedIndex === dropIndex) {
+    if (draggedIndex === null || draggedTagIndex === dropIndex) {
       setDraggedIndex(null)
       return
     }
@@ -470,7 +480,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
           disabled={!isGeminiAvailable}
           className="text-sm w-full flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-secondary hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {/* TODO: Add GlobeAltIcon */}
+          <GlobeAltIcon className="h-4 w-4" />
           <span>{t('taskDetail.getInfoButton')}</span>
         </button>
         <button 

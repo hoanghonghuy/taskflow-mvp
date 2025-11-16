@@ -1,125 +1,42 @@
 'use client'
 
-import React, { useState, useMemo, useCallback } from 'react'
+import React, { useMemo } from 'react'
+import { useCalendar, type ViewMode } from '@/lib/hooks/use-calendar'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
-import { isSameDay } from '@/lib/utils/date-helpers'
 import { CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react'
 import { PRIORITY_MAP } from '@/lib/constants'
 import type { Task } from '@/types'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
 
-type ViewMode = 'month' | 'agenda'
-
-const DAY_LABELS = Array.from({ length: 7 }).map((_, index) =>
-  new Intl.DateTimeFormat(undefined, { weekday: 'short' }).format(new Date(2024, 0, index + 1))
-)
-
 const CalendarView: React.FC = () => {
-  const { state, dispatch } = useTaskManager()
-  const { tasks } = state
   const { t } = useI18n()
-  const [currentDate, setCurrentDate] = useState(new Date())
-  const [selectedDate, setSelectedDate] = useState(new Date())
-  const [agendaStartDate, setAgendaStartDate] = useState(new Date())
-  const [viewMode, setViewMode] = useState<ViewMode>('month')
-  const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null)
-  const [dragOverDateKey, setDragOverDateKey] = useState<string | null>(null)
+  const {
+    currentDate,
+    selectedDate,
+    agendaStartDate,
+    viewMode,
+    draggedTaskId,
+    dragOverDateKey,
+    days,
+    setCurrentDate,
+    setSelectedDate,
+    setAgendaStartDate,
+    setViewMode,
+    setDraggedTaskId,
+    setDragOverDateKey,
+    handlePrevMonth,
+    handleNextMonth,
+    handleToday,
+    isCurrentMonth,
+    isToday,
+    isSelected,
+    getTasksForDate,
+    DAY_LABELS,
+  } = useCalendar()
 
-  const year = currentDate.getFullYear()
-  const month = currentDate.getMonth()
-
-  const firstDayOfMonth = new Date(year, month, 1)
-  const lastDayOfMonth = new Date(year, month + 1, 0)
-  const daysInMonth = lastDayOfMonth.getDate()
-  const startingDayOfWeek = firstDayOfMonth.getDay()
-
-  const days = useMemo(() => {
-    const daysArray: Date[] = []
-    // Add previous month's days to fill the first week
-    const prevMonthLastDay = new Date(year, month, 0).getDate()
-    for (let i = startingDayOfWeek - 1; i >= 0; i--) {
-      daysArray.push(new Date(year, month - 1, prevMonthLastDay - i))
-    }
-    // Add current month's days
-    for (let i = 1; i <= daysInMonth; i++) {
-      daysArray.push(new Date(year, month, i))
-    }
-    // Add next month's days to fill the last week
-    const remainingDays = 42 - daysArray.length
-    for (let i = 1; i <= remainingDays; i++) {
-      daysArray.push(new Date(year, month + 1, i))
-    }
-    return daysArray
-  }, [year, month, daysInMonth, startingDayOfWeek])
-
-  const tasksByDate = useMemo(() => {
-    const map = new Map<string, Task[]>()
-    tasks.forEach(task => {
-      if (task.dueDate) {
-        const date = new Date(task.dueDate)
-        const key = date.toDateString()
-        if (!map.has(key)) {
-          map.set(key, [])
-        }
-        map.get(key)!.push(task)
-      }
-    })
-    return map
-  }, [tasks])
-
-  const shiftAgendaRange = useCallback((days: number) => {
-    const updated = new Date(agendaStartDate)
-    updated.setDate(updated.getDate() + days)
-    updated.setHours(0, 0, 0, 0)
-    setAgendaStartDate(updated)
-    setSelectedDate(updated)
-  }, [agendaStartDate])
-
-  const handlePrevMonth = () => {
-    if (viewMode === 'agenda') {
-      shiftAgendaRange(-1)
-      return
-    }
-    setCurrentDate(new Date(year, month - 1, 1))
-  }
-
-  const handleNextMonth = () => {
-    if (viewMode === 'agenda') {
-      shiftAgendaRange(1)
-      return
-    }
-    setCurrentDate(new Date(year, month + 1, 1))
-  }
-
-  const handleToday = () => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    if (viewMode === 'agenda') {
-      setAgendaStartDate(today)
-      setSelectedDate(today)
-      return
-    }
-    setCurrentDate(today)
-    setSelectedDate(today)
-  }
-
-  const isToday = (date: Date) => {
-    const today = new Date()
-    return isSameDay(date, today)
-  }
-
-  const isCurrentMonth = (date: Date) => date.getMonth() === month
-
-  const getTasksForDate = useCallback(
-    (date: Date) => {
-      const key = date.toDateString()
-      return tasksByDate.get(key) || []
-    },
-    [tasksByDate]
-  )
-
-  const selectedTasks = getTasksForDate(selectedDate)
+  const { dispatch, state } = useTaskManager()
+  const { tasks } = state
 
   const agendaRangeEnd = useMemo(() => {
     const end = new Date(agendaStartDate)
@@ -137,6 +54,10 @@ const CalendarView: React.FC = () => {
     }
     return agenda
   }, [agendaStartDate, getTasksForDate])
+
+  const selectedTasks = useMemo(() => {
+    return getTasksForDate(selectedDate)
+  }, [getTasksForDate, selectedDate])
 
   const moveTaskToDate = (taskId: string, targetDate: Date) => {
     const task = tasks.find(t => t.id === taskId)
@@ -273,7 +194,7 @@ const CalendarView: React.FC = () => {
                   const tasks = getTasksForDate(date)
                   const isTodayDate = isToday(date)
                   const isCurrentMonthDate = isCurrentMonth(date)
-                  const isSelected = isSameDay(date, selectedDate)
+                  const isSelectedDate = isSelected(date)
                   const dateKey = date.toDateString()
                   const isDragOverDay = dragOverDateKey === dateKey
 
@@ -303,7 +224,7 @@ const CalendarView: React.FC = () => {
                       className={`min-h-[130px] border-r border-b border-border p-2 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring
                         ${isCurrentMonthDate ? 'bg-card' : 'bg-muted/30'}
                         ${isTodayDate ? 'bg-primary/10 border-primary' : ''}
-                        ${isSelected ? 'ring-2 ring-primary/70 z-10 relative' : ''}
+                        ${isSelectedDate ? 'ring-2 ring-primary/70 z-10 relative' : ''}
                         ${isDragOverDay ? 'outline-2 outline-primary/60 bg-primary/5 relative z-10' : ''}
                       `}
                     >

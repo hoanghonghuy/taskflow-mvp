@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, useCallback } from 'react'
+import { useI18n } from '@/lib/hooks/use-i18n'
 import type { User } from '@/types'
 
 // Mock users for development - matching template
@@ -46,6 +47,7 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined)
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
+  const { t } = useI18n()
   const [user, setUser] = useState<User | null>(() => {
     if (typeof window !== 'undefined') {
       const savedUser = localStorage.getItem('user')
@@ -53,7 +55,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         try {
           return JSON.parse(savedUser)
         } catch (error) {
-          console.error('Failed to parse saved user:', error)
+          console.error(t('console.failedParseUser'), error)
           localStorage.removeItem('user')
         }
       }
@@ -73,12 +75,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const register = useCallback(async (name: string, email: string, _password: string) => {
     // Mock register - logs info and then logs in the user
-    console.log('Mock registration:', { name, email })
+    console.log(t('console.mockRegistration'), { name, email })
     // Use default user for mock
     setUser(MOCK_USER)
     localStorage.setItem('user', JSON.stringify(MOCK_USER))
     localStorage.setItem('isAuthenticated', 'true')
-  }, [])
+  }, [t])
 
   const logout = useCallback(() => {
     setUser(null)

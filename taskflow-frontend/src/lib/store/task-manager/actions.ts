@@ -126,6 +126,9 @@ export const pomodoroActions = {
   pause: (): Action => ({ type: 'PAUSE_TIMER' }),
   
   reset: (): Action => ({ type: 'RESET_TIMER' }),
+
+  // Skip current break and move to next session (reuses COMPLETE_POMODORO_SESSION logic)
+  skipBreak: (): Action => ({ type: 'COMPLETE_POMODORO_SESSION' }),
   
   setFocusedTask: (taskId: string | null): Action => ({
     type: 'SET_FOCUSED_TASK',

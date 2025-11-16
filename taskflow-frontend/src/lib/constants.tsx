@@ -1,6 +1,6 @@
 // src/lib/constants.tsx
 import React from 'react'
-import { Priority, PomodoroSettings, AppState } from '@/types'
+import { Priority, PomodoroSettings, AppState, Task } from '@/types'
 import type { TranslationKey } from '@/lib/i18n/types'
 
 // Icons
@@ -410,9 +410,28 @@ export const ACHIEVEMENT_DEFINITIONS = [
     title: 'Week Warrior',
     description: 'Complete tasks 7 days in a row',
     icon: '⚡',
-    condition: () => {
-      // TODO: Implement streak logic
-      return false
+    condition: (state: AppState) => {
+      // Check if tasks were completed 7 days in a row
+      const today = new Date()
+      let streakDays = 0
+      
+      for (let i = 0; i < 7; i++) {
+        const checkDate = new Date(today)
+        checkDate.setDate(today.getDate() - i)
+        const dateStr = checkDate.toISOString().split('T')[0]
+        
+        const hasCompletedTasks = state.tasks.some((task: Task) => 
+          task.completed && task.completedAt && task.completedAt.startsWith(dateStr)
+        )
+        
+        if (hasCompletedTasks) {
+          streakDays++
+        } else if (i > 0) {
+          break // Break if streak is broken (but allow today to be incomplete)
+        }
+      }
+      
+      return streakDays >= 7
     },
   },
 ]

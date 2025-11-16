@@ -121,6 +121,7 @@ export interface Settings {
   language: 'en' | 'vi';
   theme: ThemeOption;
   notifications: boolean;
+  soundEnabled: boolean;
   autoStartPomodoro: boolean;
   defaultPriority: Priority;
   defaultListId: string;

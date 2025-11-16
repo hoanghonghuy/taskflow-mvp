@@ -4,10 +4,12 @@ import React, { useMemo, useState } from 'react'
 import { useSettings } from '@/components/providers/settings-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import { useTaskManager } from '@/lib/hooks/use-task-manager'
-import { GripVerticalIcon, HomeIcon, ListBulletIcon, CalendarDaysIcon, GridIcon, RepeatIcon, StopwatchIcon, HourglassIcon, ViewColumnsIcon, CheckIcon } from '@/lib/constants'
+import { HomeIcon, ListBulletIcon, CalendarDaysIcon, GridIcon, RepeatIcon, StopwatchIcon, HourglassIcon, ViewColumnsIcon, CheckIcon } from '@/lib/constants'
 import { THEME_PRESETS } from '@/lib/theme-presets'
 import type { ThemeOption, View } from '@/types'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
+import { NotificationSettings } from '@/components/settings/NotificationSettings'
+import { Switch } from '@/components/ui/switch'
 
 const ALL_FEATURES: { view: View, icon: React.FC<{className?: string}>, label: string }[] = [
   { view: 'dashboard', icon: HomeIcon, label: 'feature.dashboard' },
@@ -24,7 +26,6 @@ const SettingsView: React.FC = () => {
   const { theme, setTheme, language, setLanguage, bottomNavActions, setBottomNavActions } = useSettings()
   const { state: taskState, dispatch: taskDispatch } = useTaskManager()
   const { t } = useI18n()
-  const [draggedItem, setDraggedItem] = useState<View | null>(null)
   const [themeFilter, setThemeFilter] = useState<'all' | 'light' | 'dark'>('all')
 
   const { settings: pomodoroSettings } = taskState.pomodoro
@@ -91,44 +92,19 @@ const SettingsView: React.FC = () => {
     }
   }
 
-  const handleDragStart = (view: View) => {
-    setDraggedItem(view)
-  }
-
-  const handleDrop = (targetList: 'visible' | 'hidden') => {
-    if (!draggedItem) return
-
-    const currentActions = bottomNavActions || []
-    const isVisible = currentActions.includes(draggedItem)
-
-    if (targetList === 'visible' && !isVisible) {
-      if (currentActions.length < 4) {
-        setBottomNavActions([...currentActions, draggedItem])
-      }
-    } else if (targetList === 'hidden' && isVisible) {
-      setBottomNavActions(currentActions.filter(v => v !== draggedItem))
-    }
-    setDraggedItem(null)
-  }
-
   const currentActions = bottomNavActions || []
-  const hiddenNavActions = ALL_FEATURES.filter(f => !currentActions.includes(f.view)).map(f => f.view)
+  const maxVisibleBottomNav = 4
 
-  const DraggableItem: React.FC<{ view: View }> = ({ view }) => {
-    const feature = ALL_FEATURES.find(f => f.view === view)
-    if (!feature) return null
-    const Icon = feature.icon
-    return (
-      <div
-        draggable
-        onDragStart={() => handleDragStart(view)}
-        className="flex items-center gap-3 p-2 bg-secondary rounded-md cursor-grab active:cursor-grabbing"
-      >
-        <GripVerticalIcon className="h-5 w-5 text-muted-foreground" />
-        <Icon className="h-5 w-5" />
-        <span className="text-sm font-medium">{t(feature.label)}</span>
-      </div>
-    )
+  const handleBottomNavToggle = (view: View) => {
+    const actions = bottomNavActions || []
+    const isVisible = actions.includes(view)
+
+    if (isVisible) {
+      setBottomNavActions(actions.filter((v) => v !== view))
+    } else {
+      if (actions.length >= maxVisibleBottomNav) return
+      setBottomNavActions([...actions, view])
+    }
   }
 
   return (
@@ -236,26 +212,50 @@ const SettingsView: React.FC = () => {
         <section>
           <h2 className="text-lg font-semibold mb-2">{t('settings.bottomNav.title')}</h2>
           <p className="text-sm text-muted-foreground mb-4 max-w-xl">{t('settings.bottomNav.subtitle')}</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-xl">
-            <div 
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={() => handleDrop('visible')}
-              className="bg-card border border-border rounded-lg p-4"
-            >
-              <h3 className="font-semibold mb-3">{t('settings.bottomNav.visible')}</h3>
-              <div className="space-y-2 min-h-[100px]">
-                {currentActions.map(view => <DraggableItem key={view} view={view} />)}
-              </div>
+          <div className="bg-card border border-border rounded-lg p-4 max-w-xl space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold">{t('settings.bottomNav.visible')}</h3>
+              <span className="text-xs text-muted-foreground">
+                {currentActions.length} / {maxVisibleBottomNav}
+              </span>
             </div>
-            <div
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={() => handleDrop('hidden')}
-              className="bg-card border border-border rounded-lg p-4"
-            >
-              <h3 className="font-semibold mb-3">{t('settings.bottomNav.hidden')}</h3>
-              <div className="space-y-2 min-h-[100px]">
-                {hiddenNavActions.map(view => <DraggableItem key={view} view={view} />)}
-              </div>
+            <div className="space-y-2">
+              {ALL_FEATURES.map((feature) => {
+                const isVisible = currentActions.includes(feature.view)
+                const Icon = feature.icon
+                const disabled = !isVisible && currentActions.length >= maxVisibleBottomNav
+
+                return (
+                  <button
+                    key={feature.view}
+                    type="button"
+                    onClick={() => handleBottomNavToggle(feature.view)}
+                    disabled={disabled}
+                    className={`flex items-center justify-between w-full rounded-md border px-3 py-2 text-left transition ${
+                      isVisible
+                        ? 'bg-primary/5 border-primary'
+                        : 'bg-secondary/40 border-border hover:bg-secondary/70'
+                    } ${disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Icon className="h-5 w-5" />
+                      <span className="text-sm font-medium">{t(feature.label)}</span>
+                    </div>
+                    <div
+                      className="flex items-center"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                      }}
+                    >
+                      <Switch
+                        checked={isVisible}
+                        onCheckedChange={() => handleBottomNavToggle(feature.view)}
+                        disabled={disabled}
+                      />
+                    </div>
+                  </button>
+                )
+              })}
             </div>
           </div>
         </section>
@@ -309,6 +309,8 @@ const SettingsView: React.FC = () => {
             </div>
           </div>
         </section>
+        
+        <NotificationSettings />
 
       </AppPageMain>
     </AppPage>

@@ -184,7 +184,7 @@ export function taskManagerReducer(state: AppState, action: Action): AppState {
     }
 
     case 'ADD_COUNTDOWN': {
-      const newEvent: CountdownEvent = { ...action.payload, id: generateId() }
+      const newEvent: CountdownEvent = action.payload as CountdownEvent
       return { ...state, countdownEvents: [...state.countdownEvents, newEvent] }
     }
 
@@ -262,7 +262,7 @@ export function taskManagerReducer(state: AppState, action: Action): AppState {
           const focusHistory = [
             ...state.pomodoro.focusHistory,
             {
-              date: new Date().toISOString(),
+              startTime: new Date().toISOString(),
               duration: settings.focusDuration * 60,
               taskId: focusedTaskId,
             }
