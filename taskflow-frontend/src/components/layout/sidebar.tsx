@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo, useRef, useEffect } from 'react'
+import React, { useState, useMemo } from 'react'
 import { useTaskManager } from '@/lib/hooks/use-task-manager'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import { useUser } from '@/components/providers/user-provider'
@@ -10,6 +10,7 @@ import ProfileDropdown from '@/components/auth/profile-dropdown'
 import { useRouter } from 'next/navigation'
 import { useConfirmation } from '@/components/providers/confirmation-provider'
 import { useToast } from '@/components/providers/toast-provider'
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 
 interface SidebarProps {
   isOpen: boolean
@@ -29,20 +30,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
   const [newTag, setNewTag] = useState('')
   const [isListsExpanded, setIsListsExpanded] = useState(true)
   const [isTagsExpanded, setIsTagsExpanded] = useState(true)
-  const [isProfileDropdownOpen, setProfileDropdownOpen] = useState(false)
-  const profileDropdownRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
-        setProfileDropdownOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [])
+  const [isProfileDialogOpen, setProfileDialogOpen] = useState(false)
 
   const handleAddList = (e: React.FormEvent) => {
     e.preventDefault()
@@ -150,12 +138,31 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
           : 'p-4 -translate-x-full md:w-0 md:p-0 md:border-r-0 md:translate-x-0'
         }
       `}>
-        <div className="flex items-center gap-2 mb-6 px-2">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" className="h-8 w-8 text-primary">
-            <rect width="256" height="256" fill="none"></rect>
-            <path d="M128,24a104,104,0,1,0,104,104A104.11,104.11,0,0,0,128,24Zm45.15,122.34-8.6-14.9a4,4,0,0,0-6.92,0l-22.1,38.28a4,4,0,0,1-3.46,2H92a4,4,0,0,1-3.46-6l25.56-44.28a4,4,0,0,0-3.46-6H65.75a4,4,0,0,1,0-8h42.39a4,4,0,0,1,3.46,6l-25.56,44.28a4,4,0,0,0,3.46,6h22.54a4,4,0,0,1,3.46-2l22.1-38.28a4,4,0,0,0-3.46-6H134.25a4,4,0,0,1,0-8h42.39a4,4,0,0,1,3.46,2l8.6,14.9a4,4,0,0,1-3.46,6H173.15a4,4,0,0,1,0,8h-3.46a4,4,0,0,1-3.46-2Z"></path>
-          </svg>
-          <h1 className="text-xl font-bold whitespace-nowrap">{t('app.name')}</h1>
+        <div className="flex items-center gap-3 mb-6 px-2 justify-start md:justify-between">
+          <div className="hidden md:flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" className="h-8 w-8 text-primary">
+              <rect width="256" height="256" fill="none"></rect>
+              <path d="M128,24a104,104,0,1,0,104,104A104.11,104.11,0,0,0,128,24Zm45.15,122.34-8.6-14.9a4,4,0,0,0-6.92,0l-22.1,38.28a4,4,0,0,1-3.46,2H92a4,4,0,0,1-3.46-6l25.56-44.28a4,4,0,0,0-3.46-6H65.75a4,4,0,0,1,0-8h42.39a4,4,0,0,1,3.46,6l-25.56,44.28a4,4,0,0,0,3.46,6h22.54a4,4,0,0,1,3.46-2l22.1-38.28a4,4,0,0,0-3.46-6H134.25a4,4,0,0,1,0-8h42.39a4,4,0,0,1,3.46,2l8.6,14.9a4,4,0,0,1-3.46,6H173.15a4,4,0,0,1,0,8h-3.46a4,4,0,0,1-3.46-2Z"></path>
+            </svg>
+            <h1 className="text-xl font-bold whitespace-nowrap">{t('app.name')}</h1>
+          </div>
+          <Dialog open={isProfileDialogOpen} onOpenChange={setProfileDialogOpen}>
+            <DialogTrigger asChild>
+              <button
+                className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-card md:hidden"
+              >
+                <Avatar user={user} className="w-9 h-9" />
+                <span className="text-sm font-semibold truncate max-w-[7rem]">{user?.name || t('profile.viewProfile')}</span>
+              </button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <ProfileDropdown
+                user={user}
+                onClose={() => setProfileDialogOpen(false)}
+                variant="modal"
+              />
+            </DialogContent>
+          </Dialog>
         </div>
 
         <div className="flex-grow overflow-y-auto pr-1 min-w-[15rem]">
@@ -171,7 +178,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
               >
                 <div className="flex items-center gap-3">
                   <Icon className="h-5 w-5" />
-                  <span>{t(name as any)}</span>
+                  <span>{t(name)}</span>
                 </div>
               </NavItem>
             ))}
@@ -302,7 +309,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
         </div>
 
         {onChatbotToggle && (
-          <div className="pt-4">
+          <div className="mt-auto pt-4 pb-24 md:pb-4">
             <button
               onClick={onChatbotToggle}
               className="w-full flex items-center justify-center gap-2 text-sm px-3 py-2 rounded-md bg-secondary hover:bg-muted transition-colors"
@@ -312,14 +319,6 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
             </button>
           </div>
         )}
-        <div ref={profileDropdownRef} className="relative mt-auto pt-4 md:hidden">
-          <div className="border-t border-border mb-4 -mx-4"></div>
-          <button onClick={() => setProfileDropdownOpen(prev => !prev)} className="w-full flex items-center gap-3 p-2 rounded-md hover:bg-secondary">
-            <Avatar user={user} className="w-8 h-8" />
-            <span className="font-semibold text-sm truncate">{user?.name}</span>
-          </button>
-          {isProfileDropdownOpen && <ProfileDropdown user={user} onClose={() => setProfileDropdownOpen(false)} />}
-        </div>
       </aside>
     </>
   )

@@ -345,7 +345,7 @@ export const PRIORITY_MAP: {
   },
 }
 
-export const SPECIAL_LISTS_CONFIG = {
+export const SPECIAL_LISTS_CONFIG: Record<string, { id: string; name: TranslationKey; icon: React.FC<{ className?: string }> }> = {
   inbox: { id: 'inbox', name: 'specialLists.inbox', icon: InboxIcon },
   today: { id: 'today', name: 'specialLists.today', icon: CalendarDayIcon },
   upcoming: { id: 'upcoming', name: 'specialLists.upcoming', icon: CalendarIcon },
