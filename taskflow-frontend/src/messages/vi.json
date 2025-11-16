@@ -242,10 +242,13 @@
     "new": "Đếm ngược mới",
     "add": "Thêm Đếm ngược",
     "cancel": "Hủy",
+    "nameLabel": "Tên đếm ngược",
     "namePlaceholder": "Tên sự kiện",
+    "dateLabel": "Ngày & giờ",
     "title": "Tiêu đề sự kiện",
     "targetDate": "Ngày đích",
     "color": "Màu sắc",
+    "colorLabel": "Kiểu điểm nhấn",
     "days": "Ngày",
     "hours": "Giờ",
     "minutes": "Phút",
@@ -263,8 +266,18 @@
     "delete": "Xóa",
     "selectDate": "Chọn ngày giờ",
     "noCountdowns": "Chưa có đếm ngược nào. Thêm một cái để bắt đầu!",
+    "emptyDescription": "Theo dõi những cột mốc quan trọng bằng các thẻ đếm ngược nổi bật.",
     "noEvents": "Không có sự kiện đếm ngược",
     "createFirst": "Tạo đếm ngược để theo dõi các ngày quan trọng",
+    "nextUp": "Sắp diễn ra",
+    "progressLabel": "Tiến độ: {{percent}}% hoàn thành",
+    "colors": {
+      "sky": "Chân trời xanh",
+      "sunset": "Hoàng hôn vàng",
+      "forest": "Gió rừng",
+      "violet": "Sắc tím",
+      "amber": "Hổ phách"
+    },
     "aria": {
       "deleteCountdown": "Xóa đếm ngược"
     }

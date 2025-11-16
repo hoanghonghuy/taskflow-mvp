@@ -394,19 +394,19 @@ export function generateMockData() {
       id: 'cd-1',
       title: "New Year's Eve",
       targetDate: nextYear.toISOString(),
-      color: 'bg-blue-500',
+      color: 'sky',
     },
     {
       id: 'cd-2',
       title: 'Project Deadline',
       targetDate: nextMonth.toISOString(),
-      color: 'bg-red-500',
+      color: 'sunset',
     },
     {
       id: 'cd-3',
       title: 'Vacation',
       targetDate: nextWeek.toISOString(),
-      color: 'bg-green-500',
+      color: 'forest',
     },
   ]
 

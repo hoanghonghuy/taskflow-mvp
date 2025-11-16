@@ -74,6 +74,7 @@ export interface CountdownEvent {
   title: string;
   targetDate: string;
   color: string;
+  createdAt?: string;
 }
 
 export interface PomodoroState {

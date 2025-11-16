@@ -257,10 +257,13 @@
     "new": "New Countdown",
     "add": "Add Countdown",
     "cancel": "Cancel",
+    "nameLabel": "Countdown name",
     "namePlaceholder": "Event name",
+    "dateLabel": "Date & time",
     "title": "Event Title",
     "targetDate": "Target Date",
     "color": "Color",
+    "colorLabel": "Accent style",
     "days": "Days",
     "hours": "Hours",
     "minutes": "Minutes",
@@ -278,8 +281,18 @@
     "delete": "Delete",
     "selectDate": "Select date & time",
     "noCountdowns": "No countdowns yet. Add one to get started!",
+    "emptyDescription": "Capture launches, events, and milestones with beautiful countdown cards.",
     "noEvents": "No countdown events",
     "createFirst": "Create a countdown to track important dates",
+    "nextUp": "Next up",
+    "progressLabel": "Progress: {{percent}}% complete",
+    "colors": {
+      "sky": "Sky horizon",
+      "sunset": "Golden sunset",
+      "forest": "Forest breeze",
+      "violet": "Violet bloom",
+      "amber": "Amber glow"
+    },
     "aria": {
       "deleteCountdown": "Delete countdown"
     }
