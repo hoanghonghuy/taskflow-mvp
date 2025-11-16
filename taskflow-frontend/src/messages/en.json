@@ -135,7 +135,15 @@
     "allDone": "All done!",
     "noTasks": "You have no tasks here. Add one to get started.",
     "addTask": "Add Task",
-    "completed": "Completed"
+    "completed": "Completed",
+    "summary": {
+      "today": "Due today",
+      "upcoming": "Upcoming (7 days)",
+      "overdue": "Overdue",
+      "total": "All tasks",
+      "tasks": "{{count}} task",
+      "tasks_plural": "{{count}} tasks"
+    }
   },
   "board": {
     "title": "Kanban board view",
@@ -244,10 +252,6 @@
     "focusTime": "Focus Time",
     "todayPomos": "Today's Pomodoros",
     "totalFocus": "Total Focus Time"
-  },
-  "focusPicker": {
-    "title": "Select Task",
-    "general": "General Focus"
   },
   "countdown": {
     "new": "New Countdown",
@@ -404,10 +408,11 @@
     "more": "More"
   },
   "sidebar": {
-    "myLists": "My Lists",
+    "myLists": "My lists",
     "addNewList": "Add a new list...",
     "tags": "Tags",
     "addNewTag": "Add a new tag...",
+    "profileDialogDescription": "Access your profile actions and settings.",
     "chatWithGemini": "Chat with Gemini",
     "deleteList": {
       "confirm": {

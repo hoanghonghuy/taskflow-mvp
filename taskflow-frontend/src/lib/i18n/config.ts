@@ -28,8 +28,8 @@ i18n
               const parsed = JSON.parse(settings)
               if (parsed.language) return parsed.language
             }
-          } catch (e) {
-            // Ignore parse errors
+          } catch (error) {
+            console.warn('Failed to read settings language from localStorage', error)
           }
           return localStorage.getItem('language') || 'en'
         })()
@@ -62,8 +62,8 @@ i18n.on('languageChanged', (lng) => {
         parsed.language = lng
         localStorage.setItem('settings', JSON.stringify(parsed))
       }
-    } catch (e) {
-      // Ignore parse errors
+    } catch (error) {
+      console.warn('Failed to persist settings language to localStorage', error)
     }
   }
 })

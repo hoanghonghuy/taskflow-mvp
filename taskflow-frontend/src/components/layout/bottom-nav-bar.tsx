@@ -1,7 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useEffect } from 'react'
-import { useTaskManager } from '@/lib/hooks/use-task-manager'
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { useSettings } from '@/components/providers/settings-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import { StopwatchIcon, ListBulletIcon, CalendarDaysIcon, GridIcon, RepeatIcon, HourglassIcon, HomeIcon, ViewColumnsIcon } from '@/lib/constants'
@@ -26,7 +25,12 @@ const getPathForView = (view: View) => {
   return `/${view}`
 }
 
-const MoreMenu: React.FC<{ hiddenViews: View[], onClose: () => void }> = ({ hiddenViews, onClose }) => {
+interface MoreMenuProps {
+  hiddenViews: View[]
+  onClose: () => void
+}
+
+const MoreMenu: React.FC<MoreMenuProps> = ({ hiddenViews, onClose }) => {
   const router = useRouter()
   const { t } = useI18n()
   const menuRef = useRef<HTMLDivElement>(null)
@@ -72,6 +76,28 @@ const MoreMenu: React.FC<{ hiddenViews: View[], onClose: () => void }> = ({ hidd
   )
 }
 
+interface BottomNavButtonProps {
+  feature: typeof ALL_FEATURES[number]
+  isActive: boolean
+  onSelect: (view: View) => void
+  label: string
+}
+
+function BottomNavButton({ feature, isActive, onSelect, label }: BottomNavButtonProps) {
+  const Icon = feature.icon
+  return (
+    <button
+      onClick={() => onSelect(feature.view)}
+      className={`flex flex-col items-center justify-center gap-1 flex-1 transition-colors p-1 ${
+        isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+      }`}
+    >
+      <Icon className="h-6 w-6" />
+      <span className="text-[10px] font-medium">{label}</span>
+    </button>
+  )
+}
+
 export default function BottomNavBar() {
   const { settings } = useSettings()
   const { t } = useI18n()
@@ -79,40 +105,38 @@ export default function BottomNavBar() {
   const pathname = usePathname()
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false)
 
-  const bottomNavActions = settings.bottomNavActions || ['dashboard', 'list', 'board', 'calendar']
-  const visibleFeatures = ALL_FEATURES.filter(f => bottomNavActions.includes(f.view))
-  const hiddenFeatures = ALL_FEATURES.filter(f => !bottomNavActions.includes(f.view)).map(f => f.view)
+  const bottomNavActions = useMemo(() => {
+    return settings.bottomNavActions ?? ['dashboard', 'list', 'board', 'calendar']
+  }, [settings.bottomNavActions])
+
+  const { visibleFeatures, hiddenFeatures } = useMemo(() => {
+    const visible = ALL_FEATURES.filter(f => bottomNavActions.includes(f.view))
+    const hidden = ALL_FEATURES.filter(f => !bottomNavActions.includes(f.view)).map(f => f.view)
+    return { visibleFeatures: visible, hiddenFeatures: hidden }
+  }, [bottomNavActions])
   
-  const getCurrentView = () => {
+  const getCurrentView = useCallback(() => {
     if (pathname === '/dashboard' || pathname === '/') return 'dashboard'
     if (pathname === '/habits') return 'habit'
     return pathname.slice(1) as View
-  }
+  }, [pathname])
 
   const currentView = getCurrentView()
 
-  const NavButton: React.FC<{
-    feature: typeof ALL_FEATURES[0]
-    isActive: boolean
-  }> = ({ feature, isActive }) => {
-    const Icon = feature.icon
-    return (
-      <button
-        onClick={() => router.push(getPathForView(feature.view))}
-        className={`flex flex-col items-center justify-center gap-1 flex-1 transition-colors p-1 ${
-          isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
-        }`}
-      >
-        <Icon className="h-6 w-6" />
-        <span className="text-[10px] font-medium">{t(feature.label)}</span>
-      </button>
-    )
-  }
+  const handleFeatureSelect = useCallback((view: View) => {
+    router.push(getPathForView(view))
+  }, [router])
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-card border-t border-border flex items-stretch justify-around z-30 shadow-lg">
       {visibleFeatures.map(feature => (
-        <NavButton key={feature.view} feature={feature} isActive={currentView === feature.view} />
+        <BottomNavButton
+          key={feature.view}
+          feature={feature}
+          isActive={currentView === feature.view}
+          onSelect={handleFeatureSelect}
+          label={t(feature.label)}
+        />
       ))}
       {hiddenFeatures.length > 0 && (
         <div className="relative">

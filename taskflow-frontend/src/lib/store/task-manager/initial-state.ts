@@ -12,6 +12,7 @@ export const INITIAL_STATE: AppState = {
   activeListId: 'inbox',
   activeTag: null,
   tags: [],
+  sortOrder: 'default',
   pomodoro: {
     isActive: false,
     isPaused: false,

@@ -5,6 +5,7 @@ import { INITIAL_STATE, historyReducer } from '@/lib/store/task-manager'
 import type { TaskManagerContextType, HistoryState } from '@/lib/store/task-manager'
 import type { Task, List, Habit, Comment, PomodoroState } from '@/types'
 import { taskActions, listActions, habitActions, pomodoroActions } from '@/lib/store/task-manager/actions'
+import { generateMockData } from '@/lib/mock-data'
 
 const TaskManagerContext = createContext<TaskManagerContextType | undefined>(undefined)
 
@@ -38,7 +39,6 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
         }
         // Load mock data if no saved state or saved state has no tasks
         try {
-          const { generateMockData } = require('@/lib/mock-data')
           const mockData = generateMockData()
           console.log('📦 Loading mock data:', {
             tasks: mockData.tasks.length,

@@ -1,5 +1,7 @@
 export type Priority = 'none' | 'low' | 'medium' | 'high' | 'urgent';
 
+export type SortOrder = 'default' | 'dueDateAsc' | 'dueDateDesc';
+
 export interface Task {
   id: string;
   title: string;
@@ -79,6 +81,8 @@ export interface PomodoroState {
   isPaused: boolean;
   remainingTime: number;
   currentSession: 'focus' | 'shortBreak' | 'longBreak';
+  focusedTaskId: string | null;
+  sessionsCompleted: number;
   focusHistory: FocusSession[];
   settings: PomodoroSettings;
 }
@@ -148,18 +152,7 @@ export interface AppState {
   tags: string[];
   pomodoro: PomodoroState;
   unlockedAchievements: string[];
-}
-
-// Update PomodoroState to include missing fields
-export interface PomodoroState {
-  isActive: boolean;
-  isPaused: boolean;
-  remainingTime: number;
-  currentSession: 'focus' | 'shortBreak' | 'longBreak';
-  focusedTaskId: string | null;
-  sessionsCompleted: number;
-  focusHistory: FocusSession[];
-  settings: PomodoroSettings;
+  sortOrder: SortOrder;
 }
 
 export interface ChatMessage {

@@ -86,9 +86,13 @@ Have a productive day! 🚀`
         // Simulate API delay
         await new Promise(resolve => setTimeout(resolve, 1500))
         setBriefing(mockBriefing)
-      } catch (err: any) {
-        setError(err.message || 'An unknown error occurred.')
-        addToast.error(err.message || t('briefing.error.failed') || 'Failed to generate briefing')
+      } catch (err: unknown) {
+        const message =
+          typeof err === 'object' && err !== null && 'message' in err && typeof (err as { message?: string }).message === 'string'
+            ? (err as { message: string }).message
+            : 'An unknown error occurred.'
+        setError(message)
+        addToast.error(message || t('briefing.error.failed') || 'Failed to generate briefing')
       } finally {
         setIsLoading(false)
       }
@@ -112,7 +116,7 @@ Have a productive day! 🚀`
           </button>
         </header>
 
-        <div className="flex-grow p-6 overflow-y-auto">
+        <div className="grow p-6 overflow-y-auto">
           {isLoading && (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <Spinner className="h-8 w-8" />

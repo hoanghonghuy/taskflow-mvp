@@ -3,6 +3,7 @@
  */
 
 import type { Task } from '@/types'
+import type { TranslationFunction } from '@/lib/i18n/types'
 import { isToday, isTomorrow, isFuture, isOverdue } from './date-helpers'
 
 export type SortOrder = 'default' | 'dueDateAsc' | 'dueDateDesc'
@@ -66,7 +67,7 @@ export const sortTasks = (tasks: Task[], sortOrder: SortOrder, allTasks: Task[])
 
 export const groupUpcomingTasks = (
   tasks: Task[],
-  t: (key: string, options?: Record<string, string | number>) => string
+  t: TranslationFunction
 ): { [key: string]: Task[] } => {
   const groups: { [key: string]: Task[] } = {}
   const today = new Date()

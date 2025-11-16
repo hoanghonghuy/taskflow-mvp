@@ -10,7 +10,7 @@ import ProfileDropdown from '@/components/auth/profile-dropdown'
 import { useRouter } from 'next/navigation'
 import { useConfirmation } from '@/components/providers/confirmation-provider'
 import { useToast } from '@/components/providers/toast-provider'
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 
 interface SidebarProps {
   isOpen: boolean
@@ -152,10 +152,14 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                 className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-card md:hidden"
               >
                 <Avatar user={user} className="w-9 h-9" />
-                <span className="text-sm font-semibold truncate max-w-[7rem]">{user?.name || t('profile.viewProfile')}</span>
+                <span className="text-sm font-semibold truncate max-w-28">{user?.name || t('profile.viewProfile')}</span>
               </button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
+              <DialogHeader className="sr-only">
+                <DialogTitle>{t('profile.viewProfile')}</DialogTitle>
+                <DialogDescription>{t('sidebar.profileDialogDescription')}</DialogDescription>
+              </DialogHeader>
               <ProfileDropdown
                 user={user}
                 onClose={() => setProfileDialogOpen(false)}

@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import Image from 'next/image'
 import type { User } from '@/types'
 
 interface AvatarProps {
@@ -17,9 +18,12 @@ const getInitials = (name: string): string => {
 }
 
 function Avatar({ user, className }: AvatarProps) {
+  const baseClasses = className ? `${className}` : 'w-10 h-10'
+  const textClasses = `${baseClasses} flex items-center justify-center rounded-full`
+
   if (!user) {
     return (
-      <div className={`flex items-center justify-center w-10 h-10 rounded-full bg-secondary text-muted-foreground ${className || ''}`}>
+      <div className={`${textClasses} bg-secondary text-muted-foreground`}>
         ?
       </div>
     )
@@ -27,16 +31,19 @@ function Avatar({ user, className }: AvatarProps) {
 
   if (user.avatarUrl) {
     return (
-      <img
+      <Image
         src={user.avatarUrl}
         alt={user.name}
-        className={`w-10 h-10 rounded-full object-cover ${className || ''}`}
+        width={40}
+        height={40}
+        className={`rounded-full object-cover ${className || 'w-10 h-10'}`}
+        unoptimized
       />
     )
   }
 
   return (
-    <div className={`flex items-center justify-center w-10 h-10 rounded-full bg-primary/20 text-primary font-bold ${className || ''}`}>
+    <div className={`${textClasses} bg-primary/20 text-primary font-bold`}>
       {getInitials(user.name)}
     </div>
   )

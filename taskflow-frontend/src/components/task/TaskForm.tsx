@@ -62,7 +62,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
       const newTask: Task = {
         id: Date.now().toString(),
         title: title.trim(),
-        description: description.trim() || undefined,
+        description: description.trim(),
         completed: false,
         dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
         priority,
@@ -110,8 +110,12 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
       
       setTextToAnalyze('')
       addToast.success(t('taskForm.analyzeAndFill'))
-    } catch (error: any) {
-      addToast.error(error.message || t('briefing.error.failed'))
+    } catch (error: unknown) {
+      const message =
+        typeof error === 'object' && error !== null && 'message' in error && typeof (error as { message?: string }).message === 'string'
+          ? (error as { message: string }).message
+          : t('briefing.error.failed')
+      addToast.error(message)
     } finally {
       setIsAnalyzing(false)
     }
@@ -131,7 +135,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
         
         <div className="p-6 overflow-y-auto">
           {isGeminiAvailable && (
-            <div className="mb-6 p-4 bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 rounded-lg">
+            <div className="mb-6 p-4 bg-linear-to-br from-primary/5 to-primary/10 border border-primary/20 rounded-lg">
               <div className="flex items-center gap-2 mb-3">
                 <SparklesIcon className="h-5 w-5 text-primary" />
                 <label className="text-sm font-semibold text-foreground">
@@ -214,9 +218,14 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
                   onChange={e => setPriority(e.target.value as Priority)} 
                   className="w-full p-3 bg-secondary/50 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-colors appearance-none cursor-pointer"
                 >
-                  {Object.entries(PRIORITY_MAP).map(([p, { label }]) => (
-                    <option key={p} value={p}>{t(label as any) || p}</option>
-                  ))}
+                  {(Object.keys(PRIORITY_MAP) as (keyof typeof PRIORITY_MAP)[]).map(priorityKey => {
+                    const { label } = PRIORITY_MAP[priorityKey]
+                    return (
+                      <option key={priorityKey} value={priorityKey}>
+                        {t(label)}
+                      </option>
+                    )
+                  })}
                 </select>
               </div>
             </div>

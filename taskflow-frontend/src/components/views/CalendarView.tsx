@@ -17,9 +17,11 @@ const DAY_LABELS = Array.from({ length: 7 }).map((_, index) =>
 
 const CalendarView: React.FC = () => {
   const { state, dispatch } = useTaskManager()
+  const { tasks } = state
   const { t } = useI18n()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState(new Date())
+  const [agendaStartDate, setAgendaStartDate] = useState(new Date())
   const [viewMode, setViewMode] = useState<ViewMode>('month')
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null)
   const [dragOverDateKey, setDragOverDateKey] = useState<string | null>(null)
@@ -52,8 +54,8 @@ const CalendarView: React.FC = () => {
   }, [year, month, daysInMonth, startingDayOfWeek])
 
   const tasksByDate = useMemo(() => {
-    const map = new Map<string, typeof state.tasks>()
-    state.tasks.forEach(task => {
+    const map = new Map<string, Task[]>()
+    tasks.forEach(task => {
       if (task.dueDate) {
         const date = new Date(task.dueDate)
         const key = date.toDateString()
@@ -64,18 +66,42 @@ const CalendarView: React.FC = () => {
       }
     })
     return map
-  }, [state.tasks])
+  }, [tasks])
+
+  const shiftAgendaRange = useCallback((days: number) => {
+    const updated = new Date(agendaStartDate)
+    updated.setDate(updated.getDate() + days)
+    updated.setHours(0, 0, 0, 0)
+    setAgendaStartDate(updated)
+    setSelectedDate(updated)
+  }, [agendaStartDate])
 
   const handlePrevMonth = () => {
+    if (viewMode === 'agenda') {
+      shiftAgendaRange(-1)
+      return
+    }
     setCurrentDate(new Date(year, month - 1, 1))
   }
 
   const handleNextMonth = () => {
+    if (viewMode === 'agenda') {
+      shiftAgendaRange(1)
+      return
+    }
     setCurrentDate(new Date(year, month + 1, 1))
   }
 
   const handleToday = () => {
-    setCurrentDate(new Date())
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    if (viewMode === 'agenda') {
+      setAgendaStartDate(today)
+      setSelectedDate(today)
+      return
+    }
+    setCurrentDate(today)
+    setSelectedDate(today)
   }
 
   const isToday = (date: Date) => {
@@ -95,20 +121,25 @@ const CalendarView: React.FC = () => {
 
   const selectedTasks = getTasksForDate(selectedDate)
 
+  const agendaRangeEnd = useMemo(() => {
+    const end = new Date(agendaStartDate)
+    end.setDate(end.getDate() + 9)
+    return end
+  }, [agendaStartDate])
+
   const upcomingAgenda = useMemo(() => {
     const agenda: { date: Date; tasks: Task[] }[] = []
-    const today = new Date()
     for (let i = 0; i < 10; i++) {
-      const date = new Date(today)
-      date.setDate(today.getDate() + i)
+      const date = new Date(agendaStartDate)
+      date.setDate(agendaStartDate.getDate() + i)
       const tasks = getTasksForDate(date)
       agenda.push({ date, tasks })
     }
     return agenda
-  }, [getTasksForDate])
+  }, [agendaStartDate, getTasksForDate])
 
   const moveTaskToDate = (taskId: string, targetDate: Date) => {
-    const task = state.tasks.find(t => t.id === taskId)
+    const task = tasks.find(t => t.id === taskId)
     if (!task) return
 
     const originalDate = task.dueDate ? new Date(task.dueDate) : new Date()
@@ -169,7 +200,9 @@ const CalendarView: React.FC = () => {
             </div>
             <div className="flex items-center gap-2 flex-wrap justify-end md:justify-start">
               <span className="text-sm font-medium text-muted-foreground md:hidden">
-                {currentDate.toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
+                {viewMode === 'month'
+                  ? currentDate.toLocaleDateString(undefined, { month: 'short', year: 'numeric' })
+                  : `${agendaStartDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} - ${agendaRangeEnd.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`}
               </span>
               <button
                 onClick={handlePrevMonth}
@@ -195,7 +228,18 @@ const CalendarView: React.FC = () => {
                 {(['month', 'agenda'] as ViewMode[]).map(mode => (
                   <button
                     key={mode}
-                    onClick={() => setViewMode(mode)}
+                    onClick={() => {
+                      setViewMode(mode)
+                      if (mode === 'agenda') {
+                        const base = new Date(selectedDate)
+                        base.setHours(0, 0, 0, 0)
+                        setAgendaStartDate(base)
+                      } else {
+                        const monthAnchor = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)
+                        setCurrentDate(monthAnchor)
+                        setSelectedDate(monthAnchor)
+                      }
+                    }}
                     className={`px-3 py-1 text-sm font-medium rounded-lg transition-colors ${
                       viewMode === mode ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground'
                     }`}
@@ -207,7 +251,9 @@ const CalendarView: React.FC = () => {
             </div>
           </div>
           <h2 className="hidden md:block text-2xl font-semibold">
-            {currentDate.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
+            {viewMode === 'month'
+              ? currentDate.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
+              : `${agendaStartDate.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })} – ${agendaRangeEnd.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}`}
           </h2>
         </header>
       </AppPageContainer>
@@ -348,7 +394,9 @@ const CalendarView: React.FC = () => {
           <div className="bg-card border border-border rounded-2xl shadow-sm">
             <div className="p-4 border-b border-border">
               <h3 className="font-semibold">{t('calendar.upcomingAgenda') || 'Upcoming agenda'}</h3>
-              <p className="text-sm text-muted-foreground">{t('calendar.upcomingSubtitle') || 'Next 10 days of scheduled work.'}</p>
+              <p className="text-sm text-muted-foreground">
+                {t('calendar.upcomingSubtitle') || 'Next 10 days of scheduled work.'}
+              </p>
             </div>
             <div className="divide-y divide-border">
               {upcomingAgenda.map(({ date, tasks }) => (

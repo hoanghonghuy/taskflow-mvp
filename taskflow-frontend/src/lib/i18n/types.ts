@@ -9,15 +9,6 @@
 import type en from '@/messages/en.json'
 import type vi from '@/messages/vi.json'
 
-// Create a type from the English translations (source of truth)
-type TranslationKeys = {
-  [K in keyof typeof en]: typeof en[K] extends object
-    ? {
-        [P in keyof typeof en[K]]: `${K & string}.${P & string}`
-      }[keyof typeof en[K]]
-    : K
-}[keyof typeof en]
-
 // Flatten nested keys
 type FlattenKeys<T, Prefix extends string = ''> = {
   [K in keyof T]: T[K] extends object
@@ -37,5 +28,5 @@ export interface TranslationFunction {
 type VerifyTranslations<T1, T2> = T1 extends T2 ? T2 extends T1 ? true : false : false
 
 // This will cause a type error if translations don't match
-type _TranslationCheck = VerifyTranslations<typeof en, typeof vi>
+export type TranslationSchemaCheck = VerifyTranslations<typeof en, typeof vi>
 

@@ -5,7 +5,7 @@ import { CloseIcon, PaperAirplaneIcon, CubeTransparentIcon, GlobeAltIcon, Sparkl
 import { useGemini } from '@/lib/hooks/use-gemini'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import { useToast } from '@/components/providers/toast-provider'
-import type { ChatMessage, GroundingSource } from '@/types'
+import type { ChatMessage } from '@/types'
 import Spinner from '@/components/ui/spinner'
 
 interface ChatbotProps {
@@ -70,8 +70,12 @@ const Chatbot: React.FC<ChatbotProps> = ({ onClose }) => {
           : m
       ))
 
-    } catch (error: any) {
-      addToast.error(error.message || 'An error occurred.')
+    } catch (error: unknown) {
+      const message =
+        typeof error === 'object' && error !== null && 'message' in error && typeof (error as { message?: string }).message === 'string'
+          ? (error as { message: string }).message
+          : 'An error occurred.'
+      addToast.error(message)
       setMessages(prev => prev.filter(m => m.id !== modelMessageId)) // Remove placeholder
     } finally {
       setIsLoading(false)
@@ -93,7 +97,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ onClose }) => {
           </button>
         </header>
 
-        <div className="flex-grow p-4 overflow-y-auto space-y-4">
+        <div className="grow p-4 overflow-y-auto space-y-4">
           {messages.map((msg) => (
             <div key={msg.id}>
               <div className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>

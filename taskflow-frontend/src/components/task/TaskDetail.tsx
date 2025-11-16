@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useMemo } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import type { Task, Subtask, Priority, Comment } from '@/types'
@@ -20,17 +20,14 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   const router = useRouter()
   const { allUsers } = useUser()
   const { isAvailable: isGeminiAvailable } = useGemini()
-  const [task, setTask] = useState<Task | null>(null)
+  const task = useMemo<Task | null>(() => {
+    return state.tasks.find(t => t.id === taskId) ?? null
+  }, [state.tasks, taskId])
   const [newSubtask, setNewSubtask] = useState('')
   const [newTag, setNewTag] = useState('')
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
   const [draggedTagIndex, setDraggedTagIndex] = useState<number | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
-
-  useEffect(() => {
-    const foundTask = state.tasks.find(t => t.id === taskId)
-    setTask(foundTask || null)
-  }, [taskId, state.tasks])
 
   if (!task) {
     return null
@@ -53,9 +50,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   }
 
   const updateTask = (updates: Partial<Task>) => {
-    if (!task) return
     const updatedTask = { ...task, ...updates }
-    setTask(updatedTask)
     dispatch({ type: 'UPDATE_TASK', payload: updatedTask })
   }
 
@@ -162,13 +157,13 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
 
   return (
     <div className="h-full w-full md:w-96 bg-card border-l border-border shadow-2xl flex flex-col md:animate-slide-in overflow-hidden">
-      <header className="p-4 border-b border-border flex items-center justify-between flex-shrink-0">
+      <header className="p-4 border-b border-border flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">
           <button
             onClick={() => dispatch({ type: 'TOGGLE_TASK_COMPLETION', payload: { taskId: task.id } })}
             aria-label={task.completed ? t('taskItem.aria.markIncomplete') : t('taskItem.aria.markComplete')}
             className={`
-              h-5 w-5 rounded flex-shrink-0
+              h-5 w-5 rounded shrink-0
               flex items-center justify-center 
               transition-all duration-150
               focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
@@ -194,7 +189,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
         </div>
       </header>
 
-      <div className="flex-grow p-6 overflow-y-auto">
+      <div className="grow p-6 overflow-y-auto">
         <input
           type="text"
           value={task.title}
@@ -266,9 +261,14 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                 onChange={(e) => updateTask({ priority: e.target.value as Priority })}
                 className="w-full mt-1 p-2 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
               >
-                {Object.entries(PRIORITY_MAP).map(([p, { label }]) => (
-                  <option key={p} value={p}>{t(label as any) || p}</option>
-                ))}
+                {(Object.keys(PRIORITY_MAP) as (keyof typeof PRIORITY_MAP)[]).map(priorityKey => {
+                  const { label } = PRIORITY_MAP[priorityKey]
+                  return (
+                    <option key={priorityKey} value={priorityKey}>
+                      {t(label)}
+                    </option>
+                  )
+                })}
               </select>
             </div>
           </div>
@@ -331,7 +331,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                 onChange={(e) => setNewTag(e.target.value)}
                 onKeyDown={handleAddTag}
                 placeholder={t('taskDetail.tagsPlaceholder')}
-                className="flex-grow bg-transparent text-sm focus:outline-none"
+                className="grow bg-transparent text-sm focus:outline-none"
               />
             </div>
           </div>
@@ -382,7 +382,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                     onClick={() => handleSubtaskChange(st.id, !st.completed)}
                     aria-label={st.completed ? t('taskItem.aria.markIncomplete') : t('taskItem.aria.markComplete')}
                     className={`
-                      h-4 w-4 rounded-sm flex-shrink-0
+                      h-4 w-4 rounded-sm shrink-0
                       flex items-center justify-center 
                       transition-all duration-150
                       focus:outline-none focus:ring-1 focus:ring-ring
@@ -398,7 +398,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                     type="text" 
                     value={st.title} 
                     onChange={(e) => updateTask({ subtasks: task.subtasks.map(sub => sub.id === st.id ? {...sub, title: e.target.value} : sub)})}
-                    className={`flex-grow bg-transparent text-sm ${st.completed ? 'line-through text-muted-foreground' : ''} focus:outline-none`} 
+                    className={`grow bg-transparent text-sm ${st.completed ? 'line-through text-muted-foreground' : ''} focus:outline-none`} 
                   />
                 </div>
               ))}
@@ -408,7 +408,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                   value={newSubtask} 
                   onChange={(e) => setNewSubtask(e.target.value)} 
                   placeholder={t('taskDetail.addSubtaskPlaceholder')} 
-                  className="flex-grow bg-transparent text-sm focus:outline-none" 
+                  className="grow bg-transparent text-sm focus:outline-none" 
                 />
                 <button type="submit" className="text-primary text-sm font-semibold">
                   {t('taskDetail.addButton')}
@@ -464,7 +464,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
         </div>
       </div>
 
-      <div className="p-4 border-t border-border flex gap-2 flex-shrink-0">
+      <div className="p-4 border-t border-border flex gap-2 shrink-0">
         <button 
           onClick={() => {}} 
           disabled={!isGeminiAvailable}

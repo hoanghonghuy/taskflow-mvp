@@ -30,7 +30,7 @@ export default function LoginPage() {
       await login(email, password)
       success('Welcome back!', 'You have successfully logged in')
       router.push('/dashboard')
-    } catch (_err) {
+    } catch {
       error('Login failed', 'Please check your credentials')
     } finally {
       setIsLoading(false)
