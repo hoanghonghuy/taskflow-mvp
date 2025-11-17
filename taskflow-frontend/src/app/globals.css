@@ -82,7 +82,7 @@
   --color-card-foreground: 210 40% 96%;
   --color-popover: 220 16% 12%;
   --color-popover-foreground: 210 40% 96%;
-  --color-primary: 210 100% 65%;
+  --color-primary: 210 100% 72%;
   --color-primary-foreground: 220 27% 8%;
   --color-secondary: 219 13% 18%;
   --color-secondary-foreground: 210 40% 96%;
@@ -94,7 +94,7 @@
   --color-destructive-foreground: 210 40% 96%;
   --color-border: 218 12% 26%;
   --color-input: 218 12% 26%;
-  --color-ring: 210 100% 65%;
+  --color-ring: 210 100% 72%;
   --theme-background-image: radial-gradient(circle at 25% 20%, hsla(265, 80%, 62%, 0.25), transparent 55%), radial-gradient(circle at 80% 75%, hsla(198, 80%, 60%, 0.2), transparent 60%);
   --theme-background-overlay: hsla(220, 22%, 8%, 0.82);
   --theme-heading-font: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
@@ -364,6 +364,46 @@ body {
   background-size: cover;
   background-attachment: fixed;
   position: relative;
+}
+
+.bottom-nav-button {
+  border-radius: 1.25rem;
+  padding: 0.35rem 0.5rem;
+  min-width: 0;
+  isolation: isolate;
+  border: 1px solid transparent;
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.bottom-nav-button[data-active="true"] {
+  background-color: hsl(var(--color-card) / 0.15);
+  border-color: hsl(var(--color-primary));
+  box-shadow: 0 0 0 1px hsl(var(--color-primary) / 0.45), 0 10px 30px hsl(var(--color-primary) / 0.25);
+}
+
+.bottom-nav-button:not([data-active="true"]):hover {
+  background-color: hsl(var(--color-muted) / 0.35);
+  border-color: hsl(var(--color-muted-foreground) / 0.35);
+}
+
+.bottom-nav-indicator {
+  position: absolute;
+  bottom: 0.3rem;
+  left: 25%;
+  right: 25%;
+  height: 0.2rem;
+  border-radius: 9999px;
+  background-color: hsl(var(--color-primary));
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.bottom-nav-button[data-active="true"] .bottom-nav-indicator {
+  opacity: 1;
+  transform: translateY(0);
+  background-color: hsl(var(--color-primary));
+  box-shadow: 0 4px 12px hsl(var(--color-primary) / 0.45);
 }
 
 body::before {

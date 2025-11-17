@@ -10,8 +10,8 @@
  *   import Avatar from '@/components/ui/avatar'
  */
 
-// Avatar: supports both default and named export
-export { default as Avatar, Avatar } from './avatar'
+// Avatar: re-export default as named Avatar
+export { default as Avatar } from './avatar'
 
 // Button: named export only
 export { Button, buttonVariants } from './button'

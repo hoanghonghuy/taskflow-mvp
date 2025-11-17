@@ -61,7 +61,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLaunch }) => {
             {t('landing.features.title')}
           </h2>
           <p className="text-muted-foreground text-center mb-12">
-            {t('landing.features.subtitle')}
+            {t('landing.hero.subtitle')}
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -14,6 +14,7 @@ export type Action =
   | { type: 'SET_SELECTED_TASK'; payload: string | null }
   | { type: 'SET_ACTIVE_LIST'; payload: string }
   | { type: 'SET_ACTIVE_TAG'; payload: string | null }
+  | { type: 'SET_SORT_ORDER'; payload: AppState['sortOrder'] }
   | { type: 'ADD_TAG'; payload: { name: string } }
   | { type: 'DELETE_TAG'; payload: string }
   | { type: 'ADD_TASK'; payload: Task }
@@ -23,6 +24,7 @@ export type Action =
   | { type: 'ADD_LIST'; payload: Omit<List, 'id'> }
   | { type: 'UPDATE_LIST'; payload: List }
   | { type: 'DELETE_LIST'; payload: string }
+  | { type: 'UPDATE_LIST_MEMBERS'; payload: { listId: string; memberIds: string[] } }
   | { type: 'ADD_COLUMN'; payload: { listId: string; name: string } }
   | { type: 'UPDATE_COLUMN'; payload: { columnId: string; name: string } }
   | { type: 'DELETE_COLUMN'; payload: { columnId: string; listId: string } }
@@ -48,6 +50,7 @@ export type Action =
   | { type: 'UNSHARE_LIST'; payload: { listId: string; userId: string } }
   | { type: 'UNDO' }
   | { type: 'REDO' }
+  | { type: 'CLEAR_HISTORY' }
   | { type: 'LOAD_STATE'; payload: AppState }
 
 export interface HistoryState {

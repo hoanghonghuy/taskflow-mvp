@@ -7,11 +7,12 @@ import { useTaskManager } from '@/lib/hooks/use-task-manager'
 import { HomeIcon, ListBulletIcon, CalendarDaysIcon, GridIcon, RepeatIcon, StopwatchIcon, HourglassIcon, ViewColumnsIcon, CheckIcon } from '@/lib/constants'
 import { THEME_PRESETS } from '@/lib/theme-presets'
 import type { ThemeOption, View } from '@/types'
+import type { TranslationKey } from '@/lib/i18n/types'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
 import { NotificationSettings } from '@/components/settings/NotificationSettings'
 import { Switch } from '@/components/ui/switch'
 
-const ALL_FEATURES: { view: View, icon: React.FC<{className?: string}>, label: string }[] = [
+const ALL_FEATURES: { view: View, icon: React.FC<{className?: string}>, label: TranslationKey }[] = [
   { view: 'dashboard', icon: HomeIcon, label: 'feature.dashboard' },
   { view: 'list', icon: ListBulletIcon, label: 'feature.listView' },
   { view: 'board', icon: ViewColumnsIcon, label: 'feature.boardView' },
@@ -231,15 +232,15 @@ const SettingsView: React.FC = () => {
                     type="button"
                     onClick={() => handleBottomNavToggle(feature.view)}
                     disabled={disabled}
-                    className={`flex items-center justify-between w-full rounded-md border px-3 py-2 text-left transition ${
+                    className={`flex items-center justify-between w-full rounded-lg border px-3 py-2 text-left transition-all ${
                       isVisible
-                        ? 'bg-primary/5 border-primary'
-                        : 'bg-secondary/40 border-border hover:bg-secondary/70'
+                        ? 'bg-primary/10 border-primary/80 text-primary shadow-[0_0_0_1px_hsl(var(--color-primary)/0.45)]'
+                        : 'bg-secondary/40 border-border hover:bg-secondary/70 hover:border-primary/40'
                     } ${disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
                   >
                     <div className="flex items-center gap-3">
-                      <Icon className="h-5 w-5" />
-                      <span className="text-sm font-medium">{t(feature.label)}</span>
+                      <Icon className={`h-5 w-5 ${isVisible ? 'text-primary' : 'text-muted-foreground'}`} />
+                      <span className={`text-sm font-medium ${!isVisible ? 'text-foreground' : ''}`}>{t(feature.label)}</span>
                     </div>
                     <div
                       className="flex items-center"

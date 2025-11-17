@@ -22,10 +22,19 @@ function NavButton({ label, onClick, isActive, children, className }: NavButtonP
       onClick={onClick}
       title={label}
       aria-label={label}
-      className={`w-12 h-12 flex items-center justify-center rounded-lg transition-colors shrink-0 ${
-        isActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+      aria-current={isActive ? 'page' : undefined}
+      className={`relative w-12 h-12 flex items-center justify-center rounded-2xl transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+        isActive
+          ? 'bg-primary/25 text-primary font-semibold ring-2 ring-primary/60 border border-primary/50 shadow-[0_5px_15px_rgba(0,0,0,0.35)]'
+          : 'text-muted-foreground hover:bg-muted/80 hover:text-foreground'
       } ${className || ''}`}
     >
+      <span
+        aria-hidden="true"
+        className={`absolute left-1 top-2 bottom-2 w-1 rounded-full transition-all ${
+          isActive ? 'bg-primary opacity-100 scale-y-100' : 'opacity-0 scale-y-50'
+        }`}
+      />
       {children}
     </button>
   )
@@ -57,6 +66,9 @@ export default function FeatureBar({ onSidebarToggle }: FeatureBarProps) {
   }, [handleClickOutside])
 
   const currentView = useMemo(() => {
+    if (!pathname) {
+      return 'dashboard'
+    }
     if (pathname === '/dashboard' || pathname === '/') {
       return 'dashboard'
     }

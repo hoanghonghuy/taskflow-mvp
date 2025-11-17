@@ -16,6 +16,9 @@ export function taskManagerReducer(state: AppState, action: Action): AppState {
     case 'SET_ACTIVE_TAG':
       return { ...state, activeTag: action.payload, activeListId: 'inbox', selectedTaskId: null, view: 'list' }
 
+    case 'SET_SORT_ORDER':
+      return { ...state, sortOrder: action.payload }
+
     case 'ADD_TAG': {
       const newTagName = action.payload.name.trim().toLowerCase()
       if (newTagName && !state.tags.includes(newTagName)) {
@@ -83,6 +86,16 @@ export function taskManagerReducer(state: AppState, action: Action): AppState {
         ...state,
         lists: state.lists.map(l => l.id === action.payload.id ? action.payload : l)
       }
+
+    case 'UPDATE_LIST_MEMBERS': {
+      const { listId, memberIds } = action.payload
+      return {
+        ...state,
+        lists: state.lists.map(l =>
+          l.id === listId ? { ...l, members: memberIds } : l
+        ),
+      }
+    }
 
     case 'DELETE_LIST':
       return {

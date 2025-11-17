@@ -4,11 +4,12 @@ import React, { useState, useMemo } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import type { Task, Subtask, Priority, Comment } from '@/types'
+import type { TranslationKey } from '@/lib/i18n/types'
 import { 
   CheckIcon, 
   GlobeAltIcon,
   CloseIcon,
-  RepeatIcon,
+  CalendarDayIcon,
   StopwatchIcon,
   SparklesIcon,
   GripVerticalIcon,
@@ -44,6 +45,23 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   }
 
   const completedSubtasks = task.subtasks.filter(st => st.completed).length
+  const parentList = state.lists.find(list => list.id === task.listId) ?? null
+  const reminderLabels: Record<number, TranslationKey> = {
+    5: 'reminder.5min',
+    15: 'reminder.15min',
+    30: 'reminder.30min',
+    60: 'reminder.1hour',
+  }
+  const reminderDisplay = task.reminderMinutes
+    ? t(reminderLabels[task.reminderMinutes] ?? 'taskDetail.noReminder')
+    : t('taskDetail.noReminder')
+  const dueDateDisplay = task.dueDate
+    ? new Date(task.dueDate).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })
+    : t('common.noResults')
+  const createdAtDisplay = task.createdAt
+    ? new Date(task.createdAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })
+    : null
+  const progressPercent = task.subtasks.length > 0 ? (completedSubtasks / task.subtasks.length) * 100 : 0
 
   const formatFocusTime = (seconds: number): string => {
     if (seconds < 60) return `${seconds}s`
@@ -163,65 +181,84 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   const handleDragEnd = () => setDraggedIndex(null)
 
   const priorityClasses = PRIORITY_MAP[task.priority]
-  const assignee = allUsers?.find(u => u.id === task.assigneeId) || null
-
   return (
-    <div className="h-full w-full md:w-96 bg-card border-l border-border shadow-2xl flex flex-col md:animate-slide-in overflow-hidden">
-      <header className="p-4 border-b border-border flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-2">
+    <div className="h-full w-full md:max-w-xl bg-card border-l border-border shadow-2xl flex flex-col md:animate-slide-in overflow-hidden">
+      <header className="p-4 border-b border-border flex items-center justify-between gap-3 shrink-0">
+        <div className="flex items-center gap-3">
           <button
             onClick={() => dispatch({ type: 'TOGGLE_TASK_COMPLETION', payload: { taskId: task.id } })}
             aria-label={task.completed ? t('taskItem.aria.markIncomplete') : t('taskItem.aria.markComplete')}
-            className={`
-              h-5 w-5 rounded shrink-0
-              flex items-center justify-center 
-              transition-all duration-150
-              focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
-              ${task.completed 
-                ? 'bg-primary border-2 border-primary' 
-                : `bg-transparent border-2 ${priorityClasses.checkboxBorderColor}`
-              }
-            `}
+            className={`h-5 w-5 rounded flex items-center justify-center transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${task.completed ? 'bg-primary border-2 border-primary' : `bg-transparent border-2 ${priorityClasses.checkboxBorderColor}`}`}
           >
             {task.completed && <CheckIcon className="h-3.5 w-3.5 text-primary-foreground" />}
           </button>
-          <label 
-            onClick={() => dispatch({ type: 'TOGGLE_TASK_COMPLETION', payload: { taskId: task.id } })}
-            className="text-sm text-muted-foreground cursor-pointer"
-          >
-            {task.completed ? t('taskDetail.completed') : t('taskDetail.markComplete')}
-          </label>
+          <div>
+            <button
+              onClick={() => dispatch({ type: 'TOGGLE_TASK_COMPLETION', payload: { taskId: task.id } })}
+              className="text-sm font-medium text-left"
+            >
+              {task.completed ? t('taskDetail.completed') : t('taskDetail.markComplete')}
+            </button>
+            {parentList && (
+              <p className="text-xs text-muted-foreground">
+                {t('task.list')}: {parentList.name}
+              </p>
+            )}
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button onClick={handleClose} className="p-1 rounded-full hover:bg-secondary">
-            <CloseIcon className="h-5 w-5 text-muted-foreground" />
-          </button>
-        </div>
+        <button onClick={handleClose} className="p-2 rounded-full hover:bg-secondary transition-colors" aria-label={t('common.close')}>
+          <CloseIcon className="h-5 w-5 text-muted-foreground" />
+        </button>
       </header>
 
-      <div className="grow p-6 overflow-y-auto">
-        <input
-          type="text"
-          value={task.title}
-          onChange={(e) => updateTask({ title: e.target.value })}
-          className="text-2xl font-bold bg-transparent w-full focus:outline-none focus:bg-secondary/50 rounded-md p-2"
-        />
-
-        {task.recurrence && (
-          <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground p-2 bg-secondary/50 rounded-md">
-            <RepeatIcon className="h-4 w-4" />
-            <span>{t('taskDetail.recurringInfo', { rule: task.recurrence.type })}</span>
+      <div className="grow px-6 py-5 overflow-y-auto space-y-6">
+        <section className="space-y-3">
+          <div className="flex items-start justify-between gap-3">
+            <input
+              type="text"
+              value={task.title}
+              onChange={(e) => updateTask({ title: e.target.value })}
+              className="text-2xl md:text-3xl font-semibold bg-transparent w-full focus:outline-none"
+            />
+            <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold border ${priorityClasses.checkboxBorderColor.replace('border-', 'border')} ${priorityClasses.color}`}>
+              {t(priorityClasses.label)}
+            </span>
           </div>
-        )}
-
-        {task.totalFocusTime && task.totalFocusTime > 0 && (
-          <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground p-2">
-            <StopwatchIcon className="h-5 w-5" />
-            <span>{t('taskDetail.focusTime', { time: formatFocusTime(task.totalFocusTime) })}</span>
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            {createdAtDisplay && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1">
+                <span className="font-medium">{t('taskDetail.addButton')}</span>
+                <span>{createdAtDisplay}</span>
+              </span>
+            )}
+            {task.dueDate && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1">
+                <CalendarDayIcon className="h-3.5 w-3.5" />
+                <span>{dueDateDisplay}</span>
+              </span>
+            )}
+            {task.totalFocusTime && task.totalFocusTime > 0 && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1">
+                <StopwatchIcon className="h-3.5 w-3.5" />
+                <span>{formatFocusTime(task.totalFocusTime)}</span>
+              </span>
+            )}
+            {task.subtasks.length > 0 && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1">
+                <GripVerticalIcon className="h-3.5 w-3.5" />
+                <span>{completedSubtasks} / {task.subtasks.length} {t('taskDetail.subtasksLabel')}</span>
+              </span>
+            )}
+            {task.reminderMinutes && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1">
+                <GlobeAltIcon className="h-3.5 w-3.5" />
+                <span>{reminderDisplay}</span>
+              </span>
+            )}
           </div>
-        )}
+        </section>
 
-        <div className="mt-6 space-y-4">
+        <div className="space-y-4">
           <div>
             <label htmlFor="task-description" className="text-sm font-medium text-muted-foreground">
               {t('taskDetail.descriptionLabel')}
@@ -236,40 +273,33 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium text-muted-foreground mb-2 block">
+          <div className="grid gap-4 md:grid-cols-2 bg-secondary/30 border border-border rounded-xl p-4">
+            <div className="space-y-2">
+              <span className="text-xs uppercase tracking-wide text-muted-foreground">
                 {t('taskDetail.assigneeLabel')}
-              </label>
-              <div className="flex items-center gap-2">
-                {assignee ? (
-                  <>
-                    <Avatar user={assignee} className="w-8 h-8" />
-                    <span className="text-sm">{assignee.name}</span>
-                  </>
-                ) : (
-                  <select
-                    value={task.assigneeId || ''}
-                    onChange={(e) => handleAssignTask(e.target.value || null)}
-                    className="w-full p-2 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  >
-                    <option value="">{t('taskDetail.unassigned')}</option>
-                    {allUsers?.map(user => (
-                      <option key={user.id} value={user.id}>{user.name}</option>
-                    )) || []}
-                  </select>
-                )}
+              </span>
+              <div className="flex items-center gap-3">
+                <select
+                  value={task.assigneeId || ''}
+                  onChange={(e) => handleAssignTask(e.target.value || null)}
+                  className="w-full p-2 bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                >
+                  <option value="">{t('taskDetail.unassigned')}</option>
+                  {allUsers?.map(user => (
+                    <option key={user.id} value={user.id}>{user.name}</option>
+                  )) || []}
+                </select>
               </div>
             </div>
-            <div>
-              <label htmlFor="task-priority" className="text-sm font-medium text-muted-foreground">
+            <div className="space-y-2">
+              <span className="text-xs uppercase tracking-wide text-muted-foreground">
                 {t('taskDetail.priorityLabel')}
-              </label>
+              </span>
               <select
                 id="task-priority"
                 value={task.priority}
                 onChange={(e) => updateTask({ priority: e.target.value as Priority })}
-                className="w-full mt-1 p-2 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                className="w-full p-2 bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
               >
                 {(Object.keys(PRIORITY_MAP) as (keyof typeof PRIORITY_MAP)[]).map(priorityKey => {
                   const { label } = PRIORITY_MAP[priorityKey]
@@ -281,34 +311,31 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                 })}
               </select>
             </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium text-muted-foreground mb-2 block">
+            <div className="space-y-2">
+              <span className="text-xs uppercase tracking-wide text-muted-foreground">
                 {t('taskDetail.dueDateLabel')}
-              </label>
+              </span>
               <input
                 type="date"
                 value={task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : ''}
                 onChange={(e) => updateTask({ dueDate: e.target.value ? new Date(e.target.value).toISOString() : undefined })}
-                className="w-full p-2 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                className="w-full p-2 bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
               />
             </div>
-            <div>
-              <label className="text-sm font-medium text-muted-foreground mb-2 block">
+            <div className="space-y-2">
+              <span className="text-xs uppercase tracking-wide text-muted-foreground">
                 {t('taskDetail.reminderLabel')}
-              </label>
+              </span>
               <select
                 value={task.reminderMinutes || ''}
                 onChange={(e) => updateTask({ reminderMinutes: e.target.value ? parseInt(e.target.value) : undefined })}
-                className="w-full p-2 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                className="w-full p-2 bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
               >
                 <option value="">{t('taskDetail.noReminder')}</option>
-                <option value="5">5 {t('taskDetail.minutes')} before</option>
-                <option value="15">15 {t('taskDetail.minutes')} before</option>
-                <option value="30">30 {t('taskDetail.minutes')} before</option>
-                <option value="60">1 {t('taskDetail.hour')} before</option>
+                <option value="5">5 {t('taskDetail.minutes')}</option>
+                <option value="15">15 {t('taskDetail.minutes')}</option>
+                <option value="30">30 {t('taskDetail.minutes')}</option>
+                <option value="60">1 {t('taskDetail.hour')}</option>
               </select>
             </div>
           </div>
@@ -363,15 +390,15 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
               )}
             </div>
             {task.subtasks.length > 0 && (
-              <div className="my-2">
-                <div className="flex justify-between text-xs text-muted-foreground mb-1">
+              <div className="my-3 space-y-1">
+                <div className="flex justify-between text-xs text-muted-foreground">
                   <span>{t('taskDetail.progressLabel')}</span>
                   <span>{completedSubtasks} / {task.subtasks.length}</span>
                 </div>
                 <div className="w-full bg-secondary rounded-full h-2">
                   <div
                     className="bg-primary h-2 rounded-full transition-all"
-                    style={{ width: `${(completedSubtasks / task.subtasks.length) * 100}%` }}
+                    style={{ width: `${progressPercent}%` }}
                   />
                 </div>
               </div>

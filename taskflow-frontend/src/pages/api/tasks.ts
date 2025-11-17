@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { Task } from '../../../packages/taskflow-core/src/types';
+import type { Task } from '@/types';
 
 // Mock database - replace with real database in production
 const tasks: Task[] = [];
