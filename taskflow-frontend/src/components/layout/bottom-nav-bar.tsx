@@ -138,6 +138,8 @@ export default function BottomNavBar() {
     router.push(getPathForView(view))
   }, [router])
 
+  const hasHiddenActive = hiddenFeatures.includes(currentView)
+
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-card border-t border-border flex items-stretch justify-around z-30 shadow-lg">
       {visibleFeatures.map(feature => (
@@ -151,12 +153,15 @@ export default function BottomNavBar() {
       ))}
       {hiddenFeatures.length > 0 && (
         <div className="relative">
+          {(() => {
+            const isMoreActive = isMoreMenuOpen || hasHiddenActive
+            return (
           <button
             onClick={() => setIsMoreMenuOpen(p => !p)}
             className={`bottom-nav-button relative flex flex-col items-center justify-center gap-1 flex-1 mx-1 px-2 py-1 h-full w-16 ${
-              isMoreMenuOpen ? 'text-primary font-semibold' : 'text-muted-foreground'
+              isMoreActive ? 'text-primary font-semibold' : 'text-muted-foreground'
             }`}
-            data-active={isMoreMenuOpen ? 'true' : undefined}
+            data-active={isMoreActive ? 'true' : undefined}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
@@ -164,6 +169,8 @@ export default function BottomNavBar() {
             <span className="font-medium relative text-[10px]">{t('feature.more')}</span>
             <span className="bottom-nav-indicator" aria-hidden="true" />
           </button>
+            )
+          })()}
           {isMoreMenuOpen && (
             <MoreMenu
               hiddenViews={hiddenFeatures}

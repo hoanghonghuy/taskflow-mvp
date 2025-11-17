@@ -372,13 +372,12 @@ body {
   min-width: 0;
   isolation: isolate;
   border: 1px solid transparent;
-  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
 }
 
 .bottom-nav-button[data-active="true"] {
   background-color: hsl(var(--color-card) / 0.15);
   border-color: hsl(var(--color-primary));
-  box-shadow: 0 0 0 1px hsl(var(--color-primary) / 0.45), 0 10px 30px hsl(var(--color-primary) / 0.25);
 }
 
 .bottom-nav-button:not([data-active="true"]):hover {
@@ -403,7 +402,6 @@ body {
   opacity: 1;
   transform: translateY(0);
   background-color: hsl(var(--color-primary));
-  box-shadow: 0 4px 12px hsl(var(--color-primary) / 0.45);
 }
 
 body::before {
