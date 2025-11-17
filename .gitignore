@@ -1,10 +1,10 @@
-
 # ============================================
 # Frontend (Next.js)
 # ============================================
 
 # Dependencies
 taskflow-frontend/node_modules/
+packages/**/node_modules/
 taskflow-frontend/.pnp
 taskflow-frontend/.pnp.js
 taskflow-frontend/.yarn/install-state.gz
