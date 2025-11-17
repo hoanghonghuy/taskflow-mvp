@@ -9,6 +9,11 @@ taskflow-frontend/.pnp
 taskflow-frontend/.pnp.js
 taskflow-frontend/.yarn/install-state.gz
 
+# Mobile (React Native)
+taskflow-mobile/node_modules/
+taskflow-mobile/android/app/build/
+taskflow-mobile/ios/Pods/
+
 # Testing
 taskflow-frontend/coverage
 
