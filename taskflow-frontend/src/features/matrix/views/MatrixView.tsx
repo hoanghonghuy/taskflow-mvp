@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
-import TaskItem from '@/components/task/TaskItem'
+import TaskItem from '@/features/tasks/components/TaskItem'
 import type { Task, Priority } from '@/types'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
 

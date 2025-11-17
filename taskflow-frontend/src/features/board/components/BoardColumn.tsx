@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
-import TaskItem from '@/components/task/TaskItem'
+import TaskItem from '@/features/tasks/components/TaskItem'
 import { PlusIcon, GripVerticalIcon } from '@/lib/constants'
 import type { Column, Task } from '@/types'
 

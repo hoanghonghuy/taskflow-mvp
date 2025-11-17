@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import CountdownView from '@/components/views/CountdownView'
+import CountdownView from '@/features/countdown/views/CountdownView'
 
 export default function CountdownPage() {
   return <CountdownView />

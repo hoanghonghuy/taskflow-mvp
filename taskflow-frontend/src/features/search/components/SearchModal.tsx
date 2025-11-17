@@ -5,7 +5,7 @@ import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import type { Task } from '@/types'
 import { CloseIcon, SearchIcon } from '@/lib/constants'
-import TaskItem from '@/components/task/TaskItem'
+import TaskItem from '@/features/tasks/components/TaskItem'
 import { useRouter } from 'next/navigation'
 
 interface SearchModalProps {

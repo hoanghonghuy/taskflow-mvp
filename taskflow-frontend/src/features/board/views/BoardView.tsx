@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
-import BoardColumn from '@/components/board/BoardColumn'
+import BoardColumn from '@/features/board/components/BoardColumn'
 import { PlusIcon } from '@/lib/constants'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
 

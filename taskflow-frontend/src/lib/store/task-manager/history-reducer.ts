@@ -37,6 +37,14 @@ export function historyReducer(historyState: HistoryState, action: Action): Hist
       }
     }
 
+    case 'CLEAR_HISTORY': {
+      return {
+        past: [],
+        present: historyState.present,
+        future: [],
+      }
+    }
+
     default: {
       const newPresent = taskManagerReducer(historyState.present, action)
       
