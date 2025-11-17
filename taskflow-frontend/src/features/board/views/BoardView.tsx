@@ -131,7 +131,7 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
       </AppPageContainer>
       <AppPageMain className="py-4 md:py-6 md:max-w-none">
         <div
-          className="flex flex-col md:flex-row gap-4 md:overflow-x-auto bg-background p-4 md:p-6"
+          className="flex flex-col md:flex-row gap-4 md:gap-6 md:overflow-x-auto px-1 md:px-2 pb-2"
           onDragEnd={() => {
             setDraggedColumnId(null)
             setDragOverColumnId(null)
