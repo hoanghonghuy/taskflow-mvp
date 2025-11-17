@@ -153,7 +153,7 @@ const CountdownView: React.FC = () => {
         <header className="py-6 border-b border-border shrink-0">
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between flex-wrap gap-4">
-              <div>
+              <div className="hidden md:block">
                 <h1 className="text-3xl font-bold">{t('nav.countdown')}</h1>
                 <p className="text-muted-foreground">{t('countdown.subtitle')}</p>
               </div>

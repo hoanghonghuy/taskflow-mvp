@@ -110,7 +110,7 @@ const MatrixView: React.FC = () => {
   return (
     <AppPage>
       <AppPageContainer>
-        <header className="py-6 border-b border-border shrink-0">
+        <header className="py-6 border-b border-border shrink-0 hidden md:block">
           <h1 className="text-2xl md:text-3xl font-bold">{t('matrix.title')}</h1>
           <p className="text-muted-foreground">{t('matrix.subtitle')}</p>
         </header>

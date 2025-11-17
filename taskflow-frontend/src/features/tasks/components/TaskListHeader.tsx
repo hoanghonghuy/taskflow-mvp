@@ -44,7 +44,7 @@ const TaskListHeader: React.FC<TaskListHeaderProps> = ({
   return (
     <header className="shrink-0 grid grid-cols-[minmax(0,1fr),auto] md:grid-cols-3 items-center px-4 py-3 md:p-6 border-b border-border gap-2 md:gap-4">
       <div className="flex items-center gap-3 md:gap-4">
-        <h1 className="text-lg md:text-2xl font-bold truncate">{title}</h1>
+        <h1 className="hidden md:block text-lg md:text-2xl font-bold truncate">{title}</h1>
         {listMembers.length > 0 && (
           <div className="flex items-center -space-x-2">
             {listMembers.slice(0, 3).map(member => (

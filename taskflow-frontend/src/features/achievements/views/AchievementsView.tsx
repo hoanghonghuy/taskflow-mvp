@@ -20,7 +20,7 @@ const AchievementsView: React.FC = () => {
 
   return (
     <div className="flex-1 flex flex-col overflow-y-auto">
-      <header className="p-6 border-b border-border flex-shrink-0">
+      <header className="p-6 border-b border-border flex-shrink-0 hidden md:block">
         <h1 className="text-3xl font-bold">{t('nav.achievements')}</h1>
         <p className="text-muted-foreground">Your achievements and badges</p>
       </header>

@@ -27,8 +27,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLaunch }) => {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Navigation */}
       <nav className="p-6 flex items-center justify-between">
-        <div className="text-2xl font-bold text-primary">
-          {t('app.name')}
+        <div className="flex items-center text-primary">
+          <ListBulletIcon className="h-6 w-6" />
         </div>
         <button
           onClick={handleLogin}

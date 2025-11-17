@@ -94,7 +94,7 @@ const PomodoroView: React.FC = () => {
   return (
     <AppPage>
       <AppPageContainer>
-        <header className="py-6 border-b border-border shrink-0">
+        <header className="py-6 border-b border-border shrink-0 hidden md:block">
           <h1 className="text-3xl font-bold">{t('nav.pomodoro')}</h1>
           <p className="text-muted-foreground">{t('pomodoro.subtitle')}</p>
         </header>

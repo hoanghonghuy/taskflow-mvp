@@ -80,7 +80,7 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
     return (
       <AppPage>
         <AppPageContainer>
-          <header className="py-6 border-b border-border shrink-0">
+          <header className="py-6 border-b border-border shrink-0 hidden md:block">
             <h1 className="text-3xl font-bold">{t('nav.board')}</h1>
             <p className="text-muted-foreground">{t('board.title')}</p>
           </header>
@@ -99,7 +99,7 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
       <AppPageContainer>
         <header className="py-4 md:py-6 border-b border-border shrink-0">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
-            <div>
+            <div className="hidden md:block">
               <h1 className="text-2xl md:text-3xl font-bold">{t('nav.board')}</h1>
               <p className="text-sm md:text-base text-muted-foreground">{t('board.title')}</p>
             </div>

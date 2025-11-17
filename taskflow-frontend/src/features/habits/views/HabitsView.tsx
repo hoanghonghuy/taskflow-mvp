@@ -114,7 +114,7 @@ const HabitsView: React.FC = () => {
       <AppPageContainer>
         <header className="py-6 border-b border-border shrink-0">
           <div className="flex items-center justify-between flex-wrap gap-4">
-            <div>
+            <div className="hidden md:block">
               <h1 className="text-3xl font-bold">{t('nav.habits')}</h1>
               <p className="text-muted-foreground">{t('habits.subtitle')}</p>
             </div>

@@ -111,7 +111,7 @@ const SettingsView: React.FC = () => {
   return (
     <AppPage>
       <AppPageContainer>
-        <header className="py-6 border-b border-border shrink-0">
+        <header className="py-6 border-b border-border shrink-0 hidden md:block">
           <h1 className="text-2xl font-bold">{t('settings.title')}</h1>
           <p className="text-muted-foreground">{t('settings.subtitle')}</p>
         </header>
@@ -227,11 +227,22 @@ const SettingsView: React.FC = () => {
                 const disabled = !isVisible && currentActions.length >= maxVisibleBottomNav
 
                 return (
-                  <button
+                  <div
                     key={feature.view}
-                    type="button"
-                    onClick={() => handleBottomNavToggle(feature.view)}
-                    disabled={disabled}
+                    role="button"
+                    tabIndex={disabled ? -1 : 0}
+                    aria-disabled={disabled || undefined}
+                    onClick={() => {
+                      if (disabled) return
+                      handleBottomNavToggle(feature.view)
+                    }}
+                    onKeyDown={(e) => {
+                      if (disabled) return
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        handleBottomNavToggle(feature.view)
+                      }
+                    }}
                     className={`flex items-center justify-between w-full rounded-lg border px-3 py-2 text-left transition-all ${
                       isVisible
                         ? 'bg-primary/10 border-primary/80 text-primary shadow-[0_0_0_1px_hsl(var(--color-primary)/0.45)]'
@@ -254,7 +265,7 @@ const SettingsView: React.FC = () => {
                         disabled={disabled}
                       />
                     </div>
-                  </button>
+                  </div>
                 )
               })}
             </div>

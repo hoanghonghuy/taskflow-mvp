@@ -1,12 +1,13 @@
 "use client"
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { useUser } from '@/components/providers/user-provider'
+import { useI18n } from '@/lib/hooks/use-i18n'
 import { Sidebar } from '@/components/layout/sidebar'
 import FeatureBar from '@/components/layout/feature-bar'
 import BottomNavBar from '@/components/layout/bottom-nav-bar'
-import { MenuIcon } from '@/lib/constants'
+import { MenuIcon, SPECIAL_LISTS_CONFIG } from '@/lib/constants'
 import { useTaskManager } from '@/lib/hooks/use-task-manager'
 import TaskDetail from '@/features/tasks/components/TaskDetail'
 import SearchModal from '@/features/search/components/SearchModal'
@@ -22,7 +23,9 @@ export default function AppLayout({
   children: React.ReactNode
 }) {
   const router = useRouter()
+  const pathname = usePathname()
   const { isAuthenticated } = useUser()
+  const { t } = useI18n()
   const { state } = useTaskManager()
   const modal = useModal()
   const [isSidebarOpen, setSidebarOpen] = useState<boolean>(() => {
@@ -31,6 +34,66 @@ export default function AppLayout({
     }
     return false
   })
+
+  const mobileTitle = (() => {
+    const path = pathname || '/'
+
+    if (path === '/' || path.startsWith('/dashboard')) {
+      return t('nav.dashboard')
+    }
+
+    if (path.startsWith('/list')) {
+      if (state.activeTag) {
+        return `#${state.activeTag}`
+      }
+
+      if (state.activeListId in SPECIAL_LISTS_CONFIG) {
+        const configKey = state.activeListId as keyof typeof SPECIAL_LISTS_CONFIG
+        return t(SPECIAL_LISTS_CONFIG[configKey].name)
+      }
+
+      const activeList = state.lists.find(l => l.id === state.activeListId)
+      return activeList ? activeList.name : t('mainContent.tasksDefault')
+    }
+
+    if (path.startsWith('/board')) {
+      return t('nav.board')
+    }
+
+    if (path.startsWith('/calendar')) {
+      return t('nav.calendar')
+    }
+
+    if (path.startsWith('/matrix')) {
+      return t('nav.matrix')
+    }
+
+    if (path.startsWith('/habits')) {
+      return t('nav.habits')
+    }
+
+    if (path.startsWith('/pomodoro')) {
+      return t('nav.pomodoro')
+    }
+
+    if (path.startsWith('/countdown')) {
+      return t('nav.countdown')
+    }
+
+    if (path.startsWith('/achievements')) {
+      return t('nav.achievements')
+    }
+
+    if (path.startsWith('/profile')) {
+      return t('nav.profile')
+    }
+
+    if (path.startsWith('/settings')) {
+      return t('nav.settings')
+    }
+
+    return ''
+  })()
 
   const isClient = typeof window !== 'undefined'
 
@@ -72,14 +135,14 @@ export default function AppLayout({
           <button onClick={() => setSidebarOpen(true)} aria-label="Open sidebar">
             <MenuIcon className="h-6 w-6" />
           </button>
-          <div className="flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" className="h-6 w-6 text-primary">
-              <rect width="256" height="256" fill="none"></rect>
-              <path d="M128,24a104,104,0,1,0,104,104A104.11,104.11,0,0,0,128,24Zm45.15,122.34-8.6-14.9a4,4,0,0,0-6.92,0l-22.1,38.28a4,4,0,0,1-3.46,2H92a4,4,0,0,1-3.46-6l25.56-44.28a4,4,0,0,0-3.46-6H65.75a4,4,0,0,1,0-8h42.39a4,4,0,0,1,3.46,6l-25.56,44.28a4,4,0,0,0,3.46,6h22.54a4,4,0,0,1,3.46-2l22.1-38.28a4,4,0,0,0-3.46-6H134.25a4,4,0,0,1,0-8h42.39a4,4,0,0,1,3.46,2l8.6,14.9a4,4,0,0,1-3.46,6H173.15a4,4,0,0,1,0,8h-3.46a4,4,0,0,1-3.46-2Z"></path>
-            </svg>
-            <h1 className="font-bold text-lg">TaskFlow</h1>
+          <div className="flex-1 flex justify-center px-2">
+            {mobileTitle && (
+              <h1 className="text-sm font-semibold truncate">
+                {mobileTitle}
+              </h1>
+            )}
           </div>
-          <div></div>
+          <div className="w-6" />
         </header>
 
         <div className="flex-1 flex overflow-hidden">

@@ -116,7 +116,7 @@ const CalendarView: React.FC = () => {
         <header className="py-4 md:py-6 border-b border-border shrink-0">
           <div className="flex flex-col gap-2 md:gap-4 md:flex-row md:items-center md:justify-between mb-3 md:mb-6">
             <div>
-              <h1 className="text-xl md:text-3xl font-bold">{t('nav.calendar')}</h1>
+              <h1 className="hidden md:block text-xl md:text-3xl font-bold">{t('nav.calendar')}</h1>
               <p className="text-sm text-muted-foreground hidden md:block">{t('calendar.subtitle')}</p>
             </div>
             <div className="flex items-center gap-2 flex-wrap justify-end md:justify-start">
