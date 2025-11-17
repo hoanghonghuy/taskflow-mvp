@@ -100,75 +100,90 @@ export default function DashboardPage() {
           <p className="text-muted-foreground">{t('dashboard.subtitle')}</p>
         </header>
       </AppPageContainer>
-      <AppPageMain className="py-6 space-y-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <button 
-            onClick={() => {
-              dispatch({ type: 'SET_ACTIVE_LIST', payload: 'today' })
-              router.push('/list')
-            }}
-            className="bg-card border border-border rounded-lg p-6 flex items-start gap-4 text-left hover:shadow-md hover:border-primary/50 transition-all"
-          >
-            <div className="bg-blue-500/10 text-blue-500 p-3 rounded-lg">
-              <CalendarDayIcon className="h-6 w-6" />
+      <AppPageMain className="py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-6 lg:gap-8">
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+              <button 
+                onClick={() => {
+                  dispatch({ type: 'SET_ACTIVE_LIST', payload: 'today' })
+                  router.push('/list')
+                }}
+                className="bg-card border border-border rounded-lg p-6 flex items-start gap-4 text-left hover:shadow-md hover:border-primary/50 transition-all"
+              >
+                <div className="bg-blue-500/10 text-blue-500 p-3 rounded-lg">
+                  <CalendarDayIcon className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{t('dashboard.stat.today')}</p>
+                  <p className="text-3xl font-bold">{animatedToday}</p>
+                </div>
+              </button>
+              <button 
+                onClick={() => {
+                  dispatch({ type: 'SET_ACTIVE_LIST', payload: 'upcoming' })
+                  router.push('/list')
+                }}
+                className="bg-card border border-border rounded-lg p-6 flex items-start gap-4 text-left hover:shadow-md hover:border-primary/50 transition-all"
+              >
+                <div className="bg-purple-500/10 text-purple-500 p-3 rounded-lg">
+                  <CalendarIcon className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{t('dashboard.stat.upcoming')}</p>
+                  <p className="text-3xl font-bold">{animatedUpcoming}</p>
+                </div>
+              </button>
+              <button 
+                onClick={() => {
+                  dispatch({ type: 'SET_VIEW', payload: 'habit' })
+                  router.push('/habits')
+                }}
+                className="bg-card border border-border rounded-lg p-6 flex items-start gap-4 text-left hover:shadow-md hover:border-primary/50 transition-all"
+              >
+                <div className="bg-green-500/10 text-green-500 p-3 rounded-lg">
+                  <RepeatIcon className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{t('dashboard.stat.habits')}</p>
+                  <p className="text-3xl font-bold">{animatedHabits}/{stats.habitsTotal}</p>
+                </div>
+              </button>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">{t('dashboard.stat.today')}</p>
-              <p className="text-3xl font-bold">{animatedToday}</p>
-            </div>
-          </button>
-          <button 
-            onClick={() => {
-              dispatch({ type: 'SET_ACTIVE_LIST', payload: 'upcoming' })
-              router.push('/list')
-            }}
-            className="bg-card border border-border rounded-lg p-6 flex items-start gap-4 text-left hover:shadow-md hover:border-primary/50 transition-all"
-          >
-            <div className="bg-purple-500/10 text-purple-500 p-3 rounded-lg">
-              <CalendarIcon className="h-6 w-6" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">{t('dashboard.stat.upcoming')}</p>
-              <p className="text-3xl font-bold">{animatedUpcoming}</p>
-            </div>
-          </button>
-          <button 
-            onClick={() => {
-              dispatch({ type: 'SET_VIEW', payload: 'habit' })
-              router.push('/habits')
-            }}
-            className="bg-card border border-border rounded-lg p-6 flex items-start gap-4 text-left hover:shadow-md hover:border-primary/50 transition-all"
-          >
-            <div className="bg-green-500/10 text-green-500 p-3 rounded-lg">
-              <RepeatIcon className="h-6 w-6" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">{t('dashboard.stat.habits')}</p>
-              <p className="text-3xl font-bold">{animatedHabits}/{stats.habitsTotal}</p>
-            </div>
-          </button>
-        </div>
 
-        <div>
-          <h2 className="text-xl font-bold mb-4">{t('dashboard.heatmapTitle')}</h2>
-          <ProductivityHeatmap />
-        </div>
-
-        <div className="bg-card border border-border rounded-lg p-8 text-center flex flex-col items-center">
-          <div className="bg-primary/10 text-primary p-4 rounded-full mb-4">
-            <SparklesIcon className="h-8 w-8" />
+            <div className="bg-card border border-border rounded-2xl p-4 md:p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-primary/10 text-primary">
+                    <CalendarDayIcon className="h-4 w-4" />
+                  </div>
+                  <h2 className="text-base md:text-lg font-semibold">
+                    {t('dashboard.heatmapTitle')}
+                  </h2>
+                </div>
+              </div>
+              <ProductivityHeatmap />
+            </div>
           </div>
-          <h2 className="text-xl font-bold mb-2">{t('dashboard.cta.title')}</h2>
-          <p className="text-muted-foreground max-w-md mx-auto mb-6">
-            {t('dashboard.cta.subtitle')}
-          </p>
-          <button
-            onClick={openBriefing}
-            className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-full text-md font-semibold hover:bg-primary/90 transition-transform hover:scale-105"
-          >
-            <SparklesIcon className="h-5 w-5" />
-            {t('dashboard.cta.button')}
-          </button>
+
+          <div className="space-y-6">
+            <div className="bg-card border border-border rounded-lg p-8 text-center flex flex-col items-center h-full justify-center">
+              <div className="bg-primary/10 text-primary p-4 rounded-full mb-4">
+                <SparklesIcon className="h-8 w-8" />
+              </div>
+              <h2 className="text-xl font-bold mb-2">{t('dashboard.cta.title')}</h2>
+              <p className="text-muted-foreground max-w-md mx-auto mb-6">
+                {t('dashboard.cta.subtitle')}
+              </p>
+              <button
+                onClick={openBriefing}
+                className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-full text-md font-semibold hover:bg-primary/90 transition-transform hover:scale-105"
+              >
+                <SparklesIcon className="h-5 w-5" />
+                {t('dashboard.cta.button')}
+              </button>
+            </div>
+          </div>
         </div>
       </AppPageMain>
     </AppPage>
