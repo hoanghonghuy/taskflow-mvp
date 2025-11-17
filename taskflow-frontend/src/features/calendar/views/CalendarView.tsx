@@ -87,11 +87,20 @@ const CalendarView: React.FC = () => {
     setDragOverDateKey(null)
   }
 
+  const handleTaskClick = (task: Task) => {
+    const originalId = task.id.split('_')[0]
+    dispatch({ type: 'SET_SELECTED_TASK', payload: originalId })
+  }
+
   const renderTaskPill = (task: Task) => {
     const priority = PRIORITY_MAP[task.priority || 'none']
     const bg = priority.checkboxBorderValue
 
     const isDraggingThis = draggedTaskId === task.id
+
+    const timeLabel = task.dueDate
+      ? new Date(task.dueDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      : null
 
     return (
       <div
@@ -99,13 +108,21 @@ const CalendarView: React.FC = () => {
         draggable
         onDragStart={(e) => handleTaskDragStart(e, task.id)}
         onDragEnd={handleTaskDragEnd}
-        className={`text-xs px-2 py-1 rounded-full text-background truncate cursor-grab active:cursor-grabbing transition-opacity ${
+        className={`w-full text-[10px] px-2 py-0.5 rounded-md text-background flex items-center gap-1 cursor-grab active:cursor-grabbing transition-opacity shadow-sm ${
           isDraggingThis ? 'opacity-60' : ''
         }`}
         style={{ backgroundColor: bg }}
         title={task.title}
+        onClick={() => handleTaskClick(task)}
       >
-        {task.title}
+        {timeLabel && (
+          <span className="shrink-0 opacity-90 text-[9px]">
+            {timeLabel}
+          </span>
+        )}
+        <span className="truncate">
+          {task.title}
+        </span>
       </div>
     )
   }
@@ -145,7 +162,7 @@ const CalendarView: React.FC = () => {
               >
                 <ChevronRight className="h-5 w-5" />
               </button>
-              <div className="flex items-center rounded-lg border border-border bg-card">
+              <div className="flex items-center rounded-full border border-border bg-muted/40 p-0.5">
                 {(['month', 'agenda'] as ViewMode[]).map(mode => (
                   <button
                     key={mode}
@@ -161,8 +178,10 @@ const CalendarView: React.FC = () => {
                         setSelectedDate(monthAnchor)
                       }
                     }}
-                    className={`px-3 py-1 text-sm font-medium rounded-lg transition-colors ${
-                      viewMode === mode ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground'
+                    className={`px-3 py-1 text-xs md:text-sm font-medium rounded-full border transition-colors ${
+                      viewMode === mode
+                        ? 'bg-background text-primary border-2 border-primary shadow-sm'
+                        : 'text-muted-foreground hover:bg-background/60 border-transparent'
                     }`}
                   >
                     {mode === 'month' ? t('calendar.view.month') : t('calendar.view.agenda')}
@@ -221,32 +240,34 @@ const CalendarView: React.FC = () => {
                         setDraggedTaskId(null)
                         setDragOverDateKey(null)
                       }}
-                      className={`min-h-[130px] border-r border-b border-border p-2 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring
+                      className={`min-h-[130px] p-1.5 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring
+                        ${isSelectedDate ? 'border-2 border-primary bg-primary/10 z-10 relative' : 'border-r border-b border-border'}
                         ${isCurrentMonthDate ? 'bg-card' : 'bg-muted/30'}
-                        ${isTodayDate ? 'bg-primary/10 border-primary' : ''}
-                        ${isSelectedDate ? 'ring-2 ring-primary/70 z-10 relative' : ''}
+                        ${isTodayDate && !isSelectedDate ? 'bg-primary/10 border-primary' : ''}
                         ${isDragOverDay ? 'outline-2 outline-primary/60 bg-primary/5 relative z-10' : ''}
                       `}
                     >
-                      <div
-                        className={`text-sm font-semibold mb-2 flex items-center gap-1
-                          ${isTodayDate ? 'text-primary' : isCurrentMonthDate ? 'text-foreground' : 'text-muted-foreground'}
-                        `}
-                      >
-                        {date.getDate()}
-                        {tasks.length > 0 && (
-                          <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">
-                            {tasks.length}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        {tasks.slice(0, 2).map(task => renderTaskPill(task))}
-                        {tasks.length > 2 && (
-                          <div className="text-[11px] text-muted-foreground">
-                            {t('calendar.moreTasks', { count: tasks.length - 2 })}
-                          </div>
-                        )}
+                      <div className="flex flex-col h-full">
+                        <div
+                          className={`text-xs font-semibold mb-1 flex items-center gap-1
+                            ${isTodayDate ? 'text-primary' : isCurrentMonthDate ? 'text-foreground' : 'text-muted-foreground'}
+                          `}
+                        >
+                          <span>{date.getDate()}</span>
+                          {tasks.length > 0 && (
+                            <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">
+                              {tasks.length}
+                            </span>
+                          )}
+                        </div>
+                        <div className="mt-0.5 flex flex-col gap-1">
+                          {tasks.slice(0, 2).map(task => renderTaskPill(task))}
+                          {tasks.length > 2 && (
+                            <div className="text-[11px] text-muted-foreground">
+                              {t('calendar.moreTasks', { count: tasks.length - 2 })}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </button>
                   )
