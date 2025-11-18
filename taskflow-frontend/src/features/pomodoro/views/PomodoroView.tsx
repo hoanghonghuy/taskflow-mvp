@@ -58,8 +58,14 @@ const PomodoroView: React.FC = () => {
   const formatDuration = (seconds: number) => {
     const hours = Math.floor(seconds / 3600)
     const minutes = Math.floor((seconds % 3600) / 60)
-    if (hours > 0) return `${hours}h ${minutes}m`
-    return `${minutes}m`
+
+    if (hours > 0) {
+      const hoursLabel = t('pomodoro.duration.hoursShort' as TranslationKey, { count: hours })
+      const minutesLabel = t('pomodoro.duration.minutesShort' as TranslationKey, { count: minutes })
+      return `${hoursLabel} ${minutesLabel}`
+    }
+
+    return t('pomodoro.duration.minutesShort' as TranslationKey, { count: minutes })
   }
 
   const handlePauseResume = () => {
@@ -582,8 +588,13 @@ const PomodoroView: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <h2 className="text-lg font-semibold">{t('focusPicker.title')}</h2>
                 </div>
-                <button onClick={() => setTaskPickerOpen(false)} className="p-1 rounded-full hover:bg-secondary">
-                  ×
+                <button
+                  type="button"
+                  onClick={() => setTaskPickerOpen(false)}
+                  className="p-1.5 rounded-full hover:bg-secondary transition-colors"
+                  aria-label={t('common.close')}
+                >
+                  <CloseIcon className="h-4 w-4" />
                 </button>
               </header>
               <div className="grow p-4 overflow-y-auto">

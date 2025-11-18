@@ -3,6 +3,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react'
 import { useCountdown } from '@/lib/hooks/use-countdown'
 import { useI18n } from '@/lib/hooks/use-i18n'
+import { useSettings } from '@/components/providers/settings-provider'
 import { useConfirmation } from '@/lib/hooks/use-confirmation'
 import { PlusIcon, TrashIcon, CalendarDaysIcon } from '@/lib/icons'
 import type { CountdownEvent } from '@/types'
@@ -34,6 +35,8 @@ const COUNTDOWN_VIEW_MODE_LABELS = {
 
 const CountdownView: React.FC = () => {
   const { t } = useI18n()
+  const { settings } = useSettings()
+  const locale = settings.language || undefined
   const { confirm } = useConfirmation()
   const {
     upcomingEvents,
@@ -342,10 +345,10 @@ const CountdownView: React.FC = () => {
                         key={mode}
                         type="button"
                         onClick={() => setDisplayMode(mode)}
-                        className={`px-2 py-0.5 rounded-full transition-colors ${
+                        className={`px-2 py-0.5 text-xs font-medium rounded-full border transition-colors ${
                           displayMode === mode
-                            ? 'bg-primary text-primary-foreground shadow-sm'
-                            : 'text-muted-foreground hover:bg-background/60'
+                            ? 'bg-background text-primary border-2 border-primary shadow-sm'
+                            : 'text-muted-foreground hover:bg-background/60 border-transparent'
                         }`}
                       >
                         {t(COUNTDOWN_VIEW_MODE_LABELS[mode])}
@@ -412,7 +415,7 @@ const CountdownView: React.FC = () => {
                                 </CardTitle>
                                 <CardDescription className="flex items-center gap-3 text-sm text-muted-foreground">
                                   <span>
-                                    {targetDate.toLocaleDateString(undefined, {
+                                    {targetDate.toLocaleDateString(locale, {
                                       weekday: 'long',
                                       month: 'long',
                                       day: 'numeric',
@@ -473,7 +476,7 @@ const CountdownView: React.FC = () => {
                       <CardHeader>
                         <CardTitle className="text-base font-semibold">{event.title}</CardTitle>
                         <CardDescription>
-                          {new Date(event.targetDate).toLocaleDateString(undefined, {
+                          {new Date(event.targetDate).toLocaleDateString(locale, {
                             month: 'long',
                             day: 'numeric',
                             year: 'numeric',

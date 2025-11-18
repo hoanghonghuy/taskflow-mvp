@@ -71,10 +71,9 @@ const TaskListHeader: React.FC<TaskListHeaderProps> = ({
       <div className="hidden md:flex items-center justify-center md:col-start-2">
         {onBriefing && (
           <button
+            type="button"
             onClick={onBriefing}
             className="flex items-center gap-2 px-3 py-2 bg-secondary rounded-md cursor-pointer hover:bg-muted transition-colors"
-            role="button"
-            tabIndex={0}
             aria-label={t('mainContent.dailyBriefing')}
           >
             <SparklesIcon className="h-5 w-5 text-primary" />
@@ -88,8 +87,9 @@ const TaskListHeader: React.FC<TaskListHeaderProps> = ({
       <div className="flex items-center gap-1.5 justify-end col-start-2 md:col-start-3">
         {onSearch && (
           <button
+            type="button"
             onClick={onSearch}
-            className="p-1.5 rounded-md hover:bg-secondary"
+            className="p-2 rounded-md hover:bg-secondary transition-colors"
             aria-label={t('mainContent.searchTasks')}
           >
             <SearchIcon className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
@@ -97,8 +97,9 @@ const TaskListHeader: React.FC<TaskListHeaderProps> = ({
         )}
         {onSortToggle && (
           <button
+            type="button"
             onClick={onSortToggle}
-            className="p-1.5 rounded-md hover:bg-secondary"
+            className="p-2 rounded-md hover:bg-secondary transition-colors"
             aria-label={t('mainContent.sortTasks')}
           >
             {renderSortIcon()}
@@ -107,6 +108,7 @@ const TaskListHeader: React.FC<TaskListHeaderProps> = ({
         <div className="hidden md:flex items-center gap-2">
           {onUndo && (
             <button 
+              type="button"
               onClick={onUndo} 
               disabled={!canUndo} 
               className="p-2 rounded-md hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
@@ -117,6 +119,7 @@ const TaskListHeader: React.FC<TaskListHeaderProps> = ({
           )}
           {onRedo && (
             <button 
+              type="button"
               onClick={onRedo} 
               disabled={!canRedo} 
               className="p-2 rounded-md hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
@@ -127,6 +130,7 @@ const TaskListHeader: React.FC<TaskListHeaderProps> = ({
           )}
           {onClearHistory && (
             <button
+              type="button"
               onClick={onClearHistory}
               disabled={!canUndo && !canRedo}
               className="p-2 rounded-md hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"

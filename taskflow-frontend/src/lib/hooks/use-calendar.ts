@@ -2,14 +2,11 @@
 
 import { useState, useMemo, useCallback } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
+import { useSettings } from '@/components/providers/settings-provider'
 import { isSameDay } from '@/lib/utils/date-helpers'
 import type { Task } from '@/types'
 
 type ViewMode = 'month' | 'agenda'
-
-const DAY_LABELS = Array.from({ length: 7 }).map((_, index) =>
-  new Intl.DateTimeFormat(undefined, { weekday: 'short' }).format(new Date(2024, 0, index + 1))
-)
 
 interface CalendarDateInfo {
   year: number
@@ -62,6 +59,7 @@ interface UseCalendarReturn {
 export const useCalendar = (): UseCalendarReturn => {
   const { state } = useTaskManager()
   const { tasks } = state
+  const { settings } = useSettings()
   
   // State
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -114,6 +112,14 @@ export const useCalendar = (): UseCalendarReturn => {
     
     return daysArray
   }, [dateInfo])
+
+  // Localized day labels based on app language
+  const dayLabels = useMemo(() => {
+    const locale = settings.language || undefined
+    return Array.from({ length: 7 }).map((_, index) =>
+      new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(new Date(2024, 0, index + 1))
+    )
+  }, [settings.language])
 
   // Group tasks by date for efficient lookup
   const tasksByDate = useMemo(() => {
@@ -229,7 +235,7 @@ export const useCalendar = (): UseCalendarReturn => {
     getTasksForDate,
     
     // Constants
-    DAY_LABELS,
+    DAY_LABELS: dayLabels,
   }
 }
 

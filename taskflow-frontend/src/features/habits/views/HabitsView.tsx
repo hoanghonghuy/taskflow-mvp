@@ -5,10 +5,12 @@ import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import { useHabitActions } from '@/components/providers/task-manager-provider'
 import { useConfirmation } from '@/lib/hooks/use-confirmation'
+import { useSettings } from '@/components/providers/settings-provider'
 import type { TranslationKey } from '@/lib/i18n/types'
 import { PlusIcon, TrashIcon } from '@/lib/icons'
 import { toYYYYMMDD } from '@/lib/utils/date-helpers'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
+import { Button } from '@/components/ui/button'
 
 const calculateStreak = (completions: string[]): number => {
   if (completions.length === 0) return 0
@@ -50,6 +52,7 @@ const HabitsView: React.FC = () => {
   const { addHabit, deleteHabit, toggleHabitCompletion } = useHabitActions()
   const { t } = useI18n()
   const { confirm } = useConfirmation()
+  const { settings } = useSettings()
   const [newHabitName, setNewHabitName] = useState('')
   const [isAdding, setIsAdding] = useState(false)
 
@@ -135,13 +138,14 @@ const HabitsView: React.FC = () => {
               <p className="text-muted-foreground">{t('habits.subtitle')}</p>
             </div>
             {!isAdding && (
-              <button
+              <Button
+                type="button"
                 onClick={() => setIsAdding(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                className="flex items-center gap-2"
               >
                 <PlusIcon className="h-5 w-5" />
                 <span>{t('habits.add')}</span>
-              </button>
+              </Button>
             )}
           </div>
           {isAdding && (
@@ -162,21 +166,22 @@ const HabitsView: React.FC = () => {
                 className="flex-1 px-4 py-2 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 autoFocus
               />
-              <button
+              <Button
+                type="button"
                 onClick={handleAddHabit}
-                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
               >
                 {t('habits.add')}
-              </button>
-              <button
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
                 onClick={() => {
                   setIsAdding(false)
                   setNewHabitName('')
                 }}
-                className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-muted transition-colors"
               >
                 {t('habits.cancel')}
-              </button>
+              </Button>
             </div>
           )}
         </header>
@@ -253,7 +258,7 @@ const HabitsView: React.FC = () => {
                                   : 'border-border bg-card text-muted-foreground hover:border-emerald-400 hover:text-foreground'}
                               `}
                             >
-                              <span>{date.toLocaleDateString(undefined, { weekday: 'short' }).slice(0, 2)}</span>
+                              <span>{date.toLocaleDateString(settings.language || undefined, { weekday: 'short' }).slice(0, 2)}</span>
                               <span>{date.getDate()}</span>
                             </button>
                           )
@@ -276,7 +281,7 @@ const HabitsView: React.FC = () => {
                                 ${isTodayDate ? 'ring-2 ring-primary ring-offset-1' : ''}
                               `}
                               onClick={() => handleToggleCompletion(habit.id, date)}
-                              title={new Date(date).toLocaleDateString()}
+                              title={new Date(date).toLocaleDateString(settings.language || undefined)}
                             />
                           )
                         })}

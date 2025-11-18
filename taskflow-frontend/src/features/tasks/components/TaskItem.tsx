@@ -19,6 +19,7 @@ import { PRIORITY_MAP } from '@/lib/task-constants'
 import { useUser } from '@/components/providers/user-provider'
 import { Avatar } from '@/components/ui/avatar'
 import { useI18n } from '@/lib/hooks/use-i18n'
+import { useSettings } from '@/components/providers/settings-provider'
 
 // Helper functions to replace date-fns
 const isToday = (date: Date): boolean => {
@@ -45,6 +46,7 @@ interface TaskItemProps {
 const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onDrop, listName }) => {
   const { dispatch } = useTaskManager()
   const { t } = useI18n()
+  const { settings } = useSettings()
   const { allUsers } = useUser()
   const { deleteTask } = useTaskActions()
   const { confirm } = useConfirmation()
@@ -140,8 +142,14 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
     const date = new Date(task.dueDate)
     const isDuePast = isPast(date) && !isToday(date)
     const color = isDuePast ? 'text-destructive' : 'text-muted-foreground'
-    
-    return <span className={`text-xs ${color}`}>{date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
+
+    const locale = settings.language || undefined
+
+    return (
+      <span className={`text-xs ${color}`}>
+        {date.toLocaleDateString(locale, { month: 'short', day: 'numeric' })}
+      </span>
+    )
   }
   
   // Ensure task has a priority, default to 'none'
@@ -200,13 +208,13 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
         >
           {task.completed && <CheckIcon className="h-3.5 w-3.5 text-primary-foreground" />}
         </button>
-        <div className="ml-4 grow flex items-center gap-2">
-          <div className="flex flex-col">
-            <p className={`text-sm ${task.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+        <div className="ml-4 grow flex items-center gap-2 min-w-0">
+          <div className="flex flex-col min-w-0">
+            <p className={`text-sm truncate ${task.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
               {task.title}
             </p>
             {listName && (
-              <span className="text-[11px] text-muted-foreground">{listName}</span>
+              <span className="text-[11px] text-muted-foreground truncate">{listName}</span>
             )}
           </div>
           {task.subtasks.length > 0 && (

@@ -34,6 +34,7 @@
       "title": "Today plan",
       "subtitle": "Top tasks that are due today or overdue.",
       "empty": "You are all caught up for today.",
+      "untitled": "Untitled task",
       "status": {
         "overdue": "Overdue",
         "today": "Today"
@@ -348,6 +349,10 @@
     "statisticsTaskTab": "Task",
     "statisticsFocusTab": "Focus",
     "statisticsEmpty": "No statistics data yet.",
+    "duration": {
+      "hoursShort": "{{count}}h",
+      "minutesShort": "{{count}}m"
+    },
     "notifications": {
       "focusCompletedTitle": "Focus Session Completed!",
       "focusCompletedBodyWithTask": "Great job! You completed a focus session on \"{{taskTitle}}\"",
@@ -783,6 +788,8 @@
       "month": "Month",
       "agenda": "Agenda"
     },
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month",
     "selectedDayTasks": "Tasks for selected day",
     "noTasks": "No tasks scheduled for this day.",
     "legend": {

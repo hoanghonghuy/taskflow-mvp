@@ -34,6 +34,7 @@
       "title": "Kế hoạch hôm nay",
       "subtitle": "Các nhiệm vụ quan trọng đến hạn hôm nay hoặc đã quá hạn.",
       "empty": "Hôm nay bạn đã hoàn thành tất cả mọi thứ.",
+      "untitled": "Nhiệm vụ chưa có tiêu đề",
       "status": {
         "overdue": "Quá hạn",
         "today": "Hôm nay"
@@ -340,6 +341,10 @@
     "statisticsTaskTab": "Nhiệm vụ",
     "statisticsFocusTab": "Tập trung",
     "statisticsEmpty": "Chưa có dữ liệu thống kê.",
+    "duration": {
+      "hoursShort": "{{count}} giờ",
+      "minutesShort": "{{count}} phút"
+    },
     "notifications": {
       "focusCompletedTitle": "Hoàn thành phiên tập trung!",
       "focusCompletedBodyWithTask": "Làm tốt lắm! Bạn đã hoàn thành phiên tập trung cho \"{{taskTitle}}\"",
@@ -768,6 +773,8 @@
       "month": "Tháng",
       "agenda": "Lịch trình"
     },
+    "prevMonth": "Tháng trước",
+    "nextMonth": "Tháng sau",
     "selectedDayTasks": "Các nhiệm vụ trong ngày đã chọn",
     "noTasks": "Chưa có nhiệm vụ nào trong ngày này.",
     "legend": {

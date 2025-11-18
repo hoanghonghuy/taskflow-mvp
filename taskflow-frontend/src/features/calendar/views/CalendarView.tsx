@@ -4,6 +4,8 @@ import React, { useMemo } from 'react'
 import { useCalendar, type ViewMode } from '@/lib/hooks/use-calendar'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
+import type { TranslationKey } from '@/lib/i18n/types'
+import { useSettings } from '@/components/providers/settings-provider'
 import { CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react'
 import { PRIORITY_MAP } from '@/lib/task-constants'
 import type { Task } from '@/types'
@@ -37,6 +39,9 @@ const CalendarView: React.FC = () => {
 
   const { dispatch, state } = useTaskManager()
   const { tasks } = state
+  const { settings } = useSettings()
+
+  const locale = settings.language || undefined
 
   const agendaRangeEnd = useMemo(() => {
     const end = new Date(agendaStartDate)
@@ -99,7 +104,7 @@ const CalendarView: React.FC = () => {
     const isDraggingThis = draggedTaskId === task.id
 
     const timeLabel = task.dueDate
-      ? new Date(task.dueDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      ? new Date(task.dueDate).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
       : null
 
     return (
@@ -139,13 +144,13 @@ const CalendarView: React.FC = () => {
             <div className="flex items-center gap-2 flex-wrap justify-end md:justify-start">
               <span className="text-sm font-medium text-muted-foreground md:hidden">
                 {viewMode === 'month'
-                  ? currentDate.toLocaleDateString(undefined, { month: 'short', year: 'numeric' })
-                  : `${agendaStartDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} - ${agendaRangeEnd.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`}
+                  ? currentDate.toLocaleDateString(locale, { month: 'short', year: 'numeric' })
+                  : `${agendaStartDate.toLocaleDateString(locale, { month: 'short', day: 'numeric' })} - ${agendaRangeEnd.toLocaleDateString(locale, { month: 'short', day: 'numeric' })}`}
               </span>
               <button
                 onClick={handlePrevMonth}
                 className="p-1.5 md:p-2 rounded-lg hover:bg-secondary transition-colors"
-                aria-label="Previous month"
+                aria-label={t('calendar.prevMonth' as TranslationKey)}
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
@@ -158,7 +163,7 @@ const CalendarView: React.FC = () => {
               <button
                 onClick={handleNextMonth}
                 className="p-1.5 md:p-2 rounded-lg hover:bg-secondary transition-colors"
-                aria-label="Next month"
+                aria-label={t('calendar.nextMonth' as TranslationKey)}
               >
                 <ChevronRight className="h-5 w-5" />
               </button>
@@ -192,8 +197,8 @@ const CalendarView: React.FC = () => {
           </div>
           <h2 className="hidden md:block text-2xl font-semibold">
             {viewMode === 'month'
-              ? currentDate.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
-              : `${agendaStartDate.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })} – ${agendaRangeEnd.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}`}
+              ? currentDate.toLocaleDateString(locale, { month: 'long', year: 'numeric' })
+              : `${agendaStartDate.toLocaleDateString(locale, { weekday: 'long', month: 'long', day: 'numeric' })} – ${agendaRangeEnd.toLocaleDateString(locale, { weekday: 'long', month: 'long', day: 'numeric' })}`}
           </h2>
         </header>
       </AppPageContainer>
@@ -282,7 +287,7 @@ const CalendarView: React.FC = () => {
                   <div>
                     <h3 className="font-semibold">{t('calendar.selectedDayTasks')}</h3>
                     <p className="text-sm text-muted-foreground">
-                      {selectedDate.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                      {selectedDate.toLocaleDateString(locale, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
                     </p>
                   </div>
                 </div>
@@ -299,7 +304,7 @@ const CalendarView: React.FC = () => {
                           <p className="font-medium text-sm">{task.title}</p>
                           {task.dueDate && (
                             <p className="text-xs text-muted-foreground">
-                              {new Date(task.dueDate).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                              {new Date(task.dueDate).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}
                             </p>
                           )}
                         </div>
@@ -346,7 +351,7 @@ const CalendarView: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium">
-                        {date.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+                        {date.toLocaleDateString(locale, { weekday: 'long', month: 'long', day: 'numeric' })}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {tasks.length} {tasks.length === 1 ? t('calendar.taskCountSingle') : t('calendar.taskCountPlural', { count: tasks.length })}

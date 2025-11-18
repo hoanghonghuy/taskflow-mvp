@@ -6,7 +6,7 @@ import { useI18n } from '@/lib/hooks/use-i18n'
 import { useConfirmation } from '@/lib/hooks/use-confirmation'
 import type { TranslationKey } from '@/lib/i18n/types'
 import TaskItem from '@/features/tasks/components/TaskItem'
-import { PlusIcon, GripVerticalIcon } from '@/lib/icons'
+import { PlusIcon, GripVerticalIcon, TrashIcon } from '@/lib/icons'
 import type { Column, Task } from '@/types'
 
 interface BoardColumnProps {
@@ -121,11 +121,12 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
           </button>
         )}
         <button
+          type="button"
           onClick={handleDeleteColumn}
-          className="text-muted-foreground hover:text-destructive transition-colors p-1"
+          className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-muted/60 transition-colors"
           aria-label={t('board.column.delete')}
         >
-          ×
+          <TrashIcon className="h-4 w-4" />
         </button>
       </div>
       <div className="p-2 space-y-2">

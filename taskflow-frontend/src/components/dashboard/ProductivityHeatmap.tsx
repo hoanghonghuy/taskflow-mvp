@@ -190,7 +190,7 @@ const ProductivityHeatmap: React.FC = () => {
   }
 
   return (
-    <div ref={containerRef} className="bg-card border border-border p-4 rounded-lg overflow-hidden">
+    <div ref={containerRef} className="overflow-hidden">
       <div className="flex flex-col">
         {/* Month Labels */}
         <div className="h-5 mb-1 relative" style={{ marginLeft: `${DAY_LABELS_WIDTH}px` }}>

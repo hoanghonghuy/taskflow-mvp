@@ -8,6 +8,7 @@ import { CalendarDayIcon, CalendarIcon, RepeatIcon, SparklesIcon } from '@/lib/i
 import ProductivityHeatmap from '@/components/dashboard/ProductivityHeatmap'
 import { useRouter } from 'next/navigation'
 import { useModal } from '@/components/providers/modal-provider'
+import { useSettings } from '@/components/providers/settings-provider'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
 
 const useCountUp = (end: number, duration = 1200) => {
@@ -60,6 +61,7 @@ export default function DashboardPage() {
   const { t } = useI18n()
   const router = useRouter()
   const { openBriefing } = useModal()
+  const { settings } = useSettings()
 
   const stats = useMemo(() => {
     const uncompletedTasks = state.tasks.filter(t => !t.completed)
@@ -128,6 +130,7 @@ export default function DashboardPage() {
           <div className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
               <button 
+                type="button"
                 onClick={() => {
                   dispatch({ type: 'SET_ACTIVE_LIST', payload: 'today' })
                   router.push('/list')
@@ -144,6 +147,7 @@ export default function DashboardPage() {
                 </div>
               </button>
               <button 
+                type="button"
                 onClick={() => {
                   dispatch({ type: 'SET_ACTIVE_LIST', payload: 'upcoming' })
                   router.push('/list')
@@ -160,6 +164,7 @@ export default function DashboardPage() {
                 </div>
               </button>
               <button 
+                type="button"
                 onClick={() => {
                   dispatch({ type: 'SET_VIEW', payload: 'habit' })
                   router.push('/habits')
@@ -183,7 +188,7 @@ export default function DashboardPage() {
               </button>
             </div>
 
-            <div className="bg-card border border-border rounded-2xl p-4 md:p-6 shadow-sm">
+            <div className="bg-card border border-border rounded-lg p-4 md:p-6 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-full bg-primary/10 text-primary">
@@ -220,7 +225,7 @@ export default function DashboardPage() {
                     const isTaskOverdue = due ? isOverdue(due) : false
                     const isTaskToday = due ? isToday(due) : false
                     const timeLabel = due
-                      ? due.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                      ? due.toLocaleTimeString(settings.language || undefined, { hour: '2-digit', minute: '2-digit' })
                       : null
                     const statusLabel = isTaskOverdue
                       ? t('dashboard.todayPlan.status.overdue' as TranslationKey)
@@ -231,6 +236,7 @@ export default function DashboardPage() {
                     return (
                       <li key={task.id}>
                         <button
+                          type="button"
                           onClick={() => {
                             if (task.listId) {
                               dispatch({ type: 'SET_ACTIVE_LIST', payload: task.listId })
@@ -241,7 +247,9 @@ export default function DashboardPage() {
                           className="w-full flex items-start justify-between gap-3 rounded-md border border-transparent px-3 py-2 text-left hover:border-primary/40 hover:bg-muted/40 transition-colors"
                         >
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">{task.title || 'Untitled task'}</p>
+                            <p className="text-sm font-medium truncate">
+                              {task.title || t('dashboard.todayPlan.untitled' as TranslationKey)}
+                            </p>
                             {(statusLabel || timeLabel) && (
                               <p className="text-xs text-muted-foreground mt-0.5">
                                 {statusLabel}
@@ -270,6 +278,7 @@ export default function DashboardPage() {
                 </div>
               </div>
               <button
+                type="button"
                 onClick={openBriefing}
                 className="inline-flex items-center gap-1.5 px-3 py-2 bg-primary text-primary-foreground rounded-full text-xs font-semibold hover:bg-primary/90 transition-transform hover:scale-105 self-start"
               >
