@@ -5,7 +5,7 @@ import { useCalendar, type ViewMode } from '@/lib/hooks/use-calendar'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import { CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react'
-import { PRIORITY_MAP } from '@/lib/constants'
+import { PRIORITY_MAP } from '@/lib/task-constants'
 import type { Task } from '@/types'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
 

@@ -7,7 +7,8 @@ import { useI18n } from '@/lib/hooks/use-i18n'
 import { Sidebar } from '@/components/layout/sidebar'
 import FeatureBar from '@/components/layout/feature-bar'
 import BottomNavBar from '@/components/layout/bottom-nav-bar'
-import { MenuIcon, SPECIAL_LISTS_CONFIG } from '@/lib/constants'
+import { MenuIcon } from '@/lib/icons'
+import { SPECIAL_LISTS_CONFIG } from '@/lib/task-constants'
 import { useTaskManager } from '@/lib/hooks/use-task-manager'
 import TaskDetail from '@/features/tasks/components/TaskDetail'
 import SearchModal from '@/features/search/components/SearchModal'
@@ -151,9 +152,9 @@ export default function AppLayout({
           </div>
           {/* TaskDetail panel */}
           <div className={`
-            fixed inset-0 z-20 md:relative md:z-auto md:inset-auto transition-transform duration-300 ease-in-out bg-card
+            fixed inset-0 z-40 md:relative md:z-auto md:inset-auto transition-transform duration-300 ease-in-out bg-card
             ${state.selectedTaskId ? 'translate-x-0' : 'translate-x-full'}
-          `}>
+         `}>
             {state.selectedTaskId && <TaskDetail taskId={state.selectedTaskId} />}
           </div>
         </div>

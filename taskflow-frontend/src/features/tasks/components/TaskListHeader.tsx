@@ -2,7 +2,16 @@
 
 import React from 'react'
 import { useI18n } from '@/lib/hooks/use-i18n'
-import { SearchIcon, SparklesIcon, UndoIcon, RedoIcon, TrashIcon, ArrowsUpDownIcon, ArrowUpIcon, ArrowDownIcon } from '@/lib/constants'
+import {
+  SearchIcon,
+  SparklesIcon,
+  UndoIcon,
+  RedoIcon,
+  TrashIcon,
+  ArrowsUpDownIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
+} from '@/lib/icons'
 import { Avatar } from '@/components/ui/avatar'
 import type { SortOrder } from '@/lib/utils/task-helpers'
 

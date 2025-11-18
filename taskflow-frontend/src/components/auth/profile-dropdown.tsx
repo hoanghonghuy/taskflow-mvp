@@ -3,7 +3,7 @@
 import React from 'react'
 import { useUser } from '@/components/providers/user-provider'
 import type { User } from '@/types'
-import { ArrowLeftOnRectangleIcon, UserCircleIcon } from '@/lib/constants'
+import { ArrowLeftOnRectangleIcon, UserCircleIcon } from '@/lib/icons'
 import { Settings as SettingsIcon, Trophy as TrophyIcon } from 'lucide-react'
 import Avatar from '@/components/ui/avatar'
 import { useI18n } from '@/lib/hooks/use-i18n'

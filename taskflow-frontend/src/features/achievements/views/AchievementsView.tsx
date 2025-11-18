@@ -3,7 +3,7 @@
 import React from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
-import { ACHIEVEMENT_DEFINITIONS } from '@/lib/constants'
+import { ACHIEVEMENT_DEFINITIONS } from '@/lib/achievements'
 
 const AchievementsView: React.FC = () => {
   const { state } = useTaskManager()

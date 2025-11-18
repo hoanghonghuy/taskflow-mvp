@@ -4,7 +4,8 @@ import React, { useState, useMemo } from 'react'
 import { useTaskManager } from '@/lib/hooks/use-task-manager'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import { useUser } from '@/components/providers/user-provider'
-import { SPECIAL_LISTS_CONFIG, TAG_COLORS, ListBulletIcon, PlusIcon, TagIcon, TrashIcon, ArrowDownIcon, UserPlusIcon, ChatBubbleLeftRightIcon } from '@/lib/constants'
+import { SPECIAL_LISTS_CONFIG, TAG_COLORS } from '@/lib/task-constants'
+import { ListBulletIcon, PlusIcon, TagIcon, TrashIcon, ArrowDownIcon, UserPlusIcon, ChatBubbleLeftRightIcon } from '@/lib/icons'
 import Avatar from '@/components/ui/avatar'
 import ProfileDropdown from '@/components/auth/profile-dropdown'
 import { useRouter } from 'next/navigation'
@@ -169,7 +170,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
           </Dialog>
         </div>
 
-        <div className="flex-grow overflow-y-auto pr-1 min-w-[15rem]">
+        <div className="grow overflow-y-auto pr-1 min-w-60">
           <nav className="space-y-1">
             {Object.values(SPECIAL_LISTS_CONFIG).map(({ id, name, icon: Icon }) => (
               <NavItem
@@ -277,7 +278,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                               onClose()
                             }
                           }}
-                          className={`flex-grow flex items-center gap-3 text-left ${state.activeTag === tag ? 'text-primary font-semibold' : ''}`}
+                          className={`grow flex items-center gap-3 text-left ${state.activeTag === tag ? 'text-primary font-semibold' : ''}`}
                         >
                           <TagIcon className="h-5 w-5" />
                           <span className="truncate flex-1">{tag}</span>

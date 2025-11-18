@@ -1,5 +1,5 @@
 // import { VercelPostgres } from '@vercel/postgres';
-import { Task } from '../../packages/taskflow-core/src/types';
+import type { Task } from '@/types';
 
 // Database connection for production - commented out until package is installed
 // const postgres = new VercelPostgres({
@@ -27,7 +27,7 @@ export class DatabaseService {
     }
   }
 
-  static async getTasks(userId: string): Promise<Task[]> {
+  static async getTasks(): Promise<Task[]> {
     try {
       // Mock: return all tasks for now (no user filtering in mock)
       return [...tasks];

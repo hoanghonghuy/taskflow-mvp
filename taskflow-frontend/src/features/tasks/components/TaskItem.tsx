@@ -3,7 +3,16 @@
 import React, { useState } from 'react'
 import { Task, Priority } from '@/types'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
-import { PRIORITY_MAP, PlayCircleIcon, BellIcon, RepeatIcon, CheckCircleIcon, ArrowUpIcon, ArrowDownIcon, CheckIcon } from '@/lib/constants'
+import { 
+  PlayCircleIcon,
+  BellIcon,
+  RepeatIcon,
+  CheckCircleIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
+  CheckIcon,
+} from '@/lib/icons'
+import { PRIORITY_MAP } from '@/lib/task-constants'
 import { useUser } from '@/components/providers/user-provider'
 import { Avatar } from '@/components/ui/avatar'
 import { useI18n } from '@/lib/hooks/use-i18n'

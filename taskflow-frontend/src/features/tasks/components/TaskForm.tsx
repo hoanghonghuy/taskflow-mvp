@@ -1,12 +1,20 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useTaskManager } from '@/components/providers/task-manager-provider'
+import { useTaskManager, useTaskActions } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import { useGemini } from '@/lib/hooks/use-gemini'
 import { useToast } from '@/components/providers/toast-provider'
 import type { Task, Priority } from '@/types'
-import { CloseIcon, SparklesIcon, PRIORITY_MAP, FlagIcon, CalendarDayIcon, ListBulletIcon, ViewColumnsIcon } from '@/lib/constants'
+import {
+  CloseIcon,
+  SparklesIcon,
+  FlagIcon,
+  CalendarDayIcon,
+  ListBulletIcon,
+  ViewColumnsIcon,
+} from '@/lib/icons'
+import { PRIORITY_MAP } from '@/lib/task-constants'
 import { Skeleton } from '@/components/ui/skeleton'
 
 interface TaskFormProps {
@@ -18,7 +26,8 @@ interface TaskFormProps {
 }
 
 const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
-  const { state, dispatch } = useTaskManager()
+  const { state } = useTaskManager()
+  const { addTask } = useTaskActions()
   const { t } = useI18n()
   const { isAvailable: isGeminiAvailable } = useGemini()
   const addToast = useToast()
@@ -56,11 +65,10 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
     }
   }, [listId, columnId, state.columns])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (title.trim()) {
-      const newTask: Task = {
-        id: Date.now().toString(),
+      const newTask: Omit<Task, 'id'> = {
         title: title.trim(),
         description: description.trim(),
         completed: false,
@@ -74,7 +82,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
         totalFocusTime: 0,
         comments: [],
       }
-      dispatch({ type: 'ADD_TASK', payload: newTask })
+      addTask(newTask)
       addToast.success(t('taskForm.createTask'))
       onClose()
     }
@@ -266,24 +274,23 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
                 </select>
               </div>
             )}
+            <footer className="mt-4 pt-4 border-t border-border flex flex-col sm:flex-row justify-end gap-3 bg-secondary/0">
+              <button 
+                type="button"
+                onClick={onClose}
+                className="px-5 py-2.5 bg-secondary text-secondary-foreground rounded-md text-sm font-semibold hover:bg-secondary/80 transition-colors order-2 sm:order-1"
+              >
+                {t('common.cancel')}
+              </button>
+              <button 
+                type="submit" 
+                className="px-5 py-2.5 bg-primary text-primary-foreground rounded-md text-sm font-semibold hover:bg-primary/90 transition-all shadow-sm hover:shadow-md order-1 sm:order-2"
+              >
+                {t('taskForm.createTask')}
+              </button>
+            </footer>
           </form>
         </div>
-
-        <footer className="p-4 border-t border-border flex flex-col sm:flex-row justify-end gap-3 bg-secondary/30">
-          <button 
-            onClick={onClose}
-            className="px-5 py-2.5 bg-secondary text-secondary-foreground rounded-md text-sm font-semibold hover:bg-secondary/80 transition-colors order-2 sm:order-1"
-          >
-            {t('common.cancel')}
-          </button>
-          <button 
-            onClick={handleSubmit} 
-            type="submit" 
-            className="px-5 py-2.5 bg-primary text-primary-foreground rounded-md text-sm font-semibold hover:bg-primary/90 transition-all shadow-sm hover:shadow-md order-1 sm:order-2"
-          >
-            {t('taskForm.createTask')}
-          </button>
-        </footer>
       </div>
     </div>
   )

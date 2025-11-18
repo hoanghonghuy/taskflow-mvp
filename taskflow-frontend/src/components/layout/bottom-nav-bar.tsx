@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { useSettings } from '@/components/providers/settings-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
-import { StopwatchIcon, ListBulletIcon, CalendarDaysIcon, GridIcon, RepeatIcon, HourglassIcon, HomeIcon, ViewColumnsIcon } from '@/lib/constants'
+import { StopwatchIcon, ListBulletIcon, CalendarDaysIcon, GridIcon, RepeatIcon, HourglassIcon, HomeIcon, ViewColumnsIcon } from '@/lib/icons'
 import type { View } from '@/types'
 import type { TranslationKey } from '@/lib/i18n/types'
 import { useRouter, usePathname } from 'next/navigation'

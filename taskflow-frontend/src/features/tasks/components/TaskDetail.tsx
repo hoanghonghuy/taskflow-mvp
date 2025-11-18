@@ -14,8 +14,8 @@ import {
   SparklesIcon,
   GripVerticalIcon,
   PlayCircleIcon
-} from '@/lib/constants'
-import { PRIORITY_MAP } from '@/lib/constants'
+} from '@/lib/icons'
+import { PRIORITY_MAP } from '@/lib/task-constants'
 import { useGemini } from '@/lib/hooks/use-gemini'
 import { useRouter } from 'next/navigation'
 import { Avatar } from '@/components/ui/avatar'
@@ -29,7 +29,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   const { state, dispatch } = useTaskManager()
   const { t } = useI18n()
   const router = useRouter()
-  const { allUsers } = useUser()
+  const { allUsers, user: currentUser } = useUser()
   const { isAvailable: isGeminiAvailable } = useGemini()
   const task = useMemo<Task | null>(() => {
     return state.tasks.find(t => t.id === taskId) ?? null
@@ -153,7 +153,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   const handleAddComment = (content: string) => {
     const newComment: Comment = {
       id: Date.now().toString(),
-      userId: 'user-001',
+      userId: currentUser?.id ?? 'anonymous',
       content,
       timestamp: new Date().toISOString(),
     }
@@ -168,7 +168,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => e.preventDefault()
   const handleDrop = (e: React.DragEvent<HTMLDivElement>, dropIndex: number) => {
     e.preventDefault()
-    if (draggedIndex === null || draggedTagIndex === dropIndex) {
+    if (draggedIndex === null || draggedIndex === dropIndex) {
       setDraggedIndex(null)
       return
     }

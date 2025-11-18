@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import type { Task } from '@/types'
-import { CloseIcon, SearchIcon } from '@/lib/constants'
+import { CloseIcon, SearchIcon } from '@/lib/icons'
 import TaskItem from '@/features/tasks/components/TaskItem'
 import { useRouter } from 'next/navigation'
 
@@ -71,7 +71,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose }) => {
           </button>
         </header>
         
-        <div className="flex-grow p-4 overflow-y-auto">
+        <div className="grow p-4 overflow-y-auto">
           {searchTerm.trim() && searchResults.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">
               <p>{t('search.noResults', { searchTerm }) || `No results found for "${searchTerm}"`}</p>

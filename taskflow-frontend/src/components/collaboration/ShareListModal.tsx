@@ -5,7 +5,7 @@ import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useUser } from '@/components/providers/user-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import type { List } from '@/types'
-import { CloseIcon, PlusIcon, TrashIcon } from '@/lib/constants'
+import { CloseIcon, PlusIcon, TrashIcon } from '@/lib/icons'
 import { Avatar } from '@/components/ui/avatar'
 
 interface ShareListModalProps {

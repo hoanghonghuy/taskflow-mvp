@@ -5,7 +5,7 @@ import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useGemini } from '@/lib/hooks/use-gemini'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import { useToast } from '@/components/providers/toast-provider'
-import { CloseIcon, SparklesIcon } from '@/lib/constants'
+import { CloseIcon, SparklesIcon } from '@/lib/icons'
 import Spinner from '@/components/ui/spinner'
 
 interface DailyBriefingModalProps {

@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react'
 import { useSettings } from '@/components/providers/settings-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import { useTaskManager } from '@/lib/hooks/use-task-manager'
-import { HomeIcon, ListBulletIcon, CalendarDaysIcon, GridIcon, RepeatIcon, StopwatchIcon, HourglassIcon, ViewColumnsIcon, CheckIcon } from '@/lib/constants'
+import { HomeIcon, ListBulletIcon, CalendarDaysIcon, GridIcon, RepeatIcon, StopwatchIcon, HourglassIcon, ViewColumnsIcon, CheckIcon } from '@/lib/icons'
 import { THEME_PRESETS } from '@/lib/theme-presets'
 import type { ThemeOption, View } from '@/types'
 import type { TranslationKey } from '@/lib/i18n/types'
@@ -345,7 +345,10 @@ const SettingsView: React.FC = () => {
         </section>
         
         <section>
-          <h2 className="text-lg font-semibold mb-4">{t('settings.pomodoro.title')}</h2>
+          <h2 className="text-lg font-semibold mb-1">{t('settings.pomodoro.title')}</h2>
+          <p className="text-xs text-muted-foreground mb-3">
+            {t('settings.pomodoro.note' as TranslationKey)}
+          </p>
           <div className="bg-card border border-border rounded-lg p-4 max-w-md space-y-4">
             <div className="flex items-center justify-between gap-3">
               <label htmlFor="focus-duration" className="font-medium text-sm">{t('settings.pomodoro.focusDuration')}</label>

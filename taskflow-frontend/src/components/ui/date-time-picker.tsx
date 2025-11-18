@@ -1,7 +1,7 @@
-'use client'
+"use client"
 
 import * as React from 'react'
-import { CalendarDaysIcon } from '@/lib/constants'
+import { CalendarDaysIcon } from '@/lib/icons'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'

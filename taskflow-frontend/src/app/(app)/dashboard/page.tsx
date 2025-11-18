@@ -3,7 +3,8 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import { useTaskManager } from '@/lib/hooks/use-task-manager'
 import { useI18n } from '@/lib/hooks/use-i18n'
-import { CalendarDayIcon, CalendarIcon, RepeatIcon, SparklesIcon } from '@/lib/constants'
+import type { TranslationKey } from '@/lib/i18n/types'
+import { CalendarDayIcon, CalendarIcon, RepeatIcon, SparklesIcon } from '@/lib/icons'
 import ProductivityHeatmap from '@/components/dashboard/ProductivityHeatmap'
 import { useRouter } from 'next/navigation'
 import { useModal } from '@/components/providers/modal-provider'
@@ -220,9 +221,9 @@ export default function DashboardPage() {
                       ? due.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                       : null
                     const statusLabel = isTaskOverdue
-                      ? 'Overdue'
+                      ? t('dashboard.todayPlan.status.overdue' as TranslationKey)
                       : isTaskToday
-                        ? 'Today'
+                        ? t('dashboard.todayPlan.status.today' as TranslationKey)
                         : ''
 
                     return (

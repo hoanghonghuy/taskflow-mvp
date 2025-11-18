@@ -3,7 +3,7 @@
 import React from 'react'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import { useRouter } from 'next/navigation'
-import { ListBulletIcon, RepeatIcon, StopwatchIcon, UserGroupIcon } from '@/lib/constants'
+import { ListBulletIcon, RepeatIcon, StopwatchIcon, UserGroupIcon } from '@/lib/icons'
 
 interface LandingPageProps {
   onLaunch?: () => void

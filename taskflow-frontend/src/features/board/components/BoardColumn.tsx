@@ -6,7 +6,7 @@ import { useI18n } from '@/lib/hooks/use-i18n'
 import { useConfirmation } from '@/lib/hooks/use-confirmation'
 import type { TranslationKey } from '@/lib/i18n/types'
 import TaskItem from '@/features/tasks/components/TaskItem'
-import { PlusIcon, GripVerticalIcon } from '@/lib/constants'
+import { PlusIcon, GripVerticalIcon } from '@/lib/icons'
 import type { Column, Task } from '@/types'
 
 interface BoardColumnProps {

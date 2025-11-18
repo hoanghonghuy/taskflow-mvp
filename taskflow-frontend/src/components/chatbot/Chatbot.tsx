@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import { CloseIcon, PaperAirplaneIcon, CubeTransparentIcon, GlobeAltIcon, SparklesIcon } from '@/lib/constants'
+import { CloseIcon, PaperAirplaneIcon, CubeTransparentIcon, GlobeAltIcon, SparklesIcon } from '@/lib/icons'
 import { useGemini } from '@/lib/hooks/use-gemini'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import { useToast } from '@/components/providers/toast-provider'

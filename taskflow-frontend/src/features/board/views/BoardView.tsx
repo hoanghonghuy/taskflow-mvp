@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import BoardColumn from '@/features/board/components/BoardColumn'
-import { PlusIcon } from '@/lib/constants'
+import { PlusIcon } from '@/lib/icons'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
 
 interface BoardViewProps {
@@ -14,7 +14,8 @@ interface BoardViewProps {
 const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
   const { state, dispatch } = useTaskManager()
   const { t } = useI18n()
-  const [selectedListId, setSelectedListId] = useState<string>(() => state.lists[0]?.id || '')
+  const initialListId = state.lists.find(l => l.id !== 'inbox')?.id || state.lists[0]?.id || ''
+  const [selectedListId, setSelectedListId] = useState<string>(() => initialListId)
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null)
   const [draggedColumnId, setDraggedColumnId] = useState<string | null>(null)
   const [dragOverColumnId, setDragOverColumnId] = useState<string | null>(null)
