@@ -1,9 +1,11 @@
-'use client'
+"use client"
 
 import React, { useState, useMemo } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import { useHabitActions } from '@/components/providers/task-manager-provider'
+import { useConfirmation } from '@/lib/hooks/use-confirmation'
+import type { TranslationKey } from '@/lib/i18n/types'
 import { PlusIcon, TrashIcon } from '@/lib/constants'
 import { toYYYYMMDD } from '@/lib/utils/date-helpers'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
@@ -47,6 +49,7 @@ const HabitsView: React.FC = () => {
   const { state } = useTaskManager()
   const { addHabit, deleteHabit, toggleHabitCompletion } = useHabitActions()
   const { t } = useI18n()
+  const { confirm } = useConfirmation()
   const [newHabitName, setNewHabitName] = useState('')
   const [isAdding, setIsAdding] = useState(false)
 
@@ -71,6 +74,19 @@ const HabitsView: React.FC = () => {
 
   const handleToggleCompletion = (habitId: string, date: string) => {
     toggleHabitCompletion(habitId, date)
+  }
+
+  const handleDeleteHabit = async (habitId: string, habitName: string) => {
+    const isConfirmed = await confirm({
+      title: t('habits.deleteConfirm.title' as TranslationKey, { name: habitName }),
+      description: t('habits.deleteConfirm.description' as TranslationKey, { name: habitName }),
+      confirmText: t('habits.deleteConfirm.confirm' as TranslationKey),
+      cancelText: t('common.cancel' as TranslationKey),
+      variant: 'destructive',
+    })
+
+    if (!isConfirmed) return
+    deleteHabit(habitId)
   }
 
   const getCompletionRate = (habitId: string) => {
@@ -209,7 +225,7 @@ const HabitsView: React.FC = () => {
                         {isCompletedToday ? t('habits.completed') : t('habits.markComplete')}
                       </button>
                       <button
-                        onClick={() => deleteHabit(habit.id)}
+                        onClick={() => handleDeleteHabit(habit.id, habit.name)}
                         className="p-2 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                         aria-label={t('habits.aria.deleteHabit')}
                       >

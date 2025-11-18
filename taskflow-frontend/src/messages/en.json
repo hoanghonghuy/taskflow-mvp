@@ -196,7 +196,12 @@
     "column": {
       "cancel": "Cancel",
       "dragHandle": "Drag to reorder column",
-      "delete": "Delete column"
+      "delete": "Delete column",
+      "deleteConfirm": {
+        "title": "Delete \"{{name}}\"?",
+        "description": "The column \"{{name}}\" and its tasks will be removed. This action cannot be undone.",
+        "confirm": "Delete column"
+      }
     }
   },
   "specialLists": {
@@ -266,6 +271,11 @@
     "last30Days": "Last 30 days",
     "aria": {
       "deleteHabit": "Delete habit"
+    },
+    "deleteConfirm": {
+      "title": "Delete \"{{name}}\"?",
+      "description": "The habit \"{{name}}\" and its completion history will be permanently removed.",
+      "confirm": "Delete habit"
     }
   },
   "pomodoro": {
@@ -382,6 +392,11 @@
     },
     "aria": {
       "deleteCountdown": "Delete countdown"
+    },
+    "deleteConfirm": {
+      "title": "Delete \"{{name}}\"?",
+      "description": "The countdown \"{{name}}\" and its progress will be permanently removed.",
+      "confirm": "Delete countdown"
     }
   },
   "achievement": {

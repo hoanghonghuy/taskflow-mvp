@@ -1,8 +1,10 @@
-'use client'
+"use client"
 
 import React, { useState } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
+import { useConfirmation } from '@/lib/hooks/use-confirmation'
+import type { TranslationKey } from '@/lib/i18n/types'
 import TaskItem from '@/features/tasks/components/TaskItem'
 import { PlusIcon, GripVerticalIcon } from '@/lib/constants'
 import type { Column, Task } from '@/types'
@@ -26,6 +28,7 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
 }) => {
   const { dispatch } = useTaskManager()
   const { t } = useI18n()
+  const { confirm } = useConfirmation()
   const [isDragOver, setIsDragOver] = useState(false)
   const [isRenaming, setIsRenaming] = useState(false)
   const [columnName, setColumnName] = useState(column.name)
@@ -54,6 +57,23 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
       })
     }
     setIsRenaming(false)
+  }
+
+  const handleDeleteColumn = async () => {
+    const isConfirmed = await confirm({
+      title: t('board.column.deleteConfirm.title' as TranslationKey, { name: column.name }),
+      description: t('board.column.deleteConfirm.description' as TranslationKey, { name: column.name }),
+      confirmText: t('board.column.deleteConfirm.confirm' as TranslationKey),
+      cancelText: t('common.cancel' as TranslationKey),
+      variant: 'destructive',
+    })
+
+    if (!isConfirmed) return
+
+    dispatch({
+      type: 'DELETE_COLUMN',
+      payload: { columnId: column.id, listId: column.listId },
+    })
   }
 
   return (
@@ -101,12 +121,7 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
           </button>
         )}
         <button
-          onClick={() => {
-            dispatch({
-              type: 'DELETE_COLUMN',
-              payload: { columnId: column.id, listId: column.listId },
-            })
-          }}
+          onClick={handleDeleteColumn}
           className="text-muted-foreground hover:text-destructive transition-colors p-1"
           aria-label={t('board.column.delete')}
         >

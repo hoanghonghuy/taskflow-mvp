@@ -3,6 +3,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react'
 import { useCountdown } from '@/lib/hooks/use-countdown'
 import { useI18n } from '@/lib/hooks/use-i18n'
+import { useConfirmation } from '@/lib/hooks/use-confirmation'
 import { PlusIcon, TrashIcon, CalendarDaysIcon } from '@/lib/constants'
 import type { CountdownEvent } from '@/types'
 import type { TranslationKey } from '@/lib/i18n/types'
@@ -26,6 +27,7 @@ type CountdownDisplayMode = 'detailed' | 'days' | 'months' | 'years'
 
 const CountdownView: React.FC = () => {
   const { t } = useI18n()
+  const { confirm } = useConfirmation()
   const {
     upcomingEvents,
     completedEvents,
@@ -95,7 +97,16 @@ const CountdownView: React.FC = () => {
     setEditColor(colorOptions[0].value)
   }
 
-  const handleDeleteCountdown = (id: string) => {
+  const handleDeleteCountdown = async (id: string, name: string) => {
+    const isConfirmed = await confirm({
+      title: t('countdown.deleteConfirm.title' as TranslationKey, { name }),
+      description: t('countdown.deleteConfirm.description' as TranslationKey, { name }),
+      confirmText: t('countdown.deleteConfirm.confirm' as TranslationKey),
+      cancelText: t('common.cancel' as TranslationKey),
+      variant: 'destructive',
+    })
+
+    if (!isConfirmed) return
     deleteCountdown(id)
   }
 
@@ -428,7 +439,7 @@ const CountdownView: React.FC = () => {
                                 variant="ghost"
                                 size="sm"
                                 className="text-muted-foreground hover:text-destructive"
-                                onClick={() => handleDeleteCountdown(event.id)}
+                                onClick={() => handleDeleteCountdown(event.id, event.title)}
                                 aria-label={t('countdown.aria.deleteCountdown')}
                               >
                                 <TrashIcon className="h-4 w-4" />
@@ -473,7 +484,7 @@ const CountdownView: React.FC = () => {
                           variant="ghost"
                           size="sm"
                           className="gap-2 text-destructive hover:text-destructive"
-                          onClick={() => handleDeleteCountdown(event.id)}
+                          onClick={() => handleDeleteCountdown(event.id, event.title)}
                         >
                           <TrashIcon className="h-4 w-4" />
                           {t('countdown.delete')}

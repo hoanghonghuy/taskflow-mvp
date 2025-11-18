@@ -188,7 +188,12 @@
     "column": {
       "cancel": "Hủy",
       "dragHandle": "Kéo để sắp xếp lại cột",
-      "delete": "Xóa cột"
+      "delete": "Xóa cột",
+      "deleteConfirm": {
+        "title": "Xóa \"{{name}}\"?",
+        "description": "Cột \"{{name}}\" và các nhiệm vụ liên quan sẽ bị xoá. Hành động này không thể hoàn tác.",
+        "confirm": "Xóa cột"
+      }
     }
   },
   "specialLists": {
@@ -258,6 +263,11 @@
     "last30Days": "30 ngày gần nhất",
     "aria": {
       "deleteHabit": "Xóa thói quen"
+    },
+    "deleteConfirm": {
+      "title": "Xóa \"{{name}}\"?",
+      "description": "Thói quen \"{{name}}\" và lịch sử hoàn thành sẽ bị xoá vĩnh viễn.",
+      "confirm": "Xóa thói quen"
     }
   },
   "pomodoro": {
@@ -374,6 +384,11 @@
     },
     "aria": {
       "deleteCountdown": "Xóa đếm ngược"
+    },
+    "deleteConfirm": {
+      "title": "Xóa \"{{name}}\"?",
+      "description": "Đếm ngược \"{{name}}\" và tiến trình của nó sẽ bị xoá vĩnh viễn.",
+      "confirm": "Xóa đếm ngược"
     }
   },
   "achievement": {
