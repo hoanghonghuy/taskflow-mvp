@@ -126,6 +126,7 @@ export interface Settings {
   defaultPriority: Priority;
   defaultListId: string;
   bottomNavActions?: View[];
+  geminiApiKey?: string;
 }
 
 export type View = 

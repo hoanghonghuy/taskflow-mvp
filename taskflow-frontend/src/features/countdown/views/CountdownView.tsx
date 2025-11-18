@@ -22,6 +22,8 @@ const COUNTDOWN_LABELS = {
   nextUp: 'countdown.nextUp',
 } as const satisfies Record<string, TranslationKey>
 
+type CountdownDisplayMode = 'detailed' | 'days' | 'months' | 'years'
+
 const CountdownView: React.FC = () => {
   const { t } = useI18n()
   const {
@@ -45,6 +47,7 @@ const CountdownView: React.FC = () => {
   const [editDate, setEditDate] = useState<Date | null>(null)
   const [editColor, setEditColor] = useState<string>(colorOptions[0].value)
   const editingContainerRef = useRef<HTMLDivElement | null>(null)
+  const [displayMode, setDisplayMode] = useState<CountdownDisplayMode>('detailed')
 
   const handleAddCountdown = () => {
     if (newCountdownName.trim() && newCountdownDate) {
@@ -109,6 +112,81 @@ const CountdownView: React.FC = () => {
   }, [editingId, handleSaveEdit])
 
   const nextUpcomingId = upcomingEvents[0]?.id
+
+  const renderTimeGrid = (timeLeft: { days: number; hours: number; minutes: number; seconds: number; total: number; isPast: boolean }) => {
+    const totalDays = Math.max(0, Math.ceil(timeLeft.total / (1000 * 60 * 60 * 24)))
+    const totalMonths = Math.max(0, Math.floor(totalDays / 30))
+    const totalYears = Math.max(0, Math.floor(totalDays / 365))
+
+    if (displayMode === 'days') {
+      return (
+        <div className="grid grid-cols-1 gap-3">
+          <div className="rounded-xl border border-border-subtle p-3 text-center">
+            <p className="text-3xl font-semibold tracking-tight">{totalDays}</p>
+            <p className="text-xs font-medium uppercase text-muted-foreground/80">{t('countdown.days')}</p>
+          </div>
+        </div>
+      )
+    }
+
+    if (displayMode === 'months') {
+      const value = totalMonths >= 1 ? totalMonths : totalDays
+      const unitKey = totalMonths >= 1 ? 'months' : 'days'
+
+      return (
+        <div className="grid grid-cols-1 gap-3">
+          <div className="rounded-xl border border-border-subtle p-3 text-center">
+            <p className="text-3xl font-semibold tracking-tight">{value}</p>
+            <p className="text-xs font-medium uppercase text-muted-foreground/80">{t(`countdown.${unitKey}`)}</p>
+          </div>
+        </div>
+      )
+    }
+
+    if (displayMode === 'years') {
+      let value = totalYears
+      let unitKey: 'years' | 'months' | 'days' = 'years'
+
+      if (totalYears >= 1) {
+        value = totalYears
+        unitKey = 'years'
+      } else if (totalMonths >= 1) {
+        value = totalMonths
+        unitKey = 'months'
+      } else {
+        value = totalDays
+        unitKey = 'days'
+      }
+
+      return (
+        <div className="grid grid-cols-1 gap-3">
+          <div className="rounded-xl border border-border-subtle p-3 text-center">
+            <p className="text-3xl font-semibold tracking-tight">{value}</p>
+            <p className="text-xs font-medium uppercase text-muted-foreground/80">{t(`countdown.${unitKey}`)}</p>
+          </div>
+        </div>
+      )
+    }
+
+    // detailed: days / hours / minutes (no seconds)
+    return (
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        {(['days', 'hours', 'minutes'] as const).map(unit => (
+          <div
+            key={unit}
+            className="rounded-xl border border-border-subtle p-3 text-center"
+          >
+            <p className="text-3xl font-semibold tracking-tight">
+              {timeLeft[unit]}
+            </p>
+            <p className="text-xs font-medium uppercase text-muted-foreground/80">
+              {t(`countdown.${unit}`)}
+            </p>
+          </div>
+        ))}
+      </div>
+    )
+  }
 
   const renderColorPicker = (
     value: string,
@@ -236,6 +314,30 @@ const CountdownView: React.FC = () => {
                 <span className="ml-auto text-sm text-muted-foreground">
                   {upcomingEvents.length} {t('countdown.events')}
                 </span>
+                <div className="ml-2 flex items-center gap-1 text-xs">
+                  <span className="hidden sm:inline text-muted-foreground">View as</span>
+                  <div className="inline-flex rounded-full border border-border bg-muted/40 p-0.5">
+                    {([
+                      ['detailed', 'Detail'],
+                      ['days', 'Days'],
+                      ['months', 'Months'],
+                      ['years', 'Years'],
+                    ] as const).map(([mode, label]) => (
+                      <button
+                        key={mode}
+                        type="button"
+                        onClick={() => setDisplayMode(mode)}
+                        className={`px-2 py-0.5 rounded-full transition-colors ${
+                          displayMode === mode
+                            ? 'bg-primary text-primary-foreground shadow-sm'
+                            : 'text-muted-foreground hover:bg-background/60'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
               {upcomingEvents.length === 0 ? (
                 <p className="text-sm text-muted-foreground">{t('countdown.noUpcoming')}</p>
@@ -337,21 +439,7 @@ const CountdownView: React.FC = () => {
                         </CardHeader>
                         {editingId !== event.id && (
                           <CardContent className="space-y-5">
-                            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                              {(['days', 'hours', 'minutes', 'seconds'] as const).map(unit => (
-                                <div
-                                  key={unit}
-                                  className="rounded-xl border border-border-subtle p-3 text-center"
-                                >
-                                  <p className="text-3xl font-semibold tracking-tight">
-                                    {event.timeLeft[unit]}
-                                  </p>
-                                  <p className="text-xs font-medium uppercase text-muted-foreground/80">
-                                    {t(`countdown.${unit}`)}
-                                  </p>
-                                </div>
-                              ))}
-                            </div>
+                            {renderTimeGrid(event.timeLeft)}
                           </CardContent>
                         )}
                       </Card>

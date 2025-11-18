@@ -483,6 +483,33 @@ h6 {
     background-color: hsl(var(--color-muted-foreground) / 0.6);
   }
 
+  /* Normalize autofill background for inputs to match theme */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-text-fill-color: hsl(var(--color-foreground));
+    box-shadow: 0 0 0px 1000px hsl(var(--color-input)) inset;
+    transition: background-color 9999s ease-out 0s;
+  }
+
+  .dark input:-webkit-autofill,
+  .dark input:-webkit-autofill:hover,
+  .dark input:-webkit-autofill:focus {
+    -webkit-text-fill-color: hsl(var(--color-foreground));
+    box-shadow: 0 0 0px 1000px hsl(var(--color-input)) inset;
+  }
+
+  /* Hide native number input spinners so only the value is shown */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+
   /* Select dropdown styling for dark mode */
   select {
     background-color: hsl(var(--color-card));

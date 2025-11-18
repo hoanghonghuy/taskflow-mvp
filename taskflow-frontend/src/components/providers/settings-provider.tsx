@@ -28,6 +28,7 @@ const DEFAULT_SETTINGS: Settings = {
   defaultPriority: 'medium',
   defaultListId: 'inbox',
   bottomNavActions: ['dashboard', 'list', 'board', 'calendar'],
+   geminiApiKey: '',
 }
 
 const THEME_OPTIONS_SET = new Set<ThemeOption>(['system', ...THEME_PRESET_IDS])

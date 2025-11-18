@@ -79,9 +79,8 @@ interface CountdownTimeLeft {
   isPast: boolean
 }
 
-const calculateTimeLeft = (targetDate: string): CountdownTimeLeft => {
+const calculateTimeLeft = (targetDate: string, now: number = Date.now()): CountdownTimeLeft => {
   const target = new Date(targetDate).getTime()
-  const now = Date.now()
   const difference = target - now
 
   if (difference <= 0) {
@@ -178,14 +177,14 @@ export const useCountdown = () => {
     return { upcomingEvents: upcoming, completedEvents: completed }
   }, [sortedEvents, tick])
 
-  // Calculate time left for each event
+  // Calculate time left for each event (recomputed on every tick so UI stays live)
   const eventsWithTimeLeft = useMemo(() => {
     return countdownEvents.map(event => ({
       ...event,
-      timeLeft: calculateTimeLeft(event.targetDate),
+      timeLeft: calculateTimeLeft(event.targetDate, tick),
       colorOption: getColorOption(event.color),
     }))
-  }, [countdownEvents])
+  }, [countdownEvents, tick])
 
   // CRUD operations
   const addCountdown = useCallback((countdown: Omit<CountdownEvent, 'id' | 'createdAt'>) => {

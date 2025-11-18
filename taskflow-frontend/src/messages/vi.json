@@ -293,6 +293,8 @@
     "hours": "Giờ",
     "minutes": "Phút",
     "seconds": "Giây",
+    "months": "Tháng",
+    "years": "Năm",
     "daysLeft": "ngày còn lại",
     "hoursLeft": "giờ còn lại",
     "minutesLeft": "phút còn lại",
@@ -431,6 +433,17 @@
     "defaultList": "Danh sách mặc định",
     "save": "Lưu cài đặt",
     "saved": "Đã lưu cài đặt thành công",
+    "gemini": {
+      "title": "Gemini API",
+      "label": "Gemini API key riêng",
+      "description": "Bạn có thể nhập API key riêng cho Gemini. Nếu để trống, backend sẽ dùng key mặc định (khi được cấu hình).",
+      "placeholder": "Dán Gemini API key của bạn vào đây",
+      "helpTitle": "Cách lấy Gemini API key",
+      "helpStep1": "Truy cập Google AI Studio.",
+      "helpStep2": "Đăng nhập tài khoản Google của bạn.",
+      "helpStep3": "Mở phần API keys và tạo một key mới.",
+      "helpStep4": "Sao chép key và dán vào ô này, sau đó lưu cài đặt."
+    },
     "bottomNav": {
       "title": "Thanh điều hướng dưới",
       "subtitle": "Kéo và thả để tùy chỉnh các tính năng xuất hiện trong thanh điều hướng dưới",

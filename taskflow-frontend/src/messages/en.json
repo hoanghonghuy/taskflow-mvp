@@ -301,6 +301,8 @@
     "hours": "Hours",
     "minutes": "Minutes",
     "seconds": "Seconds",
+    "months": "Months",
+    "years": "Years",
     "daysLeft": "days left",
     "hoursLeft": "hours left",
     "minutesLeft": "minutes left",
@@ -446,6 +448,17 @@
     "defaultList": "Default list",
     "save": "Save Settings",
     "saved": "Settings saved successfully",
+    "gemini": {
+      "title": "Gemini API",
+      "label": "Gemini API key",
+      "description": "Use your own Gemini API key for AI features. Leave empty to use the backend's default key when it is configured.",
+      "placeholder": "Paste your Gemini API key here",
+      "helpTitle": "How to get a Gemini API key",
+      "helpStep1": "Open Google AI Studio.",
+      "helpStep2": "Sign in with your Google account.",
+      "helpStep3": "Go to the API keys section and create a new key.",
+      "helpStep4": "Copy the key and paste it into this field, then save your settings."
+    },
     "bottomNav": {
       "title": "Bottom Navigation",
       "subtitle": "Drag and drop to customize which features appear in the bottom navigation bar",

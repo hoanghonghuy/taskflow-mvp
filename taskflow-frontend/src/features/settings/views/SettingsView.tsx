@@ -11,6 +11,7 @@ import type { TranslationKey } from '@/lib/i18n/types'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
 import { NotificationSettings } from '@/components/settings/NotificationSettings'
 import { Switch } from '@/components/ui/switch'
+import { Input } from '@/components/ui/input'
 
 const ALL_FEATURES: { view: View, icon: React.FC<{className?: string}>, label: TranslationKey }[] = [
   { view: 'dashboard', icon: HomeIcon, label: 'feature.dashboard' },
@@ -24,10 +25,11 @@ const ALL_FEATURES: { view: View, icon: React.FC<{className?: string}>, label: T
 ]
 
 const SettingsView: React.FC = () => {
-  const { theme, setTheme, language, setLanguage, bottomNavActions, setBottomNavActions } = useSettings()
+  const { settings, updateSettings, theme, setTheme, language, setLanguage, bottomNavActions, setBottomNavActions } = useSettings()
   const { state: taskState, dispatch: taskDispatch } = useTaskManager()
   const { t } = useI18n()
   const [themeFilter, setThemeFilter] = useState<'all' | 'light' | 'dark'>('all')
+  const [showGeminiHelp, setShowGeminiHelp] = useState(false)
 
   const { settings: pomodoroSettings } = taskState.pomodoro
 
@@ -93,6 +95,24 @@ const SettingsView: React.FC = () => {
     }
   }
 
+  const stepPomodoroSetting = (setting: 'focusDuration' | 'shortBreakDuration' | 'longBreakDuration', delta: number) => {
+    const current = pomodoroSettings[setting]
+    const next = Math.max(1, current + delta)
+    taskDispatch({
+      type: 'UPDATE_POMODORO_SETTINGS',
+      payload: { [setting]: next },
+    })
+  }
+
+  const stepInterval = (delta: number) => {
+    const current = pomodoroSettings.sessionsUntilLongBreak
+    const next = Math.max(1, current + delta)
+    taskDispatch({
+      type: 'UPDATE_POMODORO_SETTINGS',
+      payload: { sessionsUntilLongBreak: next },
+    })
+  }
+
   const currentActions = bottomNavActions || []
   const maxVisibleBottomNav = 4
 
@@ -132,6 +152,58 @@ const SettingsView: React.FC = () => {
                 <option value="vi">{t('settings.language.vi')}</option>
               </select>
             </div>
+          </div>
+        </section>
+
+        <section>
+          <h2 className="text-lg font-semibold mb-4">{t('settings.gemini.title')}</h2>
+          <div className="bg-card border border-border rounded-lg p-4 max-w-xl space-y-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1">
+                <label htmlFor="gemini-api-key" className="font-medium text-sm flex items-center gap-2">
+                  {t('settings.gemini.label')}
+                  <button
+                    type="button"
+                    onClick={() => setShowGeminiHelp((v) => !v)}
+                    className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-border bg-muted/60 text-[10px] font-semibold text-muted-foreground hover:bg-muted"
+                    aria-label={t('settings.gemini.helpTitle')}
+                  >
+                    ?
+                  </button>
+                </label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {t('settings.gemini.description')}
+                </p>
+              </div>
+            </div>
+            <Input
+              id="gemini-api-key"
+              type="password"
+              autoComplete="off"
+              value={settings.geminiApiKey ?? ''}
+              onChange={(e) => updateSettings({ geminiApiKey: e.target.value })}
+              placeholder={t('settings.gemini.placeholder')}
+            />
+            {showGeminiHelp && (
+              <div className="mt-2 rounded-md bg-muted/40 p-3 text-xs text-muted-foreground space-y-1">
+                <p className="font-semibold">{t('settings.gemini.helpTitle')}</p>
+                <ol className="list-decimal list-inside space-y-1">
+                  <li>
+                    <a
+                      href="https://aistudio.google.com/"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-primary underline underline-offset-2 font-medium hover:text-primary/90"
+                    >
+                      {t('settings.gemini.helpStep1')}
+                    </a>
+                  </li>
+                  <li>{t('settings.gemini.helpStep2')}</li>
+                  <li>{t('settings.gemini.helpStep3')}</li>
+                  <li>{t('settings.gemini.helpStep4')}</li>
+                </ol>
+              </div>
+            )}
           </div>
         </section>
 
@@ -275,49 +347,121 @@ const SettingsView: React.FC = () => {
         <section>
           <h2 className="text-lg font-semibold mb-4">{t('settings.pomodoro.title')}</h2>
           <div className="bg-card border border-border rounded-lg p-4 max-w-md space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3">
               <label htmlFor="focus-duration" className="font-medium text-sm">{t('settings.pomodoro.focusDuration')}</label>
-              <input
-                id="focus-duration"
-                type="number"
-                min="1"
-                value={pomodoroSettings.focusDuration}
-                onChange={(e) => handlePomodoroSettingChange('focusDuration', e.target.value)}
-                className="w-20 p-1.5 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-center"
-              />
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => stepPomodoroSetting('focusDuration', -1)}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card text-sm font-semibold text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label="Decrease focus duration"
+                >
+                  –
+                </button>
+                <input
+                  id="focus-duration"
+                  type="number"
+                  min="1"
+                  value={pomodoroSettings.focusDuration}
+                  onChange={(e) => handlePomodoroSettingChange('focusDuration', e.target.value)}
+                  className="w-16 px-2 py-1 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-center"
+                />
+                <button
+                  type="button"
+                  onClick={() => stepPomodoroSetting('focusDuration', 1)}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card text-sm font-semibold text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label="Increase focus duration"
+                >
+                  +
+                </button>
+              </div>
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3">
               <label htmlFor="short-break" className="font-medium text-sm">{t('settings.pomodoro.shortBreak')}</label>
-              <input
-                id="short-break"
-                type="number"
-                min="1"
-                value={pomodoroSettings.shortBreakDuration}
-                onChange={(e) => handlePomodoroSettingChange('shortBreakDuration', e.target.value)}
-                className="w-20 p-1.5 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-center"
-              />
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => stepPomodoroSetting('shortBreakDuration', -1)}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card text-sm font-semibold text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label="Decrease short break duration"
+                >
+                  –
+                </button>
+                <input
+                  id="short-break"
+                  type="number"
+                  min="1"
+                  value={pomodoroSettings.shortBreakDuration}
+                  onChange={(e) => handlePomodoroSettingChange('shortBreakDuration', e.target.value)}
+                  className="w-16 px-2 py-1 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-center"
+                />
+                <button
+                  type="button"
+                  onClick={() => stepPomodoroSetting('shortBreakDuration', 1)}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card text-sm font-semibold text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label="Increase short break duration"
+                >
+                  +
+                </button>
+              </div>
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3">
               <label htmlFor="long-break" className="font-medium text-sm">{t('settings.pomodoro.longBreak')}</label>
-              <input
-                id="long-break"
-                type="number"
-                min="1"
-                value={pomodoroSettings.longBreakDuration}
-                onChange={(e) => handlePomodoroSettingChange('longBreakDuration', e.target.value)}
-                className="w-20 p-1.5 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-center"
-              />
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => stepPomodoroSetting('longBreakDuration', -1)}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card text-sm font-semibold text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label="Decrease long break duration"
+                >
+                  –
+                </button>
+                <input
+                  id="long-break"
+                  type="number"
+                  min="1"
+                  value={pomodoroSettings.longBreakDuration}
+                  onChange={(e) => handlePomodoroSettingChange('longBreakDuration', e.target.value)}
+                  className="w-16 px-2 py-1 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-center"
+                />
+                <button
+                  type="button"
+                  onClick={() => stepPomodoroSetting('longBreakDuration', 1)}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card text-sm font-semibold text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label="Increase long break duration"
+                >
+                  +
+                </button>
+              </div>
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3">
               <label htmlFor="long-break-interval" className="font-medium text-sm">{t('settings.pomodoro.longBreakInterval')}</label>
-              <input
-                id="long-break-interval"
-                type="number"
-                min="1"
-                value={pomodoroSettings.sessionsUntilLongBreak}
-                onChange={(e) => handleIntervalChange(e.target.value)}
-                className="w-20 p-1.5 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-center"
-              />
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => stepInterval(-1)}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card text-sm font-semibold text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label="Decrease sessions until long break"
+                >
+                  –
+                </button>
+                <input
+                  id="long-break-interval"
+                  type="number"
+                  min="1"
+                  value={pomodoroSettings.sessionsUntilLongBreak}
+                  onChange={(e) => handleIntervalChange(e.target.value)}
+                  className="w-16 px-2 py-1 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-center"
+                />
+                <button
+                  type="button"
+                  onClick={() => stepInterval(1)}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card text-sm font-semibold text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label="Increase sessions until long break"
+                >
+                  +
+                </button>
+              </div>
             </div>
           </div>
         </section>
