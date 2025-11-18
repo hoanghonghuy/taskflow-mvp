@@ -335,9 +335,9 @@ const CalendarView: React.FC = () => {
         ) : (
           <div className="bg-card border border-border rounded-2xl shadow-sm">
             <div className="p-4 border-b border-border">
-              <h3 className="font-semibold">{t('calendar.upcomingAgenda') || 'Upcoming agenda'}</h3>
+              <h3 className="font-semibold">{t('calendar.upcomingAgenda')}</h3>
               <p className="text-sm text-muted-foreground">
-                {t('calendar.upcomingSubtitle') || 'Next 10 days of scheduled work.'}
+                {t('calendar.upcomingSubtitle')}
               </p>
             </div>
             <div className="divide-y divide-border">

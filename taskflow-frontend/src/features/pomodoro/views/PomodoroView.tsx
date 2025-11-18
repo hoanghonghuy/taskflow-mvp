@@ -541,21 +541,27 @@ const PomodoroView: React.FC = () => {
                     <FlagIcon className="h-4 w-4 text-red-500" />
                     <span className="font-medium">{t('pomodoro.focus')}</span>
                   </div>
-                  <Badge variant="secondary">{pomodoro.settings.focusDuration} min</Badge>
+                  <Badge variant="secondary">
+                    {pomodoro.settings.focusDuration} {t('taskDetail.minutes')}
+                  </Badge>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
                   <div className="flex items-center gap-2">
                     <SunIcon className="h-4 w-4 text-green-500" />
                     <span className="font-medium">{t('pomodoro.shortBreak')}</span>
                   </div>
-                  <Badge variant="secondary">{pomodoro.settings.shortBreakDuration} min</Badge>
+                  <Badge variant="secondary">
+                    {pomodoro.settings.shortBreakDuration} {t('taskDetail.minutes')}
+                  </Badge>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
                   <div className="flex items-center gap-2">
                     <SunIcon className="h-4 w-4 text-blue-500" />
                     <span className="font-medium">{t('pomodoro.longBreak')}</span>
                   </div>
-                  <Badge variant="secondary">{pomodoro.settings.longBreakDuration} min</Badge>
+                  <Badge variant="secondary">
+                    {pomodoro.settings.longBreakDuration} {t('taskDetail.minutes')}
+                  </Badge>
                 </div>
                 <div className="pt-2 border-t">
                   <div className="flex justify-between items-center text-sm">

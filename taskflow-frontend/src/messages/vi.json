@@ -30,6 +30,15 @@
       "habits": "Thói quen đã hoàn thành"
     },
     "heatmapTitle": "Bản đồ nhiệt Năng suất",
+    "todayPlan": {
+      "title": "Kế hoạch hôm nay",
+      "subtitle": "Các nhiệm vụ quan trọng đến hạn hôm nay hoặc đã quá hạn.",
+      "empty": "Hôm nay bạn đã hoàn thành tất cả mọi thứ.",
+      "status": {
+        "overdue": "Quá hạn",
+        "today": "Hôm nay"
+      }
+    },
     "cta": {
       "title": "Sẵn sàng để lên kế hoạch cho ngày của bạn?",
       "subtitle": "Hãy để Gemini phân tích công việc và thói quen của bạn để tạo ra một kế hoạch được cá nhân hóa, có thể hành động để giúp bạn tập trung và làm việc hiệu quả.",
@@ -164,7 +173,15 @@
     "focusTime": "Thời gian tập trung: {{time}}",
     "generateButton": "Tạo",
     "getInfoButton": "Lấy thông tin",
-    "sourcesLabel": "Nguồn"
+    "sourcesLabel": "Nguồn",
+    "deleteConfirm": {
+      "title": "Xóa \"{{title}}\"?",
+      "description": "Hành động này sẽ xóa vĩnh viễn nhiệm vụ và toàn bộ nhiệm vụ con, bình luận. Hành động này không thể hoàn tác.",
+      "confirm": "Xóa nhiệm vụ"
+    },
+    "aria": {
+      "deleteSubtask": "Xóa nhiệm vụ con"
+    }
   },
   "taskItem": {
     "aria": {
@@ -367,6 +384,13 @@
     "completedSection": "Sự kiện đã qua",
     "noUpcoming": "Chưa có đếm ngược sắp tới.",
     "events": "sự kiện",
+    "viewAs": "Xem dạng",
+    "viewMode": {
+      "detailed": "Chi tiết",
+      "days": "Ngày",
+      "months": "Tháng",
+      "years": "Năm"
+    },
     "delete": "Xóa",
     "selectDate": "Chọn ngày giờ",
     "noCountdowns": "Chưa có đếm ngược nào. Thêm một cái để bắt đầu!",
@@ -381,6 +405,20 @@
       "forest": "Gió rừng",
       "violet": "Sắc tím",
       "amber": "Hổ phách"
+    },
+    "notifications": {
+      "completedTitle": "Đếm ngược đã hoàn thành!",
+      "completedBody": "\"{{title}}\" đã đến thời điểm đích!",
+      "addedTitle": "Đã tạo đếm ngược",
+      "addedBody": "\"{{title}}\" đã được tạo thành công",
+      "updatedTitle": "Đã cập nhật đếm ngược",
+      "updatedBody": "\"{{title}}\" đã được cập nhật",
+      "deletedTitle": "Đã xóa đếm ngược",
+      "deletedBody": "\"{{title}}\" đã được xóa",
+      "updateFailedTitle": "Cập nhật thất bại",
+      "updateFailedBody": "Không tìm thấy đếm ngược",
+      "deleteFailedTitle": "Xóa thất bại",
+      "deleteFailedBody": "Không tìm thấy đếm ngược"
     },
     "aria": {
       "deleteCountdown": "Xóa đếm ngược"
@@ -522,7 +560,8 @@
       "focusDuration": "Thời gian tập trung (phút)",
       "shortBreak": "Nghỉ ngắn (phút)",
       "longBreak": "Nghỉ dài (phút)",
-      "longBreakInterval": "Số phiên trước khi nghỉ dài"
+      "longBreakInterval": "Số phiên trước khi nghỉ dài",
+      "note": "Thay đổi thời lượng sẽ áp dụng cho các phiên Pomodoro tiếp theo."
     },
     "language": {
       "en": "English",
@@ -626,7 +665,9 @@
     "5min": "5 phút trước",
     "15min": "15 phút trước",
     "30min": "30 phút trước",
-    "1hour": "1 giờ trước"
+    "1hour": "1 giờ trước",
+    "notificationTitle": "Nhắc nhở nhiệm vụ",
+    "notificationBody": "\"{{title}}\" sắp đến hạn!"
   },
   "common": {
     "search": "Tìm kiếm",
@@ -756,10 +797,34 @@
     "loading": "Gemini đang phân tích ngày của bạn...",
     "error": {
       "unavailable": "Gemini API không khả dụng.",
-      "failed": "Không thể tạo báo cáo"
+      "failed": "Không thể tạo báo cáo",
+      "unknown": "Đã xảy ra lỗi không xác định."
     },
     "button": {
       "gotIt": "Đã hiểu!"
+    },
+    "mock": {
+      "greeting": "Chào buổi {{timeOfDay}}!",
+      "timeOfDay": {
+        "morning": "sáng",
+        "afternoon": "chiều",
+        "evening": "tối"
+      },
+      "intro": "Đây là bản tóm tắt trong ngày của bạn cho {{date}}:",
+      "sectionTasksTitle": "Nhiệm vụ hôm nay:",
+      "sectionTasksWithItems": "Bạn có {{count}} nhiệm vụ đến hạn hôm nay:",
+      "sectionTasksNoItems": "Hôm nay bạn không có nhiệm vụ đến hạn. Tuyệt lắm!",
+      "sectionHabitsTitle": "Thói quen:",
+      "sectionHabitsWithItems": "Bạn đã hoàn thành {{count}} thói quen hôm nay. Tiếp tục phát huy nhé!",
+      "sectionHabitsNoItems": "Đừng quên tick các thói quen hôm nay!",
+      "sectionFocusTitle": "Thời gian tập trung:",
+      "sectionFocusBody": "Bạn đã hoàn thành {{count}} phiên Pomodoro hôm nay.",
+      "sectionFocusPositive": "Tập trung rất tốt!",
+      "sectionFocusZero": "Sẵn sàng bắt đầu phiên tập trung đầu tiên chứ?",
+      "sectionRecommendTitle": "Gợi ý:",
+      "recommendWithTasks": "Ưu tiên hoàn thành các nhiệm vụ đến hạn trước. Hãy sắp xếp theo mức độ khẩn cấp và quan trọng.",
+      "recommendNoTasks": "Hãy dành thời gian lập kế hoạch trước hoặc làm những việc quan trọng nhưng chưa gấp.",
+      "outro": "Chúc bạn một ngày làm việc hiệu quả! 🚀"
     }
   },
   "assigneePicker": {
@@ -788,7 +853,11 @@
     "owner": "Chủ sở hữu",
     "invite": "Mời người khác",
     "empty": "Mọi người đã có trong danh sách này.",
-    "done": "Xong"
+    "done": "Xong",
+    "aria": {
+      "removeMember": "Xóa {{memberName}}",
+      "addMember": "Thêm {{memberName}}"
+    }
   },
   "search": {
     "placeholder": "Tìm kiếm nhiệm vụ theo tiêu đề, mô tả hoặc thẻ...",
@@ -802,7 +871,18 @@
     "today": "Hôm nay"
   },
   "toast": {
-    "close": "Đóng"
+    "close": "Đóng",
+    "taskAddedTitle": "Đã tạo nhiệm vụ",
+    "taskAddedBody": "\"{{title}}\" đã được tạo thành công",
+    "taskUpdatedTitle": "Đã cập nhật nhiệm vụ",
+    "taskUpdatedBody": "\"{{title}}\" đã được cập nhật",
+    "taskDeletedTitle": "Đã xóa nhiệm vụ",
+    "taskDeletedBody": "Nhiệm vụ đã được xóa",
+    "taskAssignedTitle": "Đã giao nhiệm vụ",
+    "taskAssignedBody": "Nhiệm vụ đã được giao",
+    "taskAssignmentRemovedBody": "Đã bỏ giao nhiệm vụ",
+    "commentAddedTitle": "Đã thêm bình luận",
+    "commentAddedBody": "Bình luận của bạn đã được đăng"
   },
   "focusPicker": {
     "title": "Chọn Nhiệm vụ để Tập trung",
@@ -827,6 +907,10 @@
     "placeholder": "Nhập tin nhắn của bạn...",
     "thinkingMode": "Chế độ Suy nghĩ",
     "searchWeb": "Tìm kiếm Web",
-    "sources": "Nguồn"
+    "sources": "Nguồn",
+    "mockResponse": "Mình hiểu là bạn đang hỏi về \"{{input}}\". Đây là phản hồi giả lập. Khi tích hợp Gemini, mình sẽ có thể hỗ trợ bạn bằng AI thực thụ cho nhiệm vụ, thói quen và mục tiêu năng suất của bạn.",
+    "error": {
+      "generic": "Đã xảy ra lỗi."
+    }
   }
 }

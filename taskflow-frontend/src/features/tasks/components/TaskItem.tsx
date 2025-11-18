@@ -1,8 +1,10 @@
-'use client'
+"use client"
 
 import React, { useState } from 'react'
 import { Task, Priority } from '@/types'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
+import { useTaskActions } from '@/lib/hooks/use-task-manager'
+import { useConfirmation } from '@/lib/hooks/use-confirmation'
 import { 
   PlayCircleIcon,
   BellIcon,
@@ -11,6 +13,7 @@ import {
   ArrowUpIcon,
   ArrowDownIcon,
   CheckIcon,
+  TrashIcon,
 } from '@/lib/icons'
 import { PRIORITY_MAP } from '@/lib/task-constants'
 import { useUser } from '@/components/providers/user-provider'
@@ -43,6 +46,8 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
   const { dispatch } = useTaskManager()
   const { t } = useI18n()
   const { allUsers } = useUser()
+  const { deleteTask } = useTaskActions()
+  const { confirm } = useConfirmation()
   const [isDragOver, setIsDragOver] = useState(false)
   const [isSubtasksOpen, setIsSubtasksOpen] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false
@@ -87,6 +92,18 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
     e.stopPropagation()
     dispatch({ type: 'SET_FOCUSED_TASK', payload: task.id })
     dispatch({ type: 'START_TIMER' })
+  }
+
+  const handleQuickDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    const ok = await confirm({
+      title: t('taskDetail.deleteConfirm.title', { title: task.title }),
+      description: t('taskDetail.deleteConfirm.description', { title: task.title }),
+      confirmText: t('taskDetail.deleteConfirm.confirm'),
+      variant: 'destructive',
+    })
+    if (!ok) return
+    deleteTask(task.id)
   }
   
   const handleDragStart = (e: React.DragEvent) => {
@@ -208,6 +225,13 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
               <PlayCircleIcon className="h-6 w-6" />
             </button>
           )}
+          <button
+            onClick={handleQuickDelete}
+            className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+            aria-label={t('task.delete')}
+          >
+            <TrashIcon className="h-5 w-5" />
+          </button>
           <div className="flex items-center gap-1.5">
             {progressIndicator()}
             {dueDateLabel()}

@@ -38,13 +38,13 @@ const DailyBriefingModal: React.FC<DailyBriefingModalProps> = ({ onClose }) => {
   useEffect(() => {
     const fetchBriefing = async () => {
       if (!isAvailable) {
-        setError(t('briefing.error.unavailable') || 'Gemini API is not available.')
+        setError(t('briefing.error.unavailable'))
         setIsLoading(false)
         return
       }
       try {
         // TODO: Implement Gemini API call when backend is ready
-        // For now, generate a mock briefing
+        // For now, generate a mock briefing (i18n-based)
         const today = new Date()
         const todayTasks = state.tasks.filter(task => {
           if (!task.dueDate) return false
@@ -55,33 +55,65 @@ const DailyBriefingModal: React.FC<DailyBriefingModalProps> = ({ onClose }) => {
           const todayStr = today.toISOString().split('T')[0]
           return habit.completions.includes(todayStr)
         })
-        
-        const mockBriefing = `**Good ${today.getHours() < 12 ? 'morning' : today.getHours() < 18 ? 'afternoon' : 'evening'}!**
 
-Here's your daily briefing for ${today.toLocaleDateString()}:
+        const timeOfDayKey =
+          today.getHours() < 12
+            ? 'briefing.mock.timeOfDay.morning'
+            : today.getHours() < 18
+              ? 'briefing.mock.timeOfDay.afternoon'
+              : 'briefing.mock.timeOfDay.evening'
 
-**Tasks for Today:**
-${todayTasks.length > 0 
-  ? `You have ${todayTasks.length} task(s) due today:\n${todayTasks.map(t => `- ${t.title}`).join('\n')}`
-  : 'No tasks due today. Great job staying on top of things!'
-}
+        const timeOfDayLabel = t(timeOfDayKey)
 
-**Habits:**
-${completedHabits.length > 0 
-  ? `You've completed ${completedHabits.length} habit(s) today. Keep it up!`
-  : 'Remember to check off your habits today!'
-}
+        const sections: string[] = []
 
-**Focus Time:**
-You've completed ${state.pomodoro.sessionsCompleted} Pomodoro session(s) today. ${state.pomodoro.sessionsCompleted > 0 ? 'Excellent focus!' : 'Ready to start your first session?'}
+        sections.push(
+          `**${t('briefing.mock.greeting', { timeOfDay: timeOfDayLabel })}**`,
+          '',
+          t('briefing.mock.intro', { date: today.toLocaleDateString() }),
+          '',
+          `**${t('briefing.mock.sectionTasksTitle')}**`
+        )
 
-**Recommendations:**
-${todayTasks.length > 0 
-  ? 'Focus on completing your due tasks first. Prioritize by urgency and importance.'
-  : 'Take some time to plan ahead or work on important but not urgent tasks.'
-}
+        if (todayTasks.length > 0) {
+          sections.push(
+            t('briefing.mock.sectionTasksWithItems', { count: todayTasks.length.toString() }),
+            ...todayTasks.map(task => `- ${task.title}`)
+          )
+        } else {
+          sections.push(t('briefing.mock.sectionTasksNoItems'))
+        }
 
-Have a productive day! 🚀`
+        sections.push(
+          '',
+          `**${t('briefing.mock.sectionHabitsTitle')}**`
+        )
+
+        if (completedHabits.length > 0) {
+          sections.push(
+            t('briefing.mock.sectionHabitsWithItems', { count: completedHabits.length.toString() })
+          )
+        } else {
+          sections.push(t('briefing.mock.sectionHabitsNoItems'))
+        }
+
+        sections.push(
+          '',
+          `**${t('briefing.mock.sectionFocusTitle')}**`,
+          t('briefing.mock.sectionFocusBody', { count: state.pomodoro.sessionsCompleted.toString() }),
+          state.pomodoro.sessionsCompleted > 0
+            ? t('briefing.mock.sectionFocusPositive')
+            : t('briefing.mock.sectionFocusZero'),
+          '',
+          `**${t('briefing.mock.sectionRecommendTitle')}**`,
+          todayTasks.length > 0
+            ? t('briefing.mock.recommendWithTasks')
+            : t('briefing.mock.recommendNoTasks'),
+          '',
+          t('briefing.mock.outro')
+        )
+
+        const mockBriefing = sections.join('\n')
 
         // Simulate API delay
         await new Promise(resolve => setTimeout(resolve, 1500))
@@ -90,9 +122,9 @@ Have a productive day! 🚀`
         const message =
           typeof err === 'object' && err !== null && 'message' in err && typeof (err as { message?: string }).message === 'string'
             ? (err as { message: string }).message
-            : 'An unknown error occurred.'
+            : t('briefing.error.unknown')
         setError(message)
-        addToast.error(message || t('briefing.error.failed') || 'Failed to generate briefing')
+        addToast.error(message || t('briefing.error.failed'))
       } finally {
         setIsLoading(false)
       }
@@ -108,7 +140,7 @@ Have a productive day! 🚀`
           <div className="flex items-center gap-3">
             <SparklesIcon className="h-6 w-6 text-primary" />
             <h2 className="text-lg font-semibold">
-              {t('briefing.title') || 'Your AI Daily Briefing'}
+              {t('briefing.title')}
             </h2>
           </div>
           <button onClick={onClose} className="p-1 rounded-full hover:bg-secondary">
@@ -121,14 +153,14 @@ Have a productive day! 🚀`
             <div className="flex flex-col items-center justify-center h-full text-center">
               <Spinner className="h-8 w-8" />
               <p className="mt-4 text-muted-foreground">
-                {t('briefing.loading') || 'Gemini is analyzing your day...'}
+                {t('briefing.loading')}
               </p>
             </div>
           )}
           {error && !isLoading && (
             <div className="text-center text-destructive">
               <h3 className="font-semibold">
-                {t('briefing.error.failed') || 'Failed to generate briefing'}
+                {t('briefing.error.failed')}
               </h3>
               <p className="text-sm">{error}</p>
             </div>
@@ -142,7 +174,7 @@ Have a productive day! 🚀`
             onClick={onClose} 
             className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-semibold hover:bg-primary/90"
           >
-            {t('briefing.button.gotIt') || 'Got it!'}
+            {t('briefing.button.gotIt')}
           </button>
         </footer>
       </div>

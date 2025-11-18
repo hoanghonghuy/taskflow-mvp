@@ -25,6 +25,13 @@ const COUNTDOWN_LABELS = {
 
 type CountdownDisplayMode = 'detailed' | 'days' | 'months' | 'years'
 
+const COUNTDOWN_VIEW_MODE_LABELS = {
+  detailed: 'countdown.viewMode.detailed',
+  days: 'countdown.viewMode.days',
+  months: 'countdown.viewMode.months',
+  years: 'countdown.viewMode.years',
+} as const satisfies Record<CountdownDisplayMode, TranslationKey>
+
 const CountdownView: React.FC = () => {
   const { t } = useI18n()
   const { confirm } = useConfirmation()
@@ -326,14 +333,11 @@ const CountdownView: React.FC = () => {
                   {upcomingEvents.length} {t('countdown.events')}
                 </span>
                 <div className="ml-2 flex items-center gap-1 text-xs">
-                  <span className="hidden sm:inline text-muted-foreground">View as</span>
+                  <span className="hidden sm:inline text-muted-foreground">
+                    {t('countdown.viewAs')}
+                  </span>
                   <div className="inline-flex rounded-full border border-border bg-muted/40 p-0.5">
-                    {([
-                      ['detailed', 'Detail'],
-                      ['days', 'Days'],
-                      ['months', 'Months'],
-                      ['years', 'Years'],
-                    ] as const).map(([mode, label]) => (
+                    {(['detailed', 'days', 'months', 'years'] as const).map((mode) => (
                       <button
                         key={mode}
                         type="button"
@@ -344,7 +348,7 @@ const CountdownView: React.FC = () => {
                             : 'text-muted-foreground hover:bg-background/60'
                         }`}
                       >
-                        {label}
+                        {t(COUNTDOWN_VIEW_MODE_LABELS[mode])}
                       </button>
                     ))}
                   </div>

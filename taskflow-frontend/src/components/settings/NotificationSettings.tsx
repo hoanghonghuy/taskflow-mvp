@@ -108,10 +108,10 @@ export const NotificationSettings: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             {settings.notifications ? <BellIcon className="h-5 w-5" /> : <BellOffIcon className="h-5 w-5" />}
-            {t('settings.notifications.title') || 'Notification Settings'}
+            {t('settings.notifications.title')}
           </CardTitle>
           <CardDescription>
-            {t('settings.notifications.description') || 'Manage how you receive notifications from TaskFlow'}
+            {t('settings.notifications.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -119,10 +119,10 @@ export const NotificationSettings: React.FC = () => {
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <label htmlFor="notifications-enabled" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                {t('settings.notifications.enabled') || 'Enable Notifications'}
+                {t('settings.notifications.enabled')}
               </label>
               <p className="text-sm text-muted-foreground">
-                {t('settings.notifications.enabledDescription') || 'Turn all notifications on or off'}
+                {t('settings.notifications.enabledDescription')}
               </p>
             </div>
             <Switch
@@ -138,15 +138,15 @@ export const NotificationSettings: React.FC = () => {
           <div className={`space-y-4 ${!settings.notifications ? 'opacity-50 pointer-events-none' : ''}`}>
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <span className="text-sm font-medium leading-none">{t('settings.notifications.browser') || 'Browser Notifications'}</span>
+                <span className="text-sm font-medium leading-none">{t('settings.notifications.browser')}</span>
                 <p className="text-sm text-muted-foreground">
-                  {t('settings.notifications.browserDescription') || 'System notifications even when the app is in background'}
+                  {t('settings.notifications.browserDescription')}
                 </p>
               </div>
               <Badge variant={Notification.permission === 'granted' ? 'default' : 'secondary'}>
                 {Notification.permission === 'granted' 
-                  ? (t('settings.notifications.permitted') || 'Permitted')
-                  : (t('settings.notifications.notPermitted') || 'Not Permitted')
+                  ? t('settings.notifications.permitted')
+                  : t('settings.notifications.notPermitted')
                 }
               </Badge>
             </div>
@@ -155,16 +155,16 @@ export const NotificationSettings: React.FC = () => {
               onClick={handleBrowserNotificationTest}
               className="w-full"
             >
-              {t('settings.notifications.testBrowser') || 'Test Browser Notification'}
+              {t('settings.notifications.testBrowser')}
             </Button>
           </div>
 
           {/* Toast Notifications */}
           <div className={`space-y-4 ${!settings.notifications ? 'opacity-50 pointer-events-none' : ''}`}>
             <div className="space-y-0.5">
-              <span className="text-sm font-medium leading-none">{t('settings.notifications.toast') || 'Toast Notifications'}</span>
+              <span className="text-sm font-medium leading-none">{t('settings.notifications.toast')}</span>
               <p className="text-sm text-muted-foreground">
-                {t('settings.notifications.toastDescription') || 'In-app notifications for user actions and events'}
+                {t('settings.notifications.toastDescription')}
               </p>
             </div>
             <Button 
@@ -172,7 +172,7 @@ export const NotificationSettings: React.FC = () => {
               onClick={handleToastTest}
               className="w-full"
             >
-              {t('settings.notifications.testToast') || 'Test Toast Notification'}
+              {t('settings.notifications.testToast')}
             </Button>
           </div>
 
@@ -184,10 +184,10 @@ export const NotificationSettings: React.FC = () => {
               <div className="space-y-0.5">
                 <label htmlFor="sound-enabled" className="text-sm font-medium leading-none flex items-center gap-2">
                   {settings.soundEnabled ? <Volume2Icon className="h-4 w-4" /> : <VolumeXIcon className="h-4 w-4" />}
-                  {t('settings.notifications.sound') || 'Notification Sounds'}
+                  {t('settings.notifications.sound')}
                 </label>
                 <p className="text-sm text-muted-foreground">
-                  {t('settings.notifications.soundDescription') || 'Play sound effects for notifications'}
+                  {t('settings.notifications.soundDescription')}
                 </p>
               </div>
               <Switch
@@ -200,31 +200,31 @@ export const NotificationSettings: React.FC = () => {
 
           {/* Notification Types */}
           <div className={`space-y-4 ${!settings.notifications ? 'opacity-50 pointer-events-none' : ''}`}>
-            <span className="text-sm font-medium leading-none">{t('settings.notifications.types') || 'Notification Types'}</span>
+            <span className="text-sm font-medium leading-none">{t('settings.notifications.types')}</span>
             <div className="grid gap-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium">{t('settings.notifications.taskReminders') || 'Task Reminders'}</p>
+                  <p className="font-medium">{t('settings.notifications.taskReminders')}</p>
                   <p className="text-sm text-muted-foreground">
-                    {t('settings.notifications.taskRemindersDescription') || 'Get notified before tasks are due'}
+                    {t('settings.notifications.taskRemindersDescription')}
                   </p>
                 </div>
                 <Switch defaultChecked disabled />
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium">{t('settings.notifications.countdownCompletions') || 'Countdown Completions'}</p>
+                  <p className="font-medium">{t('settings.notifications.countdownCompletions')}</p>
                   <p className="text-sm text-muted-foreground">
-                    {t('settings.notifications.countdownCompletionsDescription') || 'Alert when countdowns reach zero'}
+                    {t('settings.notifications.countdownCompletionsDescription')}
                   </p>
                 </div>
                 <Switch defaultChecked disabled />
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium">{t('settings.notifications.taskActions') || 'Task Actions'}</p>
+                  <p className="font-medium">{t('settings.notifications.taskActions')}</p>
                   <p className="text-sm text-muted-foreground">
-                    {t('settings.notifications.taskActionsDescription') || 'Feedback for task creation, updates, and deletion'}
+                    {t('settings.notifications.taskActionsDescription')}
                   </p>
                 </div>
                 <Switch defaultChecked disabled />

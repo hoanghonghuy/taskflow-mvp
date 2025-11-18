@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import { createContext, useContext, useReducer, useCallback, useEffect } from 'react'
 import { useI18n } from '@/lib/hooks/use-i18n'
@@ -8,6 +8,7 @@ import { INITIAL_STATE } from '@/lib/store/task-manager/initial-state'
 import { useToast } from '@/lib/hooks/use-toast'
 import type { Task, List, Habit, Comment, PomodoroState, AppState } from '@/types'
 import type { TaskManagerContextType } from '@/lib/store/task-manager/types'
+import type { TranslationKey } from '@/lib/i18n/types'
 import { generateMockData } from '@/lib/mock-data'
 
 interface HistoryState {
@@ -117,8 +118,8 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
             const shouldShow = !lastShown || (now.getTime() - parseInt(lastShown)) > 60000
             
             if (shouldShow && 'Notification' in window && Notification.permission === 'granted') {
-              new Notification('Task Reminder', {
-                body: `${task.title} is due soon!`,
+              new Notification(t('reminder.notificationTitle' as TranslationKey), {
+                body: t('reminder.notificationBody' as TranslationKey, { title: task.title }),
                 icon: '/favicon.ico'
               })
               localStorage.setItem(`reminder-${task.id}`, now.getTime().toString())
@@ -171,24 +172,34 @@ export function useTaskManager() {
 export function useTaskActions() {
   const { dispatch } = useTaskManager()
   const { success } = useToast()
+  const { t } = useI18n()
 
   return {
     addTask: useCallback((task: Omit<Task, 'id'>) => {
       dispatch(taskActions.add(task))
-      success('Task Added', `${task.title} has been created successfully`)
-    }, [dispatch, success]),
+      success(
+        t('toast.taskAddedTitle' as TranslationKey),
+        t('toast.taskAddedBody' as TranslationKey, { title: task.title }),
+      )
+    }, [dispatch, success, t]),
 
     updateTask: useCallback((task: Task) => {
       dispatch(taskActions.update(task))
-      success('Task Updated', `${task.title} has been updated`)
-    }, [dispatch, success]),
+      success(
+        t('toast.taskUpdatedTitle' as TranslationKey),
+        t('toast.taskUpdatedBody' as TranslationKey, { title: task.title }),
+      )
+    }, [dispatch, success, t]),
 
     deleteTask: useCallback((taskId: string) => {
       // Note: We can't get the task title here without accessing state
       // This is a limitation of the current action structure
       dispatch(taskActions.delete(taskId))
-      success('Task Deleted', 'Task has been removed')
-    }, [dispatch, success]),
+      success(
+        t('toast.taskDeletedTitle' as TranslationKey),
+        t('toast.taskDeletedBody' as TranslationKey),
+      )
+    }, [dispatch, success, t]),
 
     toggleTask: useCallback((taskId: string) => {
       dispatch(taskActions.toggle(taskId))
@@ -197,13 +208,21 @@ export function useTaskActions() {
 
     assignTask: useCallback((taskId: string, userId: string | null) => {
       dispatch(taskActions.assign(taskId, userId))
-      success('Task Assigned', userId ? 'Task has been assigned' : 'Task assignment removed')
-    }, [dispatch, success]),
+      success(
+        t('toast.taskAssignedTitle' as TranslationKey),
+        userId
+          ? t('toast.taskAssignedBody' as TranslationKey)
+          : t('toast.taskAssignmentRemovedBody' as TranslationKey),
+      )
+    }, [dispatch, success, t]),
 
     addComment: useCallback((taskId: string, comment: Comment) => {
       dispatch(taskActions.addComment(taskId, comment))
-      success('Comment Added', 'Your comment has been posted')
-    }, [dispatch, success]),
+      success(
+        t('toast.commentAddedTitle' as TranslationKey),
+        t('toast.commentAddedBody' as TranslationKey),
+      )
+    }, [dispatch, success, t]),
 
     moveToColumn: useCallback((taskId: string, newColumnId: string, listId: string) => {
       dispatch(taskActions.moveToColumn(taskId, newColumnId, listId))

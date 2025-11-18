@@ -201,15 +201,17 @@ export default function DashboardPage() {
           <div className="space-y-6">
             <div className="bg-card border border-border rounded-lg p-6 flex flex-col gap-4">
               <div>
-                <h2 className="text-lg font-semibold">Today plan</h2>
+                <h2 className="text-lg font-semibold">
+                  {t('dashboard.todayPlan.title' as TranslationKey)}
+                </h2>
                 <p className="text-sm text-muted-foreground">
-                  Top tasks that are due today or overdue.
+                  {t('dashboard.todayPlan.subtitle' as TranslationKey)}
                 </p>
               </div>
 
               {todayPlanTasks.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  You are all caught up for today.
+                  {t('dashboard.todayPlan.empty' as TranslationKey)}
                 </p>
               ) : (
                 <ul className="space-y-2">

@@ -33,7 +33,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ onClose }) => {
     setMessages([{
       id: 'initial',
       role: 'model',
-      text: t('chatbot.initialMessage') || 'Hello! I\'m your AI assistant. How can I help you today?',
+      text: t('chatbot.initialMessage'),
       timestamp: Date.now()
     }])
   }, [t])
@@ -62,7 +62,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ onClose }) => {
       // For now, generate a mock response
       await new Promise(resolve => setTimeout(resolve, 1000))
       
-      const mockResponse = `I understand you're asking about "${currentInput}". This is a mock response. When the Gemini API is integrated, I'll be able to provide real AI-powered assistance with your tasks, habits, and productivity goals.`
+      const mockResponse = t('chatbot.mockResponse', { input: currentInput })
       
       setMessages(prev => prev.map(m => 
         m.id === modelMessageId 
@@ -71,10 +71,11 @@ const Chatbot: React.FC<ChatbotProps> = ({ onClose }) => {
       ))
 
     } catch (error: unknown) {
+      const fallbackMessage = t('chatbot.error.generic')
       const message =
         typeof error === 'object' && error !== null && 'message' in error && typeof (error as { message?: string }).message === 'string'
           ? (error as { message: string }).message
-          : 'An error occurred.'
+          : fallbackMessage
       addToast.error(message)
       setMessages(prev => prev.filter(m => m.id !== modelMessageId)) // Remove placeholder
     } finally {
@@ -89,7 +90,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ onClose }) => {
           <div className="flex items-center gap-2">
             <CubeTransparentIcon className="h-6 w-6 text-primary" />
             <h2 className="text-lg font-semibold">
-              {t('chatbot.title') || 'Chat with Gemini'}
+              {t('chatbot.title')}
             </h2>
           </div>
           <button onClick={onClose} className="p-1 rounded-full hover:bg-secondary">
@@ -108,7 +109,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ onClose }) => {
               {msg.groundingSources && msg.groundingSources.length > 0 && (
                 <div className="max-w-md mt-2 text-xs text-muted-foreground">
                   <h4 className="font-semibold mb-1">
-                    {t('chatbot.sources') || 'Sources'}
+                    {t('chatbot.sources')}
                   </h4>
                   <ul className="list-disc list-inside space-y-1">
                     {msg.groundingSources.map(source => (
@@ -153,7 +154,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ onClose }) => {
                 disabled={!isAvailable}
               />
               <SparklesIcon className="h-4 w-4" /> 
-              {t('chatbot.thinkingMode') || 'Thinking Mode'}
+              {t('chatbot.thinkingMode')}
             </label>
             <label htmlFor="search-grounding" className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
               <input
@@ -168,7 +169,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ onClose }) => {
                 disabled={!isAvailable}
               />
               <GlobeAltIcon className="h-4 w-4" /> 
-              {t('chatbot.searchWeb') || 'Search Web'}
+              {t('chatbot.searchWeb')}
             </label>
           </div>
           <div className="relative">
@@ -181,7 +182,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ onClose }) => {
                   handleSend()
                 }
               }}
-              placeholder={t('chatbot.placeholder') || 'Type your message...'}
+              placeholder={t('chatbot.placeholder')}
               className="w-full p-3 pr-12 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
               rows={1}
               style={{ height: 'auto', maxHeight: '100px' }}

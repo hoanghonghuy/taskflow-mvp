@@ -44,10 +44,10 @@ const ShareListModal: React.FC<ShareListModalProps> = ({ list, onClose }) => {
         <header className="p-4 border-b border-border flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold">
-              {t('shareList.title', { listName: list.name }) || `Share "${list.name}"`}
+              {t('shareList.title', { listName: list.name })}
             </h2>
             <p className="text-sm text-muted-foreground">
-              {t('shareList.subtitle') || 'Manage who can access this list.'}
+              {t('shareList.subtitle')}
             </p>
           </div>
           <button onClick={onClose} className="p-1 rounded-full hover:bg-secondary">
@@ -57,7 +57,7 @@ const ShareListModal: React.FC<ShareListModalProps> = ({ list, onClose }) => {
 
         <div className="p-6 max-h-[60vh] overflow-y-auto">
           <h3 className="text-sm font-medium text-muted-foreground mb-2">
-            {t('shareList.members') || 'Members'}
+            {t('shareList.members')}
           </h3>
           <div className="space-y-3">
             {memberIds.map(id => {
@@ -76,13 +76,13 @@ const ShareListModal: React.FC<ShareListModalProps> = ({ list, onClose }) => {
                     <button 
                       onClick={() => handleRemoveMember(id)} 
                       className="p-1.5 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
-                      aria-label={t('sidebar.aria.deleteList', { listName: member.name }) || `Remove ${member.name}`}
+                      aria-label={t('shareList.aria.removeMember', { memberName: member.name })}
                     >
                       <TrashIcon className="h-4 w-4" />
                     </button>
                   ) : (
                     <span className="text-xs text-muted-foreground pr-2">
-                      {t('shareList.owner') || 'Owner'}
+                      {t('shareList.owner')}
                     </span>
                   )}
                 </div>
@@ -92,7 +92,7 @@ const ShareListModal: React.FC<ShareListModalProps> = ({ list, onClose }) => {
 
           <div className="mt-6">
             <h3 className="text-sm font-medium text-muted-foreground mb-2">
-              {t('shareList.invite') || 'Invite others'}
+              {t('shareList.invite')}
             </h3>
             {potentialMembers.length > 0 ? (
               <div className="space-y-2">
@@ -110,7 +110,7 @@ const ShareListModal: React.FC<ShareListModalProps> = ({ list, onClose }) => {
                     <button 
                       onClick={() => handleAddMember(user.id)} 
                       className="p-1.5 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-primary"
-                      aria-label={t('shareList.invite') || `Add ${user.name}`}
+                      aria-label={t('shareList.aria.addMember', { memberName: user.name })}
                     >
                       <PlusIcon className="h-4 w-4" />
                     </button>
@@ -119,7 +119,7 @@ const ShareListModal: React.FC<ShareListModalProps> = ({ list, onClose }) => {
               </div>
             ) : (
               <p className="text-xs text-muted-foreground text-center py-4">
-                {t('shareList.empty') || 'Everyone is already in this list.'}
+                {t('shareList.empty')}
               </p>
             )}
           </div>
@@ -130,7 +130,7 @@ const ShareListModal: React.FC<ShareListModalProps> = ({ list, onClose }) => {
             onClick={handleSave} 
             className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-semibold hover:bg-primary/90"
           >
-            {t('shareList.done') || 'Done'}
+            {t('shareList.done')}
           </button>
         </footer>
       </div>

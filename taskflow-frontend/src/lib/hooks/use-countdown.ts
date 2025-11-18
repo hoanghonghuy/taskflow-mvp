@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { countdownActions } from '@/lib/store/task-manager/actions'
 import { useToast } from '@/lib/hooks/use-toast'
+import { useI18n } from '@/lib/hooks/use-i18n'
 import type { CountdownEvent } from '@/types'
 import type { TranslationKey } from '@/lib/i18n/types'
 
@@ -115,6 +116,7 @@ export const useCountdown = () => {
   const [tick, setTick] = useState(INITIAL_TICK)
   const { success, error } = useToast()
   const [notifiedEvents, setNotifiedEvents] = useState<Set<string>>(new Set())
+  const { t } = useI18n()
 
   // Update tick every second for live countdowns
   useEffect(() => {
@@ -135,21 +137,27 @@ export const useCountdown = () => {
       if (targetTime <= now && targetTime > now - 5000 && !notifiedEvents.has(event.id)) {
         // Send browser notification
         if ('Notification' in window && Notification.permission === 'granted') {
-          new Notification('Countdown Completed!', {
-            body: `${event.title} has reached its target time!`,
-            icon: '/favicon.ico',
-            tag: `countdown-${event.id}`
-          })
+          new Notification(
+            t('countdown.notifications.completedTitle' as TranslationKey),
+            {
+              body: t('countdown.notifications.completedBody' as TranslationKey, { title: event.title }),
+              icon: '/favicon.ico',
+              tag: `countdown-${event.id}`
+            },
+          )
         }
         
         // Send toast notification
-        success('Countdown Completed!', `${event.title} has reached its target time!`)
+        success(
+          t('countdown.notifications.completedTitle' as TranslationKey),
+          t('countdown.notifications.completedBody' as TranslationKey, { title: event.title }),
+        )
         
         // Mark as notified to prevent duplicates
         setNotifiedEvents(prev => new Set(prev).add(event.id))
       }
     })
-  }, [tick, countdownEvents, notifiedEvents, success])
+  }, [tick, countdownEvents, notifiedEvents, success, t])
 
   // Memoized sorted events
   const sortedEvents = useMemo(() => {
@@ -194,8 +202,11 @@ export const useCountdown = () => {
       createdAt: new Date().toISOString(),
     }
     dispatch(countdownActions.add(newCountdown))
-    success('Countdown Added', `${newCountdown.title} has been created successfully`)
-  }, [dispatch, success])
+    success(
+      t('countdown.notifications.addedTitle' as TranslationKey),
+      t('countdown.notifications.addedBody' as TranslationKey, { title: newCountdown.title }),
+    )
+  }, [dispatch, success, t])
 
   const updateCountdown = useCallback((id: string, updates: Partial<CountdownEvent>) => {
     // First get the existing countdown, then merge updates
@@ -206,21 +217,33 @@ export const useCountdown = () => {
         ...updates,
       }
       dispatch(countdownActions.update(updatedCountdown))
-      success('Countdown Updated', `${updatedCountdown.title} has been updated`)
+      success(
+        t('countdown.notifications.updatedTitle' as TranslationKey),
+        t('countdown.notifications.updatedBody' as TranslationKey, { title: updatedCountdown.title }),
+      )
     } else {
-      error('Update Failed', 'Countdown not found')
+      error(
+        t('countdown.notifications.updateFailedTitle' as TranslationKey),
+        t('countdown.notifications.updateFailedBody' as TranslationKey),
+      )
     }
-  }, [dispatch, countdownEvents, success, error])
+  }, [dispatch, countdownEvents, success, error, t])
 
   const deleteCountdown = useCallback((id: string) => {
     const countdownToDelete = countdownEvents.find(c => c.id === id)
     if (countdownToDelete) {
       dispatch(countdownActions.delete(id))
-      success('Countdown Deleted', `${countdownToDelete.title} has been removed`)
+      success(
+        t('countdown.notifications.deletedTitle' as TranslationKey),
+        t('countdown.notifications.deletedBody' as TranslationKey, { title: countdownToDelete.title }),
+      )
     } else {
-      error('Delete Failed', 'Countdown not found')
+      error(
+        t('countdown.notifications.deleteFailedTitle' as TranslationKey),
+        t('countdown.notifications.deleteFailedBody' as TranslationKey),
+      )
     }
-  }, [dispatch, countdownEvents, success, error])
+  }, [dispatch, countdownEvents, success, error, t])
 
   // Form state helpers
   const createFormState = useCallback(() => {

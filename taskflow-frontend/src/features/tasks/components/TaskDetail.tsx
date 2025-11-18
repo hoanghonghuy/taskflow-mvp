@@ -1,8 +1,10 @@
-'use client'
+"use client"
 
 import React, { useState, useMemo } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
+import { useTaskActions } from '@/lib/hooks/use-task-manager'
+import { useConfirmation } from '@/lib/hooks/use-confirmation'
 import type { Task, Subtask, Priority, Comment } from '@/types'
 import type { TranslationKey } from '@/lib/i18n/types'
 import { 
@@ -30,6 +32,8 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   const { t } = useI18n()
   const router = useRouter()
   const { allUsers, user: currentUser } = useUser()
+  const { deleteTask } = useTaskActions()
+  const { confirm } = useConfirmation()
   const { isAvailable: isGeminiAvailable } = useGemini()
   const task = useMemo<Task | null>(() => {
     return state.tasks.find(t => t.id === taskId) ?? null
@@ -94,6 +98,10 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
     updateTask({ subtasks: newSubtasks })
   }
 
+  const handleDeleteSubtask = (subtaskId: string) => {
+    updateTask({ subtasks: task.subtasks.filter(st => st.id !== subtaskId) })
+  }
+
   const handleAddSubtask = (e: React.FormEvent) => {
     e.preventDefault()
     if (newSubtask.trim()) {
@@ -148,6 +156,18 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
 
   const handleAssignTask = (userId: string | null) => {
     dispatch({ type: 'ASSIGN_TASK', payload: { taskId: task.id, userId } })
+  }
+
+  const handleDeleteTask = async () => {
+    const ok = await confirm({
+      title: t('taskDetail.deleteConfirm.title' as TranslationKey, { title: task.title }),
+      description: t('taskDetail.deleteConfirm.description' as TranslationKey, { title: task.title }),
+      confirmText: t('taskDetail.deleteConfirm.confirm' as TranslationKey),
+      variant: 'destructive',
+    })
+
+    if (!ok) return
+    deleteTask(task.id)
   }
 
   const handleAddComment = (content: string) => {
@@ -206,9 +226,18 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
             )}
           </div>
         </div>
-        <button onClick={handleClose} className="p-2 rounded-full hover:bg-secondary transition-colors" aria-label={t('common.close')}>
-          <CloseIcon className="h-5 w-5 text-muted-foreground" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleDeleteTask}
+            className="text-xs text-destructive hover:underline"
+          >
+            {t('task.delete')}
+          </button>
+          <button onClick={handleClose} className="p-2 rounded-full hover:bg-secondary transition-colors" aria-label={t('common.close')}>
+            <CloseIcon className="h-5 w-5 text-muted-foreground" />
+          </button>
+        </div>
       </header>
 
       <div className="grow px-6 py-5 overflow-y-auto space-y-6">
@@ -437,6 +466,14 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                     onChange={(e) => updateTask({ subtasks: task.subtasks.map(sub => sub.id === st.id ? {...sub, title: e.target.value} : sub)})}
                     className={`grow bg-transparent text-sm ${st.completed ? 'line-through text-muted-foreground' : ''} focus:outline-none`} 
                   />
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteSubtask(st.id)}
+                    aria-label={t('taskDetail.aria.deleteSubtask' as TranslationKey)}
+                    className="ml-1 rounded-full p-0.5 hover:bg-muted-foreground/10 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <CloseIcon className="h-3 w-3" />
+                  </button>
                 </div>
               ))}
               <form onSubmit={handleAddSubtask} className="flex items-center gap-2 p-2">
@@ -502,14 +539,6 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
       </div>
 
       <div className="p-4 border-t border-border flex gap-2 shrink-0">
-        <button 
-          onClick={() => {}} 
-          disabled={!isGeminiAvailable}
-          className="text-sm w-full flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-secondary hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <GlobeAltIcon className="h-4 w-4" />
-          <span>{t('taskDetail.getInfoButton')}</span>
-        </button>
         <button 
           onClick={handleStartFocus} 
           className="text-sm w-full flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"

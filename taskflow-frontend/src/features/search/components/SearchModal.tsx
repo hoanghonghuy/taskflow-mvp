@@ -41,7 +41,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose }) => {
 
   const getListName = (listId: string): string => {
     if (listId === 'inbox') {
-      return t('specialLists.inbox') || 'Inbox'
+      return t('specialLists.inbox')
     }
     const list = state.lists.find(l => l.id === listId)
     return list ? list.name : ''
@@ -62,7 +62,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose }) => {
             type="text"
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            placeholder={t('search.placeholder') || 'Search tasks...'}
+            placeholder={t('search.placeholder')}
             className="w-full bg-transparent text-lg focus:outline-none"
             autoFocus
           />
@@ -74,7 +74,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose }) => {
         <div className="grow p-4 overflow-y-auto">
           {searchTerm.trim() && searchResults.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">
-              <p>{t('search.noResults', { searchTerm }) || `No results found for "${searchTerm}"`}</p>
+              <p>{t('search.noResults', { searchTerm })}</p>
             </div>
           )}
           <div className="space-y-2">
