@@ -135,6 +135,11 @@ export const pomodoroActions = {
     payload: taskId
   }),
   
+  setFocusedHabit: (habitId: string | null): Action => ({
+    type: 'SET_FOCUSED_HABIT',
+    payload: habitId,
+  }),
+  
   updateSettings: (settings: Partial<PomodoroState['settings']>): Action => ({
     type: 'UPDATE_POMODORO_SETTINGS',
     payload: settings

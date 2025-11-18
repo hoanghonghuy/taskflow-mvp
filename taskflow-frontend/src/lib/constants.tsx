@@ -197,6 +197,27 @@ export const SearchIcon: React.FC<{ className?: string }> = ({ className }) => (
   </svg>
 )
 
+export const EyeIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+    />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+  </svg>
+)
+
+export const EyeSlashIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M3.98 8.223A10.477 10.477 0 001.934 12C3.208 16.057 6.999 19 11.477 19c1.563 0 3.046-.337 4.388-.94M6.228 6.228A10.45 10.45 0 0111.477 5c4.478 0 8.268 2.943 9.543 7a10.523 10.523 0 01-4.308 5.148M6.228 6.228L3 3m3.228 3.228l3.65 3.65M9.878 9.878a3 3 0 104.243 4.243M9.878 9.878L3 3m11.121 11.121L21 21"
+    />
+  </svg>
+)
+
 export const PlayCircleIcon: React.FC<{ className?: string }> = ({ className }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

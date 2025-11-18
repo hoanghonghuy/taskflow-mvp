@@ -19,6 +19,7 @@ export const INITIAL_STATE: AppState = {
     remainingTime: DEFAULT_POMODORO_SETTINGS.focusDuration * 60,
     currentSession: 'focus',
     focusedTaskId: null,
+    focusedHabitId: null,
     sessionsCompleted: 0,
     focusHistory: [],
     settings: DEFAULT_POMODORO_SETTINGS,

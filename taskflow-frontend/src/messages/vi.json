@@ -57,7 +57,47 @@
     "signIn": "Đăng nhập",
     "signUp": "Đăng ký",
     "welcomeBack": "Chào mừng trở lại!",
-    "createAccount": "Tạo tài khoản của bạn"
+    "createAccount": "Tạo tài khoản của bạn",
+    "loginTitle": "Đăng nhập",
+    "loginSubtitle": "Nhập thông tin để truy cập tài khoản của bạn",
+    "registerTitle": "Tạo tài khoản",
+    "registerSubtitle": "Nhập thông tin để bắt đầu sử dụng",
+    "forgotPasswordTitle": "Quên mật khẩu",
+    "forgotPasswordSubtitle": "Nhập email để nhận hướng dẫn đặt lại mật khẩu",
+    "emailPlaceholder": "name@example.com",
+    "namePlaceholder": "Nguyễn Văn A",
+    "passwordPlaceholder": "••••••••",
+    "backToHome": "← Về trang chủ",
+    "rememberPassword": "Nhớ mật khẩu?",
+    "showPassword": "Hiện mật khẩu",
+    "hidePassword": "Ẩn mật khẩu",
+    "sendResetLink": "Gửi liên kết đặt lại",
+    "sending": "Đang gửi...",
+    "loggingIn": "Đang đăng nhập...",
+    "creatingAccount": "Đang tạo tài khoản...",
+    "errors": {
+      "required": "Vui lòng điền đầy đủ các trường bắt buộc",
+      "emailRequired": "Vui lòng nhập email",
+      "emailInvalid": "Email không hợp lệ",
+      "passwordRequired": "Vui lòng nhập mật khẩu",
+      "passwordTooShort": "Mật khẩu phải có ít nhất 6 ký tự",
+      "confirmPasswordRequired": "Vui lòng nhập lại mật khẩu",
+      "passwordsMismatch": "Mật khẩu nhập lại không khớp"
+    },
+    "toast": {
+      "loginSuccessTitle": "Đăng nhập thành công!",
+      "loginSuccessBody": "Bạn đã đăng nhập vào TaskFlow",
+      "loginFailedTitle": "Đăng nhập thất bại",
+      "loginFailedBody": "Vui lòng kiểm tra lại thông tin đăng nhập",
+      "registerSuccessTitle": "Tạo tài khoản thành công!",
+      "registerSuccessBody": "Chào mừng bạn đến với TaskFlow",
+      "registerFailedTitle": "Đăng ký thất bại",
+      "registerFailedBody": "Vui lòng thử lại sau",
+      "forgotSuccessTitle": "Hãy kiểm tra hộp thư",
+      "forgotSuccessBody": "Nếu email tồn tại, hướng dẫn đặt lại mật khẩu sẽ được gửi đến bạn",
+      "forgotFailedTitle": "Có lỗi xảy ra",
+      "forgotFailedBody": "Vui lòng thử lại sau"
+    }
   },
   "task": {
     "new": "Nhiệm vụ mới",
@@ -261,6 +301,18 @@
     "averageSession": "Phiên trung bình",
     "zeroMinutes": "0 phút",
     "percentComplete": "{{percent}}% hoàn thành",
+    "overviewTitle": "Tổng quan",
+    "overviewMenu": {
+      "fullScreen": "Chế độ toàn màn hình",
+      "miniMode": "Chế độ thu nhỏ",
+      "statistics": "Thống kê",
+      "focusSettings": "Cài đặt tập trung"
+    },
+    "statisticsTitle": "Thống kê",
+    "statisticsOverviewTab": "Tổng quan",
+    "statisticsTaskTab": "Nhiệm vụ",
+    "statisticsFocusTab": "Tập trung",
+    "statisticsEmpty": "Chưa có dữ liệu thống kê.",
     "notifications": {
       "focusCompletedTitle": "Hoàn thành phiên tập trung!",
       "focusCompletedBodyWithTask": "Làm tốt lắm! Bạn đã hoàn thành phiên tập trung cho \"{{taskTitle}}\"",
@@ -739,7 +791,20 @@
   },
   "focusPicker": {
     "title": "Chọn Nhiệm vụ để Tập trung",
-    "general": "Tập trung chung (Không có nhiệm vụ cụ thể)"
+    "general": "Tập trung chung (Không có nhiệm vụ cụ thể)",
+    "searchPlaceholder": "Tìm kiếm...",
+    "taskTab": "Nhiệm vụ",
+    "habitTab": "Thói quen",
+    "filters": {
+      "today": "Hôm nay",
+      "tomorrow": "Ngày mai",
+      "next7Days": "7 ngày tới",
+      "recent": "Gần đây",
+      "assignedToMe": "Giao cho tôi",
+      "lists": "Danh sách"
+    },
+    "todayTasks": "Nhiệm vụ hôm nay",
+    "todayHabits": "Thói quen hôm nay"
   },
   "chatbot": {
     "title": "Trò chuyện với Gemini",

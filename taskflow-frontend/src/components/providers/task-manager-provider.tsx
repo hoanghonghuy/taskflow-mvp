@@ -283,6 +283,10 @@ export function usePomodoroActions() {
       dispatch(pomodoroActions.setFocusedTask(taskId))
     }, [dispatch]),
 
+    setFocusedHabit: useCallback((habitId: string | null) => {
+      dispatch(pomodoroActions.setFocusedHabit(habitId))
+    }, [dispatch]),
+
     updateSettings: useCallback((settings: Partial<PomodoroState['settings']>) => {
       dispatch(pomodoroActions.updateSettings(settings))
     }, [dispatch]),

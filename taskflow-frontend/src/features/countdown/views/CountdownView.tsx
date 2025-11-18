@@ -121,7 +121,7 @@ const CountdownView: React.FC = () => {
     if (displayMode === 'days') {
       return (
         <div className="grid grid-cols-1 gap-3">
-          <div className="rounded-xl border border-border-subtle p-3 text-center">
+          <div className="rounded-xl border border-border-subtle bg-secondary/50 p-3 text-center">
             <p className="text-3xl font-semibold tracking-tight">{totalDays}</p>
             <p className="text-xs font-medium uppercase text-muted-foreground/80">{t('countdown.days')}</p>
           </div>
@@ -135,7 +135,7 @@ const CountdownView: React.FC = () => {
 
       return (
         <div className="grid grid-cols-1 gap-3">
-          <div className="rounded-xl border border-border-subtle p-3 text-center">
+          <div className="rounded-xl border border-border-subtle bg-secondary/50 p-3 text-center">
             <p className="text-3xl font-semibold tracking-tight">{value}</p>
             <p className="text-xs font-medium uppercase text-muted-foreground/80">{t(`countdown.${unitKey}`)}</p>
           </div>
@@ -170,11 +170,11 @@ const CountdownView: React.FC = () => {
 
     // detailed: days / hours / minutes (no seconds)
     return (
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-3 gap-3">
         {(['days', 'hours', 'minutes'] as const).map(unit => (
           <div
             key={unit}
-            className="rounded-xl border border-border-subtle p-3 text-center"
+            className="rounded-xl border border-border-subtle bg-secondary/50 p-3 text-center"
           >
             <p className="text-3xl font-semibold tracking-tight">
               {timeLeft[unit]}
@@ -351,7 +351,7 @@ const CountdownView: React.FC = () => {
                       <Card
                         key={event.id}
                         ref={editingId === event.id ? editingContainerRef : undefined}
-                        className="relative overflow-hidden border border-border-subtle/80 bg-card/90 backdrop-blur"
+                        className="relative overflow-hidden"
                       >
                         <CardHeader className="flex-row items-start justify-between gap-3">
                           <div className="space-y-1">
@@ -454,7 +454,7 @@ const CountdownView: React.FC = () => {
                 <h2 className="text-lg font-semibold mb-3">{t('countdown.completedSection')}</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {completedEvents.map(event => (
-                    <Card key={event.id} className="border border-border-subtle/70 bg-card/80 text-center">
+                    <Card key={event.id} className="text-center">
                       <CardHeader>
                         <CardTitle className="text-base font-semibold">{event.title}</CardTitle>
                         <CardDescription>

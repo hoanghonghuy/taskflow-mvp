@@ -16,8 +16,10 @@ export const usePomodoroNotifications = () => {
   useEffect(() => {
     // Check if a session just completed (remainingTime reached 0)
     if (pomodoro.isActive && pomodoro.remainingTime === 0) {
-      const { currentSession, focusedTaskId } = pomodoro
+      const { currentSession, focusedTaskId, focusedHabitId } = pomodoro
       const focusedTask = state.tasks.find(t => t.id === focusedTaskId)
+      const focusedHabit = state.habits.find(h => h.id === focusedHabitId)
+      const focusLabel = focusedTask?.title ?? focusedHabit?.name
 
       // Send browser notification
       if (settings.notifications && 'Notification' in window && Notification.permission === 'granted') {
@@ -27,8 +29,8 @@ export const usePomodoroNotifications = () => {
         switch (currentSession) {
           case 'focus':
             title = t('pomodoro.notifications.focusCompletedTitle')
-            body = focusedTask
-              ? t('pomodoro.notifications.focusCompletedBodyWithTask', { taskTitle: focusedTask.title })
+            body = focusLabel
+              ? t('pomodoro.notifications.focusCompletedBodyWithTask', { taskTitle: focusLabel })
               : t('pomodoro.notifications.focusCompletedBody')
             break
           case 'shortBreak':
@@ -63,8 +65,8 @@ export const usePomodoroNotifications = () => {
           case 'focus':
             success(
               t('pomodoro.notifications.toastFocusTitle'),
-              focusedTask
-                ? t('pomodoro.notifications.toastFocusBodyWithTask', { taskTitle: focusedTask.title })
+              focusLabel
+                ? t('pomodoro.notifications.toastFocusBodyWithTask', { taskTitle: focusLabel })
                 : t('pomodoro.notifications.toastFocusBody')
             )
             break
@@ -83,5 +85,5 @@ export const usePomodoroNotifications = () => {
         }
       }
     }
-  }, [pomodoro, state.tasks, settings, success, t])
+  }, [pomodoro, state.tasks, state.habits, settings, success, t])
 }

@@ -83,6 +83,7 @@ export interface PomodoroState {
   remainingTime: number;
   currentSession: 'focus' | 'shortBreak' | 'longBreak';
   focusedTaskId: string | null;
+  focusedHabitId: string | null;
   sessionsCompleted: number;
   focusHistory: FocusSession[];
   settings: PomodoroSettings;
@@ -92,6 +93,7 @@ export interface FocusSession {
   startTime: string;
   duration: number;
   taskId?: string;
+  habitId?: string;
 }
 
 export interface PomodoroSettings {

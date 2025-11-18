@@ -57,7 +57,47 @@
     "signIn": "Sign In",
     "signUp": "Sign Up",
     "welcomeBack": "Welcome back!",
-    "createAccount": "Create your account"
+    "createAccount": "Create your account",
+    "loginTitle": "Welcome back",
+    "loginSubtitle": "Enter your credentials to access your account",
+    "registerTitle": "Create an account",
+    "registerSubtitle": "Enter your information to get started",
+    "forgotPasswordTitle": "Forgot password",
+    "forgotPasswordSubtitle": "Enter your email and we’ll send you instructions to reset your password.",
+    "emailPlaceholder": "name@example.com",
+    "namePlaceholder": "John Doe",
+    "passwordPlaceholder": "••••••••",
+    "backToHome": "← Back to home",
+    "rememberPassword": "Remember your password?",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "sendResetLink": "Send reset link",
+    "sending": "Sending...",
+    "loggingIn": "Logging in...",
+    "creatingAccount": "Creating account...",
+    "errors": {
+      "required": "Please fill in all required fields",
+      "emailRequired": "Please enter your email",
+      "emailInvalid": "Please enter a valid email address",
+      "passwordRequired": "Please enter your password",
+      "passwordTooShort": "Password must be at least 6 characters",
+      "confirmPasswordRequired": "Please confirm your password",
+      "passwordsMismatch": "Passwords do not match"
+    },
+    "toast": {
+      "loginSuccessTitle": "Welcome back!",
+      "loginSuccessBody": "You have successfully logged in",
+      "loginFailedTitle": "Login failed",
+      "loginFailedBody": "Please check your credentials",
+      "registerSuccessTitle": "Account created!",
+      "registerSuccessBody": "Welcome to TaskFlow",
+      "registerFailedTitle": "Registration failed",
+      "registerFailedBody": "Please try again",
+      "forgotSuccessTitle": "Check your inbox",
+      "forgotSuccessBody": "If an account exists for this email, we’ll send reset instructions.",
+      "forgotFailedTitle": "Something went wrong",
+      "forgotFailedBody": "Please try again later"
+    }
   },
   "task": {
     "new": "New Task",
@@ -269,6 +309,18 @@
     "averageSession": "Average Session",
     "zeroMinutes": "0m",
     "percentComplete": "{{percent}}% complete",
+    "overviewTitle": "Overview",
+    "overviewMenu": {
+      "fullScreen": "Full-Screen Mode",
+      "miniMode": "Mini Mode",
+      "statistics": "Statistics",
+      "focusSettings": "Focus Settings"
+    },
+    "statisticsTitle": "Statistics",
+    "statisticsOverviewTab": "Overview",
+    "statisticsTaskTab": "Task",
+    "statisticsFocusTab": "Focus",
+    "statisticsEmpty": "No statistics data yet.",
     "notifications": {
       "focusCompletedTitle": "Focus Session Completed!",
       "focusCompletedBodyWithTask": "Great job! You completed a focus session on \"{{taskTitle}}\"",
@@ -277,12 +329,12 @@
       "shortBreakOverBody": "Break time is over. Ready for another focus session?",
       "longBreakOverTitle": "Long Break Over!",
       "longBreakOverBody": "You're well rested! Ready to continue your productive day?",
-      "toastFocusTitle": "Focus Session Completed! 🎯",
+      "toastFocusTitle": "Focus Session Completed! ",
       "toastFocusBodyWithTask": "Great work on \"{{taskTitle}}\"! Time for a break.",
       "toastFocusBody": "Great work! Time for a well-deserved break.",
-      "toastShortBreakTitle": "Break Over! ⏰",
+      "toastShortBreakTitle": "Break Over! ",
       "toastShortBreakBody": "Ready for another focus session?",
-      "toastLongBreakTitle": "Break Over! ☕",
+      "toastLongBreakTitle": "Break Over! ",
       "toastLongBreakBody": "Feeling refreshed? Let's get back to it!"
     }
   },
@@ -754,7 +806,20 @@
   },
   "focusPicker": {
     "title": "Select a Task to Focus On",
-    "general": "General Focus (No specific task)"
+    "general": "General Focus (No specific task)",
+    "searchPlaceholder": "Search...",
+    "taskTab": "Task",
+    "habitTab": "Habit",
+    "filters": {
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "next7Days": "Next 7 days",
+      "recent": "Recent",
+      "assignedToMe": "Assigned to me",
+      "lists": "Lists"
+    },
+    "todayTasks": "Today's Tasks",
+    "todayHabits": "Today's Habits"
   },
   "chatbot": {
     "title": "Chat with Gemini",

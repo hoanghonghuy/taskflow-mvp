@@ -1,8 +1,8 @@
-import type { AppState, PomodoroState } from '@/types'
+import type { AppState, PomodoroState, FocusSession } from '@/types'
 import type { Action } from '../types'
 
 function completePomodoroSession(state: AppState): AppState {
-  const { currentSession, sessionsCompleted, settings, focusedTaskId } = state.pomodoro
+  const { currentSession, sessionsCompleted, settings, focusedTaskId, focusedHabitId } = state.pomodoro
   let nextSession: PomodoroState['currentSession']
   let newSessionsCompleted = sessionsCompleted
 
@@ -12,14 +12,23 @@ function completePomodoroSession(state: AppState): AppState {
       ? 'longBreak'
       : 'shortBreak'
 
-    if (focusedTaskId) {
+    if (focusedTaskId || focusedHabitId) {
+      const entry: FocusSession = {
+        startTime: new Date().toISOString(),
+        duration: settings.focusDuration * 60,
+      }
+
+      if (focusedTaskId) {
+        entry.taskId = focusedTaskId
+      }
+
+      if (focusedHabitId) {
+        entry.habitId = focusedHabitId
+      }
+
       const focusHistory = [
         ...state.pomodoro.focusHistory,
-        {
-          startTime: new Date().toISOString(),
-          duration: settings.focusDuration * 60,
-          taskId: focusedTaskId,
-        },
+        entry,
       ]
 
       return {
@@ -105,7 +114,13 @@ export function pomodoroReducer(state: AppState, action: Action): AppState {
     case 'SET_FOCUSED_TASK':
       return {
         ...state,
-        pomodoro: { ...state.pomodoro, focusedTaskId: action.payload },
+        pomodoro: { ...state.pomodoro, focusedTaskId: action.payload, focusedHabitId: null },
+      }
+
+    case 'SET_FOCUSED_HABIT':
+      return {
+        ...state,
+        pomodoro: { ...state.pomodoro, focusedHabitId: action.payload, focusedTaskId: null },
       }
 
     case 'COMPLETE_POMODORO_SESSION':

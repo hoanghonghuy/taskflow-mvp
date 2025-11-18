@@ -60,6 +60,7 @@ type PomodoroAction =
   | { type: 'RESET_TIMER' }
   | { type: 'TICK_TIMER' }
   | { type: 'SET_FOCUSED_TASK'; payload: string | null }
+  | { type: 'SET_FOCUSED_HABIT'; payload: string | null }
   | { type: 'COMPLETE_POMODORO_SESSION' }
   | { type: 'UPDATE_POMODORO_SETTINGS'; payload: Partial<PomodoroState['settings']> }
 
