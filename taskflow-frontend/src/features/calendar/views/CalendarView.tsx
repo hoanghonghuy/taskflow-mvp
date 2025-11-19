@@ -309,8 +309,8 @@ const CalendarView: React.FC = () => {
                           )}
                         </div>
                         <span
-                          className="px-2 py-0.5 rounded-full text-[11px] font-medium"
-                          style={{ backgroundColor: `${PRIORITY_MAP[task.priority || 'none'].checkboxBorderValue}20`, color: PRIORITY_MAP[task.priority || 'none'].checkboxBorderValue }}
+                          className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-muted/40"
+                          style={{ color: PRIORITY_MAP[task.priority || 'none'].checkboxBorderValue }}
                         >
                           {t(PRIORITY_MAP[task.priority || 'none'].label)}
                         </span>

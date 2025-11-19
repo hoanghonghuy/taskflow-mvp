@@ -12,8 +12,21 @@ const CELL_GAP = 4   // gap-1
 const WEEK_WIDTH = CELL_SIZE + CELL_GAP
 const DAY_LABELS_WIDTH = 30 // width for day labels
 
-const LIGHT_SCALE = ['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39']
-const DARK_SCALE = ['#161b22', '#0e4429', '#006d32', '#26a641', '#39d353']
+const LIGHT_SCALE = [
+  'var(--color-heatmap-light-0)',
+  'var(--color-heatmap-light-1)',
+  'var(--color-heatmap-light-2)',
+  'var(--color-heatmap-light-3)',
+  'var(--color-heatmap-light-4)',
+]
+
+const DARK_SCALE = [
+  'var(--color-heatmap-dark-0)',
+  'var(--color-heatmap-dark-1)',
+  'var(--color-heatmap-dark-2)',
+  'var(--color-heatmap-dark-3)',
+  'var(--color-heatmap-dark-4)',
+]
 const FUTURE_OPACITY = 0.35
 const EMPTY_FOCUS_HISTORY: FocusSession[] = []
 

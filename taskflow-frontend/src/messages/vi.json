@@ -610,11 +610,11 @@
   "feature": {
     "toggleSidebar": "Bật/tắt thanh bên",
     "dashboard": "Bảng điều khiển",
-    "listView": "Chế độ danh sách",
-    "boardView": "Chế độ bảng",
-    "calendarView": "Chế độ lịch",
-    "matrixView": "Chế độ ma trận",
-    "habitTracker": "Theo dõi thói quen",
+    "listView": "Danh sách",
+    "boardView": "Bảng",
+    "calendarView": "Lịch",
+    "matrixView": "Ma trận",
+    "habitTracker": "Thói quen",
     "pomodoro": "Pomodoro",
     "countdown": "Đếm ngược",
     "more": "Thêm"

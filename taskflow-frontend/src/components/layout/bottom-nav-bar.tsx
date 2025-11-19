@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { useSettings } from '@/components/providers/settings-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
-import { StopwatchIcon, ListBulletIcon, CalendarDaysIcon, GridIcon, RepeatIcon, HourglassIcon, HomeIcon, ViewColumnsIcon } from '@/lib/icons'
+import { StopwatchIcon, ListBulletIcon, CalendarDaysIcon, GridIcon, RepeatIcon, HourglassIcon, HomeIcon, ViewColumnsIcon, MenuIcon } from '@/lib/icons'
 import type { View } from '@/types'
 import type { TranslationKey } from '@/lib/i18n/types'
 import { useRouter, usePathname } from 'next/navigation'
@@ -35,6 +35,7 @@ const MoreMenu: React.FC<MoreMenuProps> = ({ hiddenViews, currentView, onClose }
   const router = useRouter()
   const { t } = useI18n()
   const menuRef = useRef<HTMLDivElement>(null)
+  const firstItemRef = useRef<HTMLButtonElement | null>(null)
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -42,9 +43,27 @@ const MoreMenu: React.FC<MoreMenuProps> = ({ hiddenViews, currentView, onClose }
         onClose()
       }
     }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose()
+      }
+    }
+
     document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
   }, [onClose])
+
+  useEffect(() => {
+    if (firstItemRef.current) {
+      firstItemRef.current.focus()
+    }
+  }, [])
 
   const handleSelect = (view: View) => {
     router.push(getPathForView(view))
@@ -57,7 +76,7 @@ const MoreMenu: React.FC<MoreMenuProps> = ({ hiddenViews, currentView, onClose }
       className="absolute bottom-full right-0 mb-2 w-48 rounded-xl border border-border/80 bg-card shadow-xl backdrop-blur-xl animate-fade-in"
     >
       <div className="p-2 space-y-1">
-        {hiddenViews.map(view => {
+        {hiddenViews.map((view, index) => {
           const feature = ALL_FEATURES.find(f => f.view === view)
           if (!feature) return null
           const Icon = feature.icon
@@ -65,6 +84,7 @@ const MoreMenu: React.FC<MoreMenuProps> = ({ hiddenViews, currentView, onClose }
           return (
             <button
               key={view}
+              ref={index === 0 ? firstItemRef : undefined}
               onClick={() => handleSelect(view)}
               aria-current={isActive ? 'page' : undefined}
               className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-xl border transition-colors ${
@@ -94,6 +114,7 @@ function BottomNavButton({ feature, isActive, onSelect, label }: BottomNavButton
   const Icon = feature.icon
   return (
     <button
+      type="button"
       onClick={() => onSelect(feature.view)}
       aria-current={isActive ? 'page' : undefined}
       className={`bottom-nav-button relative flex flex-col items-center justify-center gap-1 flex-1 mx-1 text-[10px] ${
@@ -102,7 +123,7 @@ function BottomNavButton({ feature, isActive, onSelect, label }: BottomNavButton
       data-active={isActive ? 'true' : undefined}
     >
       <Icon className="h-6 w-6 relative" />
-      <span className="font-medium relative">{label}</span>
+      <span className="font-medium relative whitespace-nowrap">{label}</span>
       <span className="bottom-nav-indicator" aria-hidden="true" />
     </button>
   )
@@ -152,21 +173,22 @@ export default function BottomNavBar() {
         />
       ))}
       {hiddenFeatures.length > 0 && (
-        <div className="relative">
+        <div className="relative flex-1 flex">
           {(() => {
             const isMoreActive = isMoreMenuOpen || hasHiddenActive
             return (
           <button
+            type="button"
             onClick={() => setIsMoreMenuOpen(p => !p)}
-            className={`bottom-nav-button relative flex flex-col items-center justify-center gap-1 flex-1 mx-1 px-2 py-1 h-full w-16 ${
+            aria-haspopup="menu"
+            aria-expanded={isMoreActive}
+            className={`bottom-nav-button relative flex flex-col items-center justify-center gap-1 w-full mx-1 text-[10px] ${
               isMoreActive ? 'text-primary font-semibold' : 'text-muted-foreground'
             }`}
             data-active={isMoreActive ? 'true' : undefined}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
-            </svg>
-            <span className="font-medium relative text-[10px]">{t('feature.more')}</span>
+            <MenuIcon className="h-6 w-6" />
+            <span className="font-medium relative text-[10px] whitespace-nowrap">{t('feature.more')}</span>
             <span className="bottom-nav-indicator" aria-hidden="true" />
           </button>
             )

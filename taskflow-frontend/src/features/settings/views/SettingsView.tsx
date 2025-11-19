@@ -12,6 +12,7 @@ import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-
 import { NotificationSettings } from '@/components/settings/NotificationSettings'
 import { Switch } from '@/components/ui/switch'
 import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 
 const ALL_FEATURES: { view: View, icon: React.FC<{className?: string}>, label: TranslationKey }[] = [
   { view: 'dashboard', icon: HomeIcon, label: 'feature.dashboard' },
@@ -218,22 +219,20 @@ const SettingsView: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   {(['all', 'light', 'dark'] as const).map((filter) => (
-                    <button
+                    <Button
                       key={filter}
                       type="button"
                       onClick={() => setThemeFilter(filter)}
-                      className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                        themeFilter === filter
-                          ? 'border-primary bg-primary text-primary-foreground shadow-sm'
-                          : 'border-border text-muted-foreground hover:text-foreground'
-                      }`}
+                      variant={themeFilter === filter ? 'default' : 'outline'}
+                      size="sm"
+                      className="rounded-full px-3 py-1 text-xs font-semibold"
                     >
                       {filter === 'all'
                         ? t('settings.themePresets.filterAll')
                         : filter === 'light'
                           ? t('settings.themePresets.filterLight')
                           : t('settings.themePresets.filterDark')}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>
@@ -353,14 +352,15 @@ const SettingsView: React.FC = () => {
             <div className="flex items-center justify-between gap-3">
               <label htmlFor="focus-duration" className="font-medium text-sm">{t('settings.pomodoro.focusDuration')}</label>
               <div className="flex items-center gap-1">
-                <button
+                <Button
                   type="button"
+                  size="icon-sm"
+                  variant="outline"
                   onClick={() => stepPomodoroSetting('focusDuration', -1)}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card text-sm font-semibold text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   aria-label="Decrease focus duration"
                 >
                   –
-                </button>
+                </Button>
                 <input
                   id="focus-duration"
                   type="number"
@@ -369,27 +369,29 @@ const SettingsView: React.FC = () => {
                   onChange={(e) => handlePomodoroSettingChange('focusDuration', e.target.value)}
                   className="w-16 px-2 py-1 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-center"
                 />
-                <button
+                <Button
                   type="button"
+                  size="icon-sm"
+                  variant="outline"
                   onClick={() => stepPomodoroSetting('focusDuration', 1)}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card text-sm font-semibold text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   aria-label="Increase focus duration"
                 >
                   +
-                </button>
+                </Button>
               </div>
             </div>
             <div className="flex items-center justify-between gap-3">
               <label htmlFor="short-break" className="font-medium text-sm">{t('settings.pomodoro.shortBreak')}</label>
               <div className="flex items-center gap-1">
-                <button
+                <Button
                   type="button"
+                  size="icon-sm"
+                  variant="outline"
                   onClick={() => stepPomodoroSetting('shortBreakDuration', -1)}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card text-sm font-semibold text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   aria-label="Decrease short break duration"
                 >
                   –
-                </button>
+                </Button>
                 <input
                   id="short-break"
                   type="number"
@@ -398,27 +400,29 @@ const SettingsView: React.FC = () => {
                   onChange={(e) => handlePomodoroSettingChange('shortBreakDuration', e.target.value)}
                   className="w-16 px-2 py-1 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-center"
                 />
-                <button
+                <Button
                   type="button"
+                  size="icon-sm"
+                  variant="outline"
                   onClick={() => stepPomodoroSetting('shortBreakDuration', 1)}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card text-sm font-semibold text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   aria-label="Increase short break duration"
                 >
                   +
-                </button>
+                </Button>
               </div>
             </div>
             <div className="flex items-center justify-between gap-3">
               <label htmlFor="long-break" className="font-medium text-sm">{t('settings.pomodoro.longBreak')}</label>
               <div className="flex items-center gap-1">
-                <button
+                <Button
                   type="button"
+                  size="icon-sm"
+                  variant="outline"
                   onClick={() => stepPomodoroSetting('longBreakDuration', -1)}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card text-sm font-semibold text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   aria-label="Decrease long break duration"
                 >
                   –
-                </button>
+                </Button>
                 <input
                   id="long-break"
                   type="number"
@@ -427,27 +431,29 @@ const SettingsView: React.FC = () => {
                   onChange={(e) => handlePomodoroSettingChange('longBreakDuration', e.target.value)}
                   className="w-16 px-2 py-1 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-center"
                 />
-                <button
+                <Button
                   type="button"
+                  size="icon-sm"
+                  variant="outline"
                   onClick={() => stepPomodoroSetting('longBreakDuration', 1)}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card text-sm font-semibold text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   aria-label="Increase long break duration"
                 >
                   +
-                </button>
+                </Button>
               </div>
             </div>
             <div className="flex items-center justify-between gap-3">
               <label htmlFor="long-break-interval" className="font-medium text-sm">{t('settings.pomodoro.longBreakInterval')}</label>
               <div className="flex items-center gap-1">
-                <button
+                <Button
                   type="button"
+                  size="icon-sm"
+                  variant="outline"
                   onClick={() => stepInterval(-1)}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card text-sm font-semibold text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   aria-label="Decrease sessions until long break"
                 >
                   –
-                </button>
+                </Button>
                 <input
                   id="long-break-interval"
                   type="number"
@@ -456,14 +462,15 @@ const SettingsView: React.FC = () => {
                   onChange={(e) => handleIntervalChange(e.target.value)}
                   className="w-16 px-2 py-1 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-center"
                 />
-                <button
+                <Button
                   type="button"
+                  size="icon-sm"
+                  variant="outline"
                   onClick={() => stepInterval(1)}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card text-sm font-semibold text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   aria-label="Increase sessions until long break"
                 >
                   +
-                </button>
+                </Button>
               </div>
             </div>
           </div>

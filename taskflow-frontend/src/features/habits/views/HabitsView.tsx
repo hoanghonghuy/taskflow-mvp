@@ -114,17 +114,17 @@ const HabitsView: React.FC = () => {
     {
       label: t('habits.summary.total'),
       value: state.habits.length,
-      accent: 'from-purple-500/20 to-purple-500/5 text-purple-500',
+      colorToken: '--color-habits-summary-total',
     },
     {
       label: t('habits.summary.completedToday'),
       value: completedTodayCount,
-      accent: 'from-emerald-500/20 to-emerald-500/5 text-emerald-500',
+      colorToken: '--color-habits-summary-completed',
     },
     {
       label: t('habits.summary.longestStreak'),
       value: `${longestStreak} ${t('habits.summary.days')}`,
-      accent: 'from-amber-500/20 to-amber-500/5 text-amber-500',
+      colorToken: '--color-habits-summary-streak',
     },
   ]
 
@@ -191,10 +191,10 @@ const HabitsView: React.FC = () => {
           {summaryCards.map(card => (
             <div
               key={card.label}
-              className={`rounded-2xl border border-border bg-linear-to-br ${card.accent} p-4 backdrop-blur-sm`}
+              className="rounded-2xl border border-border bg-card p-4 shadow-sm"
             >
               <p className="text-sm text-muted-foreground">{card.label}</p>
-              <p className="text-2xl font-semibold">{card.value}</p>
+              <p className="text-2xl font-semibold text-foreground">{card.value}</p>
             </div>
           ))}
         </div>
@@ -218,17 +218,14 @@ const HabitsView: React.FC = () => {
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <button
+                      <Button
+                        type="button"
                         onClick={() => handleToggleCompletion(habit.id, today)}
-                        className={`
-                          px-4 py-2 rounded-lg font-medium transition-all border
-                          ${isCompletedToday
-                            ? 'bg-primary text-primary-foreground border-primary shadow'
-                            : 'bg-card text-muted-foreground border-border hover:border-primary/50'}
-                        `}
+                        variant={isCompletedToday ? 'default' : 'outline'}
+                        className={isCompletedToday ? 'shadow' : ''}
                       >
                         {isCompletedToday ? t('habits.completed') : t('habits.markComplete')}
-                      </button>
+                      </Button>
                       <button
                         onClick={() => handleDeleteHabit(habit.id, habit.name)}
                         className="p-2 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
@@ -254,8 +251,8 @@ const HabitsView: React.FC = () => {
                               onClick={() => toggleHabitCompletion(habit.id, dateKey)}
                               className={`w-10 h-10 rounded-xl border flex flex-col items-center justify-center text-xs font-semibold transition
                                 ${isCompleted
-                                  ? 'border-emerald-500 bg-emerald-500/90 text-white shadow-sm'
-                                  : 'border-border bg-card text-muted-foreground hover:border-emerald-400 hover:text-foreground'}
+                                  ? 'text-white shadow-sm border-[hsl(var(--color-habits-completed))] bg-[hsl(var(--color-habits-completed)/0.95)] hover:bg-[hsl(var(--color-habits-completed)/0.9)]'
+                                  : 'border-border bg-card text-muted-foreground hover:border-[hsl(var(--color-habits-completed-weak))] hover:text-foreground'}
                               `}
                             >
                               <span>{date.toLocaleDateString(settings.language || undefined, { weekday: 'short' }).slice(0, 2)}</span>
@@ -277,7 +274,9 @@ const HabitsView: React.FC = () => {
                               key={date}
                               className={`
                                 aspect-square rounded-md border transition-all cursor-pointer
-                                ${isCompleted ? 'bg-emerald-500 border-emerald-500 hover:bg-emerald-400' : 'bg-muted border-border hover:border-emerald-300'}
+                                ${isCompleted
+                                  ? 'bg-[hsl(var(--color-habits-completed))] border-[hsl(var(--color-habits-completed))] hover:bg-[hsl(var(--color-habits-completed-weak))]'
+                                  : 'bg-muted border-border hover:border-[hsl(var(--color-habits-completed-weak))]'}
                                 ${isTodayDate ? 'ring-2 ring-primary ring-offset-1' : ''}
                               `}
                               onClick={() => handleToggleCompletion(habit.id, date)}

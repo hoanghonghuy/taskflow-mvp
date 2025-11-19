@@ -1,3 +1,5 @@
+// Legacy mobile bottom navigation, kept temporarily for reference.
+// Current app layout uses BottomNavBar in src/components/layout/bottom-nav-bar.tsx instead.
 'use client'
 
 import Link from 'next/link'

@@ -32,6 +32,34 @@
   --color-destructive: 0 84.2% 60.2%;
   --color-destructive-foreground: 210 40% 98%;
   
+  /* Priority colors (match original blue/yellow/red/red palette) */
+  --color-priority-low: 217 91% 60%;      /* blue (was blue-500) */
+  --color-priority-medium: 47 95% 58%;    /* yellow (was yellow-500) */
+  --color-priority-high: 0 91% 69%;       /* red-400 */
+  --color-priority-urgent: 0 84% 60%;     /* red-500 */
+
+  /* Productivity heatmap colors (light theme) */
+  --color-heatmap-light-0: #ebedf0;
+  --color-heatmap-light-1: #9be9a8;
+  --color-heatmap-light-2: #40c463;
+  --color-heatmap-light-3: #30a14e;
+  --color-heatmap-light-4: #216e39;
+
+  /* Productivity heatmap colors (dark theme) */
+  --color-heatmap-dark-0: #161b22;
+  --color-heatmap-dark-1: #0e4429;
+  --color-heatmap-dark-2: #006d32;
+  --color-heatmap-dark-3: #26a641;
+  --color-heatmap-dark-4: #39d353;
+
+  /* Habits summary & grid colors */
+  --color-habits-summary-total: 270 91% 60%;     /* purple-like */
+  --color-habits-summary-completed: 160 84% 39%; /* emerald-like */
+  --color-habits-summary-streak: 36 92% 50%;     /* amber-like */
+
+  --color-habits-completed: 160 84% 39%;         /* emerald-like */
+  --color-habits-completed-weak: 160 84% 48%;    /* lighter emerald */
+  
   /* Border & Input */
   --color-border: 215 18% 85%;
   --color-input: 215 18% 85%;

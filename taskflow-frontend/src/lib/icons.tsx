@@ -6,6 +6,7 @@ export {
   SparklesIcon,
   RepeatIcon,
   MenuIcon,
+  MoreHorizontalIcon,
   HomeIcon,
   ListBulletIcon,
   StopwatchIcon,

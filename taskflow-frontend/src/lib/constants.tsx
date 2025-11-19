@@ -46,6 +46,23 @@ export const MenuIcon: React.FC<{ className?: string }> = ({ className }) => (
   </svg>
 )
 
+export const MoreHorizontalIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth={1.5}
+    stroke="currentColor"
+    className={className}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"
+    />
+  </svg>
+)
+
 export const HomeIcon: React.FC<{ className?: string }> = ({ className }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h7.5" />
@@ -334,35 +351,35 @@ export const PRIORITY_MAP: {
     icon: FlagIcon,
     color: 'text-muted-foreground',
     checkboxBorderColor: 'border-muted-foreground/50',
-    checkboxBorderValue: 'rgba(148, 163, 184, 0.7)',
+    checkboxBorderValue: 'hsl(var(--color-muted-foreground) / 0.7)',
   },
   low: {
     label: 'priority.low',
     icon: FlagIcon,
     color: 'text-blue-500',
     checkboxBorderColor: 'border-blue-500',
-    checkboxBorderValue: 'rgba(59, 130, 246, 0.9)',
+    checkboxBorderValue: 'hsl(var(--color-priority-low) / 0.9)',
   },
   medium: {
     label: 'priority.medium',
     icon: FlagIcon,
     color: 'text-yellow-500',
     checkboxBorderColor: 'border-yellow-500',
-    checkboxBorderValue: 'rgba(234, 179, 8, 0.9)',
+    checkboxBorderValue: 'hsl(var(--color-priority-medium) / 0.9)',
   },
   high: {
     label: 'priority.high',
     icon: FlagIcon,
     color: 'text-red-500',
     checkboxBorderColor: 'border-red-500',
-    checkboxBorderValue: 'rgba(248, 113, 113, 0.95)',
+    checkboxBorderValue: 'hsl(var(--color-priority-high) / 0.9)',
   },
   urgent: {
     label: 'priority.urgent',
     icon: FlagIcon,
     color: 'text-red-600',
     checkboxBorderColor: 'border-red-600',
-    checkboxBorderValue: 'rgba(239, 68, 68, 1)',
+    checkboxBorderValue: 'hsl(var(--color-priority-urgent))',
   },
 }
 
