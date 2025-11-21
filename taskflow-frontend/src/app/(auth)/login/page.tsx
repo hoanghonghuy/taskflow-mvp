@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useUser } from '@/components/providers/user-provider'
@@ -22,6 +22,21 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [emailError, setEmailError] = useState<string | null>(null)
   const [passwordError, setPasswordError] = useState<string | null>(null)
+
+  // Clear known dev/test credentials if they are ever auto-filled by the browser
+  useEffect(() => {
+    const isDevTestEmail = email === 'test@example.com' || email === 'dev@example.com'
+    const isDevTestPassword =
+      password === 'Password123!' || password === 'DevPassword123!'
+
+    if (isDevTestEmail) {
+      setEmail('')
+    }
+
+    if (isDevTestPassword) {
+      setPassword('')
+    }
+  }, [email, password])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -63,7 +78,7 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium">
                 {t('auth.email')}
@@ -72,6 +87,7 @@ export default function LoginPage() {
                 id="email"
                 type="email"
                 placeholder={t('auth.emailPlaceholder')}
+                autoComplete="off"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -87,6 +103,7 @@ export default function LoginPage() {
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder={t('auth.passwordPlaceholder')}
+                  autoComplete="off"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required

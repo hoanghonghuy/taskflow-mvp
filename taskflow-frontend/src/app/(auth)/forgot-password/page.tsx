@@ -55,7 +55,7 @@ export default function ForgotPasswordPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium">
                 {t('auth.email')}
@@ -64,6 +64,7 @@ export default function ForgotPasswordPage() {
                 id="email"
                 type="email"
                 placeholder={t('auth.emailPlaceholder')}
+                autoComplete="off"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required

@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useCallback } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import type { User } from '@/types'
 
@@ -63,31 +63,120 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     return null
   })
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const login = useCallback(async (email: string, _password: string) => {
-    // Mock login - in a real app, you'd call an API
-    // For mock, use the default user
-    setUser(MOCK_USER)
-    localStorage.setItem('user', JSON.stringify(MOCK_USER))
-    localStorage.setItem('isAuthenticated', 'true')
+  const [lastRefreshAt, setLastRefreshAt] = useState<number | null>(null)
+
+  const login = useCallback(async (email: string, password: string) => {
+    const response = await fetch('/api/auth/[...nextauth]', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'login', email, password }),
+    })
+
+    if (!response.ok) {
+      throw new Error(`Login failed with status ${response.status}`)
+    }
+
+    const data = (await response.json().catch(() => null)) as { user?: User } | null
+
+    if (data && data.user) {
+      // Clear any previous taskflow state so new user starts from backend data only
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('taskflowState')
+      }
+
+      setUser(data.user)
+      localStorage.setItem('user', JSON.stringify(data.user))
+      localStorage.setItem('isAuthenticated', 'true')
+      return
+    }
+
+    throw new Error('Login response did not contain user data')
   }, [])
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const register = useCallback(async (name: string, email: string, _password: string) => {
-    // Mock register - logs info and then logs in the user
-    console.log(t('console.mockRegistration'), { name, email })
-    // Use default user for mock
-    setUser(MOCK_USER)
-    localStorage.setItem('user', JSON.stringify(MOCK_USER))
-    localStorage.setItem('isAuthenticated', 'true')
-  }, [t])
+  const register = useCallback(async (name: string, email: string, password: string) => {
+    const response = await fetch('/api/auth/[...nextauth]', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'register', name, email, password }),
+    })
 
-  const logout = useCallback(() => {
+    if (!response.ok) {
+      throw new Error(`Register failed with status ${response.status}`)
+    }
+
+    // After successful registration, attempt login to obtain JWT cookie and user
+    await login(email, password)
+  }, [login])
+
+  const logout = useCallback(async () => {
+    try {
+      await fetch('/api/auth/[...nextauth]', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'logout' }),
+      })
+    } catch (error) {
+      console.error('Logout failed', error)
+    }
+
     setUser(null)
     localStorage.removeItem('user')
     localStorage.removeItem('isAuthenticated')
     localStorage.removeItem('taskflowState')
   }, [])
+
+  const refreshSession = useCallback(async () => {
+    if (!user) return
+
+    try {
+      const response = await fetch('/api/auth/[...nextauth]', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'refresh' }),
+      })
+
+      if (!response.ok) {
+        // If refresh fails (expired/invalid refresh token), log out the user to avoid
+        // keeping a stale authenticated state on the client.
+        await logout()
+        return
+      }
+
+      setLastRefreshAt(Date.now())
+    } catch (error) {
+      console.error('Failed to refresh auth session', error)
+      await logout()
+    }
+  }, [logout, user])
+
+  // Periodically refresh token while the user is authenticated
+  useEffect(() => {
+    if (!user) return
+
+    const interval = setInterval(() => {
+      void refreshSession()
+    }, 10 * 60 * 1000) // every 10 minutes
+
+    return () => clearInterval(interval)
+  }, [user, refreshSession])
+
+  // Attempt refresh when the tab becomes visible again
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && user) {
+        // Avoid spamming refresh on rapid focus changes
+        const now = Date.now()
+        if (!lastRefreshAt || now - lastRefreshAt > 60 * 1000) {
+          void refreshSession()
+        }
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [user, lastRefreshAt, refreshSession])
 
   const updateProfile = useCallback((updates: Partial<User>) => {
     setUser((prev) => {

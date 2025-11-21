@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useUser } from '@/components/providers/user-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
+import { useToast } from '@/lib/hooks/use-toast'
 import { Sidebar } from '@/components/layout/sidebar'
 import FeatureBar from '@/components/layout/feature-bar'
 import BottomNavBar from '@/components/layout/bottom-nav-bar'
@@ -25,8 +26,9 @@ export default function AppLayout({
 }) {
   const router = useRouter()
   const pathname = usePathname()
-  const { isAuthenticated } = useUser()
+  const { isAuthenticated, logout } = useUser()
   const { t } = useI18n()
+  const { error } = useToast()
   const { state } = useTaskManager()
   const modal = useModal()
   const [isSidebarOpen, setSidebarOpen] = useState<boolean>(() => {
@@ -97,18 +99,32 @@ export default function AppLayout({
   })()
 
   const isClient = typeof window !== 'undefined'
+  const [checkingSession, setCheckingSession] = useState(true)
 
   useEffect(() => {
-    if (!isClient) return
-    if (!isAuthenticated) {
-      router.push('/login')
+    if (!isClient) {
+      setCheckingSession(false)
+      return
     }
+
+    const verifySession = async () => {
+      if (!isAuthenticated) {
+        setCheckingSession(false)
+        router.push('/login')
+        return
+      }
+
+      // Rely on frontend auth state; backend will still enforce JWT validity per-request.
+      setCheckingSession(false)
+    }
+
+    void verifySession()
   }, [isClient, isAuthenticated, router])
 
   // Theme is handled by SettingsProvider
 
-  // Show loading state during hydration to prevent mismatch
-  if (!isClient || !isAuthenticated) {
+  // Show loading state during hydration and session verification to prevent mismatch
+  if (!isClient || checkingSession) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
