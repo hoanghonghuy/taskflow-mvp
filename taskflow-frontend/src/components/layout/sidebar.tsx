@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from 'react'
 import { useTaskManager } from '@/lib/hooks/use-task-manager'
+import { useListActions } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import { useUser } from '@/components/providers/user-provider'
 import { SPECIAL_LISTS_CONFIG, TAG_COLORS } from '@/lib/task-constants'
@@ -22,6 +23,7 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: SidebarProps) {
   const { state, dispatch } = useTaskManager()
+  const { addList, deleteList } = useListActions()
   const { t } = useI18n()
   const { user } = useUser()
   const router = useRouter()
@@ -33,10 +35,17 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
   const [isTagsExpanded, setIsTagsExpanded] = useState(true)
   const [isProfileDialogOpen, setProfileDialogOpen] = useState(false)
 
-  const handleAddList = (e: React.FormEvent) => {
+  const handleAddList = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (newList.trim()) {
-      dispatch({ type: 'ADD_LIST', payload: { name: newList.trim(), color: '#6b7280', members: [] } })
+    const name = newList.trim()
+    if (!name) return
+
+    try {
+      await addList({ name, color: '#6b7280', members: [] })
+      addToast.success(t('sidebar.addList.success', { listName: name }))
+    } catch (error) {
+      console.error('Failed to add list via useListActions', error)
+    } finally {
       setNewList('')
     }
   }
@@ -58,7 +67,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
     })
 
     if (isConfirmed) {
-      dispatch({ type: 'DELETE_LIST', payload: listId })
+      await deleteList(listId)
       addToast.success(t('sidebar.deleteList.success', { listName }))
     }
   }

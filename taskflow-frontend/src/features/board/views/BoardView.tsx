@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
-import { useTaskManager } from '@/components/providers/task-manager-provider'
+import { useTaskManager, useTaskActions } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import BoardColumn from '@/features/board/components/BoardColumn'
 import { PlusIcon } from '@/lib/icons'
@@ -14,6 +14,7 @@ interface BoardViewProps {
 const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
   const { state, dispatch } = useTaskManager()
   const { t } = useI18n()
+  const { moveTaskToColumn } = useTaskActions()
   const initialListId = state.lists.find(l => l.id !== 'inbox')?.id || state.lists[0]?.id || ''
   const [selectedListId, setSelectedListId] = useState<string>(() => initialListId)
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null)
@@ -42,10 +43,7 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
 
   const handleDropOnColumn = (columnId: string) => {
     if (draggedTaskId) {
-      dispatch({
-        type: 'MOVE_TASK_TO_COLUMN',
-        payload: { taskId: draggedTaskId, newColumnId: columnId, listId: selectedListId },
-      })
+      void moveTaskToColumn(draggedTaskId, columnId, selectedListId)
     }
     setDraggedTaskId(null)
     setDragOverColumnId(null)

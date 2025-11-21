@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useUser } from '@/components/providers/user-provider'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
@@ -9,12 +9,23 @@ import { CalendarIcon, CheckCircleIcon, ClockIcon, TrophyIcon } from 'lucide-rea
 import { toYYYYMMDD } from '@/lib/utils/date-helpers'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
 
+type ProfileSummary = {
+  totalTasks: number
+  completedTasks: number
+  completionRate: number
+  totalHabits: number
+  completedHabitsToday: number
+  totalFocusTime: number
+  totalPomos: number
+  unlockedAchievements: number
+}
+
 const ProfileView: React.FC = () => {
   const { user } = useUser()
   const { state } = useTaskManager()
   const { t } = useI18n()
 
-  const stats = useMemo(() => {
+  const localStats = useMemo<ProfileSummary>(() => {
     const totalTasks = state.tasks.length
     const completedTasks = state.tasks.filter(t => t.completed).length
     const totalHabits = state.habits.length
@@ -35,6 +46,44 @@ const ProfileView: React.FC = () => {
       unlockedAchievements,
     }
   }, [state])
+
+  const [remoteStats, setRemoteStats] = useState<ProfileSummary | null>(null)
+
+  useEffect(() => {
+    let isMounted = true
+
+    const loadProfileSummary = async () => {
+      try {
+        const response = await fetch('/api/profile/summary', { method: 'GET', credentials: 'include' })
+        if (!response.ok) {
+          return
+        }
+        const data = (await response.json().catch(() => null)) as Partial<ProfileSummary> | null
+        if (!data || !isMounted) return
+
+        setRemoteStats(prev => ({
+          totalTasks: data.totalTasks ?? prev?.totalTasks ?? localStats.totalTasks,
+          completedTasks: data.completedTasks ?? prev?.completedTasks ?? localStats.completedTasks,
+          completionRate: data.completionRate ?? prev?.completionRate ?? localStats.completionRate,
+          totalHabits: data.totalHabits ?? prev?.totalHabits ?? localStats.totalHabits,
+          completedHabitsToday: data.completedHabitsToday ?? prev?.completedHabitsToday ?? localStats.completedHabitsToday,
+          totalFocusTime: data.totalFocusTime ?? prev?.totalFocusTime ?? localStats.totalFocusTime,
+          totalPomos: data.totalPomos ?? prev?.totalPomos ?? localStats.totalPomos,
+          unlockedAchievements: data.unlockedAchievements ?? prev?.unlockedAchievements ?? localStats.unlockedAchievements,
+        }))
+      } catch (error) {
+        console.error('Failed to load profile summary from backend', error)
+      }
+    }
+
+    void loadProfileSummary()
+
+    return () => {
+      isMounted = false
+    }
+  }, [localStats])
+
+  const stats = remoteStats ?? localStats
 
   const formatDuration = (seconds: number) => {
     const hours = Math.floor(seconds / 3600)

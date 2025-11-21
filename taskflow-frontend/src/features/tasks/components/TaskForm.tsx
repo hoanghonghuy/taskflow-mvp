@@ -28,7 +28,7 @@ interface TaskFormProps {
 const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
   const { state } = useTaskManager()
   const { addTask } = useTaskActions()
-  const { t } = useI18n()
+  const { t, currentLanguage } = useI18n()
   const { isAvailable: isGeminiAvailable } = useGemini()
   const addToast = useToast()
 
@@ -92,30 +92,45 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
     if (!textToAnalyze.trim()) return
     setIsAnalyzing(true)
     try {
+      const text = textToAnalyze.trim()
       // TODO: Implement Gemini text analysis when API is ready
       // For now, just extract basic info from text
-      const text = textToAnalyze.trim()
-      
-      // Simple extraction (can be enhanced with Gemini later)
-      const titleMatch = text.match(/^(.*?)(?:\.|$)/)
-      if (titleMatch) {
-        setTitle(titleMatch[1].trim())
+
+      const response = await fetch('/api/ai/tasks/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, language: currentLanguage }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to analyze task text: ${response.status}`)
       }
-      
-      // Look for date patterns
-      const datePatterns = [
-        /(?:tomorrow|ngày mai)/i,
-        /(?:today|hôm nay)/i,
-        /(?:next week|tuần sau)/i,
-      ]
-      
-      const hasDate = datePatterns.some(pattern => pattern.test(text))
-      if (hasDate) {
-        const tomorrow = new Date()
-        tomorrow.setDate(tomorrow.getDate() + 1)
-        setDueDate(tomorrow.toISOString().split('T')[0])
+
+      const data = await response.json().catch(() => null) as {
+        title?: string
+        dueDate?: string | null
+        priority?: string | null
+        tags?: string[]
+      } | null
+
+      if (data && typeof data.title === 'string' && data.title.trim()) {
+        setTitle(data.title.trim())
       }
-      
+
+      if (data && data.dueDate) {
+        const parsed = new Date(data.dueDate)
+        if (!Number.isNaN(parsed.getTime())) {
+          setDueDate(parsed.toISOString().split('T')[0])
+        }
+      }
+
+      if (data && typeof data.priority === 'string') {
+        const lower = data.priority.toLowerCase()
+        if (lower === 'none' || lower === 'low' || lower === 'medium' || lower === 'high' || lower === 'urgent') {
+          setPriority(lower as Priority)
+        }
+      }
+
       setTextToAnalyze('')
       addToast.success(t('taskForm.analyzeAndFill'))
     } catch (error: unknown) {

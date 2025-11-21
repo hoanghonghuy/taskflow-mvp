@@ -14,6 +14,8 @@ interface TaskListProps {
   onAddTask?: () => void
 }
 
+const PAGE_SIZE = 50
+
 const TaskList: React.FC<TaskListProps> = ({ onAddTask }) => {
   const { state } = useTaskManager()
   const { t } = useI18n()
@@ -95,6 +97,13 @@ const TaskList: React.FC<TaskListProps> = ({ onAddTask }) => {
       state.tasks
     )
   }, [filteredTasks, state.sortOrder, state.tasks])
+
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+
+  const visibleUncompletedTasks = useMemo(
+    () => uncompletedTasks.slice(0, visibleCount),
+    [uncompletedTasks, visibleCount],
+  )
 
   const completedTasks = useMemo(() => {
     return sortTasks(
@@ -199,9 +208,22 @@ const TaskList: React.FC<TaskListProps> = ({ onAddTask }) => {
             )
           ))
         ) : (
-          <div className="space-y-2">
-            {renderTaskItems(uncompletedTasks)}
-          </div>
+          <>
+            <div className="space-y-2">
+              {renderTaskItems(visibleUncompletedTasks)}
+            </div>
+            {visibleCount < uncompletedTasks.length && (
+              <div className="mt-4 flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => setVisibleCount(prev => Math.min(prev + PAGE_SIZE, uncompletedTasks.length))}
+                  className="px-4 py-2 text-sm rounded-md border border-border text-muted-foreground hover:bg-secondary/80 transition-colors"
+                >
+                  {t('taskList.loadMore')}
+                </button>
+              </div>
+            )}
+          </>
         )}
         {onAddTask && (
           <button 

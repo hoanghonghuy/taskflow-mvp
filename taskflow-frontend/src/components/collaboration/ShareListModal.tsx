@@ -1,12 +1,12 @@
 'use client'
 
 import React, { useState } from 'react'
-import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useUser } from '@/components/providers/user-provider'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import type { List } from '@/types'
 import { CloseIcon, PlusIcon, TrashIcon } from '@/lib/icons'
 import { Avatar } from '@/components/ui/avatar'
+import { useListActions } from '@/lib/hooks/use-task-manager'
 
 interface ShareListModalProps {
   list: List
@@ -14,9 +14,9 @@ interface ShareListModalProps {
 }
 
 const ShareListModal: React.FC<ShareListModalProps> = ({ list, onClose }) => {
-  const { dispatch } = useTaskManager()
   const { t } = useI18n()
   const { allUsers, user: currentUser } = useUser()
+  const { updateList } = useListActions()
   const [memberIds, setMemberIds] = useState<string[]>(list.members || [])
   
   const handleAddMember = (userId: string) => {
@@ -32,7 +32,7 @@ const ShareListModal: React.FC<ShareListModalProps> = ({ list, onClose }) => {
   }
   
   const handleSave = () => {
-    dispatch({ type: 'UPDATE_LIST_MEMBERS', payload: { listId: list.id, memberIds } })
+    void updateList({ ...list, members: memberIds })
     onClose()
   }
 

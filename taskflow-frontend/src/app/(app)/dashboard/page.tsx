@@ -56,6 +56,26 @@ const isOverdue = (date: Date): boolean => {
 
 const toYYYYMMDD = (date: Date) => date.toISOString().split('T')[0]
 
+type DashboardStats = {
+  today: number
+  upcoming: number
+  habitsCompleted: number
+  habitsTotal: number
+}
+
+type ProfileSummaryResponse = {
+  totalTasks: number
+  completedTasks: number
+  completionRate: number
+  totalHabits: number
+  completedHabitsToday: number
+  totalFocusTime: number
+  totalPomos: number
+  unlockedAchievements: number
+  todayTasksPending?: number
+  upcomingTasksPending?: number
+}
+
 export default function DashboardPage() {
   const { state, dispatch } = useTaskManager()
   const { t } = useI18n()
@@ -63,7 +83,7 @@ export default function DashboardPage() {
   const { openBriefing } = useModal()
   const { settings } = useSettings()
 
-  const stats = useMemo(() => {
+  const localStats = useMemo<DashboardStats>(() => {
     const uncompletedTasks = state.tasks.filter(t => !t.completed)
     const todayTasks = uncompletedTasks.filter(t => {
       if (!t.dueDate) return false
@@ -83,7 +103,42 @@ export default function DashboardPage() {
       habitsTotal: state.habits.length
     }
   }, [state.tasks, state.habits])
-  
+
+  const [remoteStats, setRemoteStats] = useState<DashboardStats | null>(null)
+
+  useEffect(() => {
+    let isMounted = true
+
+    const loadSummary = async () => {
+      try {
+        const response = await fetch('/api/profile/summary', { method: 'GET', credentials: 'include' })
+        if (!response.ok) {
+          return
+        }
+
+        const data = (await response.json().catch(() => null)) as Partial<ProfileSummaryResponse> | null
+        if (!data || !isMounted) return
+
+        setRemoteStats((prev) => ({
+          today: data.todayTasksPending ?? prev?.today ?? localStats.today,
+          upcoming: data.upcomingTasksPending ?? prev?.upcoming ?? localStats.upcoming,
+          habitsCompleted: data.completedHabitsToday ?? prev?.habitsCompleted ?? localStats.habitsCompleted,
+          habitsTotal: data.totalHabits ?? prev?.habitsTotal ?? localStats.habitsTotal,
+        }))
+      } catch (error) {
+        console.error('Failed to load dashboard summary from backend', error)
+      }
+    }
+
+    void loadSummary()
+
+    return () => {
+      isMounted = false
+    }
+  }, [localStats])
+
+  const stats = remoteStats ?? localStats
+
   const animatedToday = useCountUp(stats.today)
   const animatedUpcoming = useCountUp(stats.upcoming)
   const animatedHabits = useCountUp(stats.habitsCompleted)

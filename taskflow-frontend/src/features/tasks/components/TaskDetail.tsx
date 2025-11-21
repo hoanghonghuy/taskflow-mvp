@@ -32,7 +32,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   const { t } = useI18n()
   const router = useRouter()
   const { allUsers, user: currentUser } = useUser()
-  const { deleteTask } = useTaskActions()
+  const { deleteTask, syncSubtasks, syncComments, updateTask: updateTaskApi } = useTaskActions()
   const { confirm } = useConfirmation()
   const { isAvailable: isGeminiAvailable } = useGemini()
   const task = useMemo<Task | null>(() => {
@@ -81,9 +81,9 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
     dispatch({ type: 'SET_SELECTED_TASK', payload: null })
   }
 
-  const updateTask = (updates: Partial<Task>) => {
+  const applyTaskUpdates = (updates: Partial<Task>) => {
     const updatedTask = { ...task, ...updates }
-    dispatch({ type: 'UPDATE_TASK', payload: updatedTask })
+    void updateTaskApi(updatedTask)
   }
 
   const handleStartFocus = () => {
@@ -95,18 +95,20 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
 
   const handleSubtaskChange = (subtaskId: string, completed: boolean) => {
     const newSubtasks = task.subtasks.map(st => st.id === subtaskId ? { ...st, completed } : st)
-    updateTask({ subtasks: newSubtasks })
+    void syncSubtasks(task.id, newSubtasks)
   }
 
   const handleDeleteSubtask = (subtaskId: string) => {
-    updateTask({ subtasks: task.subtasks.filter(st => st.id !== subtaskId) })
+    const newSubtasks = task.subtasks.filter(st => st.id !== subtaskId)
+    void syncSubtasks(task.id, newSubtasks)
   }
 
   const handleAddSubtask = (e: React.FormEvent) => {
     e.preventDefault()
     if (newSubtask.trim()) {
       const subtask: Subtask = { id: Date.now().toString(), title: newSubtask.trim(), completed: false }
-      updateTask({ subtasks: [...task.subtasks, subtask] })
+      const newSubtasks = [...task.subtasks, subtask]
+      void syncSubtasks(task.id, newSubtasks)
       setNewSubtask('')
     }
   }
@@ -116,14 +118,14 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
       e.preventDefault()
       const trimmedTag = newTag.trim().toLowerCase()
       if (trimmedTag && !task.tags.includes(trimmedTag)) {
-        updateTask({ tags: [...task.tags, trimmedTag] })
+        applyTaskUpdates({ tags: [...task.tags, trimmedTag] })
       }
       setNewTag('')
     }
   }
 
   const handleRemoveTag = (tagToRemove: string) => {
-    updateTask({ tags: task.tags.filter(tag => tag !== tagToRemove) })
+    applyTaskUpdates({ tags: task.tags.filter(tag => tag !== tagToRemove) })
   }
 
   // Drag and Drop handlers for tags
@@ -141,7 +143,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
     const newTags = [...task.tags]
     const [draggedItem] = newTags.splice(draggedTagIndex, 1)
     newTags.splice(dropIndex, 0, draggedItem)
-    updateTask({ tags: newTags })
+    applyTaskUpdates({ tags: newTags })
     setDraggedTagIndex(null)
   }
   const handleTagDragEnd = () => setDraggedTagIndex(null)
@@ -155,7 +157,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   }
 
   const handleAssignTask = (userId: string | null) => {
-    dispatch({ type: 'ASSIGN_TASK', payload: { taskId: task.id, userId } })
+    applyTaskUpdates({ assigneeId: userId })
   }
 
   const handleDeleteTask = async () => {
@@ -177,7 +179,8 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
       content,
       timestamp: new Date().toISOString(),
     }
-    dispatch({ type: 'ADD_COMMENT', payload: { taskId: task.id, comment: newComment } })
+    const newComments = [...task.comments, newComment]
+    void syncComments(task.id, newComments)
   }
 
   // Drag and Drop handlers for subtasks
@@ -195,7 +198,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
     const newSubtasks = [...task.subtasks]
     const [draggedItem] = newSubtasks.splice(draggedIndex, 1)
     newSubtasks.splice(dropIndex, 0, draggedItem)
-    updateTask({ subtasks: newSubtasks })
+    void syncSubtasks(task.id, newSubtasks)
     setDraggedIndex(null)
   }
   const handleDragEnd = () => setDraggedIndex(null)
@@ -246,7 +249,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
             <input
               type="text"
               value={task.title}
-              onChange={(e) => updateTask({ title: e.target.value })}
+              onChange={(e) => applyTaskUpdates({ title: e.target.value })}
               className="text-2xl md:text-3xl font-semibold bg-transparent w-full focus:outline-none"
             />
             <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold border ${priorityClasses.checkboxBorderColor.replace('border-', 'border')} ${priorityClasses.color}`}>
@@ -295,7 +298,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
             <textarea
               id="task-description"
               value={task.description || ''}
-              onChange={(e) => updateTask({ description: e.target.value })}
+              onChange={(e) => applyTaskUpdates({ description: e.target.value })}
               rows={4}
               placeholder={t('taskDetail.descriptionPlaceholder')}
               className="mt-1 w-full p-2 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
@@ -327,7 +330,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
               <select
                 id="task-priority"
                 value={task.priority}
-                onChange={(e) => updateTask({ priority: e.target.value as Priority })}
+                onChange={(e) => applyTaskUpdates({ priority: e.target.value as Priority })}
                 className="w-full p-2 bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
               >
                 {(Object.keys(PRIORITY_MAP) as (keyof typeof PRIORITY_MAP)[]).map(priorityKey => {
@@ -347,7 +350,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
               <input
                 type="date"
                 value={task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : ''}
-                onChange={(e) => updateTask({ dueDate: e.target.value ? new Date(e.target.value).toISOString() : undefined })}
+                onChange={(e) => applyTaskUpdates({ dueDate: e.target.value ? new Date(e.target.value).toISOString() : undefined })}
                 className="w-full p-2 bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
               />
             </div>
@@ -357,7 +360,10 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
               </span>
               <select
                 value={task.reminderMinutes || ''}
-                onChange={(e) => updateTask({ reminderMinutes: e.target.value ? parseInt(e.target.value) : undefined })}
+                onChange={(e) => {
+                  const value = e.target.value ? parseInt(e.target.value) : undefined
+                  applyTaskUpdates({ reminderMinutes: value })
+                }}
                 className="w-full p-2 bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
               >
                 <option value="">{t('taskDetail.noReminder')}</option>
@@ -463,7 +469,12 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                   <input 
                     type="text" 
                     value={st.title} 
-                    onChange={(e) => updateTask({ subtasks: task.subtasks.map(sub => sub.id === st.id ? {...sub, title: e.target.value} : sub)})}
+                    onChange={(e) => {
+                      const newSubtasks = task.subtasks.map(sub =>
+                        sub.id === st.id ? { ...sub, title: e.target.value } : sub
+                      )
+                      void syncSubtasks(task.id, newSubtasks)
+                    }}
                     className={`grow bg-transparent text-sm ${st.completed ? 'line-through text-muted-foreground' : ''} focus:outline-none`} 
                   />
                   <button
