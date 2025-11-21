@@ -47,29 +47,30 @@ taskflow-frontend/next-env.d.ts
 # ============================================
 
 # User-specific files
-taskflow-backend/**/*.suo
-taskflow-backend/**/*.user
-taskflow-backend/**/*.userosscache
-taskflow-backend/**/*.sln.docstates
+backend/**/*.suo
+backend/**/*.user
+backend/**/*.userosscache
+backend/**/*.sln.docstates
 
 # Build results
-taskflow-backend/**/[Dd]ebug/
-taskflow-backend/**/[Dd]ebugPublic/
-taskflow-backend/**/[Rr]elease/
-taskflow-backend/**/[Rr]eleases/
-taskflow-backend/**/x64/
-taskflow-backend/**/x86/
-taskflow-backend/**/[Ww][Ii][Nn]32/
-taskflow-backend/**/[Aa][Rr][Mm]/
-taskflow-backend/**/[Aa][Rr][Mm]64/
-taskflow-backend/**/bld/
-taskflow-backend/**/[Bb]in/
-taskflow-backend/**/[Oo]bj/
+backend/**/[Dd]ebug/
+backend/**/[Dd]ebugPublic/
+backend/**/[Rr]elease/
+backend/**/[Rr]eleases/
+backend/**/x64/
+backend/**/x86/
+backend/**/[Ww][Ii][Nn]32/
+backend/**/[Aa][Rr][Mm]/
+backend/**/[Aa][Rr][Mm]64/
+backend/**/bld/
+backend/**/[Bb]in/
+backend/**/[Oo]bj/
+backend/**/[Tt]est[Rr]esults/
 
 # .NET Core
-taskflow-backend/**/project.lock.json
-taskflow-backend/**/project.fragment.lock.json
-taskflow-backend/**/artifacts/
+backend/**/project.lock.json
+backend/**/project.fragment.lock.json
+backend/**/artifacts/
 
 # ============================================
 # Database
@@ -78,6 +79,11 @@ taskflow-backend/**/artifacts/
 # PostgreSQL
 *.sql.backup
 *.sql.gz
+
+# Local SQLite / test databases
+backend/**/*.db
+backend/**/*.sqlite
+backend/**/*.sqlite3
 
 # ============================================
 # IDE / Editor
