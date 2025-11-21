@@ -29,7 +29,7 @@ const MarkdownRenderer: React.FC<{ content: string }> = ({ content }) => {
 const DailyBriefingModal: React.FC<DailyBriefingModalProps> = ({ onClose }) => {
   const { state } = useTaskManager()
   const { isAvailable } = useGemini()
-  const { t } = useI18n()
+  const { t, currentLanguage } = useI18n()
   const addToast = useToast()
   const [briefing, setBriefing] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -45,79 +45,25 @@ const DailyBriefingModal: React.FC<DailyBriefingModalProps> = ({ onClose }) => {
       try {
         // TODO: Implement Gemini API call when backend is ready
         // For now, generate a mock briefing (i18n-based)
-        const today = new Date()
-        const todayTasks = state.tasks.filter(task => {
-          if (!task.dueDate) return false
-          const dueDate = new Date(task.dueDate)
-          return dueDate.toDateString() === today.toDateString()
-        })
-        const completedHabits = state.habits.filter(habit => {
-          const todayStr = today.toISOString().split('T')[0]
-          return habit.completions.includes(todayStr)
+
+        const response = await fetch('/api/ai/briefing', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ language: currentLanguage }),
         })
 
-        const timeOfDayKey =
-          today.getHours() < 12
-            ? 'briefing.mock.timeOfDay.morning'
-            : today.getHours() < 18
-              ? 'briefing.mock.timeOfDay.afternoon'
-              : 'briefing.mock.timeOfDay.evening'
-
-        const timeOfDayLabel = t(timeOfDayKey)
-
-        const sections: string[] = []
-
-        sections.push(
-          `**${t('briefing.mock.greeting', { timeOfDay: timeOfDayLabel })}**`,
-          '',
-          t('briefing.mock.intro', { date: today.toLocaleDateString() }),
-          '',
-          `**${t('briefing.mock.sectionTasksTitle')}**`
-        )
-
-        if (todayTasks.length > 0) {
-          sections.push(
-            t('briefing.mock.sectionTasksWithItems', { count: todayTasks.length.toString() }),
-            ...todayTasks.map(task => `- ${task.title}`)
-          )
-        } else {
-          sections.push(t('briefing.mock.sectionTasksNoItems'))
+        if (!response.ok) {
+          throw new Error(`Failed to load briefing: ${response.status}`)
         }
 
-        sections.push(
-          '',
-          `**${t('briefing.mock.sectionHabitsTitle')}**`
-        )
+        const data = await response.json().catch(() => null) as { content?: string }
+        const content = data && typeof data.content === 'string' ? data.content : ''
 
-        if (completedHabits.length > 0) {
-          sections.push(
-            t('briefing.mock.sectionHabitsWithItems', { count: completedHabits.length.toString() })
-          )
-        } else {
-          sections.push(t('briefing.mock.sectionHabitsNoItems'))
+        if (!content) {
+          throw new Error('Empty briefing content')
         }
 
-        sections.push(
-          '',
-          `**${t('briefing.mock.sectionFocusTitle')}**`,
-          t('briefing.mock.sectionFocusBody', { count: state.pomodoro.sessionsCompleted.toString() }),
-          state.pomodoro.sessionsCompleted > 0
-            ? t('briefing.mock.sectionFocusPositive')
-            : t('briefing.mock.sectionFocusZero'),
-          '',
-          `**${t('briefing.mock.sectionRecommendTitle')}**`,
-          todayTasks.length > 0
-            ? t('briefing.mock.recommendWithTasks')
-            : t('briefing.mock.recommendNoTasks'),
-          '',
-          t('briefing.mock.outro')
-        )
-
-        const mockBriefing = sections.join('\n')
-
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1500))
-        setBriefing(mockBriefing)
+        setBriefing(content)
       } catch (err: unknown) {
         const message =
           typeof err === 'object' && err !== null && 'message' in err && typeof (err as { message?: string }).message === 'string'
@@ -131,7 +77,7 @@ const DailyBriefingModal: React.FC<DailyBriefingModalProps> = ({ onClose }) => {
     }
 
     fetchBriefing()
-  }, [state.tasks, state.habits, state.pomodoro.sessionsCompleted, isAvailable, addToast, t])
+  }, [isAvailable, addToast, t, currentLanguage])
 
   return (
     <div className="fixed inset-0 bg-black/50 z-40 flex items-center justify-center p-4 animate-fade-in">

@@ -21,7 +21,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ onClose }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { isAvailable } = useGemini()
   const addToast = useToast()
-  const { t } = useI18n()
+  const { t, currentLanguage } = useI18n()
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -49,6 +49,10 @@ const Chatbot: React.FC<ChatbotProps> = ({ onClose }) => {
     }
 
     const currentInput = input
+    const conversationForBackend = [...messages, userMessage].map((m) => ({
+      role: m.role === 'user' ? 'user' : 'model',
+      text: m.text,
+    }))
     setInput('')
     setIsLoading(true)
     setMessages(prev => [...prev, userMessage])
@@ -60,13 +64,30 @@ const Chatbot: React.FC<ChatbotProps> = ({ onClose }) => {
     try {
       // TODO: Implement Gemini API call when backend is ready
       // For now, generate a mock response
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      const mockResponse = t('chatbot.mockResponse', { input: currentInput })
-      
+
+      const response = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: conversationForBackend,
+          language: currentLanguage,
+          thinkingMode: useThinkingMode,
+          searchGrounding: useSearchGrounding,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to send chat message: ${response.status}`)
+      }
+
+      const data = await response.json().catch(() => null) as { content?: string } | null
+      const reply = data && typeof data.content === 'string' && data.content.trim()
+        ? data.content
+        : t('chatbot.mockResponse', { input: currentInput })
+
       setMessages(prev => prev.map(m => 
         m.id === modelMessageId 
-          ? { ...m, text: mockResponse } 
+          ? { ...m, text: reply } 
           : m
       ))
 
