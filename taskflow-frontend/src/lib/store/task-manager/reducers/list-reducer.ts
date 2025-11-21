@@ -5,7 +5,7 @@ import { generateId } from '@/lib/utils'
 export function listReducer(state: AppState, action: Action): AppState {
   switch (action.type) {
     case 'ADD_LIST': {
-      const newList: List = { ...action.payload, id: generateId() }
+      const newList: List = { ...action.payload, id: (action.payload as List).id || generateId() }
       return { ...state, lists: [...state.lists, newList] }
     }
 

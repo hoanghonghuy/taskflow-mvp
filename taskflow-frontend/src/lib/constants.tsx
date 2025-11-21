@@ -472,4 +472,54 @@ export const ACHIEVEMENT_DEFINITIONS = [
       return streakDays >= 7
     },
   },
+  {
+    id: 'habit-7-day-streak',
+    title: 'Habit Hero',
+    description: 'Maintain a 7-day habit streak',
+    icon: '📆',
+    condition: (state: AppState) => {
+      const dates = new Set<string>()
+
+      state.habits.forEach((habit) => {
+        habit.completions.forEach((d) => dates.add(d))
+      })
+
+      if (dates.size === 0) return false
+
+      const ordered = Array.from(dates)
+        .map((d) => new Date(d))
+        .filter((d) => !Number.isNaN(d.getTime()))
+        .sort((a, b) => a.getTime() - b.getTime())
+
+      if (ordered.length === 0) return false
+
+      let best = 1
+      let current = 1
+
+      for (let i = 1; i < ordered.length; i++) {
+        const prev = ordered[i - 1]
+        const curr = ordered[i]
+        const diffDays = Math.round((curr.getTime() - prev.getTime()) / (24 * 60 * 60 * 1000))
+
+        if (diffDays === 1) {
+          current += 1
+          if (current > best) best = current
+        } else if (diffDays > 1) {
+          current = 1
+        }
+      }
+
+      return best >= 7
+    },
+  },
+  {
+    id: 'focus-1h',
+    title: 'Deep Focus',
+    description: 'Accumulate 1 hour of focus time',
+    icon: '⏱️',
+    condition: (state: AppState) => {
+      const totalSeconds = state.pomodoro.focusHistory.reduce((acc, session) => acc + session.duration, 0)
+      return totalSeconds >= 60 * 60
+    },
+  },
 ]

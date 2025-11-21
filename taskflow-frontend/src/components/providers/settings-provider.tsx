@@ -33,6 +33,33 @@ const DEFAULT_SETTINGS: Settings = {
 
 const THEME_OPTIONS_SET = new Set<ThemeOption>(['system', ...THEME_PRESET_IDS])
 
+function mapSettingsFromApi(payload: unknown, fallback: Settings): Settings {
+  if (!payload || typeof payload !== 'object') {
+    return fallback
+  }
+
+  const data = payload as Partial<Settings>
+
+  const language = data.language === 'en' || data.language === 'vi' ? data.language : fallback.language
+  const theme = ((): Settings['theme'] => {
+    const candidate = data.theme as ThemeOption | undefined
+    if (candidate && THEME_OPTIONS_SET.has(candidate)) {
+      return candidate
+    }
+    return fallback.theme
+  })()
+
+  return {
+    ...fallback,
+    ...data,
+    language,
+    theme,
+    bottomNavActions: data.bottomNavActions && data.bottomNavActions.length > 0
+      ? data.bottomNavActions
+      : fallback.bottomNavActions,
+  }
+}
+
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined)
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
@@ -56,6 +83,45 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     return DEFAULT_SETTINGS
   })
 
+  useEffect(() => {
+    let isMounted = true
+
+    const loadFromBackend = async () => {
+      if (typeof window === 'undefined') return
+
+      const isAuthenticated = window.localStorage.getItem('isAuthenticated') === 'true'
+      if (!isAuthenticated) return
+
+      try {
+        const response = await fetch('/api/settings', { method: 'GET', credentials: 'include' })
+        if (!response.ok) {
+          return
+        }
+
+        const data = await response.json().catch(() => null)
+        if (!isMounted || data == null) return
+
+        setSettings((prev) => {
+          const merged = mapSettingsFromApi(data, prev)
+          try {
+            localStorage.setItem('settings', JSON.stringify(merged))
+          } catch {
+            // ignore localStorage errors
+          }
+          return merged
+        })
+      } catch (error) {
+        console.error('Failed to load settings from backend', error)
+      }
+    }
+
+    void loadFromBackend()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
   // Sync language changes with i18n outside of setState
   useEffect(() => {
     if (typeof window !== 'undefined' && settings.language) {
@@ -68,14 +134,49 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const updateSettings = useCallback((updates: Partial<Settings>) => {
     setSettings((prev) => {
       const updated = { ...prev, ...updates }
-      localStorage.setItem('settings', JSON.stringify(updated))
+      try {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('settings', JSON.stringify(updated))
+        }
+      } catch {
+        // ignore localStorage errors
+      }
+
+      if (typeof window !== 'undefined') {
+        void fetch('/api/settings', {
+          method: 'PUT',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updated),
+        }).catch((error) => {
+          console.error('Failed to persist settings to backend', error)
+        })
+      }
+
       return updated
     })
   }, [])
 
   const resetSettings = useCallback(() => {
     setSettings(DEFAULT_SETTINGS)
-    localStorage.setItem('settings', JSON.stringify(DEFAULT_SETTINGS))
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('settings', JSON.stringify(DEFAULT_SETTINGS))
+      }
+    } catch {
+      // ignore localStorage errors
+    }
+
+    if (typeof window !== 'undefined') {
+      void fetch('/api/settings', {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(DEFAULT_SETTINGS),
+      }).catch((error) => {
+        console.error('Failed to reset settings on backend', error)
+      })
+    }
   }, [])
 
   // Direct setters for convenience (matching template API)

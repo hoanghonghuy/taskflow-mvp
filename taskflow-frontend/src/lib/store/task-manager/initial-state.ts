@@ -1,11 +1,11 @@
 import type { AppState } from '@/types'
-import { DEFAULT_LISTS, DEFAULT_COLUMNS, DEFAULT_POMODORO_SETTINGS } from '@/lib/task-constants'
+import { DEFAULT_POMODORO_SETTINGS } from '@/lib/task-constants'
 
 export const INITIAL_STATE: AppState = {
   view: 'dashboard',
   tasks: [],
-  lists: DEFAULT_LISTS,
-  columns: DEFAULT_COLUMNS,
+  lists: [],
+  columns: [],
   habits: [],
   countdownEvents: [],
   selectedTaskId: null,

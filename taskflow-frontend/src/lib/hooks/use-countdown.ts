@@ -110,6 +110,28 @@ const calculateTimeLeft = (targetDate: string, now: number = Date.now()): Countd
   }
 }
 
+function mapCountdownsFromApi(items: unknown[]): CountdownEvent[] {
+  return items.map((item) => {
+    const c = item as any
+
+    const id = String(c.id ?? c.Id ?? '')
+    const title = String(c.title ?? c.Title ?? '')
+    const targetRaw = c.targetDate ?? c.TargetDate
+    const targetDate = targetRaw ? new Date(targetRaw).toISOString() : new Date().toISOString()
+    const color = String(c.color ?? c.Color ?? 'sky')
+    const createdRaw = c.createdAt ?? c.CreatedAt
+    const createdAt = createdRaw ? new Date(createdRaw).toISOString() : new Date().toISOString()
+
+    return {
+      id,
+      title,
+      targetDate,
+      color,
+      createdAt,
+    }
+  })
+}
+
 export const useCountdown = () => {
   const { state, dispatch } = useTaskManager()
   const { countdownEvents } = state
@@ -195,23 +217,87 @@ export const useCountdown = () => {
   }, [countdownEvents, tick])
 
   // CRUD operations
-  const addCountdown = useCallback((countdown: Omit<CountdownEvent, 'id' | 'createdAt'>) => {
-    const newCountdown: CountdownEvent = {
+  const addCountdown = useCallback(async (countdown: Omit<CountdownEvent, 'id' | 'createdAt'>) => {
+    try {
+      const response = await fetch('/api/countdown', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: countdown.title,
+          targetDate: countdown.targetDate,
+          color: countdown.color,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to create countdown: ${response.status}`)
+      }
+
+      const createdJson = await response.json()
+      const mapped = mapCountdownsFromApi([createdJson])
+      const created = mapped[0] ?? null
+
+      if (created) {
+        dispatch(countdownActions.add(created))
+        success(
+          t('countdown.notifications.addedTitle' as TranslationKey),
+          t('countdown.notifications.addedBody' as TranslationKey, { title: created.title }),
+        )
+        return
+      }
+    } catch (e) {
+      console.error('Failed to create countdown via API, falling back to local state', e)
+    }
+
+    const fallback: CountdownEvent = {
       ...countdown,
       id: `cd-${Date.now()}`,
       createdAt: new Date().toISOString(),
     }
-    dispatch(countdownActions.add(newCountdown))
+    dispatch(countdownActions.add(fallback))
     success(
       t('countdown.notifications.addedTitle' as TranslationKey),
-      t('countdown.notifications.addedBody' as TranslationKey, { title: newCountdown.title }),
+      t('countdown.notifications.addedBody' as TranslationKey, { title: fallback.title }),
     )
   }, [dispatch, success, t])
 
-  const updateCountdown = useCallback((id: string, updates: Partial<CountdownEvent>) => {
-    // First get the existing countdown, then merge updates
+  const updateCountdown = useCallback(async (id: string, updates: Partial<CountdownEvent>) => {
     const existingCountdown = countdownEvents.find(c => c.id === id)
-    if (existingCountdown) {
+    if (!existingCountdown) {
+      error(
+        t('countdown.notifications.updateFailedTitle' as TranslationKey),
+        t('countdown.notifications.updateFailedBody' as TranslationKey),
+      )
+      return
+    }
+
+    const payload: { title?: string; targetDate?: string; color?: string } = {}
+    if (typeof updates.title === 'string') payload.title = updates.title
+    if (typeof updates.targetDate === 'string') payload.targetDate = updates.targetDate
+    if (typeof updates.color === 'string') payload.color = updates.color
+
+    try {
+      const response = await fetch(`/api/countdown/${encodeURIComponent(id)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to update countdown: ${response.status}`)
+      }
+
+      const updatedJson = await response.json()
+      const mapped = mapCountdownsFromApi([updatedJson])
+      const updated = mapped[0] ?? { ...existingCountdown, ...updates }
+
+      dispatch(countdownActions.update(updated))
+      success(
+        t('countdown.notifications.updatedTitle' as TranslationKey),
+        t('countdown.notifications.updatedBody' as TranslationKey, { title: updated.title }),
+      )
+    } catch (e) {
+      console.error('Failed to update countdown via API, falling back to local state', e)
       const updatedCountdown: CountdownEvent = {
         ...existingCountdown,
         ...updates,
@@ -221,28 +307,36 @@ export const useCountdown = () => {
         t('countdown.notifications.updatedTitle' as TranslationKey),
         t('countdown.notifications.updatedBody' as TranslationKey, { title: updatedCountdown.title }),
       )
-    } else {
-      error(
-        t('countdown.notifications.updateFailedTitle' as TranslationKey),
-        t('countdown.notifications.updateFailedBody' as TranslationKey),
-      )
     }
   }, [dispatch, countdownEvents, success, error, t])
 
-  const deleteCountdown = useCallback((id: string) => {
+  const deleteCountdown = useCallback(async (id: string) => {
     const countdownToDelete = countdownEvents.find(c => c.id === id)
-    if (countdownToDelete) {
-      dispatch(countdownActions.delete(id))
-      success(
-        t('countdown.notifications.deletedTitle' as TranslationKey),
-        t('countdown.notifications.deletedBody' as TranslationKey, { title: countdownToDelete.title }),
-      )
-    } else {
+    if (!countdownToDelete) {
       error(
         t('countdown.notifications.deleteFailedTitle' as TranslationKey),
         t('countdown.notifications.deleteFailedBody' as TranslationKey),
       )
+      return
     }
+
+    try {
+      const response = await fetch(`/api/countdown/${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok && response.status !== 404) {
+        throw new Error(`Failed to delete countdown: ${response.status}`)
+      }
+    } catch (e) {
+      console.error('Failed to delete countdown via API, deleting locally', e)
+    }
+
+    dispatch(countdownActions.delete(id))
+    success(
+      t('countdown.notifications.deletedTitle' as TranslationKey),
+      t('countdown.notifications.deletedBody' as TranslationKey, { title: countdownToDelete.title }),
+    )
   }, [dispatch, countdownEvents, success, error, t])
 
   // Form state helpers
