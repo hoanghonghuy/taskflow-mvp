@@ -1,0 +1,16 @@
+D:\workspace\project\personal\taskflow-mvp\backend\src\Application\bin\Debug\net9.0\Taskflow.Application.deps.json
+D:\workspace\project\personal\taskflow-mvp\backend\src\Application\bin\Debug\net9.0\Taskflow.Application.dll
+D:\workspace\project\personal\taskflow-mvp\backend\src\Application\bin\Debug\net9.0\Taskflow.Application.pdb
+D:\workspace\project\personal\taskflow-mvp\backend\src\Application\bin\Debug\net9.0\Taskflow.Domain.dll
+D:\workspace\project\personal\taskflow-mvp\backend\src\Application\bin\Debug\net9.0\Taskflow.Domain.pdb
+D:\workspace\project\personal\taskflow-mvp\backend\src\Application\obj\Debug\net9.0\Taskflow.Application.csproj.AssemblyReference.cache
+D:\workspace\project\personal\taskflow-mvp\backend\src\Application\obj\Debug\net9.0\Taskflow.Application.GeneratedMSBuildEditorConfig.editorconfig
+D:\workspace\project\personal\taskflow-mvp\backend\src\Application\obj\Debug\net9.0\Taskflow.Application.AssemblyInfoInputs.cache
+D:\workspace\project\personal\taskflow-mvp\backend\src\Application\obj\Debug\net9.0\Taskflow.Application.AssemblyInfo.cs
+D:\workspace\project\personal\taskflow-mvp\backend\src\Application\obj\Debug\net9.0\Taskflow.Application.csproj.CoreCompileInputs.cache
+D:\workspace\project\personal\taskflow-mvp\backend\src\Application\obj\Debug\net9.0\Taskflow.Application.sourcelink.json
+D:\workspace\project\personal\taskflow-mvp\backend\src\Application\obj\Debug\net9.0\Taskflow.172C73AA.Up2Date
+D:\workspace\project\personal\taskflow-mvp\backend\src\Application\obj\Debug\net9.0\Taskflow.Application.dll
+D:\workspace\project\personal\taskflow-mvp\backend\src\Application\obj\Debug\net9.0\refint\Taskflow.Application.dll
+D:\workspace\project\personal\taskflow-mvp\backend\src\Application\obj\Debug\net9.0\Taskflow.Application.pdb
+D:\workspace\project\personal\taskflow-mvp\backend\src\Application\obj\Debug\net9.0\ref\Taskflow.Application.dll

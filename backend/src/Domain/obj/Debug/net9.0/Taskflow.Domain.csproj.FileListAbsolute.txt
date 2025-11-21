@@ -1,0 +1,12 @@
+D:\workspace\project\personal\taskflow-mvp\backend\src\Domain\bin\Debug\net9.0\Taskflow.Domain.deps.json
+D:\workspace\project\personal\taskflow-mvp\backend\src\Domain\bin\Debug\net9.0\Taskflow.Domain.dll
+D:\workspace\project\personal\taskflow-mvp\backend\src\Domain\bin\Debug\net9.0\Taskflow.Domain.pdb
+D:\workspace\project\personal\taskflow-mvp\backend\src\Domain\obj\Debug\net9.0\Taskflow.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\workspace\project\personal\taskflow-mvp\backend\src\Domain\obj\Debug\net9.0\Taskflow.Domain.AssemblyInfoInputs.cache
+D:\workspace\project\personal\taskflow-mvp\backend\src\Domain\obj\Debug\net9.0\Taskflow.Domain.AssemblyInfo.cs
+D:\workspace\project\personal\taskflow-mvp\backend\src\Domain\obj\Debug\net9.0\Taskflow.Domain.csproj.CoreCompileInputs.cache
+D:\workspace\project\personal\taskflow-mvp\backend\src\Domain\obj\Debug\net9.0\Taskflow.Domain.sourcelink.json
+D:\workspace\project\personal\taskflow-mvp\backend\src\Domain\obj\Debug\net9.0\Taskflow.Domain.dll
+D:\workspace\project\personal\taskflow-mvp\backend\src\Domain\obj\Debug\net9.0\refint\Taskflow.Domain.dll
+D:\workspace\project\personal\taskflow-mvp\backend\src\Domain\obj\Debug\net9.0\Taskflow.Domain.pdb
+D:\workspace\project\personal\taskflow-mvp\backend\src\Domain\obj\Debug\net9.0\ref\Taskflow.Domain.dll
