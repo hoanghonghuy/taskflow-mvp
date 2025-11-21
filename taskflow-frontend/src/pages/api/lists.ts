@@ -41,86 +41,86 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     switch (method) {
       case 'GET': {
         const targetPath = idValue
-          ? `/api/tasks/${encodeURIComponent(idValue)}`
-          : '/api/tasks';
+          ? `/api/lists/${encodeURIComponent(idValue)}`
+          : '/api/lists'
 
         const response = token
           ? await backendFetchWithToken(targetPath, token)
           : await backendFetch(targetPath);
 
         if (response.status === 204) {
-          return res.status(204).end();
+          return res.status(204).end()
         }
 
-        const data = await response.json().catch(() => null);
+        const data = await response.json().catch(() => null)
         if (data === null || data === undefined) {
-          return res.status(response.status).end();
+          return res.status(response.status).end()
         }
 
-        return res.status(response.status).json(data);
+        return res.status(response.status).json(data)
       }
 
       case 'POST': {
         const response = token
-          ? await backendFetchWithToken('/api/tasks', token, {
+          ? await backendFetchWithToken('/api/lists', token, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(req.body),
             })
-          : await backendFetch('/api/tasks', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(req.body),
-          });
-        const data = await response.json();
-        return res.status(response.status).json(data);
+          : await backendFetch('/api/lists', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(req.body),
+            });
+        const data = await response.json()
+        return res.status(response.status).json(data)
       }
 
       case 'PUT': {
         if (!idValue || typeof idValue !== 'string') {
-          return res.status(400).json({ error: 'Task ID is required' });
+          return res.status(400).json({ error: 'List ID is required' })
         }
 
         const response = token
-          ? await backendFetchWithToken(`/api/tasks/${encodeURIComponent(idValue)}`, token, {
+          ? await backendFetchWithToken(`/api/lists/${encodeURIComponent(idValue)}`, token, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(req.body),
             })
-          : await backendFetch(`/api/tasks/${encodeURIComponent(idValue)}`, {
+          : await backendFetch(`/api/lists/${encodeURIComponent(idValue)}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(req.body),
             });
-        const data = await response.json();
-        return res.status(response.status).json(data);
+        const data = await response.json()
+        return res.status(response.status).json(data)
       }
 
       case 'DELETE': {
         if (!idValue || typeof idValue !== 'string') {
-          return res.status(400).json({ error: 'Task ID is required' });
+          return res.status(400).json({ error: 'List ID is required' })
         }
 
         const response = token
-          ? await backendFetchWithToken(`/api/tasks/${encodeURIComponent(idValue)}`, token, {
+          ? await backendFetchWithToken(`/api/lists/${encodeURIComponent(idValue)}`, token, {
               method: 'DELETE',
             })
-          : await backendFetch(`/api/tasks/${encodeURIComponent(idValue)}`, {
+          : await backendFetch(`/api/lists/${encodeURIComponent(idValue)}`, {
               method: 'DELETE',
             });
         if (response.status === 204) {
-          return res.status(204).end();
+          return res.status(204).end()
         }
-        const data = await response.json();
-        return res.status(response.status).json(data);
+        const data = await response.json()
+        return res.status(response.status).json(data)
       }
 
       default:
-        res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
-        return res.status(405).json({ error: `Method ${method} Not Allowed` });
+        res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE'])
+        return res.status(405).json({ error: `Method ${method} Not Allowed` })
     }
   } catch (error) {
-    console.error('API Error (proxy to backend /api/tasks):', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error('API Error (proxy to backend /api/lists):', error)
+    return res.status(500).json({ error: 'Internal server error' })
   }
 }
