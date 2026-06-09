@@ -51,19 +51,7 @@ import { Avatar } from '@/components/ui'  // From barrel
    ```
 
 3. **Check exports before committing**
-   - Run: `npm run build` to catch export errors
-   - Use TypeScript: `tsc --noEmit` to check types
-
-## 🔍 Verification Script
-
-Add to `package.json`:
-```json
-{
-  "scripts": {
-    "check-exports": "tsc --noEmit && next build"
-  }
-}
-```
+   - Run: `npm run typecheck && npm run build` to catch export errors
 
 ## 📋 Component Checklist
 

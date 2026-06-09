@@ -17,7 +17,7 @@ npx prisma migrate dev
 npm run dev
 ```
 
-Server mặc định lắng nghe cổng `8080`. Để khớp fallback frontend (`http://localhost:5134`), đặt `PORT=5134` trong `.env`.
+Server mặc định lắng nghe cổng `8080`. Frontend cấu hình `BACKEND_URL=http://localhost:8080` trong `frontend/.env`.
 
 ## Tích hợp frontend
 
