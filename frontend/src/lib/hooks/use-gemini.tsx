@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import * as aiApi from '@/lib/api/ai'
 import type { AiProvider } from '@/lib/api/ai'
+import { AI_FEATURES_ENABLED } from '@/lib/feature-flags'
 
 interface GeminiContextValue {
   ai: null
@@ -22,6 +23,15 @@ export const GeminiProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     let cancelled = false
 
     async function loadStatus() {
+      if (!AI_FEATURES_ENABLED) {
+        if (!cancelled) {
+          setIsAvailable(false)
+          setProvider('gemini')
+          setIsLoading(false)
+        }
+        return
+      }
+
       try {
         const status = await aiApi.fetchAiStatus()
         if (!cancelled) {

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useState, useCallback } from 'react'
+import { useAiFeature } from '@/lib/hooks/use-ai-feature'
 
 interface ModalContextType {
   isSearchOpen: boolean
@@ -23,6 +24,7 @@ interface ModalContextType {
 const ModalContext = createContext<ModalContextType | undefined>(undefined)
 
 export function ModalProvider({ children }: { children: React.ReactNode }) {
+  const { runIfEnabled } = useAiFeature()
   const [isSearchOpen, setSearchOpen] = useState(false)
   const [isBriefingOpen, setBriefingOpen] = useState(false)
   const [isChatbotOpen, setChatbotOpen] = useState(false)
@@ -31,9 +33,13 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
 
   const openSearch = useCallback(() => setSearchOpen(true), [])
   const closeSearch = useCallback(() => setSearchOpen(false), [])
-  const openBriefing = useCallback(() => setBriefingOpen(true), [])
+  const openBriefing = useCallback(() => {
+    runIfEnabled(() => setBriefingOpen(true))
+  }, [runIfEnabled])
   const closeBriefing = useCallback(() => setBriefingOpen(false), [])
-  const openChatbot = useCallback(() => setChatbotOpen(true), [])
+  const openChatbot = useCallback(() => {
+    runIfEnabled(() => setChatbotOpen(true))
+  }, [runIfEnabled])
   const closeChatbot = useCallback(() => setChatbotOpen(false), [])
   const openTaskForm = useCallback((defaultValues?: { listId?: string; columnId?: string }) => {
     setTaskForm({ isOpen: true, defaultValues })

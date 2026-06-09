@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react'
 import { useTaskManager, useTaskActions } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/i18n/hooks'
 import { useGemini } from '@/lib/hooks/use-gemini'
+import { useAiFeature } from '@/lib/hooks/use-ai-feature'
+import { AI_FEATURES_ENABLED } from '@/lib/feature-flags'
 import { useToast } from '@/components/providers/toast-provider'
 import type { Task, Priority } from '@/types'
 import {
@@ -31,6 +33,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
   const { addTask } = useTaskActions()
   const { t, currentLanguage } = useI18n()
   const { isAvailable: isGeminiAvailable } = useGemini()
+  const { runIfEnabled } = useAiFeature()
+  const showAiAssist = AI_FEATURES_ENABLED ? isGeminiAvailable : true
   const addToast = useToast()
 
   const resolveInboxListId = () => {
@@ -95,6 +99,10 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
   
   const handleAnalyzeText = async () => {
     if (!textToAnalyze.trim()) return
+    runIfEnabled(() => void analyzeTextWithAi())
+  }
+
+  const analyzeTextWithAi = async () => {
     setIsAnalyzing(true)
     try {
       const text = textToAnalyze.trim()
@@ -144,7 +152,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
         </header>
         
         <div className="p-6 overflow-y-auto">
-          {isGeminiAvailable && (
+          {showAiAssist && (
             <div className="mb-6 p-4 bg-linear-to-br from-primary/5 to-primary/10 border border-primary/20 rounded-lg">
               <div className="flex items-center gap-2 mb-3">
                 <SparklesIcon className="h-5 w-5 text-primary" />

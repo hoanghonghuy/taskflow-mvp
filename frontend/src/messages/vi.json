@@ -4,6 +4,12 @@
     "tagline": "Người đồng hành năng suất của bạn",
     "description": "Sắp xếp công việc, xây dựng thói quen và tăng năng suất"
   },
+  "ai": {
+    "comingSoon": {
+      "title": "Sắp ra mắt",
+      "message": "Tính năng AI đang được phát triển."
+    }
+  },
   "nav": {
     "dashboard": "Bảng điều khiển",
     "list": "Nhiệm vụ",

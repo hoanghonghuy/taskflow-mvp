@@ -21,6 +21,8 @@ import {
 } from '@/lib/icons'
 import { PRIORITY_MAP } from '@/lib/task-constants'
 import { useGemini } from '@/lib/hooks/use-gemini'
+import { useAiFeature } from '@/lib/hooks/use-ai-feature'
+import { AI_FEATURES_ENABLED } from '@/lib/feature-flags'
 import { useRouter } from 'next/navigation'
 import { Avatar } from '@/components/ui/avatar'
 import { useUser } from '@/components/providers/user-provider'
@@ -37,6 +39,8 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   const { deleteTask, syncSubtasks, syncComments, updateTask: updateTaskApi, toggleTask } = useTaskActions()
   const { confirm } = useConfirmation()
   const { isAvailable: isGeminiAvailable } = useGemini()
+  const { runIfEnabled } = useAiFeature()
+  const showAiAssist = AI_FEATURES_ENABLED ? isGeminiAvailable : true
   const task = useMemo<Task | null>(() => {
     return state.tasks.find(t => t.id === taskId) ?? null
   }, [state.tasks, taskId])
@@ -151,7 +155,10 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   const handleTagDragEnd = () => setDraggedTagIndex(null)
 
   const handleGenerateSubtasks = async () => {
-    if (!isGeminiAvailable) return
+    runIfEnabled(() => void generateSubtasksWithAi())
+  }
+
+  const generateSubtasksWithAi = async () => {
     setIsGenerating(true)
     try {
       const generated = await aiApi.generateSubtasks(
@@ -431,7 +438,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
               <h3 className="text-sm font-medium text-muted-foreground">
                 {t('taskDetail.subtasksLabel')}
               </h3>
-              {isGeminiAvailable && (
+              {showAiAssist && (
                 <button 
                   onClick={handleGenerateSubtasks} 
                   disabled={isGenerating} 

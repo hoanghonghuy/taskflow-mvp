@@ -150,6 +150,9 @@ const SettingsView: React.FC = () => {
             <p className="text-sm text-muted-foreground">
               {t('settings.ai.serverManaged')}
             </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              {t('ai.comingSoon.message')}
+            </p>
           </div>
         </section>
 

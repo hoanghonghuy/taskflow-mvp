@@ -4,6 +4,12 @@
     "tagline": "Your productivity companion",
     "description": "Organize your tasks, build habits, and boost productivity"
   },
+  "ai": {
+    "comingSoon": {
+      "title": "Coming soon",
+      "message": "This AI feature is under development."
+    }
+  },
   "nav": {
     "dashboard": "Dashboard",
     "list": "Tasks",
