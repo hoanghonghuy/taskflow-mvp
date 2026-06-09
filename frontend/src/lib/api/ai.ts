@@ -12,12 +12,25 @@ export type ChatBackendMessage = {
   text: string
 }
 
-export async function fetchAiStatus(): Promise<boolean> {
+export type AiProvider = 'gemini' | 'openai'
+
+export type AiStatus = {
+  available: boolean
+  provider: AiProvider
+}
+
+export async function fetchAiStatus(): Promise<AiStatus> {
   const response = await apiFetch('/api/ai/status')
-  if (!response.ok) return false
+  if (!response.ok) {
+    return { available: false, provider: 'gemini' }
+  }
   const json = await response.json().catch(() => null)
-  const data = json ? unwrapApiData<{ available?: boolean }>(json, response.status) : null
-  return Boolean(data?.available)
+  const data = json ? unwrapApiData<{ available?: boolean; provider?: string }>(json, response.status) : null
+  const provider = data?.provider === 'openai' ? 'openai' : 'gemini'
+  return {
+    available: Boolean(data?.available),
+    provider,
+  }
 }
 
 export async function analyzeTaskText(
@@ -55,6 +68,29 @@ export async function fetchBriefing(language: string): Promise<string> {
   }
 
   return content
+}
+
+export type GeneratedSubtask = {
+  title: string
+}
+
+export async function generateSubtasks(
+  title: string,
+  description: string | undefined,
+  language: string,
+): Promise<GeneratedSubtask[]> {
+  const response = await apiFetch('/api/ai/tasks/subtasks', {
+    method: 'POST',
+    body: JSON.stringify({ title, description: description || null, language }),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to generate subtasks: ${response.status}`)
+  }
+
+  const json = await response.json().catch(() => null)
+  const data = json ? unwrapApiData<{ subtasks?: GeneratedSubtask[] }>(json, response.status) : null
+  return Array.isArray(data?.subtasks) ? data.subtasks : []
 }
 
 export async function sendChatMessage(payload: {

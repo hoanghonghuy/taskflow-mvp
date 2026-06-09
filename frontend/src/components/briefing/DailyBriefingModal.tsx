@@ -42,9 +42,6 @@ const DailyBriefingModal: React.FC<DailyBriefingModalProps> = ({ onClose }) => {
         return
       }
       try {
-        // TODO: Implement Gemini API call when backend is ready
-        // For now, generate a mock briefing (i18n-based)
-
         const content = await aiApi.fetchBriefing(currentLanguage)
         setBriefing(content)
       } catch (err: unknown) {

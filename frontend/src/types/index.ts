@@ -20,6 +20,7 @@ export interface Task {
   comments: Comment[];
   createdAt?: string;
   totalFocusTime?: number;
+  sortOrder?: number;
 }
 
 export interface Subtask {

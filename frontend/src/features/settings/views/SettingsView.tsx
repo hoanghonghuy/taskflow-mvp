@@ -145,10 +145,10 @@ const SettingsView: React.FC = () => {
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold mb-4">{t('settings.gemini.title')}</h2>
+          <h2 className="text-lg font-semibold mb-4">{t('settings.ai.title')}</h2>
           <div className="bg-card border border-border rounded-lg p-4 max-w-xl">
             <p className="text-sm text-muted-foreground">
-              {t('settings.gemini.serverManaged')}
+              {t('settings.ai.serverManaged')}
             </p>
           </div>
         </section>

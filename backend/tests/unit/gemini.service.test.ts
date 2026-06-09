@@ -1,11 +1,12 @@
 import { config } from '../../src/config'
-import { analyzeTask, chat, generateBriefing } from '../../src/services/geminiService'
+import { analyzeTask, chat, generateBriefing, generateSubtasks } from '../../src/services/geminiService'
 
 const originalFetch = global.fetch
 
 describe('gemini.service', () => {
   beforeEach(() => {
     config.geminiApiKey = 'test-key'
+    config.ai.geminiApiKey = 'test-key'
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
@@ -17,10 +18,12 @@ describe('gemini.service', () => {
   afterEach(() => {
     global.fetch = originalFetch
     config.geminiApiKey = ''
+    config.ai.geminiApiKey = ''
   })
 
   it('throws when API key missing', async () => {
     config.geminiApiKey = ''
+    config.ai.geminiApiKey = ''
     await expect(generateBriefing('en', 'ctx')).rejects.toMatchObject({ statusCode: 500 })
   })
 
@@ -110,6 +113,41 @@ describe('gemini.service', () => {
     }) as unknown as typeof fetch
 
     await expect(chat('en', [], false, false)).rejects.toMatchObject({ statusCode: 500 })
+  })
+
+  it('generateSubtasks parses JSON block', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        candidates: [
+          {
+            content: {
+              parts: [
+                {
+                  text: '{"subtasks":[{"title":"Draft outline"},{"title":"Review"}]}',
+                },
+              ],
+            },
+          },
+        ],
+      }),
+    }) as unknown as typeof fetch
+
+    const result = await generateSubtasks('en', 'Write report', 'Q1 summary')
+    expect(result).toHaveLength(2)
+    expect(result[0].title).toBe('Draft outline')
+  })
+
+  it('generateSubtasks returns empty array when JSON missing', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        candidates: [{ content: { parts: [{ text: 'no json here' }] } }],
+      }),
+    }) as unknown as typeof fetch
+
+    const result = await generateSubtasks('en', 'Task', null)
+    expect(result).toEqual([])
   })
 
   it('returns empty string when no candidate text', async () => {

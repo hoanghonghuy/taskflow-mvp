@@ -10,58 +10,63 @@ import {
 } from '../lib/ai-common'
 import { AppError } from '../middleware/errorHandler'
 
-export type { AnalyzeTaskResult, ChatMessage, GeneratedSubtask }
-
-const MODEL = 'gemini-1.5-flash'
-const BASE_URL = 'https://generativelanguage.googleapis.com/v1beta'
-
-interface GeminiResponse {
-  candidates?: Array<{
-    content?: { parts?: Array<{ text?: string }> }
+interface OpenAIChatResponse {
+  choices?: Array<{
+    message?: { content?: string | null }
   }>
 }
 
 function resolveApiKey(apiKey?: string): string {
-  const key = apiKey?.trim() || config.ai.geminiApiKey?.trim()
+  const key = apiKey?.trim() || config.ai.openaiApiKey?.trim()
   if (!key) {
-    throw new AppError(500, 'internal_server_error', 'Gemini API key is not configured.')
+    throw new AppError(500, 'internal_server_error', 'OpenAI API key is not configured.')
   }
   return key
 }
 
-async function generateText(prompt: string, apiKey?: string): Promise<string> {
+async function chatCompletion(
+  messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>,
+  apiKey?: string,
+): Promise<string> {
   const key = resolveApiKey(apiKey)
+  const baseUrl = config.ai.openaiBaseUrl.replace(/\/$/, '')
 
-  const response = await fetch(
-    `${BASE_URL}/models/${MODEL}:generateContent?key=${key}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-      }),
+  const response = await fetch(`${baseUrl}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${key}`,
     },
-  )
+    body: JSON.stringify({
+      model: config.ai.openaiModel,
+      messages,
+      temperature: 0.7,
+    }),
+  })
 
   if (!response.ok) {
     const errorBody = await response.text()
     throw new AppError(
       500,
       'internal_server_error',
-      `Gemini API call failed with status ${response.status}: ${errorBody}`,
+      `OpenAI API call failed with status ${response.status}: ${errorBody}`,
     )
   }
 
-  const payload = (await response.json()) as GeminiResponse
-  const text = payload.candidates
-    ?.flatMap((c) => c.content?.parts ?? [])
-    .map((p) => p.text)
-    .find((t) => t && t.trim())
-
-  return text ?? ''
+  const payload = (await response.json()) as OpenAIChatResponse
+  const text = payload.choices?.[0]?.message?.content
+  return typeof text === 'string' ? text : ''
 }
 
-export async function generateBriefing(language: string, context: string, apiKey?: string): Promise<string> {
+async function generateText(prompt: string, apiKey?: string): Promise<string> {
+  return chatCompletion([{ role: 'user', content: prompt }], apiKey)
+}
+
+export async function generateBriefing(
+  language: string,
+  context: string,
+  apiKey?: string,
+): Promise<string> {
   const prompt = `You are an assistant helping a user plan their day based on their tasks, habits and focus sessions.
 
 Language: ${languageLabel(language)}.
@@ -74,7 +79,11 @@ Write a short daily briefing in markdown (use headings and bullet lists), at mos
   return generateText(prompt, apiKey)
 }
 
-export async function analyzeTask(language: string, text: string, apiKey?: string): Promise<AnalyzeTaskResult> {
+export async function analyzeTask(
+  language: string,
+  text: string,
+  apiKey?: string,
+): Promise<AnalyzeTaskResult> {
   const prompt = `You help users convert free-form text into a structured task.
 
 User input:
@@ -134,13 +143,13 @@ export async function chat(
       ' You may mention that external information may be outdated and should be verified.'
   }
 
-  const history = messages
-    .map((m) => {
-      const role = m.role.toLowerCase() === 'user' ? 'User' : 'Assistant'
-      return `${role}: ${m.text}`
-    })
-    .join('\n\n')
+  const chatMessages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
+    { role: 'system', content: systemIntro },
+    ...messages.map((m) => ({
+      role: (m.role.toLowerCase() === 'user' ? 'user' : 'assistant') as 'user' | 'assistant',
+      content: m.text,
+    })),
+  ]
 
-  const prompt = `${systemIntro}\n\nConversation so far:\n${history}\n\nAssistant:`
-  return generateText(prompt, apiKey)
+  return chatCompletion(chatMessages, apiKey)
 }

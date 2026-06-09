@@ -47,8 +47,14 @@ DEV_USER_PASSWORD=DevPassword123!
 | `DATABASE_URL_DOCKER` | URL trong compose (backend → postgres) | `postgres://postgres:taskflow@postgres:5432/taskflow_db?sslmode=disable` |
 
 > **SQLite:** chỉ tham chiếu tại `prisma/schema.sqlite.prisma` + `prisma/migrations-sqlite/` — không dùng runtime.
-| `GEMINI_API_KEY` | Khóa Google Gemini (AI) | (rỗng) |
+| `AI_PROVIDER` | Nhà cung cấp AI: `gemini` hoặc `openai` / `openai-compatible` | `gemini` |
+| `GEMINI_API_KEY` | Khóa Google Gemini (khi `AI_PROVIDER=gemini`) | (rỗng) |
+| `OPENAI_API_KEY` | API key OpenAI-compatible (khi `AI_PROVIDER=openai`) | (rỗng) |
+| `OPENAI_BASE_URL` | Base URL API (OpenAI, Ollama `http://localhost:11434/v1`, …) | `https://api.openai.com/v1` |
+| `OPENAI_MODEL` | Tên model | `gpt-4o-mini` |
 | `CORS_ORIGIN` | Origin frontend | `http://localhost:3000` |
+
+User có thể ghi đè API key qua Settings (`geminiApiKey` — dùng chung cho cả hai provider).
 
 ## Docker
 

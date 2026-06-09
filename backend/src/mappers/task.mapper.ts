@@ -37,6 +37,7 @@ export interface TaskDto {
   recurrence: RecurrenceDto | null
   reminderMinutes: number | null
   assigneeId: string | null
+  sortOrder: number
 }
 
 export function mapTaskToDto(task: TodoTask): TaskDto {
@@ -57,5 +58,6 @@ export function mapTaskToDto(task: TodoTask): TaskDto {
     recurrence,
     reminderMinutes: task.reminderMinutes,
     assigneeId: task.assigneeId,
+    sortOrder: task.sortOrder,
   }
 }

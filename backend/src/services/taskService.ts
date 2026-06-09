@@ -37,6 +37,7 @@ export async function createTask(userId: string, body: Record<string, unknown>):
   if (!title) throw new AppError(400, 'invalid_request', 'Title must not be empty')
 
   const listId = await normalizeListId(userId, body.listId)
+  const maxSortOrder = await taskRepository.findMaxSortOrder(userId)
 
   const task = await taskRepository.createTask({
     title,
@@ -51,6 +52,7 @@ export async function createTask(userId: string, body: Record<string, unknown>):
     recurrence: body.recurrence ? toJsonString(body.recurrence) : null,
     reminderMinutes: typeof body.reminderMinutes === 'number' ? body.reminderMinutes : null,
     assigneeId: body.assigneeId != null ? String(body.assigneeId) : null,
+    sortOrder: maxSortOrder + 1,
     user: { connect: { id: userId } },
   })
 
@@ -98,4 +100,23 @@ export async function deleteTask(userId: string, id: string): Promise<boolean> {
   if (!existing) return false
   await taskRepository.deleteTask(id)
   return true
+}
+
+export async function reorderTasks(userId: string, taskIds: string[]): Promise<TaskDto[]> {
+  const existing = await taskRepository.findTasksByUserId(userId)
+  const existingIds = new Set(existing.map((t) => t.id))
+
+  if (taskIds.length !== existing.length) {
+    throw new AppError(400, 'invalid_request', 'taskIds must include every task')
+  }
+
+  for (const id of taskIds) {
+    if (!existingIds.has(id)) {
+      throw new AppError(400, 'invalid_request', 'Invalid task id in reorder list')
+    }
+  }
+
+  await taskRepository.updateTaskSortOrders(userId, taskIds)
+  const tasks = await taskRepository.findTasksByUserId(userId)
+  return tasks.map(mapTaskToDto)
 }

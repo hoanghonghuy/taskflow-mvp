@@ -563,6 +563,10 @@
     "defaultList": "Default list",
     "save": "Save Settings",
     "saved": "Settings saved successfully",
+    "ai": {
+      "title": "AI Assistant",
+      "serverManaged": "AI is configured on the backend via AI_PROVIDER. Use GEMINI_API_KEY for Gemini, or OPENAI_API_KEY + OPENAI_BASE_URL + OPENAI_MODEL for OpenAI-compatible APIs (OpenAI, Ollama, LM Studio, etc.). Keys are not stored in the browser."
+    },
     "gemini": {
       "title": "Gemini API",
       "label": "Gemini API key",
@@ -923,6 +927,7 @@
       "subtasksUpdateFailedTitle": "Failed to update subtasks",
       "commentsUpdateFailedTitle": "Failed to update comments",
       "taskMoveFailedTitle": "Failed to move task",
+      "taskReorderFailedTitle": "Failed to reorder tasks",
       "listCreateFailedTitle": "Failed to create list",
       "listUpdateFailedTitle": "Failed to update list",
       "listDeleteFailedTitle": "Failed to delete list",

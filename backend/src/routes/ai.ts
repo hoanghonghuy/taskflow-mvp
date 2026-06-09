@@ -14,4 +14,5 @@ aiRouter.use(aiRateLimit)
 
 aiRouter.post('/briefing', asyncHandler(aiController.briefing))
 aiRouter.post('/tasks/analyze', asyncHandler(aiController.analyzeTask))
+aiRouter.post('/tasks/subtasks', asyncHandler(aiController.generateSubtasks))
 aiRouter.post('/chat', asyncHandler(aiController.chat))

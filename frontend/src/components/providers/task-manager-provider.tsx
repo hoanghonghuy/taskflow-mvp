@@ -483,6 +483,33 @@ export function useTaskActions() {
       )
     }, [dispatch, success, t]),
 
+    reorderTasks: useCallback(async (draggedId: string, droppedOnId: string) => {
+      const before = state.tasks
+      dispatch(taskActions.reorder(draggedId, droppedOnId))
+
+      const reordered = [...before]
+      const draggedIndex = reordered.findIndex((t) => t.id === draggedId)
+      const droppedIndex = reordered.findIndex((t) => t.id === droppedOnId)
+      if (draggedIndex === -1 || droppedIndex === -1) return
+
+      const [draggedTask] = reordered.splice(draggedIndex, 1)
+      reordered.splice(droppedIndex, 0, draggedTask)
+
+      try {
+        const tasks = await tasksApi.reorderTasks(reordered.map((t) => t.id))
+        if (tasks.length > 0) {
+          dispatch({ type: 'SET_TASKS', payload: tasks })
+        }
+      } catch (err) {
+        console.error('Failed to reorder tasks via API', err)
+        dispatch({ type: 'SET_TASKS', payload: before })
+        showError(
+          t('toast.api.taskReorderFailedTitle' as TranslationKey),
+          err instanceof Error ? err.message : undefined,
+        )
+      }
+    }, [dispatch, showError, state.tasks, t]),
+
     syncSubtasks: useCallback(async (taskId: string, subtasks: import('@/types').Subtask[]) => {
       const existing = state.tasks.find((t) => t.id === taskId)
       if (!existing) return

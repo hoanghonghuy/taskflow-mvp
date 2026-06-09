@@ -28,6 +28,8 @@ type TaskAction =
   | { type: 'TOGGLE_TASK_COMPLETION'; payload: { taskId: string } }
   | { type: 'ASSIGN_TASK'; payload: { taskId: string; userId: string | null } }
   | { type: 'ADD_COMMENT'; payload: { taskId: string; comment: Comment } }
+  | { type: 'REORDER_TASKS'; payload: { draggedId: string; droppedOnId: string } }
+  | { type: 'SET_TASKS'; payload: Task[] }
 
 type ListAction =
   | { type: 'ADD_LIST'; payload: Omit<List, 'id'> }

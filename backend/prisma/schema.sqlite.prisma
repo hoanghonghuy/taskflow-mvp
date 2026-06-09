@@ -62,6 +62,7 @@ model TodoTask {
   reminderMinutes Int?
   assigneeId      String?
   columnId        String?
+  sortOrder       Int       @default(0)
   userId          String
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

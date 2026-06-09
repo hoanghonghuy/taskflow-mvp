@@ -63,9 +63,6 @@ const Chatbot: React.FC<ChatbotProps> = ({ onClose }) => {
     setMessages(prev => [...prev, { id: modelMessageId, role: 'model', text: '', timestamp: Date.now() }])
 
     try {
-      // TODO: Implement Gemini API call when backend is ready
-      // For now, generate a mock response
-
       const reply = await aiApi.sendChatMessage({
         messages: conversationForBackend,
         language: currentLanguage,

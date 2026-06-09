@@ -248,11 +248,11 @@ describe('domain api modules', () => {
 
   it('ai api status and analyze', async () => {
     mockFetch
-      .mockResolvedValueOnce(jsonResponse({ available: true }))
+      .mockResolvedValueOnce(jsonResponse({ available: true, provider: 'openai' }))
       .mockResolvedValueOnce(jsonResponse({ title: 'Buy milk' }))
     const aiApi = await import('@/lib/api/ai')
 
-    await expect(aiApi.fetchAiStatus()).resolves.toBe(true)
+    await expect(aiApi.fetchAiStatus()).resolves.toEqual({ available: true, provider: 'openai' })
     await expect(aiApi.analyzeTaskText('buy milk tomorrow', 'en')).resolves.toMatchObject({ title: 'Buy milk' })
   })
 

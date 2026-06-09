@@ -4,6 +4,8 @@ import React, { useState, useMemo } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/i18n/hooks'
 import { useTaskActions } from '@/lib/hooks/use-task-manager'
+import * as aiApi from '@/lib/api/ai'
+import { generateId } from '@/lib/utils'
 import { useConfirmation } from '@/lib/hooks/use-confirmation'
 import type { Task, Subtask, Priority, Comment } from '@/types'
 import type { TranslationKey } from '@/lib/i18n/types'
@@ -29,7 +31,7 @@ interface TaskDetailProps {
 
 const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   const { state, dispatch } = useTaskManager()
-  const { t } = useI18n()
+  const { t, currentLanguage } = useI18n()
   const router = useRouter()
   const { allUsers, user: currentUser } = useUser()
   const { deleteTask, syncSubtasks, syncComments, updateTask: updateTaskApi, toggleTask } = useTaskActions()
@@ -149,11 +151,27 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   const handleTagDragEnd = () => setDraggedTagIndex(null)
 
   const handleGenerateSubtasks = async () => {
-    // TODO: Implement Gemini subtask generation
+    if (!isGeminiAvailable) return
     setIsGenerating(true)
-    setTimeout(() => {
+    try {
+      const generated = await aiApi.generateSubtasks(
+        task.title,
+        task.description,
+        currentLanguage,
+      )
+      if (generated.length === 0) return
+
+      const newSubtasks: Subtask[] = generated.map((item) => ({
+        id: generateId(),
+        title: item.title,
+        completed: false,
+      }))
+      await syncSubtasks(task.id, [...task.subtasks, ...newSubtasks])
+    } catch (err) {
+      console.error('Failed to generate subtasks', err)
+    } finally {
       setIsGenerating(false)
-    }, 1000)
+    }
   }
 
   const handleAssignTask = (userId: string | null) => {

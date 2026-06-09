@@ -98,9 +98,6 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
     setIsAnalyzing(true)
     try {
       const text = textToAnalyze.trim()
-      // TODO: Implement Gemini text analysis when API is ready
-      // For now, just extract basic info from text
-
       const data = await aiApi.analyzeTaskText(text, currentLanguage)
 
       if (data && typeof data.title === 'string' && data.title.trim()) {

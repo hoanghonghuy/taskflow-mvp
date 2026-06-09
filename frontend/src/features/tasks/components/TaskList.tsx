@@ -3,6 +3,7 @@
 import React, { useMemo, useState, useCallback } from 'react'
 import TaskItem from './TaskItem'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
+import { useTaskActions } from '@/lib/hooks/use-task-manager'
 import type { Task } from '@/types'
 import { PlusIcon, ArrowUpIcon, ArrowDownIcon } from '@/lib/icons'
 import { EMPTY_STATE_ILLUSTRATIONS } from '@/lib/task-constants'
@@ -18,6 +19,7 @@ const PAGE_SIZE = 50
 
 const TaskList: React.FC<TaskListProps> = ({ onAddTask }) => {
   const { state } = useTaskManager()
+  const { reorderTasks } = useTaskActions()
   const { t } = useI18n()
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null)
   const [isCompletedOpen, setIsCompletedOpen] = useState(false)
@@ -134,8 +136,7 @@ const TaskList: React.FC<TaskListProps> = ({ onAddTask }) => {
 
   const handleDrop = (droppedOnId: string) => {
     if (draggedTaskId && draggedTaskId !== droppedOnId) {
-      // TODO: Implement reorder action
-      console.log(t('console.reorderTask'), draggedTaskId, droppedOnId)
+      void reorderTasks(draggedTaskId, droppedOnId)
     }
     setDraggedTaskId(null)
   }

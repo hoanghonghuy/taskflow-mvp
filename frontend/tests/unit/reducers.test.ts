@@ -26,6 +26,31 @@ describe('taskReducer', () => {
     s = taskReducer(s, { type: 'DELETE_TASK', payload: id })
     expect(s.tasks).toHaveLength(0)
   })
+
+  it('reorders tasks by drag target', () => {
+    const base = {
+      title: 'T',
+      description: '',
+      completed: false,
+      priority: 'none' as const,
+      listId: 'inbox',
+      tags: [] as string[],
+      subtasks: [],
+      comments: [],
+      assigneeId: null,
+    }
+    let s = taskReducer(state(), {
+      type: 'ADD_TASK',
+      payload: { ...base, id: 'a' },
+    })
+    s = taskReducer(s, { type: 'ADD_TASK', payload: { ...base, id: 'b' } })
+    s = taskReducer(s, { type: 'ADD_TASK', payload: { ...base, id: 'c' } })
+    s = taskReducer(s, {
+      type: 'REORDER_TASKS',
+      payload: { draggedId: 'c', droppedOnId: 'a' },
+    })
+    expect(s.tasks.map((t) => t.id)).toEqual(['c', 'a', 'b'])
+  })
 })
 
 describe('listReducer', () => {

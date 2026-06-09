@@ -59,6 +59,39 @@ describe('CRUD endpoints', () => {
     await request(app).get(`/api/tasks/${taskId}`).set(authHeader(token)).expect(404)
   })
 
+  it('reorders tasks and persists sortOrder', async () => {
+    const listsRes = await request(app).get('/api/lists').set(authHeader(token)).expect(200)
+    const listId = apiData<ListRef[]>(listsRes)[0].id
+
+    const first = await request(app)
+      .post('/api/tasks')
+      .set(authHeader(token))
+      .send({ title: 'First', listId })
+      .expect(201)
+    const second = await request(app)
+      .post('/api/tasks')
+      .set(authHeader(token))
+      .send({ title: 'Second', listId })
+      .expect(201)
+
+    const firstId = apiData<TaskDto>(first).id
+    const secondId = apiData<TaskDto>(second).id
+
+    const reorderRes = await request(app)
+      .post('/api/tasks/reorder')
+      .set(authHeader(token))
+      .send({ taskIds: [secondId, firstId] })
+      .expect(200)
+
+    const reordered = apiData<Array<{ id: string; title: string; sortOrder?: number }>>(reorderRes)
+    expect(reordered.map((t) => t.id)).toEqual([secondId, firstId])
+    expect(reordered[0].sortOrder).toBe(0)
+    expect(reordered[1].sortOrder).toBe(1)
+
+    const listRes = await request(app).get('/api/tasks').set(authHeader(token)).expect(200)
+    expect(apiData<Array<{ id: string }>>(listRes).map((t) => t.id)).toEqual([secondId, firstId])
+  })
+
   it('lists CRUD with members', async () => {
     const createRes = await request(app)
       .post('/api/lists')

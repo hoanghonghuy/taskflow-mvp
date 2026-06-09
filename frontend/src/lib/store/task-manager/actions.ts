@@ -39,6 +39,11 @@ export const taskActions = {
     payload: { taskId, comment }
   }),
 
+  reorder: (draggedId: string, droppedOnId: string): Action => ({
+    type: 'REORDER_TASKS',
+    payload: { draggedId, droppedOnId },
+  }),
+
   moveToColumn: (taskId: string, newColumnId: string, listId: string): Action => ({
     type: 'MOVE_TASK_TO_COLUMN',
     payload: { taskId, newColumnId, listId }

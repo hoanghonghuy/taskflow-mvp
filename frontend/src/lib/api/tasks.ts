@@ -42,6 +42,14 @@ export async function updateTask(id: string, payload: TaskUpdatePayload): Promis
   return mapTasksFromApi([json])[0] ?? null
 }
 
+export async function reorderTasks(taskIds: string[]): Promise<Task[]> {
+  const json = await apiFetchJson<unknown[]>('/api/tasks/reorder', {
+    method: 'POST',
+    body: JSON.stringify({ taskIds }),
+  })
+  return Array.isArray(json) ? mapTasksFromApi(json) : []
+}
+
 export async function deleteTask(id: string): Promise<void> {
   const response = await apiFetch(`/api/tasks/${encodeURIComponent(id)}`, { method: 'DELETE' })
   if (!response.ok && response.status !== 404) {

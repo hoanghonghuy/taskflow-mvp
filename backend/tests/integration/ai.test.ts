@@ -29,6 +29,8 @@ describe('AI routes', () => {
   it('briefing returns content when Gemini succeeds', async () => {
     const { config } = await import('../../src/config')
     config.geminiApiKey = 'test-key'
+    config.ai.geminiApiKey = 'test-key'
+    config.ai.provider = 'gemini'
 
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
@@ -49,6 +51,8 @@ describe('AI routes', () => {
   it('chat returns content', async () => {
     const { config } = await import('../../src/config')
     config.geminiApiKey = 'test-key'
+    config.ai.geminiApiKey = 'test-key'
+    config.ai.provider = 'gemini'
 
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
@@ -74,6 +78,8 @@ describe('AI routes', () => {
   it('analyze returns parsed task fields', async () => {
     const { config } = await import('../../src/config')
     config.geminiApiKey = 'test-key'
+    config.ai.geminiApiKey = 'test-key'
+    config.ai.provider = 'gemini'
 
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
@@ -101,16 +107,70 @@ describe('AI routes', () => {
     expect(apiData<{ title: string }>(res).title).toBe('Call mom')
   })
 
+  it('subtasks returns generated items', async () => {
+    const { config } = await import('../../src/config')
+    config.geminiApiKey = 'test-key'
+    config.ai.geminiApiKey = 'test-key'
+    config.ai.provider = 'gemini'
+
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        candidates: [
+          {
+            content: {
+              parts: [
+                {
+                  text: '{"subtasks":[{"title":"Step 1"},{"title":"Step 2"}]}',
+                },
+              ],
+            },
+          },
+        ],
+      }),
+    }) as unknown as typeof fetch
+
+    const res = await request(app)
+      .post('/api/ai/tasks/subtasks')
+      .set(authHeader(token))
+      .send({ title: 'Plan trip', description: 'Summer vacation', language: 'en' })
+      .expect(200)
+
+    const subtasks = apiData<{ subtasks: Array<{ title: string }> }>(res).subtasks
+    expect(subtasks).toHaveLength(2)
+    expect(subtasks[0].title).toBe('Step 1')
+  })
+
   it('status returns available=false without API key', async () => {
     const { config } = await import('../../src/config')
     config.geminiApiKey = ''
+    config.ai.geminiApiKey = ''
+    config.ai.openaiApiKey = ''
+    config.ai.provider = 'gemini'
 
     const res = await request(app)
       .get('/api/ai/status')
       .set(authHeader(token))
       .expect(200)
 
-    expect(apiData<{ available: boolean }>(res).available).toBe(false)
+    const data = apiData<{ available: boolean; provider: string }>(res)
+    expect(data.available).toBe(false)
+    expect(data.provider).toBe('gemini')
+  })
+
+  it('status reports openai provider when configured', async () => {
+    const { config } = await import('../../src/config')
+    config.ai.provider = 'openai'
+    config.ai.openaiApiKey = 'env-openai-key'
+
+    const res = await request(app)
+      .get('/api/ai/status')
+      .set(authHeader(token))
+      .expect(200)
+
+    const data = apiData<{ available: boolean; provider: string }>(res)
+    expect(data.provider).toBe('openai')
+    expect(data.available).toBe(true)
   })
 
   it('status returns available=true when user has gemini key', async () => {

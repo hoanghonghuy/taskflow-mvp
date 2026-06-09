@@ -22,4 +22,16 @@ describe('config', () => {
     const { config } = await import('../../src/config')
     expect(config.port).toBe(5134)
   })
+
+  it('parses AI_PROVIDER openai-compatible aliases', async () => {
+    process.env.AI_PROVIDER = 'openai-compatible'
+    const { config } = await import('../../src/config')
+    expect(config.ai.provider).toBe('openai')
+  })
+
+  it('defaults AI_PROVIDER to gemini', async () => {
+    delete process.env.AI_PROVIDER
+    const { config } = await import('../../src/config')
+    expect(config.ai.provider).toBe('gemini')
+  })
 })

@@ -2,11 +2,13 @@
 
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import * as aiApi from '@/lib/api/ai'
+import type { AiProvider } from '@/lib/api/ai'
 
 interface GeminiContextValue {
   ai: null
   isAvailable: boolean
   isLoading: boolean
+  provider: AiProvider
 }
 
 const GeminiContext = createContext<GeminiContextValue | undefined>(undefined)
@@ -14,18 +16,23 @@ const GeminiContext = createContext<GeminiContextValue | undefined>(undefined)
 export const GeminiProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isAvailable, setIsAvailable] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [provider, setProvider] = useState<AiProvider>('gemini')
 
   useEffect(() => {
     let cancelled = false
 
     async function loadStatus() {
       try {
-        const available = await aiApi.fetchAiStatus()
+        const status = await aiApi.fetchAiStatus()
         if (!cancelled) {
-          setIsAvailable(available)
+          setIsAvailable(status.available)
+          setProvider(status.provider)
         }
       } catch {
-        if (!cancelled) setIsAvailable(false)
+        if (!cancelled) {
+          setIsAvailable(false)
+          setProvider('gemini')
+        }
       } finally {
         if (!cancelled) setIsLoading(false)
       }
@@ -38,7 +45,7 @@ export const GeminiProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   }, [])
 
   return (
-    <GeminiContext.Provider value={{ ai: null, isAvailable, isLoading }}>
+    <GeminiContext.Provider value={{ ai: null, isAvailable, isLoading, provider }}>
       {children}
     </GeminiContext.Provider>
   )

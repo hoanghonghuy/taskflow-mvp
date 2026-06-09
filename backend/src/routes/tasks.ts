@@ -8,6 +8,7 @@ export const tasksRouter = Router()
 tasksRouter.use(requireAuth)
 
 tasksRouter.get('/', asyncHandler(taskController.list))
+tasksRouter.post('/reorder', asyncHandler(taskController.reorder))
 tasksRouter.get('/:id', asyncHandler(taskController.getById))
 tasksRouter.post('/', asyncHandler(taskController.create))
 tasksRouter.put('/:id', asyncHandler(taskController.update))

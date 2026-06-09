@@ -548,6 +548,10 @@
     "defaultList": "Danh sách mặc định",
     "save": "Lưu cài đặt",
     "saved": "Đã lưu cài đặt thành công",
+    "ai": {
+      "title": "Trợ lý AI",
+      "serverManaged": "AI được cấu hình ở backend qua AI_PROVIDER. Dùng GEMINI_API_KEY cho Gemini, hoặc OPENAI_API_KEY + OPENAI_BASE_URL + OPENAI_MODEL cho API tương thích OpenAI (OpenAI, Ollama, LM Studio, v.v.). Key không lưu trong trình duyệt."
+    },
     "gemini": {
       "title": "Gemini API",
       "label": "Gemini API key riêng",
@@ -908,6 +912,7 @@
       "subtasksUpdateFailedTitle": "Cập nhật nhiệm vụ con thất bại",
       "commentsUpdateFailedTitle": "Cập nhật bình luận thất bại",
       "taskMoveFailedTitle": "Di chuyển nhiệm vụ thất bại",
+      "taskReorderFailedTitle": "Sắp xếp lại nhiệm vụ thất bại",
       "listCreateFailedTitle": "Tạo danh sách thất bại",
       "listUpdateFailedTitle": "Cập nhật danh sách thất bại",
       "listDeleteFailedTitle": "Xóa danh sách thất bại",

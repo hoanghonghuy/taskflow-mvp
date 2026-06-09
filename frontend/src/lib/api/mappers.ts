@@ -130,6 +130,12 @@ export function mapTasksFromApi(items: unknown[]): Task[] {
       comments,
       createdAt,
       totalFocusTime: undefined,
+      sortOrder:
+        typeof t.sortOrder === 'number'
+          ? t.sortOrder
+          : typeof t.SortOrder === 'number'
+            ? t.SortOrder
+            : undefined,
     }
   })
 }

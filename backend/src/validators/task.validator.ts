@@ -32,3 +32,7 @@ export const createTaskSchema = z.object({
 export const updateTaskSchema = createTaskSchema
   .partial()
   .extend({ completed: z.boolean().optional() })
+
+export const reorderTasksSchema = z.object({
+  taskIds: z.array(z.string().min(1)).min(1),
+})

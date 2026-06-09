@@ -33,6 +33,7 @@ describe('mappers', () => {
       reminderMinutes: 15,
       assigneeId: 'u2',
       columnId: 'col1',
+      sortOrder: 2,
       userId: 'u1',
     } as TodoTask
 
@@ -42,6 +43,7 @@ describe('mappers', () => {
     expect(dto.comments).toHaveLength(1)
     expect(dto.recurrence?.type).toBe('daily')
     expect(dto.dueDate).toBe(now.toISOString())
+    expect(dto.sortOrder).toBe(2)
   })
 
   it('mapTaskToDto handles invalid JSON gracefully', () => {
@@ -61,10 +63,12 @@ describe('mappers', () => {
       reminderMinutes: null,
       assigneeId: null,
       columnId: null,
+      sortOrder: 0,
       userId: 'u1',
     } as TodoTask
 
     const dto = mapTaskToDto(task)
+    expect(dto.sortOrder).toBe(0)
     expect(dto.tags).toEqual([])
     expect(dto.subtasks).toEqual([])
     expect(dto.recurrence).toBeNull()

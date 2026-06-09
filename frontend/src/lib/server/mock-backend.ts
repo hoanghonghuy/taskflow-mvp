@@ -236,6 +236,24 @@ export async function mockBackendFetch(rawPath: string, init: RequestInit = {}):
   }
 
   // ---------------- Tasks ----------------
+  if (path === '/api/tasks/reorder') {
+    if (method === 'POST') {
+      const taskIds = Array.isArray(body.taskIds) ? (body.taskIds as string[]) : []
+      if (taskIds.length !== s.tasks.length) {
+        return json({ success: false, error: 'invalid_request', message: 'taskIds must include every task' }, 400)
+      }
+      const byId = new Map(s.tasks.map((t) => [t.id, t]))
+      const reordered = taskIds
+        .map((id) => byId.get(id))
+        .filter((t): t is MockTask => Boolean(t))
+      if (reordered.length !== s.tasks.length) {
+        return json({ success: false, error: 'invalid_request', message: 'Invalid task id' }, 400)
+      }
+      s.tasks = reordered
+      return json(reordered)
+    }
+  }
+
   if (path === '/api/tasks') {
     if (method === 'GET') return json(s.tasks)
     if (method === 'POST') {
