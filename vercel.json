@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "taskflow-frontend/package.json",
+      "src": "frontend/package.json",
       "use": "@vercel/static-build",
       "config": {
         "distDir": "dist"
@@ -12,11 +12,11 @@
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "/taskflow-frontend/$1"
+      "dest": "/frontend/$1"
     }
   ],
-  "installCommand": "cd taskflow-frontend && npm install",
-  "buildCommand": "cd taskflow-frontend && npm run build",
-  "outputDirectory": "taskflow-frontend/dist",
+  "installCommand": "cd frontend && npm install",
+  "buildCommand": "cd frontend && npm run build",
+  "outputDirectory": "frontend/dist",
   "framework": null
 }

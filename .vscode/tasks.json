@@ -1,41 +1,33 @@
-{
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "build",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "build",
-                "${workspaceFolder}/backend/src/WebApi/Taskflow.WebApi.csproj",
-                "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary;ForceNoAlign"
-            ],
-            "problemMatcher": "$msCompile"
-        },
-        {
-            "label": "publish",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "publish",
-                "${workspaceFolder}/backend/src/WebApi/Taskflow.WebApi.csproj",
-                "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary;ForceNoAlign"
-            ],
-            "problemMatcher": "$msCompile"
-        },
-        {
-            "label": "watch",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "watch",
-                "run",
-                "--project",
-                "${workspaceFolder}/backend/src/WebApi/Taskflow.WebApi.csproj"
-            ],
-            "problemMatcher": "$msCompile"
-        }
-    ]
-}
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "backend:dev",
+      "type": "npm",
+      "script": "dev",
+      "path": "backend/",
+      "problemMatcher": []
+    },
+    {
+      "label": "backend:test",
+      "type": "npm",
+      "script": "test",
+      "path": "backend/",
+      "problemMatcher": []
+    },
+    {
+      "label": "frontend:dev",
+      "type": "npm",
+      "script": "dev",
+      "path": "frontend/",
+      "problemMatcher": []
+    },
+    {
+      "label": "frontend:test",
+      "type": "npm",
+      "script": "test",
+      "path": "frontend/",
+      "problemMatcher": []
+    }
+  ]
+}

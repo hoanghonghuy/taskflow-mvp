@@ -1,0 +1,119 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  refreshTokens    RefreshToken[]
+  lists            TodoList[]
+  tasks            TodoTask[]
+  habits           Habit[]
+  countdownEvents  CountdownEvent[]
+  pomodoroSessions PomodoroSession[]
+  settings         UserSettings?
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model TodoList {
+  id        String   @id @default(uuid())
+  name      String
+  color     String
+  members   String   @default("[]")
+  userId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model TodoTask {
+  id              String    @id @default(uuid())
+  title           String
+  description     String?
+  completed       Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  dueDate         DateTime?
+  priority        String    @default("none")
+  listId          String    @default("inbox")
+  tags            String    @default("[]")
+  subtasks        String    @default("[]")
+  comments        String    @default("[]")
+  recurrence      String?
+  reminderMinutes Int?
+  assigneeId      String?
+  columnId        String?
+  userId          String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Habit {
+  id          String   @id @default(uuid())
+  name        String
+  completions String   @default("[]")
+  createdAt   DateTime @default(now())
+  userId      String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CountdownEvent {
+  id         String   @id @default(uuid())
+  title      String
+  targetDate DateTime
+  color      String   @default("#3b82f6")
+  createdAt  DateTime @default(now())
+  userId     String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PomodoroSession {
+  id              String   @id @default(uuid())
+  startTime       DateTime
+  durationSeconds Int
+  type            String
+  taskId          String?
+  habitId         String?
+  userId          String
+  createdAt       DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserSettings {
+  id                    String    @id @default(uuid())
+  userId                String    @unique
+  language              String    @default("en")
+  theme                 String    @default("light")
+  notifications         Boolean   @default(true)
+  soundEnabled          Boolean   @default(false)
+  autoStartPomodoro     Boolean   @default(false)
+  defaultPriority       String    @default("medium")
+  defaultListId         String    @default("inbox")
+  bottomNavActions      String    @default("[\"dashboard\",\"list\",\"board\",\"calendar\"]")
+  geminiApiKey          String?
+  pomodoroStateJson     String?
+  pomodoroStateUpdatedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

@@ -1,0 +1,93 @@
+import { prisma } from '../../src/lib/prisma'
+import {
+  getPomodoroState,
+  updatePomodoroState,
+} from '../../src/modules/pomodoro/pomodoro.service'
+import { resetDatabase } from '../helpers'
+
+describe('pomodoro.service', () => {
+  let userId: string
+
+  beforeEach(async () => {
+    await resetDatabase()
+    const user = await prisma.user.create({
+      data: { name: 'P', email: 'pomo@test.com', passwordHash: 'h' },
+    })
+    userId = user.id
+  })
+
+  it('returns null when no state', async () => {
+    expect(await getPomodoroState(userId)).toBeNull()
+  })
+
+  it('returns null for invalid stored JSON', async () => {
+    await prisma.userSettings.create({
+      data: {
+        userId,
+        pomodoroStateJson: 'not-json',
+        pomodoroStateUpdatedAt: new Date(),
+      },
+    })
+    expect(await getPomodoroState(userId)).toBeNull()
+  })
+
+  it('adjusts remaining time when active and elapsed', async () => {
+    const twoMinutesAgo = new Date(Date.now() - 120_000)
+    await prisma.userSettings.create({
+      data: {
+        userId,
+        pomodoroStateJson: JSON.stringify({
+          isActive: true,
+          isPaused: false,
+          remainingSeconds: 300,
+          currentSession: 'focus',
+          focusedTaskId: null,
+          focusedHabitId: null,
+          sessionsCompleted: 0,
+        }),
+        pomodoroStateUpdatedAt: twoMinutesAgo,
+      },
+    })
+
+    const state = await getPomodoroState(userId)
+    expect(state!.remainingSeconds).toBeLessThan(300)
+  })
+
+  it('zeros timer when elapsed exceeds remaining', async () => {
+    const longAgo = new Date(Date.now() - 600_000)
+    await prisma.userSettings.create({
+      data: {
+        userId,
+        pomodoroStateJson: JSON.stringify({
+          isActive: true,
+          isPaused: false,
+          remainingSeconds: 10,
+          currentSession: 'focus',
+          focusedTaskId: null,
+          focusedHabitId: null,
+          sessionsCompleted: 0,
+        }),
+        pomodoroStateUpdatedAt: longAgo,
+      },
+    })
+
+    const state = await getPomodoroState(userId)
+    expect(state!.remainingSeconds).toBe(0)
+    expect(state!.isActive).toBe(false)
+  })
+
+  it('updatePomodoroState normalizes negative values', async () => {
+    const state = await updatePomodoroState(userId, {
+      isActive: false,
+      isPaused: false,
+      remainingSeconds: -5,
+      currentSession: '',
+      focusedTaskId: '  ',
+      focusedHabitId: '  ',
+      sessionsCompleted: -1,
+    })
+    expect(state.remainingSeconds).toBe(0)
+    expect(state.currentSession).toBe('focus')
+    expect(state.sessionsCompleted).toBe(0)
+  })
+})

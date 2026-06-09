@@ -1,95 +1,116 @@
 # ============================================
+# Dependencies
+# ============================================
+
+**/node_modules/
+.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# ============================================
 # Frontend (Next.js)
 # ============================================
 
-# Dependencies
-taskflow-frontend/node_modules/
-packages/**/node_modules/
-taskflow-frontend/.pnp
-taskflow-frontend/.pnp.js
-taskflow-frontend/.yarn/install-state.gz
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/dist/
 
-# Testing
-taskflow-frontend/coverage
+frontend/.vercel
 
-# Next.js
-taskflow-frontend/.next/
-taskflow-frontend/out/
-taskflow-frontend/build
-taskflow-frontend/dist
+# TypeScript (Next.js)
+frontend/*.tsbuildinfo
+frontend/next-env.d.ts
 
-# Production
-taskflow-frontend/build
+# Testing (Vitest)
+frontend/coverage/
 
-# Misc
-taskflow-frontend/.DS_Store
-taskflow-frontend/*.pem
+# ============================================
+# Backend (Node.js + Express + Prisma)
+# ============================================
 
-# Debug
-taskflow-frontend/npm-debug.log*
-taskflow-frontend/yarn-debug.log*
-taskflow-frontend/yarn-error.log*
+backend/dist/
+backend/coverage/
 
-# Local env files
-taskflow-frontend/.env
-taskflow-frontend/.env*.local
-taskflow-frontend/.env.production
+# SQLite databases (runtime + test)
+backend/data/
+backend/data/**/*.db
+backend/data/**/*.db-journal
+backend/prisma/data/
+backend/prisma/data/**/*.db
+backend/prisma/data/**/*.db-journal
+**/*.db-shm
+**/*.db-wal
 
-# Vercel
-taskflow-frontend/.vercel
+# Testing (Jest)
+backend/tests/**/*.db
+backend/tests/**/*.db-journal
 
 # TypeScript
-taskflow-frontend/*.tsbuildinfo
-taskflow-frontend/next-env.d.ts
+backend/*.tsbuildinfo
 
 # ============================================
-# Backend (C# .NET) - Để dành cho sau
+# Environment variables
+# (keep .env.example tracked)
 # ============================================
 
-# User-specific files
-backend/**/*.suo
-backend/**/*.user
-backend/**/*.userosscache
-backend/**/*.sln.docstates
+.env
+.env.*
+!.env.example
+!**/.env.example
 
-# Build results
-backend/**/[Dd]ebug/
-backend/**/[Dd]ebugPublic/
-backend/**/[Rr]elease/
-backend/**/[Rr]eleases/
-backend/**/x64/
-backend/**/x86/
-backend/**/[Ww][Ii][Nn]32/
-backend/**/[Aa][Rr][Mm]/
-backend/**/[Aa][Rr][Mm]64/
-backend/**/bld/
-backend/**/[Bb]in/
-backend/**/[Oo]bj/
-backend/**/[Tt]est[Rr]esults/
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
 
-# .NET Core
-backend/**/project.lock.json
-backend/**/project.fragment.lock.json
-backend/**/artifacts/
+backend/.env
+backend/.env.*
+!backend/.env.example
 
 # ============================================
-# Database
+# Logs & debug
 # ============================================
 
-# PostgreSQL
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ============================================
+# Database backups
+# ============================================
+
 *.sql.backup
 *.sql.gz
 
-# Local SQLite / test databases
-backend/**/*.db
-backend/**/*.sqlite
-backend/**/*.sqlite3
+# ============================================
+# Docker (local overrides)
+# ============================================
+
+docker-compose.override.yml
+docker-compose.*.local.yml
+
+# ============================================
+# Tooling caches
+# ============================================
+
+.eslintcache
+.turbo/
+.cache/
+.parcel-cache/
+.nyc_output/
+
+# GitNexus local index (regenerate with: npx gitnexus analyze)
+.gitnexus/
 
 # ============================================
 # IDE / Editor
 # ============================================
 
-# VSCode
+# VSCode — keep shared workspace settings
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
@@ -99,7 +120,6 @@ backend/**/*.sqlite3
 
 # JetBrains
 .idea/
-*.sln.iml
 *.iml
 *.ipr
 *.iws
@@ -132,24 +152,11 @@ ehthumbs_vista.db
 # Misc
 # ============================================
 
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
-.pnpm-debug.log*
-
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Temporary files
+*.pem
 *.tmp
 *.temp
 .temp/
 .tmp/
+.claude/
+.kiro/
+.vscode/

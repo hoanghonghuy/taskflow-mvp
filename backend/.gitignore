@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+
+# SQLite
+data/
+prisma/data/
+
+# Env (keep .env.example if added later)
+.env
+.env.*
+!.env.example
