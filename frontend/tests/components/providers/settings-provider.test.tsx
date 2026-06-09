@@ -54,7 +54,7 @@ describe('SettingsProvider', () => {
 
     expect(result.current.settings.language).toBe('vi')
     expect(result.current.settings.theme).toBe('dark')
-    expect((result.current.settings as Record<string, unknown>).geminiApiKey).toBeUndefined()
+    expect((result.current.settings as unknown as Record<string, unknown>).geminiApiKey).toBeUndefined()
     expect(JSON.parse(localStorage.getItem('settings')!)).not.toHaveProperty('geminiApiKey')
   })
 
@@ -121,7 +121,7 @@ describe('SettingsProvider', () => {
     await waitFor(() => {
       expect(result.current.settings.language).toBe('vi')
       expect(result.current.settings.theme).toBe('dark')
-      expect((result.current.settings as Record<string, unknown>).geminiApiKey).toBeUndefined()
+      expect((result.current.settings as unknown as Record<string, unknown>).geminiApiKey).toBeUndefined()
     })
   })
 })

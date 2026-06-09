@@ -42,10 +42,11 @@ describe('extended reducers', () => {
   })
 
   it('listReducer update members and delete', () => {
-    let s = listReducer(state(), { type: 'ADD_LIST', payload: { id: 'l1', name: 'L', color: '#fff', members: [] } })
-    s = listReducer(s, { type: 'UPDATE_LIST', payload: { id: 'l1', name: 'L2', color: '#000', members: ['u1'] } })
+    let s = listReducer(state(), { type: 'ADD_LIST', payload: { name: 'L', color: '#fff', members: [] } })
+    const listId = s.lists[0].id
+    s = listReducer(s, { type: 'UPDATE_LIST', payload: { id: listId, name: 'L2', color: '#000', members: ['u1'] } })
     expect(s.lists[0].name).toBe('L2')
-    s = listReducer(s, { type: 'UPDATE_LIST_MEMBERS', payload: { listId: 'l1', memberIds: ['u2'] } })
+    s = listReducer(s, { type: 'UPDATE_LIST_MEMBERS', payload: { listId, memberIds: ['u2'] } })
     expect(s.lists[0].members).toEqual(['u2'])
   })
 
@@ -122,8 +123,9 @@ describe('extended reducers', () => {
   })
 
   it('action creators and composite reducer', () => {
-    let s = taskManagerReducer(state(), taskActions.add({ ...sampleTask(), id: undefined as unknown as string }))
-    s = taskManagerReducer(s, listActions.add({ id: 'l1', name: 'L', color: '#fff', members: [] }))
+    const { id: _taskId, ...taskWithoutId } = sampleTask()
+    let s = taskManagerReducer(state(), taskActions.add(taskWithoutId))
+    s = taskManagerReducer(s, listActions.add({ name: 'L', color: '#fff', members: [] }))
     s = taskManagerReducer(s, habitActions.add({ name: 'H' }))
     expect(s.tasks.length + s.lists.length + s.habits.length).toBeGreaterThan(0)
   })

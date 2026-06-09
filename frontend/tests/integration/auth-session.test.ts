@@ -32,13 +32,14 @@ describe('auth session API', () => {
 describe('auth session API (real backend mode)', () => {
   beforeEach(() => {
     vi.resetModules()
-    process.env.MOCK_MODE = 'false'
-    process.env.NODE_ENV = 'development'
+    vi.stubEnv('MOCK_MODE', 'false')
+    vi.stubEnv('NODE_ENV', 'development')
     vi.stubGlobal('fetch', vi.fn())
   })
 
   afterEach(() => {
-    process.env.MOCK_MODE = 'true'
+    vi.stubEnv('MOCK_MODE', 'true')
+    vi.unstubAllEnvs()
     vi.unstubAllGlobals()
     vi.restoreAllMocks()
   })

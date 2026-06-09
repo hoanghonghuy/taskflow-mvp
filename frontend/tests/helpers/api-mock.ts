@@ -1,5 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { vi } from 'vitest'
+import { vi, type Mock } from 'vitest'
+
+export type ApiMocks = {
+  req: NextApiRequest
+  res: NextApiResponse
+  status: Mock<(code: number) => { json: Mock; end: Mock }>
+  json: Mock
+  end: Mock
+  setHeader: Mock
+}
 
 export function createApiMocks(
   method: string,
@@ -9,10 +18,12 @@ export function createApiMocks(
     headers?: Record<string, string>
   } = {},
 ) {
-  const json = vi.fn()
-  const end = vi.fn()
-  const status = vi.fn(() => ({ json, end }))
-  const setHeader = vi.fn()
+  const json = vi.fn() as Mock
+  const end = vi.fn() as Mock
+  const status = vi.fn((code: number) => ({ json, end })) as Mock<
+    (code: number) => { json: Mock; end: Mock }
+  >
+  const setHeader = vi.fn() as Mock
 
   const req = {
     method,
@@ -28,11 +39,16 @@ export function createApiMocks(
     setHeader,
   } as unknown as NextApiResponse
 
-  return { req, res, status, json, end, setHeader }
+  return { req, res, status, json, end, setHeader } satisfies ApiMocks
 }
 
+type ApiRouteHandler = (
+  req: NextApiRequest,
+  res: NextApiResponse,
+) => void | Promise<void | NextApiResponse>
+
 export async function runHandler(
-  handler: (req: NextApiRequest, res: NextApiResponse) => Promise<void>,
+  handler: ApiRouteHandler,
   method: string,
   options?: Parameters<typeof createApiMocks>[1],
 ) {

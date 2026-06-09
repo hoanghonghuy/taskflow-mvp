@@ -3,13 +3,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 describe('backend-client', () => {
   beforeEach(() => {
     vi.resetModules()
-    process.env.MOCK_MODE = 'true'
-    process.env.NODE_ENV = 'development'
+    vi.stubEnv('MOCK_MODE', 'true')
+    vi.stubEnv('NODE_ENV', 'development')
   })
 
   afterEach(() => {
-    delete process.env.DEV_USER_EMAIL
-    delete process.env.DEV_USER_PASSWORD
+    vi.unstubAllEnvs()
     vi.restoreAllMocks()
   })
 
@@ -26,9 +25,9 @@ describe('backend-client', () => {
   })
 
   it('requires explicit dev credentials when mock mode is disabled outside production', async () => {
-    process.env.MOCK_MODE = 'false'
-    delete process.env.DEV_USER_EMAIL
-    delete process.env.DEV_USER_PASSWORD
+    vi.stubEnv('MOCK_MODE', 'false')
+    vi.stubEnv('DEV_USER_EMAIL', '')
+    vi.stubEnv('DEV_USER_PASSWORD', '')
 
     const { backendFetch } = await import('@/lib/server/backend-client')
 

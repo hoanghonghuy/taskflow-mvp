@@ -18,7 +18,7 @@ describe('taskReducer', () => {
   it('adds, updates, deletes, toggles tasks', () => {
     let s = taskReducer(state(), {
       type: 'ADD_TASK',
-      payload: { title: 'A', description: '', completed: false, priority: 'none', listId: 'inbox', tags: [], subtasks: [], comments: [], assigneeId: null },
+      payload: { id: 'task-1', title: 'A', description: '', completed: false, priority: 'none', listId: 'inbox', tags: [], subtasks: [], comments: [], assigneeId: null },
     })
     const id = s.tasks[0].id
     s = taskReducer(s, { type: 'TOGGLE_TASK_COMPLETION', payload: { taskId: id } })
@@ -30,12 +30,13 @@ describe('taskReducer', () => {
 
 describe('listReducer', () => {
   it('manages lists and members', () => {
-    let s = listReducer(state(), { type: 'ADD_LIST', payload: { id: 'l1', name: 'L', color: '#fff', members: [] } })
-    s = listReducer(s, { type: 'SHARE_LIST', payload: { listId: 'l1', userId: 'u2' } })
+    let s = listReducer(state(), { type: 'ADD_LIST', payload: { name: 'L', color: '#fff', members: [] } })
+    const listId = s.lists[0].id
+    s = listReducer(s, { type: 'SHARE_LIST', payload: { listId, userId: 'u2' } })
     expect(s.lists[0].members).toContain('u2')
-    s = listReducer(s, { type: 'UNSHARE_LIST', payload: { listId: 'l1', userId: 'u2' } })
+    s = listReducer(s, { type: 'UNSHARE_LIST', payload: { listId, userId: 'u2' } })
     expect(s.lists[0].members).not.toContain('u2')
-    s = listReducer(s, { type: 'DELETE_LIST', payload: 'l1' })
+    s = listReducer(s, { type: 'DELETE_LIST', payload: listId })
     expect(s.lists).toHaveLength(0)
   })
 })
@@ -101,12 +102,12 @@ describe('taskManagerReducer & historyReducer', () => {
 
   it('history undo/redo', () => {
     const present = state()
-    let hist = historyReducer({ past: [], present, future: [] }, { type: 'SET_VIEW', payload: 'habits' })
-    expect(hist.present.view).toBe('habits')
+    let hist = historyReducer({ past: [], present, future: [] }, { type: 'SET_VIEW', payload: 'habit' })
+    expect(hist.present.view).toBe('habit')
     hist = historyReducer(hist, { type: 'UNDO' })
     expect(hist.present.view).toBe('dashboard')
     hist = historyReducer(hist, { type: 'REDO' })
-    expect(hist.present.view).toBe('habits')
+    expect(hist.present.view).toBe('habit')
     hist = historyReducer(hist, { type: 'CLEAR_HISTORY' })
     expect(hist.past).toHaveLength(0)
   })
