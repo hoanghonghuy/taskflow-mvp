@@ -15,6 +15,7 @@ type ViewAction =
   | { type: 'SET_ACTIVE_LIST'; payload: string }
   | { type: 'SET_ACTIVE_TAG'; payload: string | null }
   | { type: 'SET_SORT_ORDER'; payload: AppState['sortOrder'] }
+  | { type: 'SET_UNLOCKED_ACHIEVEMENTS'; payload: string[] }
 
 type TagAction =
   | { type: 'ADD_TAG'; payload: { name: string } }

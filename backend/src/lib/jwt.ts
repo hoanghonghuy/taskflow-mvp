@@ -26,6 +26,8 @@ export function signToken(payload: JwtUserPayload): string {
     {
       algorithm: 'HS256',
       expiresIn: `${config.jwt.expiresHours}h`,
+      issuer: config.jwt.issuer,
+      audience: config.jwt.audience,
     },
   )
 }
@@ -34,6 +36,8 @@ export function verifyToken(token: string): JwtUserPayload | null {
   try {
     const decoded = jwt.verify(token, config.jwt.key, {
       algorithms: ['HS256'],
+      issuer: config.jwt.issuer,
+      audience: config.jwt.audience,
     }) as jwt.JwtPayload
 
     const userId =

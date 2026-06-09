@@ -106,7 +106,9 @@
       "forgotSuccessTitle": "Check your inbox",
       "forgotSuccessBody": "If an account exists for this email, we’ll send reset instructions.",
       "forgotFailedTitle": "Something went wrong",
-      "forgotFailedBody": "Please try again later"
+      "forgotFailedBody": "Please try again later",
+      "forgotUnavailableTitle": "Not available yet",
+      "forgotUnavailableBody": "Password reset is not supported in this version. Please contact support or create a new account."
     }
   },
   "task": {
@@ -432,7 +434,9 @@
       "updateFailedTitle": "Update Failed",
       "updateFailedBody": "Countdown not found",
       "deleteFailedTitle": "Delete Failed",
-      "deleteFailedBody": "Countdown not found"
+      "deleteFailedBody": "Countdown not found",
+      "addFailedTitle": "Could not add countdown",
+      "addFailedBody": "Please try again later"
     },
     "aria": {
       "deleteCountdown": "Delete countdown"
@@ -881,6 +885,7 @@
     "invite": "Invite others",
     "empty": "Everyone is already in this list.",
     "done": "Done",
+    "unavailable": "List sharing is not available yet. Collaboration between real accounts will be added in a future release.",
     "aria": {
       "removeMember": "Remove {{memberName}}",
       "addMember": "Add {{memberName}}"

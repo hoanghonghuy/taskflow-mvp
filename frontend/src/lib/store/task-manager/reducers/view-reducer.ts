@@ -30,6 +30,9 @@ export function viewReducer(state: AppState, action: Action): AppState {
     case 'SET_SORT_ORDER':
       return { ...state, sortOrder: action.payload }
 
+    case 'SET_UNLOCKED_ACHIEVEMENTS':
+      return { ...state, unlockedAchievements: action.payload }
+
     default:
       return state
   }

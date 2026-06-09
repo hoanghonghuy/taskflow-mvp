@@ -48,7 +48,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
   const { t } = useI18n()
   const { settings } = useSettings()
   const { allUsers } = useUser()
-  const { deleteTask, syncSubtasks } = useTaskActions()
+  const { deleteTask, syncSubtasks, toggleTask } = useTaskActions()
   const { confirm } = useConfirmation()
   const [isDragOver, setIsDragOver] = useState(false)
   const [isSubtasksOpen, setIsSubtasksOpen] = useState<boolean>(() => {
@@ -62,7 +62,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
 
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation()
-    dispatch({ type: 'TOGGLE_TASK_COMPLETION', payload: { taskId: task.id } })
+    void toggleTask(task.id)
   }
 
   const handleToggleSubtasksVisibility = (e: React.MouseEvent) => {

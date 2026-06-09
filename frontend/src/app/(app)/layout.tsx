@@ -25,7 +25,7 @@ export default function AppLayout({
 }) {
   const router = useRouter()
   const pathname = usePathname()
-  const { isAuthenticated, logout } = useUser()
+  const { isAuthenticated, authReady, logout } = useUser()
   const { t } = useI18n()
   const { state } = useTaskManager()
   const modal = useModal()
@@ -102,6 +102,10 @@ export default function AppLayout({
     let isMounted = true
 
     const verifySession = async () => {
+      if (!authReady) {
+        return
+      }
+
       if (!isAuthenticated) {
         if (isMounted) {
           setCheckingSession(false)
@@ -144,12 +148,12 @@ export default function AppLayout({
     return () => {
       isMounted = false
     }
-  }, [isAuthenticated, logout, router])
+  }, [authReady, isAuthenticated, logout, router])
 
   // Theme is handled by SettingsProvider
 
   // Show loading state during hydration and session verification to prevent mismatch
-  if (checkingSession) {
+  if (!authReady || checkingSession) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

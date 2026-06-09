@@ -3,6 +3,7 @@
 import React, { useMemo } from 'react'
 import { useCalendar, type ViewMode } from '@/lib/hooks/use-calendar'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
+import { useTaskActions } from '@/lib/hooks/use-task-manager'
 import { useI18n } from '@/lib/hooks/use-i18n'
 import type { TranslationKey } from '@/lib/i18n/types'
 import { useSettings } from '@/components/providers/settings-provider'
@@ -37,7 +38,8 @@ const CalendarView: React.FC = () => {
     DAY_LABELS,
   } = useCalendar()
 
-  const { dispatch, state } = useTaskManager()
+  const { state } = useTaskManager()
+  const { updateTask } = useTaskActions()
   const { tasks } = state
   const { settings } = useSettings()
 
@@ -73,12 +75,9 @@ const CalendarView: React.FC = () => {
     // Preserve original time component
     newDueDate.setHours(originalDate.getHours(), originalDate.getMinutes(), originalDate.getSeconds(), originalDate.getMilliseconds())
 
-    dispatch({
-      type: 'UPDATE_TASK',
-      payload: {
-        ...task,
-        dueDate: newDueDate.toISOString(),
-      },
+    void updateTask({
+      ...task,
+      dueDate: newDueDate.toISOString(),
     })
   }
 

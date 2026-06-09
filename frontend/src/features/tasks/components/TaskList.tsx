@@ -23,8 +23,9 @@ const TaskList: React.FC<TaskListProps> = ({ onAddTask }) => {
   const [isCompletedOpen, setIsCompletedOpen] = useState(false)
 
   const filteredTasks = useMemo(() => {
-    return filterTasksByList(state.tasks, state.activeListId, state.activeTag)
-  }, [state.tasks, state.activeListId, state.activeTag])
+    const inboxListId = state.lists.find((l) => l.name === 'Inbox' || l.id === 'inbox')?.id ?? null
+    return filterTasksByList(state.tasks, state.activeListId, state.activeTag, inboxListId)
+  }, [state.tasks, state.activeListId, state.activeTag, state.lists])
 
   const summary = useMemo(() => {
     const today = startOfDay(new Date())

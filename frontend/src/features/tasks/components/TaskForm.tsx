@@ -32,16 +32,20 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
   const { isAvailable: isGeminiAvailable } = useGemini()
   const addToast = useToast()
 
+  const resolveInboxListId = () => {
+    const inbox = state.lists.find((l) => l.name === 'Inbox' || l.id === 'inbox')
+    return inbox?.id ?? 'inbox'
+  }
+
   const getInitialListId = () => {
+    const inboxListId = resolveInboxListId()
     const initial = defaultValues?.listId || state.activeListId
-    // Special lists other than inbox are not selectable in the form. Default to inbox.
-    if (initial === 'today' || initial === 'upcoming') {
-      return 'inbox'
+    if (initial === 'today' || initial === 'upcoming' || initial === 'inbox') {
+      return inboxListId
     }
-    // Ensure the list exists, otherwise default to inbox
-    const listExists = state.lists.some(l => l.id === initial)
-    if (initial !== 'inbox' && !listExists) {
-      return 'inbox'
+    const listExists = state.lists.some((l) => l.id === initial)
+    if (!listExists) {
+      return inboxListId
     }
     return initial
   }
@@ -74,7 +78,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
         completed: false,
         dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
         priority,
-        listId: listId || 'inbox',
+        listId: listId || resolveInboxListId(),
         columnId: columnId,
         tags: [],
         subtasks: [],

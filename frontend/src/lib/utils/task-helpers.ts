@@ -2,16 +2,62 @@
  * Task filtering and sorting helper functions
  */
 
-import type { Task } from '@/types'
+import type { Column, List, Task } from '@/types'
 import type { TranslationFunction } from '@/lib/i18n/types'
 import { isToday, isTomorrow, isFuture, isOverdue } from './date-helpers'
 
 export type SortOrder = 'default' | 'dueDateAsc' | 'dueDateDesc'
 
+const DEFAULT_COLUMN_DEFS = [
+  { suffix: 'todo', name: 'To Do' },
+  { suffix: 'in-progress', name: 'In Progress' },
+  { suffix: 'done', name: 'Done' },
+] as const
+
+function defaultColumnId(listId: string, suffix: string): string {
+  return listId === 'inbox' ? suffix : `${listId}-${suffix}`
+}
+
+/** Rebuild board columns from lists + tasks after loading from backend. */
+export function buildBoardColumns(lists: List[], tasks: Task[]): Column[] {
+  const columns: Column[] = []
+  const seen = new Set<string>()
+
+  for (const list of lists) {
+    for (const def of DEFAULT_COLUMN_DEFS) {
+      const id = defaultColumnId(list.id, def.suffix)
+      if (!seen.has(id)) {
+        columns.push({ id, name: def.name, listId: list.id })
+        seen.add(id)
+      }
+    }
+  }
+
+  for (const task of tasks) {
+    if (!task.columnId || !task.listId) continue
+    const key = `${task.listId}:${task.columnId}`
+    if (seen.has(key)) continue
+    columns.push({
+      id: task.columnId,
+      name: 'Column',
+      listId: task.listId,
+    })
+    seen.add(key)
+  }
+
+  return columns
+}
+
+export function resolveInboxListIdFromLists(lists: List[]): string | null {
+  const inbox = lists.find((l) => l.name === 'Inbox' || l.id === 'inbox')
+  return inbox?.id ?? null
+}
+
 export const filterTasksByList = (
   tasks: Task[],
   listId: string | null,
-  activeTag: string | null
+  activeTag: string | null,
+  inboxListId?: string | null,
 ): Task[] => {
   if (activeTag) {
     return tasks.filter(task => task.tags.includes(activeTag))
@@ -29,8 +75,12 @@ export const filterTasksByList = (
       })
     case 'upcoming':
       return tasks.filter(task => task.dueDate && isFuture(new Date(task.dueDate)))
-    case 'inbox':
-      return tasks.filter(task => task.listId === 'inbox')
+    case 'inbox': {
+      const resolvedInbox = inboxListId ?? 'inbox'
+      return tasks.filter(
+        (task) => task.listId === resolvedInbox || task.listId === 'inbox',
+      )
+    }
     default:
       return tasks.filter(task => task.listId === listId)
   }

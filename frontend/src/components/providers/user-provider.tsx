@@ -4,40 +4,11 @@ import { createContext, useContext, useState, useCallback, useEffect } from 'rea
 import { useI18n } from '@/lib/hooks/use-i18n'
 import type { User } from '@/types'
 
-// Mock users for development - matching template
-const MOCK_USER: User = {
-  id: 'user-001',
-  name: 'Alex Ryder',
-  email: 'alex.ryder@example.com',
-  avatarUrl: 'https://api.dicebear.com/8.x/initials/svg?seed=Alex%20Ryder',
-}
-
-const MOCK_USERS: User[] = [
-  MOCK_USER,
-  {
-    id: 'user-002',
-    name: 'Jane Doe',
-    email: 'jane.doe@example.com',
-    avatarUrl: 'https://api.dicebear.com/8.x/initials/svg?seed=Jane%20Doe',
-  },
-  {
-    id: 'user-003',
-    name: 'John Smith',
-    email: 'john.smith@example.com',
-    avatarUrl: 'https://api.dicebear.com/8.x/initials/svg?seed=John%20Smith',
-  },
-  {
-    id: 'user-004',
-    name: 'Emily White',
-    email: 'emily.white@example.com',
-    avatarUrl: 'https://api.dicebear.com/8.x/initials/svg?seed=Emily%20White',
-  },
-]
-
 interface UserContextType {
   user: User | null
   allUsers: User[]
   isAuthenticated: boolean
+  authReady: boolean
   login: (email: string, password: string) => Promise<void>
   register: (name: string, email: string, password: string) => Promise<void>
   logout: () => void
@@ -48,22 +19,60 @@ const UserContext = createContext<UserContextType | undefined>(undefined)
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const { t } = useI18n()
-  const [user, setUser] = useState<User | null>(() => {
-    if (typeof window !== 'undefined') {
-      const savedUser = localStorage.getItem('user')
-      if (savedUser) {
-        try {
-          return JSON.parse(savedUser)
-        } catch (error) {
-          console.error(t('console.failedParseUser'), error)
+  const [user, setUser] = useState<User | null>(null)
+  const [authReady, setAuthReady] = useState(false)
+  const [lastRefreshAt, setLastRefreshAt] = useState<number | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function validateSession() {
+      try {
+        const response = await fetch('/api/auth/session', { credentials: 'include' })
+        if (cancelled) return
+
+        if (response.ok) {
+          const data = (await response.json().catch(() => null)) as { authenticated?: boolean } | null
+          if (data?.authenticated) {
+            const savedUser = localStorage.getItem('user')
+            if (savedUser) {
+              try {
+                setUser(JSON.parse(savedUser) as User)
+                localStorage.setItem('isAuthenticated', 'true')
+              } catch (error) {
+                console.error(t('console.failedParseUser'), error)
+                localStorage.removeItem('user')
+                localStorage.removeItem('isAuthenticated')
+              }
+            }
+          } else {
+            setUser(null)
+            localStorage.removeItem('user')
+            localStorage.removeItem('isAuthenticated')
+          }
+        } else {
+          setUser(null)
           localStorage.removeItem('user')
+          localStorage.removeItem('isAuthenticated')
+        }
+      } catch {
+        if (!cancelled) {
+          setUser(null)
+          localStorage.removeItem('user')
+          localStorage.removeItem('isAuthenticated')
+        }
+      } finally {
+        if (!cancelled) {
+          setAuthReady(true)
         }
       }
     }
-    return null
-  })
 
-  const [lastRefreshAt, setLastRefreshAt] = useState<number | null>(null)
+    void validateSession()
+    return () => {
+      cancelled = true
+    }
+  }, [t])
 
   const login = useCallback(async (email: string, password: string) => {
     const response = await fetch('/api/auth/[...nextauth]', {
@@ -79,7 +88,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const data = (await response.json().catch(() => null)) as { user?: User } | null
 
     if (data && data.user) {
-      // Clear any previous taskflow state so new user starts from backend data only
       if (typeof window !== 'undefined') {
         localStorage.removeItem('taskflowState')
       }
@@ -104,7 +112,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       throw new Error(`Register failed with status ${response.status}`)
     }
 
-    // After successful registration, attempt login to obtain JWT cookie and user
     await login(email, password)
   }, [login])
 
@@ -136,8 +143,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       })
 
       if (!response.ok) {
-        // If refresh fails (expired/invalid refresh token), log out the user to avoid
-        // keeping a stale authenticated state on the client.
         await logout()
         return
       }
@@ -149,24 +154,21 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }
   }, [logout, user])
 
-  // Periodically refresh token while the user is authenticated
   useEffect(() => {
     if (!user) return
 
     const interval = setInterval(() => {
       void refreshSession()
-    }, 10 * 60 * 1000) // every 10 minutes
+    }, 10 * 60 * 1000)
 
     return () => clearInterval(interval)
   }, [user, refreshSession])
 
-  // Attempt refresh when the tab becomes visible again
   useEffect(() => {
     if (typeof document === 'undefined') return
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible' && user) {
-        // Avoid spamming refresh on rapid focus changes
         const now = Date.now()
         if (!lastRefreshAt || now - lastRefreshAt > 60 * 1000) {
           void refreshSession()
@@ -191,8 +193,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     <UserContext.Provider
       value={{
         user,
-        allUsers: MOCK_USERS,
-        isAuthenticated: !!user,
+        allUsers: [],
+        isAuthenticated: authReady && !!user,
+        authReady,
         login,
         register,
         logout,

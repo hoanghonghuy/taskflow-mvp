@@ -10,13 +10,19 @@ interface GeminiResponse {
   }>
 }
 
-async function generateText(prompt: string): Promise<string> {
-  if (!config.geminiApiKey) {
+function resolveApiKey(apiKey?: string): string {
+  const key = apiKey?.trim() || config.geminiApiKey?.trim()
+  if (!key) {
     throw new AppError(500, 'internal_server_error', 'Gemini API key is not configured.')
   }
+  return key
+}
+
+async function generateText(prompt: string, apiKey?: string): Promise<string> {
+  const key = resolveApiKey(apiKey)
 
   const response = await fetch(
-    `${BASE_URL}/models/${MODEL}:generateContent?key=${config.geminiApiKey}`,
+    `${BASE_URL}/models/${MODEL}:generateContent?key=${key}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -48,7 +54,7 @@ function languageLabel(language: string): string {
   return language.toLowerCase().startsWith('vi') ? 'Vietnamese' : 'English'
 }
 
-export async function generateBriefing(language: string, context: string): Promise<string> {
+export async function generateBriefing(language: string, context: string, apiKey?: string): Promise<string> {
   const prompt = `You are an assistant helping a user plan their day based on their tasks, habits and focus sessions.
 
 Language: ${languageLabel(language)}.
@@ -58,7 +64,7 @@ ${context}
 
 Write a short daily briefing in markdown (use headings and bullet lists), at most 250 words.`
 
-  return generateText(prompt)
+  return generateText(prompt, apiKey)
 }
 
 function extractJsonBlock(text: string): string | null {
@@ -83,7 +89,7 @@ export interface AnalyzeTaskResult {
   tags?: string[]
 }
 
-export async function analyzeTask(language: string, text: string): Promise<AnalyzeTaskResult> {
+export async function analyzeTask(language: string, text: string, apiKey?: string): Promise<AnalyzeTaskResult> {
   const prompt = `You help users convert free-form text into a structured task.
 
 User input:
@@ -98,7 +104,7 @@ Respond ONLY with a single JSON object. The object must have these keys:
 Use ${languageLabel(language)} for values where applicable (except priority which must be one of the fixed literals).
 Do not include any extra commentary outside the JSON.`
 
-  const raw = await generateText(prompt)
+  const raw = await generateText(prompt, apiKey)
   const json = extractJsonBlock(raw)
 
   if (!json) {
@@ -146,6 +152,7 @@ export async function chat(
   messages: ChatMessage[],
   thinkingMode: boolean,
   searchGrounding: boolean,
+  apiKey?: string,
 ): Promise<string> {
   let systemIntro = `You are Taskflow's AI assistant, helping the user with productivity, tasks and planning. Answer in ${languageLabel(language)}.`
 
@@ -165,5 +172,5 @@ export async function chat(
     .join('\n\n')
 
   const prompt = `${systemIntro}\n\nConversation so far:\n${history}\n\nAssistant:`
-  return generateText(prompt)
+  return generateText(prompt, apiKey)
 }

@@ -106,7 +106,9 @@
       "forgotSuccessTitle": "Hãy kiểm tra hộp thư",
       "forgotSuccessBody": "Nếu email tồn tại, hướng dẫn đặt lại mật khẩu sẽ được gửi đến bạn",
       "forgotFailedTitle": "Có lỗi xảy ra",
-      "forgotFailedBody": "Vui lòng thử lại sau"
+      "forgotFailedBody": "Vui lòng thử lại sau",
+      "forgotUnavailableTitle": "Chưa hỗ trợ",
+      "forgotUnavailableBody": "Đặt lại mật khẩu chưa được hỗ trợ trong phiên bản này. Vui lòng liên hệ hỗ trợ hoặc tạo tài khoản mới."
     }
   },
   "task": {
@@ -424,7 +426,9 @@
       "updateFailedTitle": "Cập nhật thất bại",
       "updateFailedBody": "Không tìm thấy đếm ngược",
       "deleteFailedTitle": "Xóa thất bại",
-      "deleteFailedBody": "Không tìm thấy đếm ngược"
+      "deleteFailedBody": "Không tìm thấy đếm ngược",
+      "addFailedTitle": "Không thể thêm đếm ngược",
+      "addFailedBody": "Vui lòng thử lại sau"
     },
     "aria": {
       "deleteCountdown": "Xóa đếm ngược"
@@ -866,6 +870,7 @@
     "invite": "Mời người khác",
     "empty": "Mọi người đã có trong danh sách này.",
     "done": "Xong",
+    "unavailable": "Chia sẻ danh sách chưa khả dụng. Tính năng cộng tác giữa các tài khoản thật sẽ được bổ sung sau.",
     "aria": {
       "removeMember": "Xóa {{memberName}}",
       "addMember": "Thêm {{memberName}}"

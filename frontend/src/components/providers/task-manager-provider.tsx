@@ -10,6 +10,7 @@ import { useUser } from './user-provider'
 import type { Task, List, Habit, Comment, PomodoroState, AppState, Priority, CountdownEvent, FocusSession, RecurrencePattern } from '@/types'
 import type { TaskManagerContextType } from '@/lib/store/task-manager/types'
 import type { TranslationKey } from '@/lib/i18n/types'
+import { buildBoardColumns } from '@/lib/utils/task-helpers'
 // Note: mock data has been disabled now that we have a real backend
 
 interface HistoryState {
@@ -404,15 +405,21 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
           console.error('Failed to load pomodoro state from backend', error)
         }
 
+        const inboxList = lists.find((l) => l.name === 'Inbox' || l.id === 'inbox')
+        const inboxListId = inboxList?.id ?? lists[0]?.id ?? 'inbox'
+        const previousActive = historyState.present.activeListId
         const activeListId =
-          lists.find((l) => l.id === 'inbox')?.id ??
-          lists[0]?.id ??
-          historyState.present.activeListId
+          previousActive === 'inbox'
+            ? inboxListId
+            : lists.find((l) => l.id === previousActive)?.id ?? inboxListId
+
+        const columns = buildBoardColumns(lists, tasks)
 
         const nextState: AppState = {
           ...historyState.present,
           tasks,
           lists,
+          columns,
           habits,
           countdownEvents,
           tags,
@@ -639,6 +646,22 @@ export function useTaskManager() {
 }
 
 // Convenience hooks using action creators
+async function refreshUnlockedAchievements(dispatch: (action: import('@/lib/store/task-manager/types').Action) => void) {
+  try {
+    const res = await fetch('/api/profile/achievements')
+    if (!res.ok) return
+    const json = await res.json()
+    if (Array.isArray(json)) {
+      dispatch({
+        type: 'SET_UNLOCKED_ACHIEVEMENTS',
+        payload: json.filter((id): id is string => typeof id === 'string'),
+      })
+    }
+  } catch {
+    // achievements refresh is best-effort
+  }
+}
+
 export function useTaskActions() {
   const { state, dispatch } = useTaskManager()
   const { success, error: showError } = useToast()
@@ -656,7 +679,7 @@ export function useTaskActions() {
             dueDate: task.dueDate ?? null,
             priority: task.priority,
             listId: task.listId,
-            columnId: null,
+            columnId: task.columnId ?? null,
             tags: task.tags ?? [],
             recurrence: task.recurrence ?? null,
             reminderMinutes: typeof task.reminderMinutes === 'number' ? task.reminderMinutes : null,
@@ -674,6 +697,7 @@ export function useTaskActions() {
 
         if (createdTask) {
           dispatch({ type: 'ADD_TASK', payload: createdTask })
+          void refreshUnlockedAchievements(dispatch)
           success(
             t('toast.taskAddedTitle' as TranslationKey),
             t('toast.taskAddedBody' as TranslationKey, { title: createdTask.title }),
@@ -700,7 +724,7 @@ export function useTaskActions() {
             dueDate: task.dueDate ?? null,
             priority: task.priority,
             listId: task.listId,
-            columnId: null,
+            columnId: task.columnId ?? null,
             tags: task.tags ?? [],
             subtasks: task.subtasks ?? [],
             comments: task.comments ?? [],
@@ -753,6 +777,7 @@ export function useTaskActions() {
       }
 
       dispatch(taskActions.delete(taskId))
+      void refreshUnlockedAchievements(dispatch)
       success(
         t('toast.taskDeletedTitle' as TranslationKey),
         t('toast.taskDeletedBody' as TranslationKey),
@@ -784,6 +809,7 @@ export function useTaskActions() {
 
         if (updatedTask) {
           dispatch({ type: 'UPDATE_TASK', payload: updatedTask })
+          void refreshUnlockedAchievements(dispatch)
           return
         }
       } catch (err) {
@@ -1181,8 +1207,8 @@ export function useHabitActions() {
         return
       }
 
-      // Only toggle locally if backend call succeeded
       dispatch(habitActions.toggleCompletion(habitId, date))
+      void refreshUnlockedAchievements(dispatch)
     }, [dispatch, showError, state.habits, t]),
 
     deleteHabit: useCallback(async (habitId: string) => {

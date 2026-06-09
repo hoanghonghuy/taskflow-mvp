@@ -52,6 +52,8 @@ export async function getPomodoroState(userId: string): Promise<PomodoroStateDto
   const state = parseJsonObject<PomodoroStateDto>(settings.pomodoroStateJson)
   if (!state) return null
 
+  let shouldPersist = false
+
   if (settings.pomodoroStateUpdatedAt && state.isActive && !state.isPaused) {
     const elapsedSeconds = Math.floor(
       (Date.now() - settings.pomodoroStateUpdatedAt.getTime()) / 1000,
@@ -65,7 +67,18 @@ export async function getPomodoroState(userId: string): Promise<PomodoroStateDto
       } else {
         state.remainingSeconds = remaining
       }
+      shouldPersist = true
     }
+  }
+
+  if (shouldPersist) {
+    await prisma.userSettings.update({
+      where: { userId },
+      data: {
+        pomodoroStateJson: toJsonString(state),
+        pomodoroStateUpdatedAt: new Date(),
+      },
+    })
   }
 
   return state

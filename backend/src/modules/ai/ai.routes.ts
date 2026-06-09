@@ -45,7 +45,7 @@ aiRouter.post(
     if (!body.text.trim()) {
       throw new AppError(400, 'invalid_request', 'Text is required')
     }
-    const result = await aiService.analyzeTask(body.text, body.language)
+    const result = await aiService.analyzeTask(req.userId!, body.text, body.language)
     res.status(200).json(result)
   }),
 )
@@ -55,6 +55,7 @@ aiRouter.post(
   asyncHandler(async (req, res) => {
     const body = chatSchema.parse(req.body)
     const result = await aiService.chat(
+      req.userId!,
       body.messages,
       body.language,
       body.thinkingMode,

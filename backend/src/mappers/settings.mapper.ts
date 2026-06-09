@@ -28,7 +28,7 @@ export function mapSettingsToDto(settings: UserSettings): SettingsDto {
       'board',
       'calendar',
     ]),
-    geminiApiKey: settings.geminiApiKey,
+    geminiApiKey: settings.geminiApiKey ? 'configured' : null,
   }
 }
 

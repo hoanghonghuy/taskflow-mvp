@@ -1,5 +1,15 @@
+import { config } from '../../config'
 import { prisma } from '../../lib/prisma'
+import { AppError } from '../../middleware/errorHandler'
 import * as gemini from './gemini.service'
+
+async function resolveGeminiApiKey(userId: string): Promise<string | undefined> {
+  const settings = await prisma.userSettings.findUnique({ where: { userId } })
+  const userKey = settings?.geminiApiKey?.trim()
+  if (userKey) return userKey
+  if (config.geminiApiKey?.trim()) return config.geminiApiKey.trim()
+  return undefined
+}
 
 export async function buildBriefingContext(userId: string): Promise<string> {
   const [tasks, habits, sessions] = await Promise.all([
@@ -34,31 +44,37 @@ export async function buildBriefingContext(userId: string): Promise<string> {
 export async function briefing(userId: string, language?: string): Promise<{ content: string }> {
   const context = await buildBriefingContext(userId)
   const lang = language?.trim() || 'en'
-  const content = await gemini.generateBriefing(lang, context)
+  const apiKey = await resolveGeminiApiKey(userId)
+  const content = await gemini.generateBriefing(lang, context, apiKey)
   return { content }
 }
 
 export async function analyzeTask(
+  userId: string,
   text: string,
   language?: string,
 ): Promise<gemini.AnalyzeTaskResult> {
   if (!text?.trim()) {
-    throw Object.assign(new Error('Text is required'), { statusCode: 400 })
+    throw new AppError(400, 'invalid_request', 'Text is required')
   }
-  return gemini.analyzeTask(language?.trim() || 'en', text)
+  const apiKey = await resolveGeminiApiKey(userId)
+  return gemini.analyzeTask(language?.trim() || 'en', text, apiKey)
 }
 
 export async function chat(
+  userId: string,
   messages: gemini.ChatMessage[],
   language?: string,
   thinkingMode?: boolean,
   searchGrounding?: boolean,
 ): Promise<{ content: string }> {
+  const apiKey = await resolveGeminiApiKey(userId)
   const content = await gemini.chat(
     language?.trim() || 'en',
     messages,
     Boolean(thinkingMode),
     Boolean(searchGrounding),
+    apiKey,
   )
   return { content: content || ' ' }
 }

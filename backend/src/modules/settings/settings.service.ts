@@ -5,6 +5,7 @@ import {
   mapSettingsToDto,
   type SettingsDto,
 } from '../../mappers/settings.mapper'
+import { normalizeListId } from '../../lib/inbox-list'
 
 export async function getOrCreateSettings(userId: string): Promise<SettingsDto> {
   let settings = await prisma.userSettings.findUnique({ where: { userId } })
@@ -30,7 +31,9 @@ export async function updateSettings(
   if ('soundEnabled' in body) data.soundEnabled = Boolean(body.soundEnabled)
   if ('autoStartPomodoro' in body) data.autoStartPomodoro = Boolean(body.autoStartPomodoro)
   if ('defaultPriority' in body) data.defaultPriority = String(body.defaultPriority ?? 'medium')
-  if ('defaultListId' in body) data.defaultListId = String(body.defaultListId ?? 'inbox')
+  if ('defaultListId' in body) {
+    data.defaultListId = await normalizeListId(userId, body.defaultListId ?? 'inbox')
+  }
   if ('bottomNavActions' in body && Array.isArray(body.bottomNavActions)) {
     data.bottomNavActions = toJsonString(body.bottomNavActions.map(String))
   }

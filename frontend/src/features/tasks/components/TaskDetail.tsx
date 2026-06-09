@@ -32,7 +32,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   const { t } = useI18n()
   const router = useRouter()
   const { allUsers, user: currentUser } = useUser()
-  const { deleteTask, syncSubtasks, syncComments, updateTask: updateTaskApi } = useTaskActions()
+  const { deleteTask, syncSubtasks, syncComments, updateTask: updateTaskApi, toggleTask } = useTaskActions()
   const { confirm } = useConfirmation()
   const { isAvailable: isGeminiAvailable } = useGemini()
   const task = useMemo<Task | null>(() => {
@@ -209,7 +209,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
       <header className="p-4 border-b border-border flex items-center justify-between gap-3 shrink-0">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => dispatch({ type: 'TOGGLE_TASK_COMPLETION', payload: { taskId: task.id } })}
+            onClick={() => void toggleTask(task.id)}
             aria-label={task.completed ? t('taskItem.aria.markIncomplete') : t('taskItem.aria.markComplete')}
             className={`h-5 w-5 rounded flex items-center justify-center transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${task.completed ? 'bg-primary border-2 border-primary' : `bg-transparent border-2 ${priorityClasses.checkboxBorderColor}`}`}
           >
@@ -217,7 +217,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
           </button>
           <div>
             <button
-              onClick={() => dispatch({ type: 'TOGGLE_TASK_COMPLETION', payload: { taskId: task.id } })}
+              onClick={() => void toggleTask(task.id)}
               className="text-sm font-medium text-left"
             >
               {task.completed ? t('taskDetail.completed') : t('taskDetail.markComplete')}

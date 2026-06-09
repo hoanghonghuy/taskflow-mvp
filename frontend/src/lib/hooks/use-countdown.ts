@@ -270,20 +270,13 @@ export const useCountdown = () => {
         return
       }
     } catch (e) {
-      console.error('Failed to create countdown via API, falling back to local state', e)
+      console.error('Failed to create countdown via API', e)
+      error(
+        t('countdown.notifications.addFailedTitle' as TranslationKey),
+        e instanceof Error ? e.message : t('countdown.notifications.addFailedBody' as TranslationKey),
+      )
     }
-
-    const fallback: CountdownEvent = {
-      ...countdown,
-      id: `cd-${Date.now()}`,
-      createdAt: new Date().toISOString(),
-    }
-    dispatch(countdownActions.add(fallback))
-    success(
-      t('countdown.notifications.addedTitle' as TranslationKey),
-      t('countdown.notifications.addedBody' as TranslationKey, { title: fallback.title }),
-    )
-  }, [dispatch, success, t])
+  }, [dispatch, error, t])
 
   const updateCountdown = useCallback(async (id: string, updates: Partial<CountdownEvent>) => {
     const existingCountdown = countdownEvents.find(c => c.id === id)

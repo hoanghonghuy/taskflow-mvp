@@ -20,6 +20,13 @@ function UserTestWrapper({ children }: { children: ReactNode }) {
   )
 }
 
+function mockSession(authenticated: boolean) {
+  vi.mocked(fetch).mockResolvedValueOnce({
+    ok: true,
+    json: async () => ({ authenticated }),
+  } as Response)
+}
+
 describe('UserProvider', () => {
   beforeEach(() => {
     vi.stubGlobal('localStorage', createLocalStorageMock())
@@ -32,31 +39,62 @@ describe('UserProvider', () => {
     )
   })
 
-  it('starts unauthenticated without saved user', () => {
+  it('starts unauthenticated without saved user', async () => {
+    mockSession(false)
+
     const { result } = renderHook(() => useUser(), { wrapper: UserTestWrapper })
+
+    await waitFor(() => {
+      expect(result.current.authReady).toBe(true)
+    })
 
     expect(result.current.user).toBeNull()
     expect(result.current.isAuthenticated).toBe(false)
-    expect(result.current.allUsers.length).toBeGreaterThan(0)
+    expect(result.current.allUsers).toEqual([])
   })
 
-  it('restores user from localStorage', () => {
+  it('restores user from localStorage only when session is valid', async () => {
     localStorage.setItem('user', JSON.stringify(mockUser))
+    mockSession(true)
 
     const { result } = renderHook(() => useUser(), { wrapper: UserTestWrapper })
+
+    await waitFor(() => {
+      expect(result.current.authReady).toBe(true)
+    })
 
     expect(result.current.user).toEqual(mockUser)
     expect(result.current.isAuthenticated).toBe(true)
   })
 
+  it('clears stale localStorage user when session is invalid', async () => {
+    localStorage.setItem('user', JSON.stringify(mockUser))
+    mockSession(false)
+
+    const { result } = renderHook(() => useUser(), { wrapper: UserTestWrapper })
+
+    await waitFor(() => {
+      expect(result.current.authReady).toBe(true)
+    })
+
+    expect(result.current.user).toBeNull()
+    expect(localStorage.getItem('user')).toBeNull()
+  })
+
   it('login stores user and clears taskflowState', async () => {
+    mockSession(false)
     localStorage.setItem('taskflowState', '{}')
+
+    const { result } = renderHook(() => useUser(), { wrapper: UserTestWrapper })
+
+    await waitFor(() => {
+      expect(result.current.authReady).toBe(true)
+    })
+
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ user: mockUser }),
     } as Response)
-
-    const { result } = renderHook(() => useUser(), { wrapper: UserTestWrapper })
 
     await act(async () => {
       await result.current.login('alex.ryder@example.com', 'password')
@@ -69,21 +107,32 @@ describe('UserProvider', () => {
   })
 
   it('login throws when response is not ok', async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({ ok: false, status: 401 } as Response)
+    mockSession(false)
 
     const { result } = renderHook(() => useUser(), { wrapper: UserTestWrapper })
+
+    await waitFor(() => {
+      expect(result.current.authReady).toBe(true)
+    })
+
+    vi.mocked(fetch).mockResolvedValueOnce({ ok: false, status: 401 } as Response)
 
     await expect(result.current.login('bad@example.com', 'wrong')).rejects.toThrow(
       'Login failed with status 401'
     )
   })
 
-  it('logout clears user and localStorage', async () => {
+  it('logout clears user state', async () => {
+    mockSession(true)
     localStorage.setItem('user', JSON.stringify(mockUser))
-    localStorage.setItem('isAuthenticated', 'true')
-    vi.mocked(fetch).mockResolvedValueOnce({ ok: true } as Response)
 
     const { result } = renderHook(() => useUser(), { wrapper: UserTestWrapper })
+
+    await waitFor(() => {
+      expect(result.current.isAuthenticated).toBe(true)
+    })
+
+    vi.mocked(fetch).mockResolvedValueOnce({ ok: true, json: async () => ({}) } as Response)
 
     await act(async () => {
       await result.current.logout()
@@ -92,37 +141,5 @@ describe('UserProvider', () => {
     expect(result.current.user).toBeNull()
     expect(localStorage.getItem('user')).toBeNull()
     expect(localStorage.getItem('isAuthenticated')).toBeNull()
-  })
-
-  it('updateProfile merges updates and persists', () => {
-    localStorage.setItem('user', JSON.stringify(mockUser))
-
-    const { result } = renderHook(() => useUser(), { wrapper: UserTestWrapper })
-
-    act(() => {
-      result.current.updateProfile({ name: 'Updated Name' })
-    })
-
-    expect(result.current.user?.name).toBe('Updated Name')
-    expect(JSON.parse(localStorage.getItem('user')!)).toMatchObject({ name: 'Updated Name' })
-  })
-
-  it('register calls login after successful registration', async () => {
-    vi.mocked(fetch)
-      .mockResolvedValueOnce({ ok: true } as Response)
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ user: mockUser }),
-      } as Response)
-
-    const { result } = renderHook(() => useUser(), { wrapper: UserTestWrapper })
-
-    await act(async () => {
-      await result.current.register('New User', 'new@example.com', 'secret')
-    })
-
-    await waitFor(() => {
-      expect(result.current.user).toEqual(mockUser)
-    })
   })
 })

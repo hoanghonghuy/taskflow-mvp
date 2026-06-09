@@ -9,7 +9,7 @@ import { useToast } from '@/lib/hooks/use-toast'
 import { useI18n } from '@/lib/hooks/use-i18n'
 
 export default function ForgotPasswordPage() {
-  const { success, error } = useToast()
+  const { error } = useToast()
   const { t } = useI18n()
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -33,10 +33,9 @@ export default function ForgotPasswordPage() {
 
     setIsLoading(true)
     try {
-      await new Promise(resolve => setTimeout(resolve, 800))
-      success(
-        t('auth.toast.forgotSuccessTitle'),
-        t('auth.toast.forgotSuccessBody')
+      error(
+        t('auth.toast.forgotUnavailableTitle'),
+        t('auth.toast.forgotUnavailableBody')
       )
     } catch {
       error(t('auth.toast.forgotFailedTitle'), t('auth.toast.forgotFailedBody'))

@@ -88,7 +88,7 @@ describe('Full route & service coverage', () => {
       })
       .expect(200)
       .then((r) => {
-        expect(r.body.geminiApiKey).toBe('my-key')
+        expect(r.body.geminiApiKey).toBe('configured')
         expect(r.body.bottomNavActions).toEqual(['dashboard', 'list'])
       })
   })
@@ -138,7 +138,7 @@ describe('Full route & service coverage', () => {
   })
 
   it('ai analyze empty text throws via service', async () => {
-    await expect(aiService.analyzeTask('   ')).rejects.toBeDefined()
+    await expect(aiService.analyzeTask(userId, '   ')).rejects.toBeDefined()
   })
 
   it('invalid JWT returns 401', async () => {

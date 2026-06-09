@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { filterTasksByList, groupUpcomingTasks, sortTasks } from '@/lib/utils/task-helpers'
+import { buildBoardColumns, filterTasksByList, groupUpcomingTasks, sortTasks } from '@/lib/utils/task-helpers'
 import type { Task } from '@/types'
 
 const t = (key: string) => key
@@ -58,5 +58,21 @@ describe('task-helpers', () => {
       t,
     )
     expect(Object.keys(grouped).length).toBeGreaterThan(0)
+  })
+})
+
+describe('buildBoardColumns', () => {
+  it('creates default columns per list and preserves task column ids', () => {
+    const lists = [
+      { id: 'inbox', name: 'Inbox', color: '#fff', members: [] },
+      { id: 'work', name: 'Work', color: '#000', members: [] },
+    ]
+    const tasks = [
+      baseTask({ id: 't1', listId: 'work', columnId: 'custom-col' }),
+    ]
+    const columns = buildBoardColumns(lists, tasks)
+    expect(columns.find((c) => c.id === 'todo' && c.listId === 'inbox')).toBeDefined()
+    expect(columns.find((c) => c.id === 'work-todo' && c.listId === 'work')).toBeDefined()
+    expect(columns.find((c) => c.id === 'custom-col' && c.listId === 'work')).toBeDefined()
   })
 })
