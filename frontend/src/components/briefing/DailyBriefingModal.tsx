@@ -6,6 +6,7 @@ import { useI18n } from '@/lib/i18n/hooks'
 import { useToast } from '@/components/providers/toast-provider'
 import { CloseIcon, SparklesIcon } from '@/lib/icons'
 import Spinner from '@/components/ui/spinner'
+import * as aiApi from '@/lib/api/ai'
 
 interface DailyBriefingModalProps {
   onClose: () => void
@@ -44,23 +45,7 @@ const DailyBriefingModal: React.FC<DailyBriefingModalProps> = ({ onClose }) => {
         // TODO: Implement Gemini API call when backend is ready
         // For now, generate a mock briefing (i18n-based)
 
-        const response = await fetch('/api/ai/briefing', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ language: currentLanguage }),
-        })
-
-        if (!response.ok) {
-          throw new Error(`Failed to load briefing: ${response.status}`)
-        }
-
-        const data = await response.json().catch(() => null) as { content?: string }
-        const content = data && typeof data.content === 'string' ? data.content : ''
-
-        if (!content) {
-          throw new Error('Empty briefing content')
-        }
-
+        const content = await aiApi.fetchBriefing(currentLanguage)
         setBriefing(content)
       } catch (err: unknown) {
         const message =

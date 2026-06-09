@@ -1,7 +1,7 @@
 import {
   getLongestHabitCompletionStreak,
   getUnlockedAchievementIds,
-} from '../../src/modules/profile/profile.service'
+} from '../../src/services/profileService'
 
 describe('profile algorithms', () => {
   it('getLongestHabitCompletionStreak returns 0 for empty', () => {

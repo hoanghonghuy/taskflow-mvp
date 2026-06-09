@@ -2,7 +2,7 @@ import { prisma } from '../../src/lib/prisma'
 import {
   getPomodoroState,
   updatePomodoroState,
-} from '../../src/modules/pomodoro/pomodoro.service'
+} from '../../src/services/pomodoroService'
 import { resetDatabase } from '../helpers'
 
 describe('pomodoro.service', () => {

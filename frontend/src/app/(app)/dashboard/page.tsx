@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation'
 import { useModal } from '@/components/providers/modal-provider'
 import { useSettings } from '@/components/providers/settings-provider'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
+import * as profileApi from '@/lib/api/profile'
 
 const useCountUp = (end: number, duration = 1200) => {
   const [count, setCount] = useState(0)
@@ -111,12 +112,7 @@ export default function DashboardPage() {
 
     const loadSummary = async () => {
       try {
-        const response = await fetch('/api/profile/summary', { method: 'GET', credentials: 'include' })
-        if (!response.ok) {
-          return
-        }
-
-        const data = (await response.json().catch(() => null)) as Partial<ProfileSummaryResponse> | null
+        const data = (await profileApi.fetchProfileSummary()) as Partial<ProfileSummaryResponse> | null
         if (!data || !isMounted) return
 
         setRemoteStats((prev) => ({

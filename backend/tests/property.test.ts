@@ -1,7 +1,7 @@
 import * as fc from 'fast-check'
 import request from 'supertest'
 import { app, authHeader, registerAndLogin, resetDatabase } from './helpers'
-import { getProfileSummary } from '../src/modules/profile/profile.service'
+import { getProfileSummary } from '../src/services/profileService'
 import { prisma } from '../src/lib/prisma'
 
 describe('Property-based tests', () => {

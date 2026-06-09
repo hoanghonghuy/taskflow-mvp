@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useCallback, useEffect } from 'react'
+import * as countdownApi from '@/lib/api/countdown'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { countdownActions } from '@/lib/store/task-manager/actions'
 import { useToast } from '@/lib/hooks/use-toast'
@@ -23,30 +24,6 @@ type CountdownFormState = {
   name: string
   date: Date | null
   color: string
-}
-
-type CountdownApiItem = {
-  id?: unknown
-  Id?: unknown
-  title?: unknown
-  Title?: unknown
-  targetDate?: unknown
-  TargetDate?: unknown
-  color?: unknown
-  Color?: unknown
-  createdAt?: unknown
-  CreatedAt?: unknown
-}
-
-function toIsoDateString(value: unknown): string {
-  if (typeof value === 'string' || typeof value === 'number' || value instanceof Date) {
-    const date = new Date(value)
-    if (!Number.isNaN(date.getTime())) {
-      return date.toISOString()
-    }
-  }
-
-  return new Date().toISOString()
 }
 
 const COUNTDOWN_COLOR_OPTIONS: CountdownColorOption[] = [
@@ -132,28 +109,6 @@ const calculateTimeLeft = (targetDate: string, now: number = Date.now()): Countd
     total: difference,
     isPast: false,
   }
-}
-
-function mapCountdownsFromApi(items: unknown[]): CountdownEvent[] {
-  return items.map((item) => {
-    const c = item as CountdownApiItem
-
-    const id = String(c.id ?? c.Id ?? '')
-    const title = String(c.title ?? c.Title ?? '')
-    const targetRaw = c.targetDate ?? c.TargetDate
-    const targetDate = toIsoDateString(targetRaw)
-    const color = String(c.color ?? c.Color ?? 'sky')
-    const createdRaw = c.createdAt ?? c.CreatedAt
-    const createdAt = toIsoDateString(createdRaw)
-
-    return {
-      id,
-      title,
-      targetDate,
-      color,
-      createdAt,
-    }
-  })
 }
 
 export const useCountdown = () => {
@@ -243,23 +198,11 @@ export const useCountdown = () => {
   // CRUD operations
   const addCountdown = useCallback(async (countdown: Omit<CountdownEvent, 'id' | 'createdAt'>) => {
     try {
-      const response = await fetch('/api/countdown', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: countdown.title,
-          targetDate: countdown.targetDate,
-          color: countdown.color,
-        }),
+      const created = await countdownApi.createCountdown({
+        title: countdown.title,
+        targetDate: countdown.targetDate,
+        color: countdown.color,
       })
-
-      if (!response.ok) {
-        throw new Error(`Failed to create countdown: ${response.status}`)
-      }
-
-      const createdJson = await response.json()
-      const mapped = mapCountdownsFromApi([createdJson])
-      const created = mapped[0] ?? null
 
       if (created) {
         dispatch(countdownActions.add(created))
@@ -294,19 +237,11 @@ export const useCountdown = () => {
     if (typeof updates.color === 'string') payload.color = updates.color
 
     try {
-      const response = await fetch(`/api/countdown/${encodeURIComponent(id)}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-
-      if (!response.ok) {
-        throw new Error(`Failed to update countdown: ${response.status}`)
-      }
-
-      const updatedJson = await response.json()
-      const mapped = mapCountdownsFromApi([updatedJson])
-      const updated = mapped[0] ?? { ...existingCountdown, ...updates }
+      const updated =
+        (await countdownApi.updateCountdown(id, payload)) ?? {
+          ...existingCountdown,
+          ...updates,
+        }
 
       dispatch(countdownActions.update(updated))
       success(
@@ -338,13 +273,7 @@ export const useCountdown = () => {
     }
 
     try {
-      const response = await fetch(`/api/countdown/${encodeURIComponent(id)}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok && response.status !== 404) {
-        throw new Error(`Failed to delete countdown: ${response.status}`)
-      }
+      await countdownApi.deleteCountdown(id)
     } catch (e) {
       console.error('Failed to delete countdown via API, deleting locally', e)
     }

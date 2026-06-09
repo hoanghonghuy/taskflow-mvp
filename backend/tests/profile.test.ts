@@ -1,6 +1,6 @@
 import request from 'supertest'
 import { app, authHeader, registerAndLogin, resetDatabase } from './helpers'
-import { getProfileSummary, getAchievements } from '../src/modules/profile/profile.service'
+import { getProfileSummary, getAchievements } from '../src/services/profileService'
 import { prisma } from '../src/lib/prisma'
 
 describe('Profile', () => {

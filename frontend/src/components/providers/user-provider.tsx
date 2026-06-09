@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 import { useI18n } from '@/lib/i18n/hooks'
+import * as authApi from '@/lib/api/auth'
 import type { User } from '@/types'
 
 interface UserContextType {
@@ -28,11 +29,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
     async function validateSession() {
       try {
-        const response = await fetch('/api/auth/session', { credentials: 'include' })
+        const { ok, data } = await authApi.fetchSession()
         if (cancelled) return
 
-        if (response.ok) {
-          const data = (await response.json().catch(() => null)) as { authenticated?: boolean } | null
+        if (ok) {
           if (data?.authenticated) {
             const savedUser = localStorage.getItem('user')
             if (savedUser) {
@@ -75,66 +75,32 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   }, [t])
 
   const login = useCallback(async (email: string, password: string) => {
-    const response = await fetch('/api/auth/[...nextauth]', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'login', email, password }),
-    })
+    const loggedInUser = await authApi.login(email, password)
 
-    if (!response.ok) {
-      throw new Error(`Login failed with status ${response.status}`)
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('taskflowState')
     }
 
-    const data = (await response.json().catch(() => null)) as { user?: User } | null
-
-    if (data && data.user) {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('taskflowState')
-      }
-
-      setUser(data.user)
-      localStorage.setItem('user', JSON.stringify(data.user))
-      localStorage.setItem('isAuthenticated', 'true')
-      return
-    }
-
-    throw new Error('Login response did not contain user data')
+    setUser(loggedInUser)
+    localStorage.setItem('user', JSON.stringify(loggedInUser))
+    localStorage.setItem('isAuthenticated', 'true')
   }, [])
 
   const register = useCallback(async (name: string, email: string, password: string) => {
-    const response = await fetch('/api/auth/[...nextauth]', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'register', name, email, password }),
-    })
+    const registeredUser = await authApi.register(name, email, password)
 
-    if (!response.ok) {
-      throw new Error(`Register failed with status ${response.status}`)
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('taskflowState')
     }
 
-    const data = (await response.json().catch(() => null)) as { user?: User } | null
-
-    if (data?.user) {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('taskflowState')
-      }
-
-      setUser(data.user)
-      localStorage.setItem('user', JSON.stringify(data.user))
-      localStorage.setItem('isAuthenticated', 'true')
-      return
-    }
-
-    throw new Error('Register response did not contain user data')
+    setUser(registeredUser)
+    localStorage.setItem('user', JSON.stringify(registeredUser))
+    localStorage.setItem('isAuthenticated', 'true')
   }, [])
 
   const logout = useCallback(async () => {
     try {
-      await fetch('/api/auth/[...nextauth]', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'logout' }),
-      })
+      await authApi.logout()
     } catch (error) {
       console.error('Logout failed', error)
     }
@@ -149,13 +115,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     if (!user) return
 
     try {
-      const response = await fetch('/api/auth/[...nextauth]', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'refresh' }),
-      })
+      const ok = await authApi.refreshSession()
 
-      if (!response.ok) {
+      if (!ok) {
         await logout()
         return
       }

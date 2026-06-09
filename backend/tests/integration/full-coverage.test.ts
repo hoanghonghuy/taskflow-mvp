@@ -1,9 +1,9 @@
 import request from 'supertest'
 import { prisma } from '../../src/lib/prisma'
 import { app, authHeader, registerAndLogin, resetDatabase } from '../helpers'
-import * as authService from '../../src/modules/auth/auth.service'
-import * as aiService from '../../src/modules/ai/ai.service'
-import { buildBriefingContext } from '../../src/modules/ai/ai.service'
+import * as authService from '../../src/services/authService'
+import * as aiService from '../../src/services/aiService'
+import { buildBriefingContext } from '../../src/services/aiService'
 
 describe('Full route & service coverage', () => {
   let token: string

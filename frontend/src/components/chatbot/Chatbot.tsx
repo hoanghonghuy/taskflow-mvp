@@ -7,6 +7,7 @@ import { useI18n } from '@/lib/i18n/hooks'
 import { useToast } from '@/components/providers/toast-provider'
 import type { ChatMessage } from '@/types'
 import Spinner from '@/components/ui/spinner'
+import * as aiApi from '@/lib/api/ai'
 
 interface ChatbotProps {
   onClose: () => void
@@ -65,26 +66,12 @@ const Chatbot: React.FC<ChatbotProps> = ({ onClose }) => {
       // TODO: Implement Gemini API call when backend is ready
       // For now, generate a mock response
 
-      const response = await fetch('/api/ai/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: conversationForBackend,
-          language: currentLanguage,
-          thinkingMode: useThinkingMode,
-          searchGrounding: useSearchGrounding,
-        }),
+      const reply = await aiApi.sendChatMessage({
+        messages: conversationForBackend,
+        language: currentLanguage,
+        thinkingMode: useThinkingMode,
+        searchGrounding: useSearchGrounding,
       })
-
-      if (!response.ok) {
-        throw new Error(`Failed to send chat message: ${response.status}`)
-      }
-
-      const data = await response.json().catch(() => null) as { content?: string } | null
-      const reply = data && typeof data.content === 'string' ? data.content.trim() : ''
-      if (!reply) {
-        throw new Error(t('chatbot.error.empty'))
-      }
 
       setMessages(prev => prev.map(m =>
         m.id === modelMessageId

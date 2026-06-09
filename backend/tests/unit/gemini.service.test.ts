@@ -1,5 +1,5 @@
 import { config } from '../../src/config'
-import { analyzeTask, chat, generateBriefing } from '../../src/modules/ai/gemini.service'
+import { analyzeTask, chat, generateBriefing } from '../../src/services/geminiService'
 
 const originalFetch = global.fetch
 

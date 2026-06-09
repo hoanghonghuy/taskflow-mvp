@@ -26,6 +26,7 @@ export default defineConfig({
         'src/lib/constants.tsx',
         'src/lib/store/task-manager/index.ts',
         'src/lib/store/task-manager/types.ts',
+        'src/lib/api/index.ts',
         '**/pages/api/auth/[...nextauth].ts',
         'src/components/providers/providers.tsx',
         'src/components/providers/task-manager-provider.tsx',

@@ -17,6 +17,7 @@ import TaskForm from '@/features/tasks/components/TaskForm'
 import ShareListModal from '@/components/collaboration/ShareListModal'
 import Chatbot from '@/components/chatbot/Chatbot'
 import { useModal } from '@/components/providers/modal-provider'
+import * as authApi from '@/lib/api/auth'
 
 export default function AppLayout({
   children,
@@ -115,15 +116,9 @@ export default function AppLayout({
       }
 
       try {
-        const response = await fetch('/api/auth/session', {
-          method: 'GET',
-          credentials: 'include',
-        })
-        const data = (await response.json().catch(() => null)) as
-          | { authenticated?: boolean }
-          | null
+        const { ok, data } = await authApi.fetchSession()
 
-        if (!response.ok || data?.authenticated !== true) {
+        if (!ok || data?.authenticated !== true) {
           await logout()
           if (isMounted) {
             router.replace('/login')

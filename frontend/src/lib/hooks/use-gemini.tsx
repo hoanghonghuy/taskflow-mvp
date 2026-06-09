@@ -1,6 +1,7 @@
 "use client"
 
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import * as aiApi from '@/lib/api/ai'
 
 interface GeminiContextValue {
   ai: null
@@ -19,14 +20,9 @@ export const GeminiProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
     async function loadStatus() {
       try {
-        const response = await fetch('/api/ai/status')
-        if (!response.ok) {
-          if (!cancelled) setIsAvailable(false)
-          return
-        }
-        const data = (await response.json().catch(() => null)) as { available?: boolean } | null
+        const available = await aiApi.fetchAiStatus()
         if (!cancelled) {
-          setIsAvailable(Boolean(data?.available))
+          setIsAvailable(available)
         }
       } catch {
         if (!cancelled) setIsAvailable(false)

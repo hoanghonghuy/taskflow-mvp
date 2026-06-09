@@ -1,11 +1,8 @@
-import { prisma } from './prisma'
+import * as listRepository from '../repositories/listRepository'
 
 /** Resolve the user's Inbox list id; falls back to literal 'inbox' if missing. */
 export async function resolveInboxListId(userId: string): Promise<string> {
-  const inbox = await prisma.todoList.findFirst({
-    where: { userId, name: 'Inbox' },
-    orderBy: { createdAt: 'asc' },
-  })
+  const inbox = await listRepository.findInboxByUserId(userId)
   return inbox?.id ?? 'inbox'
 }
 

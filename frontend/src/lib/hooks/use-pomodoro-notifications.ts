@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import * as pomodoroApi from '@/lib/api/pomodoro'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useToast } from '@/lib/hooks/use-toast'
 import { useSettings } from '@/components/providers/settings-provider'
@@ -64,19 +65,17 @@ export const usePomodoroNotifications = () => {
         )
       }
 
-      void fetch('/api/pomodoro/sessions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      void pomodoroApi
+        .createPomodoroSession({
           startTime: latestFocus.startTime,
           durationSeconds: latestFocus.duration,
           type: 'focus',
           taskId: latestFocus.taskId ?? null,
           habitId: latestFocus.habitId ?? null,
-        }),
-      }).catch((error) => {
-        console.error('Failed to sync pomodoro session to backend', error)
-      })
+        })
+        .catch((error) => {
+          console.error('Failed to sync pomodoro session to backend', error)
+        })
     }
 
     previousSessionRef.current = currentSession

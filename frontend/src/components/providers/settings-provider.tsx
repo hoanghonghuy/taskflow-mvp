@@ -2,9 +2,10 @@
 
 import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 import { useI18n } from '@/lib/i18n/hooks'
-import type { Settings, ThemeOption } from '@/types'
+import * as settingsApi from '@/lib/api/settings'
+import { mapSettingsFromApi } from '@/lib/api/settings'
+import type { Settings } from '@/types'
 import i18n from '@/lib/i18n/config'
-import { THEME_PRESET_IDS } from '@/lib/theme-presets'
 
 interface SettingsContextType {
   settings: Settings
@@ -28,38 +29,6 @@ const DEFAULT_SETTINGS: Settings = {
   defaultPriority: 'medium',
   defaultListId: 'inbox',
   bottomNavActions: ['dashboard', 'list', 'board', 'calendar'],
-}
-
-const THEME_OPTIONS_SET = new Set<ThemeOption>(['system', ...THEME_PRESET_IDS])
-
-function mapSettingsFromApi(payload: unknown, fallback: Settings): Settings {
-  if (!payload || typeof payload !== 'object') {
-    return fallback
-  }
-
-  const data = { ...(payload as Partial<Settings> & {
-    geminiApiKey?: unknown
-  }) }
-  delete data.geminiApiKey
-
-  const language = data.language === 'en' || data.language === 'vi' ? data.language : fallback.language
-  const theme = ((): Settings['theme'] => {
-    const candidate = data.theme as ThemeOption | undefined
-    if (candidate && THEME_OPTIONS_SET.has(candidate)) {
-      return candidate
-    }
-    return fallback.theme
-  })()
-
-  return {
-    ...fallback,
-    ...data,
-    language,
-    theme,
-    bottomNavActions: data.bottomNavActions && data.bottomNavActions.length > 0
-      ? data.bottomNavActions
-      : fallback.bottomNavActions,
-  }
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined)
@@ -98,12 +67,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       if (!isAuthenticated) return
 
       try {
-        const response = await fetch('/api/settings', { method: 'GET', credentials: 'include' })
-        if (!response.ok) {
-          return
-        }
-
-        const data = await response.json().catch(() => null)
+        const data = await settingsApi.fetchSettings()
         if (!isMounted || data == null) return
 
         setSettings((prev) => {
@@ -148,12 +112,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (typeof window !== 'undefined') {
-        void fetch('/api/settings', {
-          method: 'PUT',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(updated),
-        }).catch((error) => {
+        void settingsApi.updateSettings(updated).catch((error) => {
           console.error('Failed to persist settings to backend', error)
         })
       }
@@ -173,12 +132,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (typeof window !== 'undefined') {
-      void fetch('/api/settings', {
-        method: 'PUT',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(DEFAULT_SETTINGS),
-      }).catch((error) => {
+      void settingsApi.updateSettings(DEFAULT_SETTINGS).catch((error) => {
         console.error('Failed to reset settings on backend', error)
       })
     }

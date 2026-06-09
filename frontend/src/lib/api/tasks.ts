@@ -1,0 +1,50 @@
+import type { Comment, Subtask, Task } from '@/types'
+import { apiFetch, apiFetchJson } from './client'
+import { mapTasksFromApi } from './mappers'
+
+export type TaskCreatePayload = {
+  title: string
+  description?: string
+  dueDate?: string | null
+  priority?: Task['priority']
+  listId: string
+  columnId?: string | null
+  tags?: string[]
+  recurrence?: Task['recurrence'] | null
+  reminderMinutes?: number | null
+  assigneeId?: string | null
+}
+
+export type TaskUpdatePayload = Partial<TaskCreatePayload> & {
+  completed?: boolean
+  subtasks?: Subtask[]
+  comments?: Comment[]
+}
+
+export async function fetchTasks(): Promise<Task[]> {
+  const json = await apiFetchJson<unknown[]>('/api/tasks').catch(() => null)
+  return Array.isArray(json) ? mapTasksFromApi(json) : []
+}
+
+export async function createTask(payload: TaskCreatePayload): Promise<Task | null> {
+  const json = await apiFetchJson<unknown>('/api/tasks', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+  return mapTasksFromApi([json])[0] ?? null
+}
+
+export async function updateTask(id: string, payload: TaskUpdatePayload): Promise<Task | null> {
+  const json = await apiFetchJson<unknown>(`/api/tasks/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  })
+  return mapTasksFromApi([json])[0] ?? null
+}
+
+export async function deleteTask(id: string): Promise<void> {
+  const response = await apiFetch(`/api/tasks/${encodeURIComponent(id)}`, { method: 'DELETE' })
+  if (!response.ok && response.status !== 404) {
+    throw new Error(`Failed to delete task: ${response.status}`)
+  }
+}

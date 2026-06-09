@@ -8,6 +8,7 @@ import { Avatar } from '@/components/ui/avatar'
 import { CalendarIcon, CheckCircleIcon, ClockIcon, TrophyIcon } from 'lucide-react'
 import { toYYYYMMDD } from '@/lib/utils/date-helpers'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
+import * as profileApi from '@/lib/api/profile'
 
 type ProfileSummary = {
   totalTasks: number
@@ -54,11 +55,7 @@ const ProfileView: React.FC = () => {
 
     const loadProfileSummary = async () => {
       try {
-        const response = await fetch('/api/profile/summary', { method: 'GET', credentials: 'include' })
-        if (!response.ok) {
-          return
-        }
-        const data = (await response.json().catch(() => null)) as Partial<ProfileSummary> | null
+        const data = (await profileApi.fetchProfileSummary()) as Partial<ProfileSummary> | null
         if (!data || !isMounted) return
 
         setRemoteStats(prev => ({
