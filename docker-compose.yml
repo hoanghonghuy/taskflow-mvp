@@ -1,4 +1,24 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: taskflow-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-taskflow_db}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-taskflow}
+    ports:
+      - "${POSTGRES_PORT:-5434}:5432"
+    volumes:
+      - taskflow_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - taskflow-net
+
   backend:
     build:
       context: ./backend
@@ -6,10 +26,13 @@ services:
     image: taskflow-backend:latest
     container_name: taskflow-backend
     restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
     env_file:
       - ./backend/.env
-    volumes:
-      - taskflow-data:/app/data
+    environment:
+      DATABASE_URL: ${DATABASE_URL_DOCKER:-postgres://postgres:taskflow@postgres:5432/taskflow_db?sslmode=disable}
     ports:
       - "${BACKEND_PORT:-8080}:8080"
     healthcheck:
@@ -40,7 +63,8 @@ services:
       - taskflow-net
 
 volumes:
-  taskflow-data:
+  taskflow_pg_data:
+    name: docker_taskflow_pg_data
 
 networks:
   taskflow-net:

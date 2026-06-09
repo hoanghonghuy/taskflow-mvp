@@ -26,7 +26,9 @@ export const config = {
     expiresHours: 12,
     refreshExpiresDays: 7,
   },
-  databaseUrl: process.env.DATABASE_URL || 'file:./data/taskflow.db',
+  databaseUrl:
+    process.env.DATABASE_URL ||
+    'postgresql://postgres:taskflow@localhost:5434/taskflow_db?sslmode=disable',
   geminiApiKey: process.env.GEMINI_API_KEY || '',
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
 }

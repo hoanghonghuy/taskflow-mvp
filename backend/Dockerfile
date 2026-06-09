@@ -29,8 +29,6 @@ COPY prisma ./prisma
 ENV NODE_ENV=production
 ENV PORT=8080
 
-RUN mkdir -p /app/data
-
 EXPOSE 8080
 
 CMD ["sh", "-c", "npx prisma migrate deploy && node dist/server.js"]

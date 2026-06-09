@@ -1,0 +1,2 @@
+# SQLite reference only — do not use for migrate deploy
+provider = "sqlite"
