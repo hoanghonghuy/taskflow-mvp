@@ -1,4 +1,4 @@
-import { apiFetch } from './client'
+import { apiFetch, unwrapApiData } from './client'
 
 export type AnalyzeTaskResult = {
   title?: string
@@ -15,7 +15,8 @@ export type ChatBackendMessage = {
 export async function fetchAiStatus(): Promise<boolean> {
   const response = await apiFetch('/api/ai/status')
   if (!response.ok) return false
-  const data = (await response.json().catch(() => null)) as { available?: boolean } | null
+  const json = await response.json().catch(() => null)
+  const data = json ? unwrapApiData<{ available?: boolean }>(json, response.status) : null
   return Boolean(data?.available)
 }
 
@@ -32,7 +33,8 @@ export async function analyzeTaskText(
     throw new Error(`Failed to analyze task text: ${response.status}`)
   }
 
-  return response.json().catch(() => null) as Promise<AnalyzeTaskResult>
+  const json = await response.json().catch(() => null)
+  return json ? unwrapApiData<AnalyzeTaskResult>(json, response.status) : null
 }
 
 export async function fetchBriefing(language: string): Promise<string> {
@@ -45,7 +47,8 @@ export async function fetchBriefing(language: string): Promise<string> {
     throw new Error(`Failed to load briefing: ${response.status}`)
   }
 
-  const data = (await response.json().catch(() => null)) as { content?: string }
+  const json = await response.json().catch(() => null)
+  const data = json ? unwrapApiData<{ content?: string }>(json, response.status) : null
   const content = data && typeof data.content === 'string' ? data.content : ''
   if (!content) {
     throw new Error('Empty briefing content')
@@ -69,7 +72,8 @@ export async function sendChatMessage(payload: {
     throw new Error(`Failed to send chat message: ${response.status}`)
   }
 
-  const data = (await response.json().catch(() => null)) as { content?: string } | null
+  const json = await response.json().catch(() => null)
+  const data = json ? unwrapApiData<{ content?: string }>(json, response.status) : null
   const reply = data && typeof data.content === 'string' ? data.content.trim() : ''
   if (!reply) {
     throw new Error('Empty chat response')

@@ -1,6 +1,6 @@
-import * as fc from 'fast-check'
+﻿import * as fc from 'fast-check'
 import request from 'supertest'
-import { app, authHeader, registerAndLogin, resetDatabase } from './helpers'
+import { app, authHeader, registerAndLogin, resetDatabase, apiData } from './helpers'
 import { getProfileSummary } from '../src/services/profileService'
 import { prisma } from '../src/lib/prisma'
 
@@ -23,11 +23,11 @@ describe('Property-based tests', () => {
             .expect(201)
 
           const getRes = await request(app)
-            .get(`/api/tasks/${createRes.body.id}`)
+            .get(`/api/tasks/${apiData<{ id: string }>(createRes).id}`)
             .set(authHeader(token))
             .expect(200)
 
-          expect(getRes.body.title).toBe(title.trim())
+          expect(apiData<{ title: string }>(getRes).title).toBe(title.trim())
         },
       ),
       { numRuns: 3 },
@@ -44,7 +44,7 @@ describe('Property-based tests', () => {
 
     const { token: tokenB } = await registerAndLogin('userb@test.com')
     await request(app)
-      .get(`/api/tasks/${createRes.body.id}`)
+      .get(`/api/tasks/${apiData<{ id: string }>(createRes).id}`)
       .set(authHeader(tokenB))
       .expect(404)
   })

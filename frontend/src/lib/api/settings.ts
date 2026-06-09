@@ -1,6 +1,6 @@
 import type { PomodoroState, Settings, ThemeOption } from '@/types'
 import { THEME_PRESET_IDS } from '@/lib/theme-presets'
-import { apiFetch, apiFetchJson } from './client'
+import { apiFetch, apiFetchJson, unwrapApiData } from './client'
 
 const THEME_OPTIONS_SET = new Set<ThemeOption>(['system', ...THEME_PRESET_IDS])
 
@@ -38,7 +38,8 @@ export type PomodoroSettingsDto = PomodoroState['settings']
 export async function fetchSettings(): Promise<unknown | null> {
   const response = await apiFetch('/api/settings', { method: 'GET' })
   if (!response.ok) return null
-  return response.json().catch(() => null)
+  const json = await response.json().catch(() => null)
+  return json ? unwrapApiData<unknown>(json, response.status) : null
 }
 
 export async function fetchPomodoroSettings(): Promise<PomodoroSettingsDto | null> {

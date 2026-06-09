@@ -1,5 +1,12 @@
-import request from 'supertest'
-import { app, authHeader, registerAndLogin, resetDatabase } from '../helpers'
+﻿import request from 'supertest'
+
+type IdDto = { id: string }
+type TaskListItem = { listId: string }
+type HabitDto = { id: string; name: string }
+type CountdownDto = { id: string; title: string }
+type PomodoroStateDto = { remainingSeconds: number }
+
+import { app, authHeader, registerAndLogin, resetDatabase, apiData } from '../helpers'
 
 describe('Edge cases & remaining routes', () => {
   let token: string
@@ -33,13 +40,13 @@ describe('Edge cases & remaining routes', () => {
     await request(app)
       .post('/api/tasks')
       .set(authHeader(token))
-      .send({ title: 'In temp list', listId: listRes.body.id })
+      .send({ title: 'In temp list', listId: apiData<IdDto>(listRes).id })
       .expect(201)
 
-    await request(app).delete(`/api/lists/${listRes.body.id}`).set(authHeader(token)).expect(204)
+    await request(app).delete(`/api/lists/${apiData<IdDto>(listRes).id}`).set(authHeader(token)).expect(204)
 
     const tasksRes = await request(app).get('/api/tasks').set(authHeader(token)).expect(200)
-    expect(tasksRes.body.every((t: { listId: string }) => t.listId !== listRes.body.id)).toBe(true)
+    expect(apiData<TaskListItem[]>(tasksRes).every((t: { listId: string }) => t.listId !== apiData<IdDto>(listRes).id)).toBe(true)
   })
 
   it('habits: complete/uncomplete with default date', async () => {
@@ -50,13 +57,13 @@ describe('Edge cases & remaining routes', () => {
       .expect(201)
 
     await request(app)
-      .post(`/api/habits/${habit.body.id}/complete`)
+      .post(`/api/habits/${apiData<HabitDto>(habit).id}/complete`)
       .set(authHeader(token))
       .send({})
       .expect(204)
 
     await request(app)
-      .delete(`/api/habits/${habit.body.id}/complete`)
+      .delete(`/api/habits/${apiData<HabitDto>(habit).id}/complete`)
       .set(authHeader(token))
       .expect(204)
   })
@@ -69,13 +76,13 @@ describe('Edge cases & remaining routes', () => {
       .expect(201)
 
     await request(app)
-      .put(`/api/habits/${habit.body.id}`)
+      .put(`/api/habits/${apiData<HabitDto>(habit).id}`)
       .set(authHeader(token))
       .send({ name: 'New' })
       .expect(200)
-      .then((r) => expect(r.body.name).toBe('New'))
+      .then((r) => expect(apiData<HabitDto>(r).name).toBe('New'))
 
-    await request(app).delete(`/api/habits/${habit.body.id}`).set(authHeader(token)).expect(204)
+    await request(app).delete(`/api/habits/${apiData<HabitDto>(habit).id}`).set(authHeader(token)).expect(204)
   })
 
   it('countdown: update', async () => {
@@ -86,11 +93,11 @@ describe('Edge cases & remaining routes', () => {
       .expect(201)
 
     await request(app)
-      .put(`/api/countdown/${created.body.id}`)
+      .put(`/api/countdown/${apiData<IdDto>(created).id}`)
       .set(authHeader(token))
       .send({ title: 'New' })
       .expect(200)
-      .then((r) => expect(r.body.title).toBe('New'))
+      .then((r) => expect(apiData<CountdownDto>(r).title).toBe('New'))
   })
 
   it('pomodoro: create session and get by id', async () => {
@@ -105,7 +112,7 @@ describe('Edge cases & remaining routes', () => {
       .expect(201)
 
     await request(app)
-      .get(`/api/pomodoro/sessions/${created.body.id}`)
+      .get(`/api/pomodoro/sessions/${apiData<IdDto>(created).id}`)
       .set(authHeader(token))
       .expect(200)
   })
@@ -125,7 +132,7 @@ describe('Edge cases & remaining routes', () => {
       .expect(200)
 
     const getRes = await request(app).get('/api/pomodoro/state').set(authHeader(token)).expect(200)
-    expect(getRes.body.remainingSeconds).toBeLessThanOrEqual(300)
+    expect(apiData<PomodoroStateDto>(getRes).remainingSeconds).toBeLessThanOrEqual(300)
     void past
   })
 

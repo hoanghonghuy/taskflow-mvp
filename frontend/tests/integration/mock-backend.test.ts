@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { isMockMode, mockBackendFetch } from '@/lib/server/mock-backend'
+import { unwrapEnvelope } from '../helpers/api-envelope'
 
 describe('mock-backend', () => {
   it('isMockMode returns true in test env', () => {
@@ -9,7 +10,7 @@ describe('mock-backend', () => {
   it('CRUD tasks via mock router', async () => {
     const list = await mockBackendFetch('/api/tasks')
     expect(list.status).toBe(200)
-    const tasks = await list.json()
+    const tasks = unwrapEnvelope<unknown[]>(await list.json())
     expect(Array.isArray(tasks)).toBe(true)
 
     const created = await mockBackendFetch('/api/tasks', {
@@ -17,7 +18,7 @@ describe('mock-backend', () => {
       body: JSON.stringify({ title: 'Mock task', listId: 'inbox' }),
     })
     expect(created.status).toBe(201)
-    const task = await created.json()
+    const task = unwrapEnvelope<{ id: string }>(await created.json())
 
     const got = await mockBackendFetch(`/api/tasks/${task.id}`)
     expect(got.status).toBe(200)
@@ -37,14 +38,14 @@ describe('mock-backend', () => {
       method: 'POST',
       body: JSON.stringify({ name: 'Test', color: '#000', members: ['u1'] }),
     })
-    const list = await listRes.json()
+    const list = unwrapEnvelope<{ id: string; members: string[] }>(await listRes.json())
     expect(list.members).toContain('u1')
 
     const habitRes = await mockBackendFetch('/api/habits', {
       method: 'POST',
       body: JSON.stringify({ name: 'Run' }),
     })
-    const habit = await habitRes.json()
+    const habit = unwrapEnvelope<{ id: string }>(await habitRes.json())
     await mockBackendFetch(`/api/habits/${habit.id}/complete`, {
       method: 'POST',
       body: JSON.stringify({ date: '2026-06-01' }),

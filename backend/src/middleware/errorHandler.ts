@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from 'express'
 import { ZodError } from 'zod'
 import { config } from '../config'
+import { sendError } from '../lib/response'
 
 export class AppError extends Error {
   constructor(
@@ -28,29 +29,33 @@ export function errorHandler(
   _next: NextFunction,
 ): void {
   if (err instanceof AppError) {
-    res.status(err.statusCode).json({
-      error: err.error,
-      message: config.isProduction && err.statusCode >= 500
+    sendError(
+      res,
+      err.statusCode,
+      err.error,
+      config.isProduction && err.statusCode >= 500
         ? 'An unexpected error occurred'
         : err.message,
-    })
+    )
     return
   }
 
   if (err instanceof ZodError) {
     const message = err.errors.map((e) => e.message).join('; ')
-    res.status(400).json({ error: 'invalid_request', message })
+    sendError(res, 400, 'invalid_request', message)
     return
   }
 
   console.error('[error]', err)
 
-  res.status(500).json({
-    error: 'internal_server_error',
-    message: config.isProduction
+  sendError(
+    res,
+    500,
+    'internal_server_error',
+    config.isProduction
       ? 'An unexpected error occurred'
       : err instanceof Error
         ? err.message
         : 'Unknown error',
-  })
+  )
 }

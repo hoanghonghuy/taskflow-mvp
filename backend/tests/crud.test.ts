@@ -1,5 +1,16 @@
-import request from 'supertest'
-import { app, authHeader, registerAndLogin, resetDatabase } from './helpers'
+﻿import request from 'supertest'
+import { app, authHeader, registerAndLogin, resetDatabase, apiData } from './helpers'
+
+type ListRef = { id: string }
+type TaskDto = { id: string; title: string; completed?: boolean; subtasks?: unknown[] }
+type ListDto = { id: string; members?: string[] }
+type HabitDto = { id: string; completions: string[] }
+type PomodoroStateDto = { remainingSeconds: number }
+type SettingsDto = {
+  language: string
+  theme?: string
+  pomodoroSettings: { focusDuration: number }
+}
 
 describe('CRUD endpoints', () => {
   let token: string
@@ -11,7 +22,7 @@ describe('CRUD endpoints', () => {
 
   it('tasks CRUD with partial PUT', async () => {
     const listsRes = await request(app).get('/api/lists').set(authHeader(token)).expect(200)
-    const listId = listsRes.body[0].id
+    const listId = apiData<ListRef[]>(listsRes)[0].id
 
     const createRes = await request(app)
       .post('/api/tasks')
@@ -19,8 +30,8 @@ describe('CRUD endpoints', () => {
       .send({ title: 'Task A', listId, priority: 'high' })
       .expect(201)
 
-    const taskId = createRes.body.id
-    expect(createRes.body.title).toBe('Task A')
+    const taskId = apiData<TaskDto>(createRes).id
+    expect(apiData<TaskDto>(createRes).title).toBe('Task A')
 
     await request(app)
       .put(`/api/tasks/${taskId}`)
@@ -28,8 +39,8 @@ describe('CRUD endpoints', () => {
       .send({ completed: true })
       .expect(200)
       .then((res) => {
-        expect(res.body.completed).toBe(true)
-        expect(res.body.title).toBe('Task A')
+        expect(apiData<TaskDto>(res).completed).toBe(true)
+        expect(apiData<TaskDto>(res).title).toBe('Task A')
       })
 
     await request(app)
@@ -40,8 +51,8 @@ describe('CRUD endpoints', () => {
       })
       .expect(200)
       .then((res) => {
-        expect(res.body.subtasks).toHaveLength(1)
-        expect(res.body.completed).toBe(true)
+        expect(apiData<TaskDto>(res).subtasks).toHaveLength(1)
+        expect(apiData<TaskDto>(res).completed).toBe(true)
       })
 
     await request(app).delete(`/api/tasks/${taskId}`).set(authHeader(token)).expect(204)
@@ -55,15 +66,15 @@ describe('CRUD endpoints', () => {
       .send({ name: 'Shared', color: '#fff', members: ['user-2'] })
       .expect(201)
 
-    expect(createRes.body.members).toEqual(['user-2'])
+    expect(apiData<ListDto>(createRes).members).toEqual(['user-2'])
 
     await request(app)
-      .put(`/api/lists/${createRes.body.id}`)
+      .put(`/api/lists/${apiData<ListDto>(createRes).id}`)
       .set(authHeader(token))
       .send({ members: ['user-2', 'user-3'] })
       .expect(200)
       .then((res) => {
-        expect(res.body.members).toHaveLength(2)
+        expect(apiData<ListDto>(res).members).toHaveLength(2)
       })
   })
 
@@ -74,7 +85,7 @@ describe('CRUD endpoints', () => {
       .send({ name: 'Read' })
       .expect(201)
 
-    const habitId = createRes.body.id
+    const habitId = apiData<HabitDto>(createRes).id
     const date = '2026-06-01'
 
     await request(app)
@@ -94,7 +105,7 @@ describe('CRUD endpoints', () => {
       .set(authHeader(token))
       .expect(200)
 
-    expect(getRes.body.completions.filter((d: string) => d === date)).toHaveLength(1)
+    expect(apiData<HabitDto>(getRes).completions.filter((d: string) => d === date)).toHaveLength(1)
   })
 
   it('countdown CRUD', async () => {
@@ -105,12 +116,12 @@ describe('CRUD endpoints', () => {
       .expect(201)
 
     await request(app)
-      .get(`/api/countdown/${createRes.body.id}`)
+      .get(`/api/countdown/${apiData<ListRef>(createRes).id}`)
       .set(authHeader(token))
       .expect(200)
 
     await request(app)
-      .delete(`/api/countdown/${createRes.body.id}`)
+      .delete(`/api/countdown/${apiData<ListRef>(createRes).id}`)
       .set(authHeader(token))
       .expect(204)
   })
@@ -130,7 +141,7 @@ describe('CRUD endpoints', () => {
       })
       .expect(200)
       .then((res) => {
-        expect(res.body.remainingSeconds).toBe(1500)
+        expect(apiData<PomodoroStateDto>(res).remainingSeconds).toBe(1500)
       })
 
     await request(app).get('/api/pomodoro/state').set(authHeader(token)).expect(200)
@@ -138,7 +149,7 @@ describe('CRUD endpoints', () => {
 
   it('settings get-or-create and update', async () => {
     const getRes = await request(app).get('/api/settings').set(authHeader(token)).expect(200)
-    expect(getRes.body.language).toBe('en')
+    expect(apiData<SettingsDto>(getRes).language).toBe('en')
 
     await request(app)
       .put('/api/settings')
@@ -155,9 +166,9 @@ describe('CRUD endpoints', () => {
       })
       .expect(200)
       .then((res) => {
-        expect(res.body.language).toBe('vi')
-        expect(res.body.theme).toBe('dark')
-        expect(res.body.pomodoroSettings).toMatchObject({
+        expect(apiData<SettingsDto>(res).language).toBe('vi')
+        expect(apiData<SettingsDto>(res).theme).toBe('dark')
+        expect(apiData<SettingsDto>(res).pomodoroSettings).toMatchObject({
           focusDuration: 30,
           shortBreakDuration: 6,
           longBreakDuration: 20,
@@ -166,7 +177,7 @@ describe('CRUD endpoints', () => {
       })
 
     const getAgain = await request(app).get('/api/settings').set(authHeader(token)).expect(200)
-    expect(getAgain.body.pomodoroSettings.focusDuration).toBe(30)
+    expect(apiData<SettingsDto>(getAgain).pomodoroSettings.focusDuration).toBe(30)
   })
 
   it('AI analyze returns 400 for empty text', async () => {

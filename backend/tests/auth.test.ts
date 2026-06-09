@@ -1,5 +1,13 @@
-import request from 'supertest'
-import { app, authHeader, registerAndLogin, resetDatabase } from './helpers'
+﻿import request from 'supertest'
+
+type AuthPayload = {
+  user: { id: string; name: string; email: string }
+  token: string
+  refreshToken: string
+}
+type RefreshPayload = { token: string; refreshToken: string }
+
+import { app, authHeader, registerAndLogin, resetDatabase, apiData } from './helpers'
 
 describe('Auth', () => {
   beforeEach(async () => {
@@ -15,14 +23,14 @@ describe('Auth', () => {
       .send({ name: 'Auth User', email, password })
       .expect(200)
 
-    expect(registerRes.body).toMatchObject({
+    expect(apiData<AuthPayload>(registerRes)).toMatchObject({
       user: { name: 'Auth User', email },
     })
-    expect(registerRes.body.user?.id).toBeDefined()
-    expect(registerRes.body.token).toBeTruthy()
-    expect(registerRes.body.refreshToken).toBeTruthy()
+    expect(apiData<AuthPayload>(registerRes).user?.id).toBeDefined()
+    expect(apiData<AuthPayload>(registerRes).token).toBeTruthy()
+    expect(apiData<AuthPayload>(registerRes).refreshToken).toBeTruthy()
 
-    const registerToken = registerRes.body.token as string
+    const registerToken = apiData<AuthPayload>(registerRes).token as string
     await request(app)
       .get('/api/tasks')
       .set(authHeader(registerToken))
@@ -33,7 +41,7 @@ describe('Auth', () => {
       .send({ email, password })
       .expect(200)
 
-    const { token, refreshToken } = loginRes.body
+    const { token, refreshToken } = apiData<AuthPayload>(loginRes)
     expect(token).toBeTruthy()
     expect(refreshToken).toBeTruthy()
 
@@ -47,8 +55,8 @@ describe('Auth', () => {
       .send({ refreshToken })
       .expect(200)
 
-    expect(refreshRes.body.token).toBeTruthy()
-    expect(refreshRes.body.refreshToken).not.toBe(refreshToken)
+    expect(apiData<RefreshPayload>(refreshRes).token).toBeTruthy()
+    expect(apiData<RefreshPayload>(refreshRes).refreshToken).not.toBe(refreshToken)
 
     await request(app)
       .post('/api/auth/refresh')
@@ -88,8 +96,8 @@ describe('Auth', () => {
   it('seeds default lists on register', async () => {
     const { token } = await registerAndLogin('lists@test.com')
     const res = await request(app).get('/api/lists').set(authHeader(token)).expect(200)
-    expect(res.body).toHaveLength(3)
-    expect(res.body.map((l: { name: string }) => l.name)).toEqual(
+    expect(apiData<Array<{ name: string }>>(res)).toHaveLength(3)
+    expect(apiData<Array<{ name: string }>>(res).map((l: { name: string }) => l.name)).toEqual(
       expect.arrayContaining(['Inbox', 'Work', 'Personal']),
     )
   })

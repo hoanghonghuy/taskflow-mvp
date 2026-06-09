@@ -156,7 +156,24 @@ function getStore(): Store {
 
 // ---- Response helpers ----
 function json(data: unknown, status = 200): Response {
-  return new Response(JSON.stringify(data), {
+  const payload =
+    status >= 400
+      ? {
+          success: false,
+          error:
+            data && typeof data === 'object' && 'error' in data
+              ? String((data as { error?: string }).error)
+              : 'error',
+          message:
+            data && typeof data === 'object' && 'message' in data
+              ? String((data as { message?: string }).message)
+              : data && typeof data === 'object' && 'error' in data
+                ? String((data as { error?: string }).error)
+                : 'Request failed',
+        }
+      : { success: true, data }
+
+  return new Response(JSON.stringify(payload), {
     status,
     headers: { 'Content-Type': 'application/json' },
   })

@@ -5,13 +5,14 @@ import habitCompleteHandler from '@/pages/api/habits/[id]/complete'
 import listsByIdHandler from '@/pages/api/lists/[id]'
 import tasksByIdHandler from '@/pages/api/tasks/[id]'
 import { runHandler } from '../helpers/api-mock'
+import { unwrapEnvelope } from '../helpers/api-envelope'
 
 describe('dynamic API proxy routes (MOCK_MODE)', () => {
   it('handles task update/delete through /api/tasks/[id]', async () => {
     const create = await runHandler(tasksByIdHandler, 'POST', {
       body: { title: 'Dynamic route task', listId: 'inbox' },
     })
-    const task = create.json.mock.calls[0][0]
+    const task = unwrapEnvelope<{ id: string }>(create.json.mock.calls[0][0])
 
     const update = await runHandler(tasksByIdHandler, 'PUT', {
       query: { id: task.id },
@@ -29,7 +30,7 @@ describe('dynamic API proxy routes (MOCK_MODE)', () => {
     const create = await runHandler(listsByIdHandler, 'POST', {
       body: { name: 'Dynamic list', color: '#fff', members: [] },
     })
-    const list = create.json.mock.calls[0][0]
+    const list = unwrapEnvelope<{ id: string }>(create.json.mock.calls[0][0])
 
     const update = await runHandler(listsByIdHandler, 'PUT', {
       query: { id: list.id },
@@ -47,7 +48,7 @@ describe('dynamic API proxy routes (MOCK_MODE)', () => {
     const create = await runHandler(habitsByIdHandler, 'POST', {
       body: { name: 'Dynamic habit' },
     })
-    const habit = create.json.mock.calls[0][0]
+    const habit = unwrapEnvelope<{ id: string }>(create.json.mock.calls[0][0])
 
     const complete = await runHandler(habitCompleteHandler, 'POST', {
       query: { id: habit.id, date: '2026-06-09' },
@@ -69,7 +70,7 @@ describe('dynamic API proxy routes (MOCK_MODE)', () => {
     const create = await runHandler(countdownByIdHandler, 'POST', {
       body: { title: 'Dynamic countdown', targetDate: new Date().toISOString() },
     })
-    const event = create.json.mock.calls[0][0]
+    const event = unwrapEnvelope<{ id: string }>(create.json.mock.calls[0][0])
 
     const update = await runHandler(countdownByIdHandler, 'PUT', {
       query: { id: event.id },

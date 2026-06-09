@@ -33,8 +33,9 @@ async function getDevToken(): Promise<string> {
       return null
     }
 
-    const json = (await response.json()) as { token?: string }
-    return json.token ?? null
+    const json = (await response.json()) as { success?: boolean; data?: { token?: string }; token?: string }
+    const payload = json.success === true && json.data ? json.data : json
+    return payload.token ?? null
   }
 
   // Try login first

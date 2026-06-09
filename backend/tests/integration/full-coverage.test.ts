@@ -1,6 +1,11 @@
-import request from 'supertest'
+﻿import request from 'supertest'
+
+type ListRef = { id: string }
+type IdDto = { id: string }
+type SettingsDto = { geminiApiKey: string; bottomNavActions: string[] }
+
 import { prisma } from '../../src/lib/prisma'
-import { app, authHeader, registerAndLogin, resetDatabase } from '../helpers'
+import {app, authHeader, registerAndLogin, resetDatabase, apiData } from '../helpers'
 import * as authService from '../../src/services/authService'
 import * as aiService from '../../src/services/aiService'
 import { buildBriefingContext } from '../../src/services/aiService'
@@ -38,7 +43,7 @@ describe('Full route & service coverage', () => {
         description: 'd',
         dueDate: '2026-07-01T00:00:00.000Z',
         priority: 'urgent',
-        listId: lists.body[0].id,
+        listId: apiData<ListRef[]>(lists)[0].id,
         tags: ['t1'],
         columnId: 'col',
         subtasks: [{ id: 's1', title: 'S', completed: false }],
@@ -50,7 +55,7 @@ describe('Full route & service coverage', () => {
       .expect(201)
 
     await request(app)
-      .put(`/api/tasks/${created.body.id}`)
+      .put(`/api/tasks/${apiData<IdDto>(created).id}`)
       .set(authHeader(token))
       .send({
         title: 'Updated',
@@ -58,7 +63,7 @@ describe('Full route & service coverage', () => {
         completed: true,
         dueDate: null,
         priority: 'low',
-        listId: lists.body[1].id,
+        listId: apiData<ListRef[]>(lists)[1].id,
         tags: [],
         columnId: null,
         subtasks: [],
@@ -82,14 +87,14 @@ describe('Full route & service coverage', () => {
         soundEnabled: true,
         autoStartPomodoro: true,
         defaultPriority: 'high',
-        defaultListId: lists.body[0].id,
+        defaultListId: apiData<ListRef[]>(lists)[0].id,
         bottomNavActions: ['dashboard', 'list'],
         geminiApiKey: '  my-key  ',
       })
       .expect(200)
       .then((r) => {
-        expect(r.body.geminiApiKey).toBe('configured')
-        expect(r.body.bottomNavActions).toEqual(['dashboard', 'list'])
+        expect(apiData<SettingsDto>(r).geminiApiKey).toBe('configured')
+        expect(apiData<SettingsDto>(r).bottomNavActions).toEqual(['dashboard', 'list'])
       })
   })
 
@@ -108,7 +113,7 @@ describe('Full route & service coverage', () => {
         isPaused: true,
         remainingSeconds: 100,
         currentSession: 'shortBreak',
-        focusedTaskId: task.body.id,
+        focusedTaskId: apiData<IdDto>(task).id,
         focusedHabitId: '',
         sessionsCompleted: 2,
       })

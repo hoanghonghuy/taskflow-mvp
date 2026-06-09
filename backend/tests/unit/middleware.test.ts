@@ -49,7 +49,7 @@ describe('middleware/errorHandler', () => {
     const res = mockRes()
     errorHandler(new AppError(400, 'invalid_request', 'Bad'), {} as Request, res, jest.fn())
     expect(res.statusCode).toBe(400)
-    expect(res.body).toMatchObject({ error: 'invalid_request' })
+    expect(res.body).toMatchObject({ success: false, error: 'invalid_request' })
   })
 
   it('handles ZodError', () => {

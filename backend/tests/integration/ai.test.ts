@@ -1,6 +1,6 @@
-import request from 'supertest'
+﻿import request from 'supertest'
 import { resetAiRateLimitBuckets } from '../../src/middleware/ai-rate-limit'
-import { app, authHeader, registerAndLogin, resetDatabase } from '../helpers'
+import { app, authHeader, registerAndLogin, resetDatabase, apiData } from '../helpers'
 
 const originalFetch = global.fetch
 
@@ -43,7 +43,7 @@ describe('AI routes', () => {
       .send({ language: 'en' })
       .expect(200)
 
-    expect(res.body.content).toContain('Briefing')
+    expect(apiData<{ content: string }>(res).content).toContain('Briefing')
   })
 
   it('chat returns content', async () => {
@@ -68,7 +68,7 @@ describe('AI routes', () => {
       })
       .expect(200)
 
-    expect(res.body.content).toBeTruthy()
+    expect(apiData<{ content: string }>(res).content).toBeTruthy()
   })
 
   it('analyze returns parsed task fields', async () => {
@@ -98,7 +98,7 @@ describe('AI routes', () => {
       .send({ text: 'call mom', language: 'en' })
       .expect(200)
 
-    expect(res.body.title).toBe('Call mom')
+    expect(apiData<{ title: string }>(res).title).toBe('Call mom')
   })
 
   it('status returns available=false without API key', async () => {
@@ -110,7 +110,7 @@ describe('AI routes', () => {
       .set(authHeader(token))
       .expect(200)
 
-    expect(res.body.available).toBe(false)
+    expect(apiData<{ available: boolean }>(res).available).toBe(false)
   })
 
   it('status returns available=true when user has gemini key', async () => {
@@ -125,7 +125,7 @@ describe('AI routes', () => {
       .set(authHeader(token))
       .expect(200)
 
-    expect(res.body.available).toBe(true)
+    expect(apiData<{ available: boolean }>(res).available).toBe(true)
   })
 
   it('returns 429 when AI rate limit exceeded', async () => {

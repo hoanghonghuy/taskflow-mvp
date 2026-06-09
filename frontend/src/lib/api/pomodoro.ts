@@ -1,11 +1,12 @@
 import type { FocusSession, PomodoroState } from '@/types'
-import { apiFetch } from './client'
+import { apiFetch, unwrapApiData } from './client'
 import { mapFocusSessionsFromApi, mapPomodoroStateFromApi, pomodoroStateToApiPayload } from './mappers'
 
 export async function fetchPomodoroSessions(): Promise<FocusSession[]> {
   const response = await apiFetch('/api/pomodoro/sessions')
   if (!response.ok) return []
-  const json = await response.json().catch(() => null)
+  const raw = await response.json().catch(() => null)
+  const json = raw ? unwrapApiData<unknown>(raw, response.status) : null
   return Array.isArray(json) ? mapFocusSessionsFromApi(json) : []
 }
 
@@ -14,7 +15,8 @@ export async function fetchPomodoroState(
 ): Promise<Partial<PomodoroState> | null> {
   const response = await apiFetch('/api/pomodoro/state')
   if (!response.ok || response.status === 204) return null
-  const json = await response.json().catch(() => null)
+  const raw = await response.json().catch(() => null)
+  const json = raw ? unwrapApiData<unknown>(raw, response.status) : null
   return mapPomodoroStateFromApi(json, fallback)
 }
 

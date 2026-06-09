@@ -1,5 +1,12 @@
-import request from 'supertest'
-import { app, authHeader, registerAndLogin, resetDatabase } from './helpers'
+﻿import request from 'supertest'
+
+type ProfileSummaryDto = {
+  totalTasks: number
+  completionRate: number
+  unlockedAchievements: number
+}
+
+import { app, authHeader, registerAndLogin, resetDatabase, apiData } from './helpers'
 import { getProfileSummary, getAchievements } from '../src/services/profileService'
 import { prisma } from '../src/lib/prisma'
 
@@ -30,10 +37,10 @@ describe('Profile', () => {
       .set(authHeader(token))
       .expect(200)
 
-    expect(summaryRes.body.totalTasks).toBe(1)
-    expect(summaryRes.body.completionRate).toBe(100)
-    expect(summaryRes.body.unlockedAchievements).toBe(achievementsRes.body.length)
-    expect(achievementsRes.body).toContain('first-task')
+    expect(apiData<ProfileSummaryDto>(summaryRes).totalTasks).toBe(1)
+    expect(apiData<ProfileSummaryDto>(summaryRes).completionRate).toBe(100)
+    expect(apiData<ProfileSummaryDto>(summaryRes).unlockedAchievements).toBe(apiData<string[]>(achievementsRes).length)
+    expect(apiData<string[]>(achievementsRes)).toContain('first-task')
   })
 
   it('completionRate is 0 when no tasks', async () => {

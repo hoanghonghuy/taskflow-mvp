@@ -4,6 +4,15 @@ import { prisma } from '../src/lib/prisma'
 
 export const app = createApp()
 
+/** Unwrap `{ success: true, data }` from API responses */
+export function apiData<T>(res: { body: unknown }): T {
+  const body = res.body as { success?: boolean; data?: T }
+  if (body?.success === true && 'data' in body) {
+    return body.data as T
+  }
+  return res.body as T
+}
+
 export async function resetDatabase(): Promise<void> {
   await prisma.refreshToken.deleteMany()
   await prisma.pomodoroSession.deleteMany()
@@ -25,10 +34,16 @@ export async function registerAndLogin(
     .send({ name, email, password })
     .expect(200)
 
+  const data = apiData<{
+    token: string
+    refreshToken: string
+    user: { id: string }
+  }>(registerRes)
+
   return {
-    token: registerRes.body.token,
-    refreshToken: registerRes.body.refreshToken,
-    userId: registerRes.body.user.id,
+    token: data.token,
+    refreshToken: data.refreshToken,
+    userId: data.user.id,
   }
 }
 

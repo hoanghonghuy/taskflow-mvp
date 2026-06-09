@@ -1,5 +1,5 @@
-import { prisma } from './lib/prisma'
 import { toJsonString } from './lib/json'
+import * as listRepository from './repositories/listRepository'
 
 const DEFAULT_LISTS = [
   { name: 'Inbox', color: '#3b82f6' },
@@ -8,15 +8,15 @@ const DEFAULT_LISTS = [
 ] as const
 
 export async function seedDefaultListsForUser(userId: string): Promise<void> {
-  const count = await prisma.todoList.count({ where: { userId } })
-  if (count > 0) return
+  const existing = await listRepository.findListsByUserId(userId)
+  if (existing.length > 0) return
 
-  await prisma.todoList.createMany({
-    data: DEFAULT_LISTS.map((list) => ({
+  for (const list of DEFAULT_LISTS) {
+    await listRepository.createList({
       name: list.name,
       color: list.color,
       members: toJsonString([]),
-      userId,
-    })),
-  })
+      user: { connect: { id: userId } },
+    })
+  }
 }

@@ -7,6 +7,7 @@ import settingsHandler from '@/pages/api/settings'
 import profileSummaryHandler from '@/pages/api/profile/summary'
 import pomodoroStateHandler from '@/pages/api/pomodoro/state'
 import { runHandler } from '../helpers/api-mock'
+import { unwrapEnvelope } from '../helpers/api-envelope'
 
 describe('API proxy routes (MOCK_MODE)', () => {
   it('tasks GET/POST/PUT/DELETE', async () => {
@@ -16,7 +17,7 @@ describe('API proxy routes (MOCK_MODE)', () => {
     const create = await runHandler(tasksHandler, 'POST', {
       body: { title: 'Via proxy', listId: 'inbox' },
     })
-    const created = create.json.mock.calls[0][0]
+    const created = unwrapEnvelope<{ id: string; title: string }>(create.json.mock.calls[0][0])
     expect(created.title).toBe('Via proxy')
 
     const update = await runHandler(tasksHandler, 'PUT', {
@@ -44,7 +45,7 @@ describe('API proxy routes (MOCK_MODE)', () => {
     const create = await runHandler(listsHandler, 'POST', {
       body: { name: 'Proxy list', color: '#fff', members: [] },
     })
-    const list = create.json.mock.calls[0][0]
+    const list = unwrapEnvelope<{ id: string }>(create.json.mock.calls[0][0])
     await runHandler(listsHandler, 'PUT', { query: { id: list.id }, body: { name: 'Renamed' } })
     await runHandler(listsHandler, 'DELETE', { query: { id: list.id } })
   })
@@ -52,7 +53,7 @@ describe('API proxy routes (MOCK_MODE)', () => {
   it('habits and countdown', async () => {
     await runHandler(habitsHandler, 'GET')
     const h = await runHandler(habitsHandler, 'POST', { body: { name: 'H' } })
-    const habit = h.json.mock.calls[0][0]
+    const habit = unwrapEnvelope<{ id: string }>(h.json.mock.calls[0][0])
     await runHandler(habitsHandler, 'POST', {
       query: { id: habit.id },
       body: { date: '2026-06-01' },
@@ -62,7 +63,7 @@ describe('API proxy routes (MOCK_MODE)', () => {
     const c = await runHandler(countdownHandler, 'POST', {
       body: { title: 'C', targetDate: new Date().toISOString() },
     })
-    const event = c.json.mock.calls[0][0]
+    const event = unwrapEnvelope<{ id: string }>(c.json.mock.calls[0][0])
     await runHandler(countdownHandler, 'DELETE', { query: { id: event.id } })
   })
 

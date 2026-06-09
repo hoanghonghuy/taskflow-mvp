@@ -15,10 +15,22 @@ import type { PomodoroState, Settings } from '@/types'
 const mockFetch = vi.fn()
 
 function jsonResponse(body: unknown, status = 200): Response {
+  const payload =
+    status >= 400
+      ? {
+          success: false,
+          error: 'error',
+          message:
+            body && typeof body === 'object' && 'message' in body
+              ? String((body as { message?: string }).message)
+              : 'Request failed',
+        }
+      : { success: true, data: body }
+
   return {
     ok: status >= 200 && status < 300,
     status,
-    json: async () => body,
+    json: async () => payload,
   } as Response
 }
 

@@ -1,5 +1,5 @@
 import type { User } from '@/types'
-import { apiFetch } from './client'
+import { apiFetch, unwrapApiData } from './client'
 
 const AUTH_PATH = '/api/auth/[...nextauth]'
 const SESSION_PATH = '/api/auth/session'
@@ -8,7 +8,8 @@ export type SessionResponse = { authenticated?: boolean } | null
 
 export async function fetchSession(): Promise<{ ok: boolean; data: SessionResponse }> {
   const response = await apiFetch(SESSION_PATH, { method: 'GET' })
-  const data = (await response.json().catch(() => null)) as SessionResponse
+  const json = await response.json().catch(() => null)
+  const data = json ? (unwrapApiData<SessionResponse>(json, response.status) as SessionResponse) : null
   return { ok: response.ok, data }
 }
 
@@ -22,7 +23,8 @@ export async function login(email: string, password: string): Promise<User> {
     throw new Error(`Login failed with status ${response.status}`)
   }
 
-  const data = (await response.json().catch(() => null)) as { user?: User } | null
+  const json = await response.json().catch(() => null)
+  const data = json ? unwrapApiData<{ user?: User }>(json, response.status) : null
   if (data?.user) {
     return data.user
   }
@@ -40,7 +42,8 @@ export async function register(name: string, email: string, password: string): P
     throw new Error(`Register failed with status ${response.status}`)
   }
 
-  const data = (await response.json().catch(() => null)) as { user?: User } | null
+  const json = await response.json().catch(() => null)
+  const data = json ? unwrapApiData<{ user?: User }>(json, response.status) : null
   if (data?.user) {
     return data.user
   }
