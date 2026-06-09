@@ -143,12 +143,30 @@ describe('CRUD endpoints', () => {
     await request(app)
       .put('/api/settings')
       .set(authHeader(token))
-      .send({ language: 'vi', theme: 'dark' })
+      .send({
+        language: 'vi',
+        theme: 'dark',
+        pomodoroSettings: {
+          focusDuration: 30,
+          shortBreakDuration: 6,
+          longBreakDuration: 20,
+          sessionsUntilLongBreak: 5,
+        },
+      })
       .expect(200)
       .then((res) => {
         expect(res.body.language).toBe('vi')
         expect(res.body.theme).toBe('dark')
+        expect(res.body.pomodoroSettings).toMatchObject({
+          focusDuration: 30,
+          shortBreakDuration: 6,
+          longBreakDuration: 20,
+          sessionsUntilLongBreak: 5,
+        })
       })
+
+    const getAgain = await request(app).get('/api/settings').set(authHeader(token)).expect(200)
+    expect(getAgain.body.pomodoroSettings.focusDuration).toBe(30)
   })
 
   it('AI analyze returns 400 for empty text', async () => {

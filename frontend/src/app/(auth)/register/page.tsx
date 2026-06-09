@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/lib/hooks/use-toast'
-import { useI18n } from '@/lib/hooks/use-i18n'
+import { useI18n } from '@/lib/i18n/hooks'
 import { EyeIcon, EyeSlashIcon } from '@/lib/icons'
 
 export default function RegisterPage() {

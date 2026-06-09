@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
-import { useI18n } from '@/lib/hooks/use-i18n'
+import { useI18n } from '@/lib/i18n/hooks'
 import type { Task } from '@/types'
 import { CloseIcon, SearchIcon } from '@/lib/icons'
 import TaskItem from '@/features/tasks/components/TaskItem'

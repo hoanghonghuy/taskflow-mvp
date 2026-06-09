@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, useCallback, useEffect } from 'react'
-import { useI18n } from '@/lib/hooks/use-i18n'
+import { useI18n } from '@/lib/i18n/hooks'
 import type { User } from '@/types'
 
 interface UserContextType {
@@ -112,8 +112,21 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       throw new Error(`Register failed with status ${response.status}`)
     }
 
-    await login(email, password)
-  }, [login])
+    const data = (await response.json().catch(() => null)) as { user?: User } | null
+
+    if (data?.user) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('taskflowState')
+      }
+
+      setUser(data.user)
+      localStorage.setItem('user', JSON.stringify(data.user))
+      localStorage.setItem('isAuthenticated', 'true')
+      return
+    }
+
+    throw new Error('Register response did not contain user data')
+  }, [])
 
   const logout = useCallback(async () => {
     try {

@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { CalendarDaysIcon } from '@/lib/icons'
-import { useI18n } from '@/lib/hooks/use-i18n'
+import { useI18n } from '@/lib/i18n/hooks'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'

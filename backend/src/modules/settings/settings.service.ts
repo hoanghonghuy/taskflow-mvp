@@ -1,6 +1,10 @@
 import { prisma } from '../../lib/prisma'
 import { toJsonString } from '../../lib/json'
 import {
+  mergePomodoroSettings,
+  parsePomodoroSettings,
+} from '../../lib/pomodoro-settings'
+import {
   defaultSettingsData,
   mapSettingsToDto,
   type SettingsDto,
@@ -40,6 +44,11 @@ export async function updateSettings(
   if ('geminiApiKey' in body) {
     const key = body.geminiApiKey
     data.geminiApiKey = key != null && String(key).trim() ? String(key).trim() : null
+  }
+  if ('pomodoroSettings' in body && body.pomodoroSettings && typeof body.pomodoroSettings === 'object') {
+    const current = parsePomodoroSettings(settings.pomodoroSettingsJson)
+    const merged = mergePomodoroSettings(current, body.pomodoroSettings as Record<string, unknown>)
+    data.pomodoroSettingsJson = toJsonString(merged)
   }
 
   const updated = await prisma.userSettings.update({ where: { userId }, data })

@@ -18,7 +18,7 @@ import {
 import { PRIORITY_MAP } from '@/lib/task-constants'
 import { useUser } from '@/components/providers/user-provider'
 import { Avatar } from '@/components/ui/avatar'
-import { useI18n } from '@/lib/hooks/use-i18n'
+import { useI18n } from '@/lib/i18n/hooks'
 import { useSettings } from '@/components/providers/settings-provider'
 
 // Helper functions to replace date-fns

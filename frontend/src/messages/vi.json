@@ -945,7 +945,8 @@
     "sources": "Nguồn",
     "mockResponse": "Mình hiểu là bạn đang hỏi về \"{{input}}\". Đây là phản hồi giả lập. Khi tích hợp Gemini, mình sẽ có thể hỗ trợ bạn bằng AI thực thụ cho nhiệm vụ, thói quen và mục tiêu năng suất của bạn.",
     "error": {
-      "generic": "Đã xảy ra lỗi."
+      "generic": "Đã xảy ra lỗi.",
+      "empty": "AI trả về phản hồi trống. Vui lòng thử lại."
     }
   }
 }

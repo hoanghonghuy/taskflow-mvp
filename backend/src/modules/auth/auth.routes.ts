@@ -25,8 +25,8 @@ authRouter.post(
   asyncHandler(async (req, res) => {
     try {
       const body = registerSchema.parse(req.body)
-      const user = await authService.register(body.name, body.email, body.password)
-      res.status(200).json(user)
+      const result = await authService.register(body.name, body.email, body.password)
+      res.status(200).json(result)
     } catch (err) {
       if (err instanceof AppError && (err.statusCode === 400 || err.statusCode === 409)) {
         res.status(err.statusCode).json({ error: err.message })

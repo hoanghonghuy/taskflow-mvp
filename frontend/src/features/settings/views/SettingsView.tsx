@@ -2,8 +2,9 @@
 
 import React, { useMemo, useState } from 'react'
 import { useSettings } from '@/components/providers/settings-provider'
-import { useI18n } from '@/lib/hooks/use-i18n'
+import { useI18n } from '@/lib/i18n/hooks'
 import { useTaskManager } from '@/lib/hooks/use-task-manager'
+import { usePomodoroActions } from '@/components/providers/task-manager-provider'
 import { HomeIcon, ListBulletIcon, CalendarDaysIcon, GridIcon, RepeatIcon, StopwatchIcon, HourglassIcon, ViewColumnsIcon, CheckIcon } from '@/lib/icons'
 import { THEME_PRESETS } from '@/lib/theme-presets'
 import type { ThemeOption, View } from '@/types'
@@ -26,7 +27,8 @@ const ALL_FEATURES: { view: View, icon: React.FC<{className?: string}>, label: T
 
 const SettingsView: React.FC = () => {
   const { theme, setTheme, language, setLanguage, bottomNavActions, setBottomNavActions } = useSettings()
-  const { state: taskState, dispatch: taskDispatch } = useTaskManager()
+  const { state: taskState } = useTaskManager()
+  const { updateSettings: updatePomodoroSettings } = usePomodoroActions()
   const { t } = useI18n()
   const [themeFilter, setThemeFilter] = useState<'all' | 'light' | 'dark'>('all')
 
@@ -77,39 +79,27 @@ const SettingsView: React.FC = () => {
     if (!isNaN(numberValue) && numberValue >= 1) {
       // UI shows minutes, state stores minutes (not seconds)
       // Only convert to seconds for remainingTime, not for settings
-      taskDispatch({
-        type: 'UPDATE_POMODORO_SETTINGS',
-        payload: { [setting]: numberValue }
-      })
+      void updatePomodoroSettings({ [setting]: numberValue })
     }
   }
 
   const handleIntervalChange = (value: string) => {
     const numberValue = parseInt(value, 10)
     if (!isNaN(numberValue) && numberValue >= 1) {
-      taskDispatch({
-        type: 'UPDATE_POMODORO_SETTINGS',
-        payload: { sessionsUntilLongBreak: numberValue }
-      })
+      void updatePomodoroSettings({ sessionsUntilLongBreak: numberValue })
     }
   }
 
   const stepPomodoroSetting = (setting: 'focusDuration' | 'shortBreakDuration' | 'longBreakDuration', delta: number) => {
     const current = pomodoroSettings[setting]
     const next = Math.max(1, current + delta)
-    taskDispatch({
-      type: 'UPDATE_POMODORO_SETTINGS',
-      payload: { [setting]: next },
-    })
+    void updatePomodoroSettings({ [setting]: next })
   }
 
   const stepInterval = (delta: number) => {
     const current = pomodoroSettings.sessionsUntilLongBreak
     const next = Math.max(1, current + delta)
-    taskDispatch({
-      type: 'UPDATE_POMODORO_SETTINGS',
-      payload: { sessionsUntilLongBreak: next },
-    })
+    void updatePomodoroSettings({ sessionsUntilLongBreak: next })
   }
 
   const currentActions = bottomNavActions || []

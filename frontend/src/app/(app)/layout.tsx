@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useUser } from '@/components/providers/user-provider'
-import { useI18n } from '@/lib/hooks/use-i18n'
+import { useI18n } from '@/lib/i18n/hooks'
 import { Sidebar } from '@/components/layout/sidebar'
 import FeatureBar from '@/components/layout/feature-bar'
 import BottomNavBar from '@/components/layout/bottom-nav-bar'

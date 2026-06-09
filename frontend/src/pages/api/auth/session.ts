@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
+import { getAuthTokenFromRequest, getRefreshTokenFromRequest } from '@/lib/server/auth-token'
 import { backendFetchWithToken } from '@/lib/server/backend-client'
 import { isMockMode } from '@/lib/server/mock-backend'
 
@@ -11,42 +12,6 @@ const REFRESH_MAX_AGE_SECONDS = 7 * 24 * 60 * 60
 function buildAuthCookie(name: string, value: string, maxAgeSeconds: number): string {
   const secure = process.env.NODE_ENV === 'production' ? '; Secure' : ''
   return `${name}=${encodeURIComponent(value)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAgeSeconds}${secure}`
-}
-
-function getCookieValue(req: NextApiRequest, name: string): string | null {
-  const cookieHeader = Array.isArray(req.headers.cookie)
-    ? req.headers.cookie[0]
-    : req.headers.cookie
-
-  if (!cookieHeader || typeof cookieHeader !== 'string') {
-    return null
-  }
-
-  const cookies = cookieHeader.split(';')
-  for (const cookie of cookies) {
-    const [cookieName, ...rest] = cookie.trim().split('=')
-    if (cookieName === name) {
-      return decodeURIComponent(rest.join('=') || '')
-    }
-  }
-
-  return null
-}
-
-function getAuthTokenFromRequest(req: NextApiRequest): string | null {
-  const authHeader = Array.isArray(req.headers.authorization)
-    ? req.headers.authorization[0]
-    : req.headers.authorization
-
-  if (authHeader && typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
-    return authHeader.slice('Bearer '.length).trim()
-  }
-
-  return getCookieValue(req, TOKEN_COOKIE_NAME)
-}
-
-function getRefreshTokenFromRequest(req: NextApiRequest): string | null {
-  return getCookieValue(req, REFRESH_COOKIE_NAME)
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

@@ -16,10 +16,17 @@ describe('Auth', () => {
       .expect(200)
 
     expect(registerRes.body).toMatchObject({
-      name: 'Auth User',
-      email,
+      user: { name: 'Auth User', email },
     })
-    expect(registerRes.body.id).toBeDefined()
+    expect(registerRes.body.user?.id).toBeDefined()
+    expect(registerRes.body.token).toBeTruthy()
+    expect(registerRes.body.refreshToken).toBeTruthy()
+
+    const registerToken = registerRes.body.token as string
+    await request(app)
+      .get('/api/tasks')
+      .set(authHeader(registerToken))
+      .expect(200)
 
     const loginRes = await request(app)
       .post('/api/auth/login')

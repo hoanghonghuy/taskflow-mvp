@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useToast } from '@/lib/hooks/use-toast'
 import { useSettings } from '@/components/providers/settings-provider'
-import { useI18n } from '@/lib/hooks/use-i18n'
+import { useI18n } from '@/lib/i18n/hooks'
 
 export const usePomodoroNotifications = () => {
   const { state } = useTaskManager()

@@ -20,20 +20,15 @@ export async function registerAndLogin(
   password = 'TestPassword123!',
   name = 'Test User',
 ): Promise<{ token: string; refreshToken: string; userId: string }> {
-  await request(app)
+  const registerRes = await request(app)
     .post('/api/auth/register')
     .send({ name, email, password })
     .expect(200)
 
-  const loginRes = await request(app)
-    .post('/api/auth/login')
-    .send({ email, password })
-    .expect(200)
-
   return {
-    token: loginRes.body.token,
-    refreshToken: loginRes.body.refreshToken,
-    userId: loginRes.body.user.id,
+    token: registerRes.body.token,
+    refreshToken: registerRes.body.refreshToken,
+    userId: registerRes.body.user.id,
   }
 }
 

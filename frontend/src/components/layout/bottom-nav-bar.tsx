@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { useSettings } from '@/components/providers/settings-provider'
-import { useI18n } from '@/lib/hooks/use-i18n'
+import { useI18n } from '@/lib/i18n/hooks'
 import { StopwatchIcon, ListBulletIcon, CalendarDaysIcon, GridIcon, RepeatIcon, HourglassIcon, HomeIcon, ViewColumnsIcon, MenuIcon } from '@/lib/icons'
 import type { View } from '@/types'
 import type { TranslationKey } from '@/lib/i18n/types'

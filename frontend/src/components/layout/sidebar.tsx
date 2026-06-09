@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react'
 import { useTaskManager } from '@/lib/hooks/use-task-manager'
 import { useListActions } from '@/components/providers/task-manager-provider'
-import { useI18n } from '@/lib/hooks/use-i18n'
+import { useI18n } from '@/lib/i18n/hooks'
 import { useUser } from '@/components/providers/user-provider'
 import { SPECIAL_LISTS_CONFIG, TAG_COLORS } from '@/lib/task-constants'
 import { ListBulletIcon, PlusIcon, TagIcon, TrashIcon, ArrowDownIcon, UserPlusIcon, ChatBubbleLeftRightIcon } from '@/lib/icons'

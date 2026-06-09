@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useUser } from '@/components/providers/user-provider'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
-import { useI18n } from '@/lib/hooks/use-i18n'
+import { useI18n } from '@/lib/i18n/hooks'
 import { Avatar } from '@/components/ui/avatar'
 import { CalendarIcon, CheckCircleIcon, ClockIcon, TrophyIcon } from 'lucide-react'
 import { toYYYYMMDD } from '@/lib/utils/date-helpers'

@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useReducer, useCallback, useEffect, useRef } from 'react'
-import { useI18n } from '@/lib/hooks/use-i18n'
+import { useI18n } from '@/lib/i18n/hooks'
 import { taskActions, listActions, habitActions, pomodoroActions } from '@/lib/store/task-manager/actions'
 import { historyReducer } from '@/lib/store/task-manager/history-reducer'
 import { INITIAL_STATE } from '@/lib/store/task-manager/initial-state'
@@ -339,6 +339,32 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
         let unlockedAchievements = historyState.present.unlockedAchievements ?? []
         let focusHistory = historyState.present.pomodoro.focusHistory ?? []
         let pomodoroState = historyState.present.pomodoro
+
+        try {
+          const settingsRes = await fetch('/api/settings')
+          if (settingsRes.ok) {
+            const settingsJson = await settingsRes.json().catch(() => null)
+            const ps = settingsJson?.pomodoroSettings
+            if (ps && typeof ps === 'object') {
+              pomodoroState = {
+                ...pomodoroState,
+                settings: {
+                  ...pomodoroState.settings,
+                  focusDuration: Number(ps.focusDuration) || pomodoroState.settings.focusDuration,
+                  shortBreakDuration:
+                    Number(ps.shortBreakDuration) || pomodoroState.settings.shortBreakDuration,
+                  longBreakDuration:
+                    Number(ps.longBreakDuration) || pomodoroState.settings.longBreakDuration,
+                  sessionsUntilLongBreak:
+                    Number(ps.sessionsUntilLongBreak) ||
+                    pomodoroState.settings.sessionsUntilLongBreak,
+                },
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Failed to load settings from backend', error)
+        }
 
         try {
           const achievementsRes = await fetch('/api/profile/achievements')
@@ -1235,7 +1261,7 @@ export function useHabitActions() {
 }
 
 export function usePomodoroActions() {
-  const { dispatch } = useTaskManager()
+  const { state, dispatch } = useTaskManager()
 
   return {
     startTimer: useCallback(() => {
@@ -1262,8 +1288,18 @@ export function usePomodoroActions() {
       dispatch(pomodoroActions.setFocusedHabit(habitId))
     }, [dispatch]),
 
-    updateSettings: useCallback((settings: Partial<PomodoroState['settings']>) => {
+    updateSettings: useCallback(async (settings: Partial<PomodoroState['settings']>) => {
+      const merged = { ...state.pomodoro.settings, ...settings }
       dispatch(pomodoroActions.updateSettings(settings))
-    }, [dispatch]),
+      try {
+        await fetch('/api/settings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pomodoroSettings: merged }),
+        })
+      } catch (error) {
+        console.error('Failed to persist pomodoro settings', error)
+      }
+    }, [dispatch, state.pomodoro.settings]),
   }
 }

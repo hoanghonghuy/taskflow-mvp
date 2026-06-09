@@ -112,8 +112,9 @@ model UserSettings {
   defaultListId         String    @default("inbox")
   bottomNavActions      String    @default("[\"dashboard\",\"list\",\"board\",\"calendar\"]")
   geminiApiKey          String?
-  pomodoroStateJson     String?
+  pomodoroStateJson      String?
   pomodoroStateUpdatedAt DateTime?
+  pomodoroSettingsJson   String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

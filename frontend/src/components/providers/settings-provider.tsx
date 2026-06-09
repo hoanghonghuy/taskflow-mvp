@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, useCallback, useEffect } from 'react'
-import { useI18n } from '@/lib/hooks/use-i18n'
+import { useI18n } from '@/lib/i18n/hooks'
 import type { Settings, ThemeOption } from '@/types'
 import i18n from '@/lib/i18n/config'
 import { THEME_PRESET_IDS } from '@/lib/theme-presets'

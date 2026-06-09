@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { useI18n } from '@/lib/hooks/use-i18n'
+import { useI18n } from '@/lib/i18n/hooks'
 import { useRouter } from 'next/navigation'
 import { ListBulletIcon, RepeatIcon, StopwatchIcon, UserGroupIcon } from '@/lib/icons'
 

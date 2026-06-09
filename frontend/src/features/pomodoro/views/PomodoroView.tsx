@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { usePomodoroActions } from '@/components/providers/task-manager-provider'
-import { useI18n } from '@/lib/hooks/use-i18n'
+import { useI18n } from '@/lib/i18n/hooks'
 import { usePomodoroNotifications } from '@/lib/hooks/use-pomodoro-notifications'
 import { CheckCircleIcon, PlayCircleIcon, CloseIcon, StopwatchIcon, FlagIcon, SunIcon, SearchIcon, CalendarDayIcon, InboxIcon } from '@/lib/icons'
 import { toYYYYMMDD } from '@/lib/utils/date-helpers'

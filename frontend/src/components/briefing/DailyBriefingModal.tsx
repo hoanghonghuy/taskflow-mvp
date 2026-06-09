@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useGemini } from '@/lib/hooks/use-gemini'
-import { useI18n } from '@/lib/hooks/use-i18n'
+import { useI18n } from '@/lib/i18n/hooks'
 import { useToast } from '@/components/providers/toast-provider'
 import { CloseIcon, SparklesIcon } from '@/lib/icons'
 import Spinner from '@/components/ui/spinner'

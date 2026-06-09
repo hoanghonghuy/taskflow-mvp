@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
-import { useI18n } from '@/lib/hooks/use-i18n'
+import { useI18n } from '@/lib/i18n/hooks'
 import { useUser } from '@/components/providers/user-provider'
 import { useModal } from '@/components/providers/modal-provider'
 import TaskList from '@/features/tasks/components/TaskList'

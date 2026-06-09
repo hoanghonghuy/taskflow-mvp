@@ -1,4 +1,5 @@
 import request from 'supertest'
+import { resetAiRateLimitBuckets } from '../../src/middleware/ai-rate-limit'
 import { app, authHeader, registerAndLogin, resetDatabase } from '../helpers'
 
 const originalFetch = global.fetch
@@ -98,5 +99,47 @@ describe('AI routes', () => {
       .expect(200)
 
     expect(res.body.title).toBe('Call mom')
+  })
+
+  it('status returns available=false without API key', async () => {
+    const { config } = await import('../../src/config')
+    config.geminiApiKey = ''
+
+    const res = await request(app)
+      .get('/api/ai/status')
+      .set(authHeader(token))
+      .expect(200)
+
+    expect(res.body.available).toBe(false)
+  })
+
+  it('status returns available=true when user has gemini key', async () => {
+    await request(app)
+      .put('/api/settings')
+      .set(authHeader(token))
+      .send({ geminiApiKey: 'user-key' })
+      .expect(200)
+
+    const res = await request(app)
+      .get('/api/ai/status')
+      .set(authHeader(token))
+      .expect(200)
+
+    expect(res.body.available).toBe(true)
+  })
+
+  it('returns 429 when AI rate limit exceeded', async () => {
+    resetAiRateLimitBuckets()
+
+    let lastStatus = 0
+    for (let i = 0; i < 31; i += 1) {
+      const res = await request(app)
+        .post('/api/ai/briefing')
+        .set(authHeader(token))
+        .send({ language: 'en' })
+      lastStatus = res.status
+    }
+
+    expect(lastStatus).toBe(429)
   })
 })

@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
-import { useI18n } from '@/lib/hooks/use-i18n'
+import { useI18n } from '@/lib/i18n/hooks'
 import { useHabitActions } from '@/components/providers/task-manager-provider'
 import { useConfirmation } from '@/lib/hooks/use-confirmation'
 import { useSettings } from '@/components/providers/settings-provider'

@@ -3,7 +3,7 @@
 import React from 'react'
 import { useSettings } from '@/components/providers/settings-provider'
 import { useToast } from '@/lib/hooks/use-toast'
-import { useI18n } from '@/lib/hooks/use-i18n'
+import { useI18n } from '@/lib/i18n/hooks'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'

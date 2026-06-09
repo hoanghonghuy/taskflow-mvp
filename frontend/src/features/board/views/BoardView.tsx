@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react'
 import { useTaskManager, useTaskActions } from '@/components/providers/task-manager-provider'
-import { useI18n } from '@/lib/hooks/use-i18n'
+import { useI18n } from '@/lib/i18n/hooks'
 import BoardColumn from '@/features/board/components/BoardColumn'
 import { PlusIcon } from '@/lib/icons'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'

@@ -1,33 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import { getAuthTokenFromRequest } from '@/lib/server/auth-token';
 import { backendFetch, backendFetchWithToken } from '@/lib/server/backend-client';
-
-function getAuthTokenFromRequest(req: NextApiRequest): string | null {
-  const authHeader = Array.isArray(req.headers.authorization)
-    ? req.headers.authorization[0]
-    : req.headers.authorization;
-
-  if (authHeader && typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
-    return authHeader.slice('Bearer '.length).trim();
-  }
-
-  const cookieHeader = Array.isArray(req.headers.cookie)
-    ? req.headers.cookie[0]
-    : req.headers.cookie;
-
-  if (!cookieHeader || typeof cookieHeader !== 'string') {
-    return null;
-  }
-
-  const cookies = cookieHeader.split(';');
-  for (const cookie of cookies) {
-    const [name, ...rest] = cookie.trim().split('=');
-    if (name === 'taskflow_token') {
-      return decodeURIComponent(rest.join('=') || '');
-    }
-  }
-
-  return null;
-}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { method } = req;

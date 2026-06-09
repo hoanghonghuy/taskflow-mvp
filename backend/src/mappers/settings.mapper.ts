@@ -1,5 +1,12 @@
 import type { UserSettings } from '@prisma/client'
 import { parseJsonArray } from '../lib/json'
+import {
+  DEFAULT_POMODORO_SETTINGS,
+  parsePomodoroSettings,
+  type PomodoroSettingsDto,
+} from '../lib/pomodoro-settings'
+
+export type { PomodoroSettingsDto }
 
 export interface SettingsDto {
   language: string
@@ -11,6 +18,7 @@ export interface SettingsDto {
   defaultListId: string
   bottomNavActions: string[]
   geminiApiKey: string | null
+  pomodoroSettings: PomodoroSettingsDto
 }
 
 export function mapSettingsToDto(settings: UserSettings): SettingsDto {
@@ -29,6 +37,7 @@ export function mapSettingsToDto(settings: UserSettings): SettingsDto {
       'calendar',
     ]),
     geminiApiKey: settings.geminiApiKey ? 'configured' : null,
+    pomodoroSettings: parsePomodoroSettings(settings.pomodoroSettingsJson),
   }
 }
 
@@ -46,5 +55,8 @@ export function defaultSettingsData(userId: string) {
     geminiApiKey: null,
     pomodoroStateJson: null,
     pomodoroStateUpdatedAt: null,
+    pomodoroSettingsJson: null,
   }
 }
+
+export { DEFAULT_POMODORO_SETTINGS }

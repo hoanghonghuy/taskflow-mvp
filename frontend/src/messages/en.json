@@ -960,7 +960,8 @@
     "sources": "Sources",
     "mockResponse": "I understand you're asking about \"{{input}}\". This is a mock response. When the Gemini API is integrated, I'll be able to provide real AI-powered assistance with your tasks, habits, and productivity goals.",
     "error": {
-      "generic": "An error occurred."
+      "generic": "An error occurred.",
+      "empty": "The AI returned an empty response. Please try again."
     }
   }
 }

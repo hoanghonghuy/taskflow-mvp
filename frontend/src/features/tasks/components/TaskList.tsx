@@ -6,7 +6,7 @@ import { useTaskManager } from '@/components/providers/task-manager-provider'
 import type { Task } from '@/types'
 import { PlusIcon, ArrowUpIcon, ArrowDownIcon } from '@/lib/icons'
 import { EMPTY_STATE_ILLUSTRATIONS } from '@/lib/task-constants'
-import { useI18n } from '@/lib/hooks/use-i18n'
+import { useI18n } from '@/lib/i18n/hooks'
 import { filterTasksByList, sortTasks, groupUpcomingTasks } from '@/lib/utils/task-helpers'
 import { isSameDay, startOfDay, endOfDay } from '@/lib/utils/date-helpers'
 

@@ -2,7 +2,7 @@
 
 import React, { useMemo, useRef, useState, useEffect } from 'react'
 import { useTaskManager } from '@/lib/hooks/use-task-manager'
-import { useI18n } from '@/lib/hooks/use-i18n'
+import { useI18n } from '@/lib/i18n/hooks'
 import { useSettings } from '@/components/providers/settings-provider'
 import { useTheme } from '@/components/providers/theme-provider'
 import type { FocusSession } from '@/types'

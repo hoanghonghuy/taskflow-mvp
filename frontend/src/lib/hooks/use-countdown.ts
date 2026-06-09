@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { countdownActions } from '@/lib/store/task-manager/actions'
 import { useToast } from '@/lib/hooks/use-toast'
-import { useI18n } from '@/lib/hooks/use-i18n'
+import { useI18n } from '@/lib/i18n/hooks'
 import type { CountdownEvent } from '@/types'
 import type { TranslationKey } from '@/lib/i18n/types'
 

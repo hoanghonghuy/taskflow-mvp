@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useCallback, useEffect } from 'react'
 import { useCountdown } from '@/lib/hooks/use-countdown'
-import { useI18n } from '@/lib/hooks/use-i18n'
+import { useI18n } from '@/lib/i18n/hooks'
 import { useSettings } from '@/components/providers/settings-provider'
 import { useConfirmation } from '@/lib/hooks/use-confirmation'
 import { PlusIcon, TrashIcon, CalendarDaysIcon } from '@/lib/icons'

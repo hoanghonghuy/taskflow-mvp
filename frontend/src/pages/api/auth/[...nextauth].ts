@@ -164,8 +164,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }),
       })
 
-      const data = await response.json().catch(() => null)
-      return res.status(response.status).json(data ?? {})
+      const data = (await response.json().catch(() => null)) as AuthResponse | null
+      const payload: AuthResponse = data ?? {}
+
+      if (response.ok && typeof payload.token === 'string') {
+        const cookies: string[] = [
+          buildAuthCookie(TOKEN_COOKIE_NAME, payload.token, TOKEN_MAX_AGE_SECONDS),
+        ]
+
+        if (typeof payload.refreshToken === 'string') {
+          cookies.push(
+            buildAuthCookie(REFRESH_COOKIE_NAME, payload.refreshToken, REFRESH_MAX_AGE_SECONDS),
+          )
+        }
+
+        res.setHeader('Set-Cookie', cookies)
+
+        const safeData: AuthResponse = { ...payload }
+        delete safeData.refreshToken
+        return res.status(response.status).json(safeData)
+      }
+
+      return res.status(response.status).json(payload)
     }
 
     if (action === 'login') {

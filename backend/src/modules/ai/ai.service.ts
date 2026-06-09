@@ -3,6 +3,11 @@ import { prisma } from '../../lib/prisma'
 import { AppError } from '../../middleware/errorHandler'
 import * as gemini from './gemini.service'
 
+export async function isAiAvailable(userId: string): Promise<boolean> {
+  const key = await resolveGeminiApiKey(userId)
+  return Boolean(key)
+}
+
 async function resolveGeminiApiKey(userId: string): Promise<string | undefined> {
   const settings = await prisma.userSettings.findUnique({ where: { userId } })
   const userKey = settings?.geminiApiKey?.trim()

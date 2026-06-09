@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { CloseIcon, PaperAirplaneIcon, CubeTransparentIcon, GlobeAltIcon, SparklesIcon } from '@/lib/icons'
 import { useGemini } from '@/lib/hooks/use-gemini'
-import { useI18n } from '@/lib/hooks/use-i18n'
+import { useI18n } from '@/lib/i18n/hooks'
 import { useToast } from '@/components/providers/toast-provider'
 import type { ChatMessage } from '@/types'
 import Spinner from '@/components/ui/spinner'
@@ -81,13 +81,14 @@ const Chatbot: React.FC<ChatbotProps> = ({ onClose }) => {
       }
 
       const data = await response.json().catch(() => null) as { content?: string } | null
-      const reply = data && typeof data.content === 'string' && data.content.trim()
-        ? data.content
-        : t('chatbot.mockResponse', { input: currentInput })
+      const reply = data && typeof data.content === 'string' ? data.content.trim() : ''
+      if (!reply) {
+        throw new Error(t('chatbot.error.empty'))
+      }
 
-      setMessages(prev => prev.map(m => 
-        m.id === modelMessageId 
-          ? { ...m, text: reply } 
+      setMessages(prev => prev.map(m =>
+        m.id === modelMessageId
+          ? { ...m, text: reply }
           : m
       ))
 

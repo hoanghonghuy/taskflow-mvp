@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState, useEffect } from 'react'
 import { useTaskManager } from '@/lib/hooks/use-task-manager'
-import { useI18n } from '@/lib/hooks/use-i18n'
+import { useI18n } from '@/lib/i18n/hooks'
 import type { TranslationKey } from '@/lib/i18n/types'
 import { CalendarDayIcon, CalendarIcon, RepeatIcon, SparklesIcon } from '@/lib/icons'
 import ProductivityHeatmap from '@/components/dashboard/ProductivityHeatmap'

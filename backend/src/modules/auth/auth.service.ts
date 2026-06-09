@@ -49,7 +49,7 @@ async function issueTokens(user: { id: string; name: string; email: string }): P
   }
 }
 
-export async function register(name: string, email: string, password: string): Promise<UserDto> {
+export async function register(name: string, email: string, password: string): Promise<AuthResponse> {
   if (!name?.trim()) throw new AppError(400, 'invalid_request', 'Name is required')
   if (!email?.trim()) throw new AppError(400, 'invalid_request', 'Email is required')
   if (!password?.trim()) throw new AppError(400, 'invalid_request', 'Password is required')
@@ -66,7 +66,7 @@ export async function register(name: string, email: string, password: string): P
   })
 
   await seedDefaultListsForUser(user.id)
-  return mapUser(user)
+  return issueTokens(user)
 }
 
 export async function login(email: string, password: string): Promise<AuthResponse | null> {

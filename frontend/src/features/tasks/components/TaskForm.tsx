@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useTaskManager, useTaskActions } from '@/components/providers/task-manager-provider'
-import { useI18n } from '@/lib/hooks/use-i18n'
+import { useI18n } from '@/lib/i18n/hooks'
 import { useGemini } from '@/lib/hooks/use-gemini'
 import { useToast } from '@/components/providers/toast-provider'
 import type { Task, Priority } from '@/types'

@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { z } from 'zod'
 import { requireAuth } from '../../middleware/auth'
+import { aiRateLimit } from '../../middleware/ai-rate-limit'
 import { AppError, asyncHandler } from '../../middleware/errorHandler'
 import * as aiService from './ai.service'
 
@@ -28,6 +29,16 @@ const chatSchema = z.object({
 export const aiRouter = Router()
 
 aiRouter.use(requireAuth)
+
+aiRouter.get(
+  '/status',
+  asyncHandler(async (req, res) => {
+    const available = await aiService.isAiAvailable(req.userId!)
+    res.status(200).json({ available })
+  }),
+)
+
+aiRouter.use(aiRateLimit)
 
 aiRouter.post(
   '/briefing',

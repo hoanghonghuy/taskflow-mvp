@@ -5,7 +5,7 @@ import { MenuIcon, StopwatchIcon, ListBulletIcon, CalendarDaysIcon, GridIcon, Re
 import { useUser } from '@/components/providers/user-provider'
 import Avatar from '@/components/ui/avatar'
 import ProfileDropdown from '@/components/auth/profile-dropdown'
-import { useI18n } from '@/lib/hooks/use-i18n'
+import { useI18n } from '@/lib/i18n/hooks'
 import { useRouter, usePathname } from 'next/navigation'
 
 interface NavButtonProps {
