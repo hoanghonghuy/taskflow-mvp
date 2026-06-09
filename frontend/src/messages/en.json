@@ -14,6 +14,8 @@
     "title": "Admin",
     "subtitle": "System management",
     "backToApp": "Back to app",
+    "signedInAs": "Signed in as",
+    "singletonNote": "Only one system admin account exists",
     "nav": {
       "dashboard": "Dashboard",
       "users": "Users"
@@ -24,26 +26,37 @@
     },
     "errors": {
       "forbiddenTitle": "Access denied",
-      "forbiddenBody": "You do not have permission to access the admin area."
+      "forbiddenBody": "You do not have permission to access the admin area.",
+      "loadFailedTitle": "Failed to load data",
+      "loadFailedBody": "Could not load admin data. Please try again."
     },
     "dashboard": {
       "title": "Admin dashboard",
-      "subtitle": "Overview of platform activity"
+      "subtitle": "Overview of platform activity",
+      "recentUsersTitle": "Recent users",
+      "recentUsersSubtitle": "5 most recently registered accounts",
+      "viewAllUsers": "View all users",
+      "noRecentUsers": "No users yet"
     },
     "stats": {
       "totalUsers": "Total users",
+      "regularUsers": "Regular users",
       "totalTasks": "Total tasks",
       "totalHabits": "Total habits",
+      "totalLists": "Total lists",
+      "totalPomodoro": "Pomodoro sessions",
+      "totalCountdowns": "Countdown events",
       "newUsersLast7Days": "New users (7 days)"
     },
     "users": {
       "title": "User management",
-      "subtitle": "Browse and manage registered accounts",
+      "subtitle": "View, edit, and delete regular user accounts",
       "search": "Search",
+      "refresh": "Refresh",
       "searchPlaceholder": "Search by name or email",
       "loading": "Loading users...",
       "empty": "No users found",
-      "view": "View",
+      "view": "Details",
       "prev": "Previous",
       "next": "Next",
       "pagination": "Page {{page}} of {{totalPages}} ({{total}} users)",
@@ -66,17 +79,25 @@
       "habits": "{{count}} habits",
       "lists": "{{count}} lists",
       "pomodoro": "{{count}} pomodoro sessions",
+      "countdowns": "{{count}} countdown events",
+      "editTitle": "Edit profile",
+      "editSubtitle": "Update the user's name and email",
+      "nameLabel": "Display name",
+      "emailLabel": "Email",
+      "save": "Save changes",
+      "savedTitle": "Updated",
+      "savedBody": "User information has been saved.",
+      "saveFailedTitle": "Save failed",
+      "saveFailedBody": "Could not update user information.",
+      "protectedTitle": "System account",
+      "protectedBody": "The single admin account cannot be edited or deleted from here.",
       "delete": "Delete user",
       "deleteConfirmTitle": "Delete {{name}}?",
       "deleteConfirmBody": "This will permanently remove the user and all related data.",
       "deletedTitle": "User deleted",
       "deletedBody": "The account has been removed.",
       "deleteFailedTitle": "Delete failed",
-      "deleteFailedBody": "Could not delete this user.",
-      "roleUpdatedTitle": "Role updated",
-      "roleUpdatedBody": "User role has been saved.",
-      "roleUpdateFailedTitle": "Update failed",
-      "roleUpdateFailedBody": "Could not update user role."
+      "deleteFailedBody": "Could not delete this user."
     },
     "profileLink": "Admin panel"
   },

@@ -2,9 +2,14 @@ import type { UserRole } from './roles'
 
 export interface AdminStatsDto {
   totalUsers: number
+  regularUsers: number
   totalTasks: number
   totalHabits: number
+  totalLists: number
+  totalPomodoroSessions: number
+  totalCountdowns: number
   newUsersLast7Days: number
+  recentUsers: AdminUserListItemDto[]
 }
 
 export interface AdminUserListItemDto {
@@ -27,4 +32,10 @@ export interface AdminUserDetailDto extends AdminUserListItemDto {
   habitCount: number
   listCount: number
   pomodoroSessionCount: number
+  countdownCount: number
+}
+
+export interface AdminUpdateUserDto {
+  name?: string
+  email?: string
 }

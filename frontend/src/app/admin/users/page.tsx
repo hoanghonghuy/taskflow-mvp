@@ -2,13 +2,17 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
+import { RefreshCw } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { useI18n } from '@/lib/i18n/hooks'
+import { useToast } from '@/lib/hooks/use-toast'
 import * as adminApi from '@/lib/api/admin'
 
 export default function AdminUsersPage() {
   const { t } = useI18n()
+  const { error } = useToast()
   const [search, setSearch] = useState('')
   const [query, setQuery] = useState('')
   const [page, setPage] = useState(1)
@@ -18,14 +22,20 @@ export default function AdminUsersPage() {
   const loadUsers = useCallback(async () => {
     setLoading(true)
     try {
-      const result = await adminApi.fetchAdminUsers({ page, pageSize: 20, search: query || undefined })
+      const result = await adminApi.fetchAdminUsers({
+        page,
+        pageSize: 20,
+        search: query || undefined,
+        role: 'USER',
+      })
       setData(result)
     } catch (err) {
       console.error('Failed to load admin users', err)
+      error(t('admin.errors.loadFailedTitle'), t('admin.errors.loadFailedBody'))
     } finally {
       setLoading(false)
     }
-  }, [page, query])
+  }, [page, query, error, t])
 
   useEffect(() => {
     void loadUsers()
@@ -40,21 +50,27 @@ export default function AdminUsersPage() {
         <p className="text-muted-foreground text-sm mt-1">{t('admin.users.subtitle')}</p>
       </div>
 
-      <form
-        className="flex gap-2 max-w-md"
-        onSubmit={(e) => {
-          e.preventDefault()
-          setPage(1)
-          setQuery(search.trim())
-        }}
-      >
-        <Input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={t('admin.users.searchPlaceholder')}
-        />
-        <Button type="submit">{t('admin.users.search')}</Button>
-      </form>
+      <div className="flex flex-col sm:flex-row gap-2 max-w-2xl">
+        <form
+          className="flex flex-1 gap-2"
+          onSubmit={(e) => {
+            e.preventDefault()
+            setPage(1)
+            setQuery(search.trim())
+          }}
+        >
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={t('admin.users.searchPlaceholder')}
+          />
+          <Button type="submit">{t('admin.users.search')}</Button>
+        </form>
+        <Button variant="outline" disabled={loading} onClick={() => void loadUsers()}>
+          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          {t('admin.users.refresh')}
+        </Button>
+      </div>
 
       <div className="rounded-lg border border-border overflow-x-auto">
         <table className="w-full text-sm">
@@ -83,13 +99,11 @@ export default function AdminUsersPage() {
               </tr>
             )}
             {!loading && data?.items.map((user) => (
-              <tr key={user.id} className="border-t border-border">
-                <td className="px-4 py-3">{user.name}</td>
-                <td className="px-4 py-3">{user.email}</td>
+              <tr key={user.id} className="border-t border-border hover:bg-muted/30 transition-colors">
+                <td className="px-4 py-3 font-medium">{user.name}</td>
+                <td className="px-4 py-3 text-muted-foreground">{user.email}</td>
                 <td className="px-4 py-3">
-                  <span className="inline-flex rounded-full bg-muted px-2 py-0.5 text-xs font-medium">
-                    {user.role === 'ADMIN' ? t('admin.roles.admin') : t('admin.roles.user')}
-                  </span>
+                  <Badge variant="secondary">{t('admin.roles.user')}</Badge>
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">
                   {new Date(user.createdAt).toLocaleDateString()}

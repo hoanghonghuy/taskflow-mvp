@@ -4,6 +4,7 @@
 // import CredentialsProvider from 'next-auth/providers/credentials';
 
 import type { NextApiRequest, NextApiResponse } from 'next'
+import { unwrapBackendPayload } from '@/lib/server/backend-response'
 import { isMockMode, MOCK_USER } from '@/lib/server/mock-backend'
 
 const BACKEND_URL = (process.env.BACKEND_URL || 'http://localhost:8080').replace(/\/$/, '')
@@ -115,8 +116,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         body: JSON.stringify({ refreshToken }),
       })
 
-      const data = (await response.json().catch(() => null)) as AuthResponse | null
-      const payload: AuthResponse = data ?? {}
+      const data = await response.json().catch(() => null)
+      const payload = unwrapBackendPayload<AuthResponse>(data) ?? {}
 
       if (response.ok && typeof payload.token === 'string') {
         const cookies: string[] = []
@@ -141,7 +142,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(response.status).json(safeData)
       }
 
-      return res.status(response.status).json(payload)
+      return res.status(response.status).json(data ?? payload)
     } catch (error) {
       console.error('API Error (proxy to backend /api/auth/refresh):', error)
       return res.status(500).json({ error: 'Internal server error' })
@@ -164,8 +165,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }),
       })
 
-      const data = (await response.json().catch(() => null)) as AuthResponse | null
-      const payload: AuthResponse = data ?? {}
+      const data = await response.json().catch(() => null)
+      const payload = unwrapBackendPayload<AuthResponse>(data) ?? {}
 
       if (response.ok && typeof payload.token === 'string') {
         const cookies: string[] = [
@@ -185,7 +186,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(response.status).json(safeData)
       }
 
-      return res.status(response.status).json(payload)
+      return res.status(response.status).json(data ?? payload)
     }
 
     if (action === 'login') {
@@ -195,8 +196,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         body: JSON.stringify({ email, password }),
       })
 
-      const data = (await response.json().catch(() => null)) as AuthResponse | null
-      const payload: AuthResponse = data ?? {}
+      const data = await response.json().catch(() => null)
+      const payload = unwrapBackendPayload<AuthResponse>(data) ?? {}
 
       if (response.ok && typeof payload.token === 'string') {
         const cookies: string[] = []
@@ -221,7 +222,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(response.status).json(safeData)
       }
 
-      return res.status(response.status).json(payload)
+      return res.status(response.status).json(data ?? payload)
     }
 
     return res.status(400).json({ error: 'Invalid auth action' })

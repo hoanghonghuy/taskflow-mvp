@@ -1,5 +1,6 @@
 import { hashPassword } from './lib/password'
 import { prisma } from './lib/prisma'
+import * as adminRepository from './repositories/adminRepository'
 import { seedDefaultListsForUser } from './seed'
 
 export async function seedAdminUser(): Promise<void> {
@@ -20,19 +21,23 @@ export async function seedAdminUser(): Promise<void> {
       })
       console.log(`[seed] Promoted existing user to ADMIN: ${email}`)
     }
-    return
+  } else {
+    const passwordHash = await hashPassword(password)
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        passwordHash,
+        role: 'ADMIN',
+      },
+    })
+
+    await seedDefaultListsForUser(user.id)
+    console.log(`[seed] Created ADMIN user: ${email}`)
   }
 
-  const passwordHash = await hashPassword(password)
-  const user = await prisma.user.create({
-    data: {
-      name,
-      email,
-      passwordHash,
-      role: 'ADMIN',
-    },
-  })
-
-  await seedDefaultListsForUser(user.id)
-  console.log(`[seed] Created ADMIN user: ${email}`)
+  const demoted = await adminRepository.demoteExtraAdmins(email)
+  if (demoted > 0) {
+    console.log(`[seed] Demoted ${demoted} extra ADMIN account(s) to USER`)
+  }
 }

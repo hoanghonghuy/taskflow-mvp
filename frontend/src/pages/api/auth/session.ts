@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { getAuthTokenFromRequest, getRefreshTokenFromRequest } from '@/lib/server/auth-token'
+import { unwrapBackendPayload } from '@/lib/server/backend-response'
 import { backendFetchWithToken } from '@/lib/server/backend-client'
 import { isMockMode } from '@/lib/server/mock-backend'
 
@@ -52,9 +53,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       body: JSON.stringify({ refreshToken }),
     })
 
-    const data = (await refreshResponse.json().catch(() => null)) as
-      | { token?: string; refreshToken?: string }
-      | null
+    const body = await refreshResponse.json().catch(() => null)
+    const data = unwrapBackendPayload<{ token?: string; refreshToken?: string }>(body)
 
     if (!refreshResponse.ok) {
       if (refreshResponse.status === 401) {

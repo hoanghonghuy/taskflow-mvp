@@ -11,7 +11,7 @@ interface UserContextType {
   isAuthenticated: boolean
   isAdmin: boolean
   authReady: boolean
-  login: (email: string, password: string) => Promise<void>
+  login: (email: string, password: string) => Promise<User>
   register: (name: string, email: string, password: string) => Promise<void>
   logout: () => void
   updateProfile: (updates: Partial<User>) => void
@@ -85,6 +85,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     setUser(loggedInUser)
     localStorage.setItem('user', JSON.stringify(loggedInUser))
     localStorage.setItem('isAuthenticated', 'true')
+    return loggedInUser
   }, [])
 
   const register = useCallback(async (name: string, email: string, password: string) => {
