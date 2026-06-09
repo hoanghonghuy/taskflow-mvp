@@ -32,9 +32,9 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      DATABASE_URL: ${DATABASE_URL_DOCKER:-postgres://postgres:taskflow@postgres:5432/taskflow_db?sslmode=disable}
+      DATABASE_URL: ${DATABASE_URL_DOCKER}
     ports:
-      - "${BACKEND_PORT:-8080}:8080"
+      - "${BACKEND_PORT:-8081}:8080"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 15s
@@ -54,9 +54,12 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+    env_file:
+      - ./frontend/.env
     environment:
-      BACKEND_URL: ${BACKEND_URL:-http://backend:8080}
-      MOCK_MODE: ${MOCK_MODE:-false}
+      # Ghi đè URL local trong frontend/.env — trong compose dùng tên service Docker
+      BACKEND_URL: ${BACKEND_INTERNAL_URL}
+      MOCK_MODE: ${MOCK_MODE}
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     networks:

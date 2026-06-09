@@ -5,7 +5,7 @@ const BACKEND_URL = (process.env.BACKEND_URL || 'http://localhost:8080').replace
 
 describe.skipIf(!REAL_BACKEND)('real backend contract (REAL_BACKEND_TEST=true)', () => {
   it('health endpoint responds', async () => {
-    const res = await fetch(`${BACKEND_URL}/api/health`)
+    const res = await fetch(`${BACKEND_URL}/health`)
     expect(res.ok).toBe(true)
   })
 

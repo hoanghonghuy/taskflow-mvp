@@ -38,7 +38,7 @@ const CalendarView: React.FC = () => {
     DAY_LABELS,
   } = useCalendar()
 
-  const { state } = useTaskManager()
+  const { state, dispatch } = useTaskManager()
   const { updateTask } = useTaskActions()
   const { tasks } = state
   const { settings } = useSettings()

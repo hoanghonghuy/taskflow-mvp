@@ -18,13 +18,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
           <GeminiProvider>
             <UserProvider>
               <TaskManagerProvider>
-                <ModalProvider>
-                  <ToastProvider>
+                <ToastProvider>
+                  <ModalProvider>
                     <ConfirmationProvider>
                       {children}
                     </ConfirmationProvider>
-                  </ToastProvider>
-                </ModalProvider>
+                  </ModalProvider>
+                </ToastProvider>
               </TaskManagerProvider>
             </UserProvider>
           </GeminiProvider>
