@@ -12,6 +12,7 @@
 # ============================================
 
 frontend/.next/
+frontend/.next-e2e/
 frontend/out/
 frontend/build/
 frontend/dist/
@@ -24,6 +25,11 @@ frontend/next-env.d.ts
 
 # Testing (Vitest)
 frontend/coverage/
+
+# Testing (Playwright)
+frontend/playwright-report/
+frontend/test-results/
+frontend/playwright/.auth/
 
 # ============================================
 # Backend (Node.js + Express + Prisma)

@@ -5,7 +5,7 @@
 
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { unwrapBackendPayload } from '@/lib/server/backend-response'
-import { isMockMode, MOCK_USER } from '@/lib/server/mock-backend'
+import { isMockMode, buildMockAuthUser } from '@/lib/server/mock-backend'
 
 const BACKEND_URL = (process.env.BACKEND_URL || 'http://localhost:8080').replace(/\/$/, '')
 const TOKEN_COOKIE_NAME = 'taskflow_token'
@@ -78,11 +78,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (action === 'register' || action === 'login') {
-      const user = {
-        ...MOCK_USER,
-        ...(typeof name === 'string' && name ? { name } : {}),
-        ...(typeof email === 'string' && email ? { email } : {}),
-      }
+      const user = buildMockAuthUser({
+        name: typeof name === 'string' ? name : undefined,
+        email: typeof email === 'string' ? email : undefined,
+      })
       res.setHeader('Set-Cookie', [
         buildAuthCookie(TOKEN_COOKIE_NAME, 'mock-token', TOKEN_MAX_AGE_SECONDS),
         buildAuthCookie(REFRESH_COOKIE_NAME, 'mock-refresh', REFRESH_MAX_AGE_SECONDS),

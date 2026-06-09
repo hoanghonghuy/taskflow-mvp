@@ -118,6 +118,42 @@ cd frontend
 REAL_BACKEND_TEST=true BACKEND_URL=http://localhost:8081 npm test -- real-backend-contract
 ```
 
+### E2E browser (Playwright)
+
+Smoke test UI trên trình duyệt — mặc định dùng `MOCK_MODE=true`, **không cần Docker**:
+
+```bash
+cd frontend
+npm run test:e2e          # headless
+npm run test:e2e:ui       # UI mode (debug)
+npm run test:e2e:report   # xem HTML report sau khi chạy
+```
+
+E2E với backend + Postgres thật (Docker đang chạy):
+
+```bash
+docker compose up -d
+cd frontend
+# PowerShell:
+$env:E2E_REAL_BACKEND="true"; $env:BACKEND_URL="http://localhost:8081"; npm run test:e2e
+```
+
+Lần đầu trên máy mới: `npx playwright install chromium`
+
+**Coverage e2e (mock mode):** auth, i18n (vi/en), tasks, navigation, admin.
+
+### CI (GitHub Actions)
+
+Workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) chạy trên push/PR vào `main`:
+
+| Job | Nội dung |
+|-----|----------|
+| `backend-test` | Jest + Postgres 16 service |
+| `frontend-unit` | Vitest |
+| `frontend-e2e` | Playwright (mock mode, Chromium) |
+
+Khi e2e fail trên CI, artifact `playwright-report` được upload để debug.
+
 ## Tài liệu thêm
 
 - [backend/README.md](backend/README.md) — API endpoints, biến env chi tiết

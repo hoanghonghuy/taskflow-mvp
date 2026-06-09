@@ -55,6 +55,24 @@ export const MOCK_USER = {
   name: 'Demo User',
   email: 'demo@taskflow.app',
   avatarUrl: 'https://api.dicebear.com/8.x/initials/svg?seed=Demo%20User',
+  role: 'USER' as const,
+}
+
+/** E2E admin accounts use this domain in mock mode (see e2e/helpers/test-data.ts). */
+export function isE2eAdminEmail(email: string): boolean {
+  return email.endsWith('@taskflow.admin')
+}
+
+export function buildMockAuthUser(input: { name?: string; email?: string }) {
+  const email = input.email?.trim() || MOCK_USER.email
+  const name = input.name?.trim() || MOCK_USER.name
+  const role = isE2eAdminEmail(email) ? ('ADMIN' as const) : ('USER' as const)
+  return {
+    ...MOCK_USER,
+    name,
+    email,
+    role,
+  }
 }
 
 // ---- Seed helpers ----
@@ -416,6 +434,76 @@ export async function mockBackendFetch(rawPath: string, init: RequestInit = {}):
   if (path === '/api/pomodoro/state') {
     // No persisted state in mock mode
     return noContent()
+  }
+
+  // ---------------- Admin (mock mode) ----------------
+  if (path === '/api/admin/stats' && method === 'GET') {
+    return json({
+      totalUsers: 3,
+      regularUsers: 2,
+      totalTasks: s.tasks.length,
+      totalHabits: s.habits.length,
+      totalLists: s.lists.length,
+      totalPomodoroSessions: 0,
+      totalCountdowns: s.countdowns.length,
+      newUsersLast7Days: 1,
+      recentUsers: [
+        {
+          id: MOCK_USER.id,
+          name: MOCK_USER.name,
+          email: MOCK_USER.email,
+          role: 'USER',
+          createdAt: nowIso(),
+        },
+        {
+          id: '00000000-0000-0000-0000-000000000002',
+          name: 'E2E Admin',
+          email: 'admin@taskflow.admin',
+          role: 'ADMIN',
+          createdAt: nowIso(),
+        },
+      ],
+    })
+  }
+
+  if (path === '/api/admin/users' && method === 'GET') {
+    return json({
+      items: [
+        {
+          id: MOCK_USER.id,
+          name: MOCK_USER.name,
+          email: MOCK_USER.email,
+          role: 'USER',
+          createdAt: nowIso(),
+        },
+        {
+          id: '00000000-0000-0000-0000-000000000002',
+          name: 'E2E Admin',
+          email: 'admin@taskflow.admin',
+          role: 'ADMIN',
+          createdAt: nowIso(),
+        },
+      ],
+      total: 2,
+      page: 1,
+      pageSize: 20,
+    })
+  }
+
+  if (path.startsWith('/api/admin/users/') && method === 'GET') {
+    const id = decodeURIComponent(path.slice('/api/admin/users/'.length))
+    return json({
+      id,
+      name: id === MOCK_USER.id ? MOCK_USER.name : 'E2E Admin',
+      email: id === MOCK_USER.id ? MOCK_USER.email : 'admin@taskflow.admin',
+      role: id === MOCK_USER.id ? 'USER' : 'ADMIN',
+      createdAt: nowIso(),
+      taskCount: s.tasks.length,
+      habitCount: s.habits.length,
+      listCount: s.lists.length,
+      pomodoroSessionCount: 0,
+      countdownCount: s.countdowns.length,
+    })
   }
 
   // ---------------- AI (disabled in mock mode) ----------------
