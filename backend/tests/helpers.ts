@@ -50,3 +50,36 @@ export async function registerAndLogin(
 export function authHeader(token: string): { Authorization: string } {
   return { Authorization: `Bearer ${token}` }
 }
+
+export async function promoteUserToAdmin(userId: string): Promise<void> {
+  await prisma.user.update({
+    where: { id: userId },
+    data: { role: 'ADMIN' },
+  })
+}
+
+export async function registerAndLoginAdmin(
+  email = `admin-${Date.now()}@test.com`,
+  password = 'TestPassword123!',
+  name = 'Admin User',
+): Promise<{ token: string; refreshToken: string; userId: string }> {
+  const session = await registerAndLogin(email, password, name)
+  await promoteUserToAdmin(session.userId)
+
+  const loginRes = await request(app)
+    .post('/api/auth/login')
+    .send({ email, password })
+    .expect(200)
+
+  const data = apiData<{
+    token: string
+    refreshToken: string
+    user: { id: string; role: string }
+  }>(loginRes)
+
+  return {
+    token: data.token,
+    refreshToken: data.refreshToken,
+    userId: data.user.id,
+  }
+}

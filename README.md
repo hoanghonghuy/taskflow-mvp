@@ -85,11 +85,24 @@ npm run dev          # http://localhost:3000
 - **Profile** — summary, achievements
 - **Settings** — theme, ngôn ngữ, API key AI
 - **Auth** — đăng ký / đăng nhập (JWT qua NextAuth proxy)
+- **Admin** — quản trị user, thống kê hệ thống (`/admin`, role `ADMIN`)
 
 ### Ghi chú MVP tạm thời
 
 - `/` redirect sang `/login` (landing page giữ trong code, chưa xóa)
 - AI trên UI tắt qua `AI_FEATURES_ENABLED` trong `frontend/src/lib/feature-flags.ts` — hiện toast “đang phát triển”; backend vẫn hỗ trợ Gemini / OpenAI-compatible
+
+## Tài khoản admin (dev)
+
+Thêm vào `backend/.env`:
+
+```env
+ADMIN_EMAIL=admin@taskflow.app
+ADMIN_PASSWORD=Admin123@
+ADMIN_NAME=System Admin
+```
+
+Backend tự tạo/promote admin khi khởi động. Đăng nhập tại `/login` → redirect `/admin`.
 
 ## Test
 

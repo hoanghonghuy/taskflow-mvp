@@ -9,6 +9,7 @@ interface UserContextType {
   user: User | null
   allUsers: User[]
   isAuthenticated: boolean
+  isAdmin: boolean
   authReady: boolean
   login: (email: string, password: string) => Promise<void>
   register: (name: string, email: string, password: string) => Promise<void>
@@ -170,6 +171,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         user,
         allUsers: [],
         isAuthenticated: authReady && !!user,
+        isAdmin: authReady && user?.role === 'ADMIN',
         authReady,
         login,
         register,

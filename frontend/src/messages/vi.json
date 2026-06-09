@@ -10,6 +10,76 @@
       "message": "Tính năng AI đang được phát triển."
     }
   },
+  "admin": {
+    "title": "Quản trị",
+    "subtitle": "Quản lý hệ thống",
+    "backToApp": "Về ứng dụng",
+    "nav": {
+      "dashboard": "Tổng quan",
+      "users": "Người dùng"
+    },
+    "roles": {
+      "user": "Người dùng",
+      "admin": "Quản trị viên"
+    },
+    "errors": {
+      "forbiddenTitle": "Không có quyền truy cập",
+      "forbiddenBody": "Bạn không có quyền vào khu vực quản trị."
+    },
+    "dashboard": {
+      "title": "Bảng điều khiển quản trị",
+      "subtitle": "Tổng quan hoạt động nền tảng"
+    },
+    "stats": {
+      "totalUsers": "Tổng người dùng",
+      "totalTasks": "Tổng nhiệm vụ",
+      "totalHabits": "Tổng thói quen",
+      "newUsersLast7Days": "Người dùng mới (7 ngày)"
+    },
+    "users": {
+      "title": "Quản lý người dùng",
+      "subtitle": "Xem và quản lý tài khoản đã đăng ký",
+      "search": "Tìm kiếm",
+      "searchPlaceholder": "Tìm theo tên hoặc email",
+      "loading": "Đang tải danh sách...",
+      "empty": "Không tìm thấy người dùng",
+      "view": "Xem",
+      "prev": "Trước",
+      "next": "Sau",
+      "pagination": "Trang {{page}}/{{totalPages}} ({{total}} người dùng)",
+      "columns": {
+        "name": "Tên",
+        "email": "Email",
+        "role": "Vai trò",
+        "createdAt": "Ngày tham gia",
+        "actions": "Thao tác"
+      }
+    },
+    "userDetail": {
+      "loading": "Đang tải người dùng...",
+      "notFound": "Không tìm thấy người dùng",
+      "back": "Quay lại danh sách",
+      "role": "Vai trò",
+      "createdAt": "Tham gia lúc",
+      "activity": "Hoạt động",
+      "tasks": "{{count}} nhiệm vụ",
+      "habits": "{{count}} thói quen",
+      "lists": "{{count}} danh sách",
+      "pomodoro": "{{count}} phiên pomodoro",
+      "delete": "Xóa người dùng",
+      "deleteConfirmTitle": "Xóa {{name}}?",
+      "deleteConfirmBody": "Thao tác này sẽ xóa vĩnh viễn tài khoản và toàn bộ dữ liệu liên quan.",
+      "deletedTitle": "Đã xóa người dùng",
+      "deletedBody": "Tài khoản đã được gỡ bỏ.",
+      "deleteFailedTitle": "Xóa thất bại",
+      "deleteFailedBody": "Không thể xóa người dùng này.",
+      "roleUpdatedTitle": "Đã cập nhật vai trò",
+      "roleUpdatedBody": "Vai trò người dùng đã được lưu.",
+      "roleUpdateFailedTitle": "Cập nhật thất bại",
+      "roleUpdateFailedBody": "Không thể cập nhật vai trò."
+    },
+    "profileLink": "Trang quản trị"
+  },
   "nav": {
     "dashboard": "Bảng điều khiển",
     "list": "Nhiệm vụ",

@@ -1,15 +1,18 @@
 import jwt from 'jsonwebtoken'
 import { config } from '../config'
+import type { UserRole } from '../types/roles'
 
 const NAME_IDENTIFIER_CLAIM =
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'
 const EMAIL_CLAIM = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'
 const NAME_CLAIM = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'
+const ROLE_CLAIM = 'role'
 
 export interface JwtUserPayload {
   userId: string
   email: string
   name: string
+  role: UserRole
 }
 
 export function signToken(payload: JwtUserPayload): string {
@@ -19,6 +22,7 @@ export function signToken(payload: JwtUserPayload): string {
       sub: payload.userId,
       [EMAIL_CLAIM]: payload.email,
       [NAME_CLAIM]: payload.name,
+      [ROLE_CLAIM]: payload.role,
       email: payload.email,
       name: payload.name,
     },
@@ -58,7 +62,14 @@ export function verifyToken(token: string): JwtUserPayload | null {
       (decoded.name as string | undefined) ??
       ''
 
-    return { userId, email, name }
+    const roleRaw =
+      (decoded[ROLE_CLAIM] as string | undefined) ??
+      (decoded.role as string | undefined) ??
+      'USER'
+
+    const role: UserRole = roleRaw === 'ADMIN' ? 'ADMIN' : 'USER'
+
+    return { userId, email, name, role }
   } catch {
     return null
   }

@@ -32,10 +32,11 @@ describe('lib/password', () => {
 
 describe('lib/jwt', () => {
   it('signs and verifies token with user claims', () => {
-    const token = signToken({ userId: 'user-1', email: 'a@test.com', name: 'A' })
+    const token = signToken({ userId: 'user-1', email: 'a@test.com', name: 'A', role: 'USER' })
     const payload = verifyToken(token)
     expect(payload?.userId).toBe('user-1')
     expect(payload?.email).toBe('a@test.com')
+    expect(payload?.role).toBe('USER')
   })
 
   it('returns null for invalid token', () => {

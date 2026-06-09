@@ -58,9 +58,9 @@ export default function LoginPage() {
 
     setIsLoading(true)
     try {
-      await login(email, password)
+      const user = await login(email, password)
       success(t('auth.toast.loginSuccessTitle'), t('auth.toast.loginSuccessBody'))
-      router.push('/dashboard')
+      router.push(user.role === 'ADMIN' ? '/admin' : '/dashboard')
     } catch {
       error(t('auth.toast.loginFailedTitle'), t('auth.toast.loginFailedBody'))
     } finally {

@@ -10,6 +10,76 @@
       "message": "This AI feature is under development."
     }
   },
+  "admin": {
+    "title": "Admin",
+    "subtitle": "System management",
+    "backToApp": "Back to app",
+    "nav": {
+      "dashboard": "Dashboard",
+      "users": "Users"
+    },
+    "roles": {
+      "user": "User",
+      "admin": "Admin"
+    },
+    "errors": {
+      "forbiddenTitle": "Access denied",
+      "forbiddenBody": "You do not have permission to access the admin area."
+    },
+    "dashboard": {
+      "title": "Admin dashboard",
+      "subtitle": "Overview of platform activity"
+    },
+    "stats": {
+      "totalUsers": "Total users",
+      "totalTasks": "Total tasks",
+      "totalHabits": "Total habits",
+      "newUsersLast7Days": "New users (7 days)"
+    },
+    "users": {
+      "title": "User management",
+      "subtitle": "Browse and manage registered accounts",
+      "search": "Search",
+      "searchPlaceholder": "Search by name or email",
+      "loading": "Loading users...",
+      "empty": "No users found",
+      "view": "View",
+      "prev": "Previous",
+      "next": "Next",
+      "pagination": "Page {{page}} of {{totalPages}} ({{total}} users)",
+      "columns": {
+        "name": "Name",
+        "email": "Email",
+        "role": "Role",
+        "createdAt": "Joined",
+        "actions": "Actions"
+      }
+    },
+    "userDetail": {
+      "loading": "Loading user...",
+      "notFound": "User not found",
+      "back": "Back to users",
+      "role": "Role",
+      "createdAt": "Joined at",
+      "activity": "Activity",
+      "tasks": "{{count}} tasks",
+      "habits": "{{count}} habits",
+      "lists": "{{count}} lists",
+      "pomodoro": "{{count}} pomodoro sessions",
+      "delete": "Delete user",
+      "deleteConfirmTitle": "Delete {{name}}?",
+      "deleteConfirmBody": "This will permanently remove the user and all related data.",
+      "deletedTitle": "User deleted",
+      "deletedBody": "The account has been removed.",
+      "deleteFailedTitle": "Delete failed",
+      "deleteFailedBody": "Could not delete this user.",
+      "roleUpdatedTitle": "Role updated",
+      "roleUpdatedBody": "User role has been saved.",
+      "roleUpdateFailedTitle": "Update failed",
+      "roleUpdateFailedBody": "Could not update user role."
+    },
+    "profileLink": "Admin panel"
+  },
   "nav": {
     "dashboard": "Dashboard",
     "list": "Tasks",

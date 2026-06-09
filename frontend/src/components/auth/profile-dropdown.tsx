@@ -4,7 +4,7 @@ import React from 'react'
 import { useUser } from '@/components/providers/user-provider'
 import type { User } from '@/types'
 import { ArrowLeftOnRectangleIcon, UserCircleIcon } from '@/lib/icons'
-import { Settings as SettingsIcon, Trophy as TrophyIcon } from 'lucide-react'
+import { Settings as SettingsIcon, Shield, Trophy as TrophyIcon } from 'lucide-react'
 import Avatar from '@/components/ui/avatar'
 import { useI18n } from '@/lib/i18n/hooks'
 import { useRouter } from 'next/navigation'
@@ -16,7 +16,7 @@ interface ProfileDropdownProps {
 }
 
 export default function ProfileDropdown({ user, onClose, variant = 'floating' }: ProfileDropdownProps) {
-  const { logout } = useUser()
+  const { logout, isAdmin } = useUser()
   const { t } = useI18n()
   const router = useRouter()
 
@@ -32,6 +32,11 @@ export default function ProfileDropdown({ user, onClose, variant = 'floating' }:
 
   const handleAchievementsClick = () => {
     router.push('/achievements')
+    onClose()
+  }
+
+  const handleAdminClick = () => {
+    router.push('/admin')
     onClose()
   }
 
@@ -73,6 +78,15 @@ export default function ProfileDropdown({ user, onClose, variant = 'floating' }:
             <TrophyIcon className="w-5 h-5 text-muted-foreground" />
             <span>{t('profile.achievements')}</span>
           </button>
+          {isAdmin && (
+            <button
+              onClick={handleAdminClick}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm rounded-md bg-muted/40 hover:bg-muted transition-colors"
+            >
+              <Shield className="w-5 h-5 text-muted-foreground" />
+              <span>{t('admin.profileLink')}</span>
+            </button>
+          )}
         </div>
         <div className="border-t border-border mt-4 pt-4">
           <button
@@ -126,6 +140,15 @@ export default function ProfileDropdown({ user, onClose, variant = 'floating' }:
           <TrophyIcon className="w-5 h-5 text-muted-foreground" />
           <span>{t('profile.achievements')}</span>
         </button>
+        {isAdmin && (
+          <button
+            onClick={handleAdminClick}
+            className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-md hover:bg-secondary"
+          >
+            <Shield className="w-5 h-5 text-muted-foreground" />
+            <span>{t('admin.profileLink')}</span>
+          </button>
+        )}
       </div>
       <div className="p-2 border-t border-border">
         <button

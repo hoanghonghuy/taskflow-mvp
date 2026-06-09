@@ -14,7 +14,8 @@
     "test:integration": "jest --runInBand tests/integration tests/auth.test.ts tests/crud.test.ts tests/profile.test.ts tests/property.test.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:deploy": "prisma migrate deploy"
+    "prisma:deploy": "prisma migrate deploy",
+    "seed:admin": "ts-node-dev --transpile-only src/seedAdmin.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.9.0",

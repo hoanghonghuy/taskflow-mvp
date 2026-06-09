@@ -9,16 +9,27 @@ import type { AuthResponse, UserDto } from '../types/auth.types'
 
 export type { AuthResponse, UserDto } from '../types/auth.types'
 
-function mapUser(user: { id: string; name: string; email: string }): UserDto {
-  return { id: user.id, name: user.name, email: user.email }
+function mapUser(user: { id: string; name: string; email: string; role: string }): UserDto {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role === 'ADMIN' ? 'ADMIN' : 'USER',
+  }
 }
 
 function createRefreshTokenValue(): string {
   return randomBytes(32).toString('base64')
 }
 
-async function issueTokens(user: { id: string; name: string; email: string }): Promise<AuthResponse> {
-  const token = signToken({ userId: user.id, email: user.email, name: user.name })
+async function issueTokens(user: {
+  id: string
+  name: string
+  email: string
+  role: string
+}): Promise<AuthResponse> {
+  const role = user.role === 'ADMIN' ? 'ADMIN' : 'USER'
+  const token = signToken({ userId: user.id, email: user.email, name: user.name, role })
   const refreshToken = createRefreshTokenValue()
   const expiresAt = new Date()
   expiresAt.setDate(expiresAt.getDate() + config.jwt.refreshExpiresDays)

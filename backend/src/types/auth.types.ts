@@ -1,7 +1,10 @@
+import type { UserRole } from './roles'
+
 export interface UserDto {
   id: string
   name: string
   email: string
+  role: UserRole
 }
 
 export interface AuthResponse {

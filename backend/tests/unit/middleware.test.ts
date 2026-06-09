@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express'
 import { ZodError, z } from 'zod'
-import { requireAuth } from '../../src/middleware/auth'
+import { requireAdmin, requireAuth } from '../../src/middleware/auth'
 import { AppError, asyncHandler, errorHandler } from '../../src/middleware/errorHandler'
 import { signToken } from '../../src/lib/jwt'
 
@@ -34,12 +34,32 @@ describe('middleware/auth', () => {
   })
 
   it('attaches userId for valid token', () => {
-    const token = signToken({ userId: 'u1', email: 'a@t.com', name: 'A' })
+    const token = signToken({ userId: 'u1', email: 'a@t.com', name: 'A', role: 'USER' })
     const req = { headers: { authorization: `Bearer ${token}` } } as Request
     const res = mockRes()
     const next = jest.fn()
     requireAuth(req, res, next)
     expect(req.userId).toBe('u1')
+    expect(req.userRole).toBe('USER')
+    expect(next).toHaveBeenCalled()
+  })
+})
+
+describe('middleware/requireAdmin', () => {
+  it('returns 403 for non-admin role', () => {
+    const req = { userRole: 'USER' } as Request
+    const res = mockRes()
+    const next = jest.fn()
+    requireAdmin(req, res, next)
+    expect(res.statusCode).toBe(403)
+    expect(next).not.toHaveBeenCalled()
+  })
+
+  it('allows admin role', () => {
+    const req = { userRole: 'ADMIN' } as Request
+    const res = mockRes()
+    const next = jest.fn()
+    requireAdmin(req, res, next)
     expect(next).toHaveBeenCalled()
   })
 })
