@@ -40,7 +40,7 @@ export function mockMatchMedia(matches = false) {
 }
 
 function I18nWrapper({ children }: { children: ReactNode }) {
-  return <I18nProvider>{children}</I18nProvider>
+  return <I18nProvider initialLocale="en">{children}</I18nProvider>
 }
 
 export function renderWithI18n(ui: ReactElement, options?: Omit<RenderOptions, 'wrapper'>) {

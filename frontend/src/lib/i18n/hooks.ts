@@ -7,6 +7,7 @@
 
 import { useTranslation } from 'react-i18next'
 import { useCallback } from 'react'
+import { setLocaleCookie } from '@/lib/i18n/locale-cookie'
 import type { Settings } from '@/types'
 import type { TranslationKey, TranslationFunction } from './types'
 
@@ -38,10 +39,11 @@ export function useI18n() {
 
   // Change language function
   const changeLanguage = useCallback(
-    (lang: Settings['language']) => {
-      i18n.changeLanguage(lang)
+    async (lang: Settings['language']) => {
+      await i18n.changeLanguage(lang)
       if (typeof window !== 'undefined') {
         localStorage.setItem('language', lang)
+        setLocaleCookie(lang)
       }
     },
     [i18n]

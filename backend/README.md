@@ -59,11 +59,11 @@ Frontend (`frontend/.env`): `BACKEND_URL=http://localhost:8080` khi backend ch�
 ## Docker (full stack)
 
 ```bash
-# Từ repo root
-cp .env.example .env
-cp backend/.env.example backend/.env
-cp frontend/.env.example frontend/.env
-docker compose up -d --build
+# Từ repo root — dev + hot reload (mặc định)
+docker compose up -d
+
+# Production image
+docker compose -f docker-compose.prod.yml up -d --build
 ```
 
 Compose ghi đè `DATABASE_URL` của backend bằng `DATABASE_URL_DOCKER` từ `.env` gốc.

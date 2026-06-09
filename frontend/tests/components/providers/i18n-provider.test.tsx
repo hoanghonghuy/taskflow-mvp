@@ -11,7 +11,7 @@ function TranslationProbe() {
 describe('I18nProvider', () => {
   it('renders children with working translations', () => {
     render(
-      <I18nProvider>
+      <I18nProvider initialLocale="en">
         <TranslationProbe />
       </I18nProvider>
     )

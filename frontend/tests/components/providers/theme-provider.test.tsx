@@ -8,8 +8,8 @@ import { createLocalStorageMock, mockMatchMedia } from '../../helpers/test-utils
 
 function ThemeTestWrapper({ children }: { children: ReactNode }) {
   return (
-    <I18nProvider>
-      <SettingsProvider>
+    <I18nProvider initialLocale="en">
+      <SettingsProvider initialLocale="en">
         <ThemeProvider>{children}</ThemeProvider>
       </SettingsProvider>
     </I18nProvider>

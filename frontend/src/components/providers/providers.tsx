@@ -1,5 +1,6 @@
 'use client'
 
+import type { Settings } from '@/types'
 import { ThemeProvider } from './theme-provider'
 import { I18nProvider } from './i18n-provider'
 import { ToastProvider } from './toast-provider'
@@ -10,10 +11,15 @@ import { TaskManagerProvider } from './task-manager-provider'
 import { ModalProvider } from './modal-provider'
 import { GeminiProvider } from '@/lib/hooks/use-gemini'
 
-export function Providers({ children }: { children: React.ReactNode }) {
+interface ProvidersProps {
+  children: React.ReactNode
+  initialLocale: Settings['language']
+}
+
+export function Providers({ children, initialLocale }: ProvidersProps) {
   return (
-    <I18nProvider>
-      <SettingsProvider>
+    <I18nProvider initialLocale={initialLocale}>
+      <SettingsProvider initialLocale={initialLocale}>
         <ThemeProvider>
           <GeminiProvider>
             <UserProvider>

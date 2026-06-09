@@ -7,8 +7,8 @@ import { createLocalStorageMock } from '../../helpers/test-utils'
 
 function SettingsTestWrapper({ children }: { children: ReactNode }) {
   return (
-    <I18nProvider>
-      <SettingsProvider>{children}</SettingsProvider>
+    <I18nProvider initialLocale="en">
+      <SettingsProvider initialLocale="en">{children}</SettingsProvider>
     </I18nProvider>
   )
 }
@@ -28,15 +28,19 @@ describe('SettingsProvider', () => {
     )
   })
 
-  it('provides default settings', () => {
+  it('provides default settings', async () => {
     const { result } = renderHook(() => useSettings(), { wrapper: SettingsTestWrapper })
 
     expect(result.current.settings.language).toBe('en')
     expect(result.current.settings.theme).toBe('light')
     expect(result.current.theme).toBe('light')
+
+    await waitFor(() => {
+      expect(result.current.hydrated).toBe(true)
+    })
   })
 
-  it('loads settings from localStorage', () => {
+  it('loads settings from localStorage after mount', async () => {
     const saved = {
       language: 'vi',
       theme: 'dark',
@@ -52,13 +56,16 @@ describe('SettingsProvider', () => {
 
     const { result } = renderHook(() => useSettings(), { wrapper: SettingsTestWrapper })
 
-    expect(result.current.settings.language).toBe('vi')
-    expect(result.current.settings.theme).toBe('dark')
-    expect((result.current.settings as unknown as Record<string, unknown>).geminiApiKey).toBeUndefined()
-    expect(JSON.parse(localStorage.getItem('settings')!)).not.toHaveProperty('geminiApiKey')
+    await waitFor(() => {
+      expect(result.current.hydrated).toBe(true)
+      expect(result.current.settings.language).toBe('vi')
+      expect(result.current.settings.theme).toBe('dark')
+      expect((result.current.settings as unknown as Record<string, unknown>).geminiApiKey).toBeUndefined()
+      expect(JSON.parse(localStorage.getItem('settings')!)).not.toHaveProperty('geminiApiKey')
+    })
   })
 
-  it('updateSettings merges and persists to localStorage', async () => {
+  it('updateSettings merges and persists to localStorage without API when unauthenticated', async () => {
     const fetchMock = vi.mocked(fetch)
     const { result } = renderHook(() => useSettings(), { wrapper: SettingsTestWrapper })
 
@@ -71,6 +78,23 @@ describe('SettingsProvider', () => {
     expect(JSON.parse(localStorage.getItem('settings')!)).toMatchObject({
       language: 'vi',
       theme: 'dark',
+    })
+
+    await waitFor(() => {
+      expect(fetchMock).not.toHaveBeenCalledWith(
+        '/api/settings',
+        expect.objectContaining({ method: 'PUT' })
+      )
+    })
+  })
+
+  it('updateSettings persists to backend when authenticated', async () => {
+    localStorage.setItem('isAuthenticated', 'true')
+    const fetchMock = vi.mocked(fetch)
+    const { result } = renderHook(() => useSettings(), { wrapper: SettingsTestWrapper })
+
+    act(() => {
+      result.current.updateSettings({ language: 'vi', theme: 'dark' })
     })
 
     await waitFor(() => {

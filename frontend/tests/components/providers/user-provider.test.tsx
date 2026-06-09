@@ -14,7 +14,7 @@ const mockUser = {
 
 function UserTestWrapper({ children }: { children: ReactNode }) {
   return (
-    <I18nProvider>
+    <I18nProvider initialLocale="en">
       <UserProvider>{children}</UserProvider>
     </I18nProvider>
   )

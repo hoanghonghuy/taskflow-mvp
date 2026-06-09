@@ -8,7 +8,8 @@
 |---------|--------|
 | `frontend/` | Next.js 16 — UI, i18n (vi/en), API routes proxy tới backend |
 | `backend/` | Express API, Prisma ORM, PostgreSQL 16 |
-| `docker-compose.yml` | Postgres + backend + frontend |
+| `docker-compose.yml` | Dev + hot reload (mount source, giống `iris-app` web) |
+| `docker-compose.prod.yml` | Production (build image — khi deploy) |
 
 ## Yêu cầu
 
@@ -35,26 +36,26 @@ cp frontend/.env.example frontend/.env
 **Local dev:** `frontend/.env` → `BACKEND_URL=http://localhost:8081`  
 **Docker:** compose ghi đè `BACKEND_URL=http://backend:8080` (tên service trong network).
 
-## Chạy với Docker (khuyến nghị)
+## Docker (mặc định = dev, giống iris web)
 
 ```bash
-docker compose up --build
+cp .env.example .env
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+docker compose up -d
 ```
+
+Mount source + `npm run dev` — **sửa code tự reload**, không cần `--build`. Lần đầu `up` chậm vì `npm ci`.
 
 | Service | URL / port host |
 |---------|-----------------|
 | Frontend | http://localhost:3000 |
 | Backend API | http://localhost:8081 |
 | Postgres | `localhost:5434` |
-| Health check | http://localhost:8081/health |
 
-Backend tự chạy `prisma migrate deploy` khi container khởi động.
+Production (build image): `docker compose -f docker-compose.prod.yml up -d --build`
 
-Dừng và xóa volume (mất data DB):
-
-```bash
-docker compose down -v
-```
+Dừng: `docker compose down` — xóa volume DB: `docker compose down -v`
 
 ## Chạy riêng từng service (dev)
 

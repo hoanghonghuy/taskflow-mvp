@@ -3,6 +3,7 @@
 import React from 'react'
 import { useI18n } from '@/lib/i18n/hooks'
 import { useRouter } from 'next/navigation'
+import { LanguageToggle } from '@/components/i18n/LanguageToggle'
 import { ListBulletIcon, RepeatIcon, StopwatchIcon, UserGroupIcon } from '@/lib/icons'
 
 interface LandingPageProps {
@@ -30,12 +31,15 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLaunch }) => {
         <div className="flex items-center text-primary">
           <ListBulletIcon className="h-6 w-6" />
         </div>
-        <button
-          onClick={handleLogin}
-          className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md text-sm font-semibold hover:bg-muted"
-        >
-          {t('landing.hero.login')}
-        </button>
+        <div className="flex items-center gap-3">
+          <LanguageToggle />
+          <button
+            onClick={handleLogin}
+            className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md text-sm font-semibold hover:bg-muted"
+          >
+            {t('landing.hero.login')}
+          </button>
+        </div>
       </nav>
 
       {/* Hero Section */}

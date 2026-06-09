@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useMemo, useState } from 'react'
+import { LanguageToggle } from '@/components/i18n/LanguageToggle'
 import { useSettings } from '@/components/providers/settings-provider'
 import { useI18n } from '@/lib/i18n/hooks'
 import { useTaskManager } from '@/lib/hooks/use-task-manager'
@@ -26,7 +27,7 @@ const ALL_FEATURES: { view: View, icon: React.FC<{className?: string}>, label: T
 ]
 
 const SettingsView: React.FC = () => {
-  const { theme, setTheme, language, setLanguage, bottomNavActions, setBottomNavActions } = useSettings()
+  const { theme, setTheme, bottomNavActions, setBottomNavActions } = useSettings()
   const { state: taskState } = useTaskManager()
   const { updateSettings: updatePomodoroSettings } = usePomodoroActions()
   const { t } = useI18n()
@@ -129,17 +130,9 @@ const SettingsView: React.FC = () => {
         <section>
           <h2 className="text-lg font-semibold mb-4">{t('settings.languageLabel')}</h2>
           <div className="bg-card border border-border rounded-lg p-4 max-w-md">
-            <div className="flex items-center justify-between">
-              <label htmlFor="language-select" className="font-medium text-sm">{t('settings.languageLabel')}</label>
-              <select
-                id="language-select"
-                value={language}
-                onChange={(e) => setLanguage(e.target.value as 'en' | 'vi')}
-                className="p-2 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-              >
-                <option value="en">{t('settings.language.en')}</option>
-                <option value="vi">{t('settings.language.vi')}</option>
-              </select>
+            <div className="flex items-center justify-between gap-4">
+              <span className="font-medium text-sm">{t('settings.languageLabel')}</span>
+              <LanguageToggle showIcon={false} />
             </div>
           </div>
         </section>

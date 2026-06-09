@@ -1,17 +1,19 @@
 'use client'
 
-import { createContext, useContext, useState, useCallback, useEffect } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useI18n } from '@/lib/i18n/hooks'
+import { ApiError } from '@/lib/api/client'
 import * as settingsApi from '@/lib/api/settings'
 import { mapSettingsFromApi } from '@/lib/api/settings'
+import { setLocaleCookie } from '@/lib/i18n/locale-cookie'
 import type { Settings } from '@/types'
-import i18n from '@/lib/i18n/config'
 
 interface SettingsContextType {
   settings: Settings
+  hydrated: boolean
   updateSettings: (updates: Partial<Settings>) => void
   resetSettings: () => void
-  // Direct setters for convenience (matching template API)
   theme: Settings['theme']
   setTheme: (theme: Settings['theme']) => void
   language: Settings['language']
@@ -33,45 +35,96 @@ const DEFAULT_SETTINGS: Settings = {
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined)
 
-export function SettingsProvider({ children }: { children: React.ReactNode }) {
+function isUserAuthenticated(): boolean {
+  return typeof window !== 'undefined' && window.localStorage.getItem('isAuthenticated') === 'true'
+}
+
+function clearStaleAuth(): void {
+  if (typeof window === 'undefined') return
+  localStorage.removeItem('isAuthenticated')
+  localStorage.removeItem('user')
+}
+
+interface SettingsProviderProps {
+  children: React.ReactNode
+  initialLocale: Settings['language']
+}
+
+export function SettingsProvider({ children, initialLocale }: SettingsProviderProps) {
   const { t } = useI18n()
-  const [settings, setSettings] = useState<Settings>(() => {
-    if (typeof window !== 'undefined') {
+  const { i18n } = useTranslation()
+  const [settings, setSettings] = useState<Settings>(() => ({
+    ...DEFAULT_SETTINGS,
+    language: initialLocale,
+  }))
+  const [hydrated, setHydrated] = useState(false)
+  const initialLocaleRef = useRef(initialLocale)
+
+  const applyLanguage = useCallback(async (language: Settings['language']) => {
+    setLocaleCookie(language)
+    if (i18n.language !== language) {
+      await i18n.changeLanguage(language)
+    }
+  }, [i18n])
+
+  useEffect(() => {
+    let cancelled = false
+
+    const hydrateFromStorage = async () => {
+      let nextSettings: Settings = {
+        ...DEFAULT_SETTINGS,
+        language: initialLocaleRef.current,
+      }
       const savedSettings = localStorage.getItem('settings')
+
       if (savedSettings) {
         try {
           const parsed = JSON.parse(savedSettings) as Settings
-          const sanitized = mapSettingsFromApi(parsed, DEFAULT_SETTINGS)
+          nextSettings = mapSettingsFromApi(parsed, nextSettings)
           try {
-            localStorage.setItem('settings', JSON.stringify(sanitized))
+            localStorage.setItem('settings', JSON.stringify(nextSettings))
           } catch {
             // ignore localStorage errors
           }
-          return sanitized
         } catch (error) {
           console.error(t('console.failedParseSettings'), error)
           localStorage.removeItem('settings')
         }
       }
+
+      if (nextSettings.language !== initialLocaleRef.current) {
+        await applyLanguage(nextSettings.language)
+      }
+
+      if (!cancelled) {
+        setSettings(nextSettings)
+        setHydrated(true)
+      }
     }
-    return DEFAULT_SETTINGS
-  })
+
+    void hydrateFromStorage()
+
+    return () => {
+      cancelled = true
+    }
+  }, [applyLanguage, t])
 
   useEffect(() => {
     let isMounted = true
 
     const loadFromBackend = async () => {
       if (typeof window === 'undefined') return
-
-      const isAuthenticated = window.localStorage.getItem('isAuthenticated') === 'true'
-      if (!isAuthenticated) return
+      if (!isUserAuthenticated()) return
 
       try {
         const data = await settingsApi.fetchSettings()
         if (!isMounted || data == null) return
 
+        let mergedLanguage: Settings['language'] | undefined
+
         setSettings((prev) => {
           const merged = mapSettingsFromApi(data, prev)
+          mergedLanguage = merged.language
           try {
             localStorage.setItem('settings', JSON.stringify(merged))
           } catch {
@@ -79,7 +132,15 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
           }
           return merged
         })
+
+        if (mergedLanguage) {
+          await applyLanguage(mergedLanguage)
+        }
       } catch (error) {
+        if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
+          clearStaleAuth()
+          return
+        }
         console.error('Failed to load settings from backend', error)
       }
     }
@@ -89,20 +150,24 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     return () => {
       isMounted = false
     }
-  }, [])
+  }, [applyLanguage])
 
-  // Sync language changes with i18n outside of setState
-  useEffect(() => {
-    if (typeof window !== 'undefined' && settings.language) {
-      if (i18n.language !== settings.language) {
-        i18n.changeLanguage(settings.language)
+  const persistToBackend = useCallback((payload: Partial<Settings>) => {
+    if (!isUserAuthenticated()) return
+
+    void settingsApi.updateSettings(payload).catch((error) => {
+      if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
+        clearStaleAuth()
+        return
       }
-    }
-  }, [settings.language])
+      console.error('Failed to persist settings to backend', error)
+    })
+  }, [])
 
   const updateSettings = useCallback((updates: Partial<Settings>) => {
     setSettings((prev) => {
       const updated = { ...prev, ...updates }
+
       try {
         if (typeof window !== 'undefined') {
           localStorage.setItem('settings', JSON.stringify(updated))
@@ -111,18 +176,18 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         // ignore localStorage errors
       }
 
-      if (typeof window !== 'undefined') {
-        void settingsApi.updateSettings(updated).catch((error) => {
-          console.error('Failed to persist settings to backend', error)
-        })
-      }
-
+      persistToBackend(updated)
       return updated
     })
-  }, [])
+
+    if (updates.language) {
+      void applyLanguage(updates.language)
+    }
+  }, [applyLanguage, persistToBackend])
 
   const resetSettings = useCallback(() => {
     setSettings(DEFAULT_SETTINGS)
+
     try {
       if (typeof window !== 'undefined') {
         localStorage.setItem('settings', JSON.stringify(DEFAULT_SETTINGS))
@@ -131,14 +196,10 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       // ignore localStorage errors
     }
 
-    if (typeof window !== 'undefined') {
-      void settingsApi.updateSettings(DEFAULT_SETTINGS).catch((error) => {
-        console.error('Failed to reset settings on backend', error)
-      })
-    }
-  }, [])
+    void applyLanguage(DEFAULT_SETTINGS.language)
+    persistToBackend(DEFAULT_SETTINGS)
+  }, [applyLanguage, persistToBackend])
 
-  // Direct setters for convenience (matching template API)
   const setTheme = useCallback((theme: Settings['theme']) => {
     updateSettings({ theme })
   }, [updateSettings])
@@ -152,9 +213,10 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   }, [updateSettings])
 
   return (
-    <SettingsContext.Provider value={{ 
-      settings, 
-      updateSettings, 
+    <SettingsContext.Provider value={{
+      settings,
+      hydrated,
+      updateSettings,
       resetSettings,
       theme: settings.theme,
       setTheme,
