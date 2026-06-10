@@ -6,55 +6,38 @@ test.describe('Achievements', () => {
     await page.goto('/achievements')
     await waitForAppReady(page)
 
-    // Check if page loads or redirects
-    const heading = page.getByRole('heading', { name: /achievement|badge/i }).first()
-    if (await heading.isVisible()) {
-      await expect(heading).toBeVisible()
-    }
+    await expect(page.getByRole('heading', { name: /achievements/i })).toBeVisible()
   })
 
   test('displays locked and unlocked badges', async ({ page }) => {
     await page.goto('/achievements')
     await waitForAppReady(page)
 
-    // Look for achievement badges
-    const badges = page.locator('[data-testid*="achievement"], [data-testid*="badge"], .achievement, .badge')
-    if (await badges.first().isVisible()) {
-      await expect(badges.first()).toBeVisible()
-    }
+    const badges = page.locator('.grid > div').filter({ has: page.locator('h3') })
+    await expect(badges.first()).toBeVisible()
+    expect(await badges.count()).toBeGreaterThan(0)
   })
 
-  test('navigates to achievements from profile', async ({ page }) => {
+  test('shows achievements stats on profile', async ({ page }) => {
     await page.goto('/profile')
     await waitForAppReady(page)
 
-    // Look for achievements link
-    const achievementsLink = page.getByRole('link', { name: /achievement|badge/i }).first()
-    if (await achievementsLink.isVisible()) {
-      await achievementsLink.click()
-      await waitForAppReady(page)
-      
-      // Verify we're on achievements page
-      await expect(page).toHaveURL(/achievement|badge/)
-    }
+    await expect(page.getByRole('heading', { name: /^achievements$/i, level: 3 })).toBeVisible()
   })
 
   test('navigates to achievements from dropdown', async ({ page }) => {
     await page.goto('/list')
     await waitForAppReady(page)
 
-    // Look for user menu/dropdown
-    const userMenu = page.getByRole('button', { name: /profile|account|user/i }).first()
-    if (await userMenu.isVisible()) {
-      await userMenu.click()
-      await page.waitForTimeout(500)
-      
-      // Look for achievements in dropdown
-      const achievementsOption = page.getByRole('menuitem', { name: /achievement|badge/i })
-      if (await achievementsOption.isVisible()) {
-        await achievementsOption.click()
-        await waitForAppReady(page)
-      }
-    }
+    const featureBar = page.locator('nav').filter({
+      has: page.getByRole('button', { name: /toggle sidebar|bật\/tắt thanh bên/i }),
+    })
+    // DOM click avoids Next.js dev overlay intercepting pointer events in local dev
+    await featureBar.locator('button.p-1.rounded-full').evaluate((button) => {
+      button.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    })
+    await page.getByRole('button', { name: /achievements|thành tích/i }).click({ force: true })
+    await waitForAppReady(page)
+    await expect(page).toHaveURL(/\/achievements/)
   })
 })

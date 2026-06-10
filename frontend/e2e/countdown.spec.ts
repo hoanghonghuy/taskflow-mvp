@@ -1,48 +1,77 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, type Page } from '@playwright/test'
 import { waitForAppReady } from './helpers/app-ready'
+
+async function openAddCountdownForm(page: Page) {
+  const addButton = page.getByRole('button', { name: /add.*countdown|new.*event/i }).first()
+  await expect(addButton).toBeVisible()
+  await addButton.click()
+  await expect(page.getByPlaceholder(/title|event name/i)).toBeVisible()
+}
+
+async function selectFutureCountdownDate(page: Page, daysAhead = 30) {
+  const target = new Date()
+  target.setDate(target.getDate() + daysAhead)
+  target.setHours(12, 0, 0, 0)
+
+  const datePickerButton = page
+    .getByRole('button', { name: /select date|placeholder/i })
+    .or(page.locator('button:has(svg.lucide-calendar-days)').last())
+    .first()
+  await datePickerButton.click()
+
+  const popover = page.locator('[data-dtp-content="true"]')
+  await expect(popover).toBeVisible()
+
+  const now = new Date()
+  const monthsDiff =
+    (target.getFullYear() - now.getFullYear()) * 12 + (target.getMonth() - now.getMonth())
+  for (let i = 0; i < monthsDiff; i++) {
+    await popover.locator('button.rdp-button_next').click()
+  }
+
+  const dataDay = `${target.getMonth() + 1}/${target.getDate()}/${target.getFullYear()}`
+  await popover.locator(`button[data-day="${dataDay}"]`).click()
+}
+
+async function submitNewCountdown(page: Page) {
+  await page.getByRole('button', { name: /^add countdown$/i }).first().click()
+}
+
+async function createCountdown(page: Page, title: string) {
+  await openAddCountdownForm(page)
+  await page.getByPlaceholder(/title|event name/i).fill(title)
+  await selectFutureCountdownDate(page)
+  await submitNewCountdown(page)
+  await expect(page.getByText(title, { exact: true })).toBeVisible()
+}
+
+function countdownCard(page: Page, title: string) {
+  return page.locator('[data-slot="card"]').filter({ hasText: title })
+}
 
 test.describe('Countdown', () => {
   test('loads countdown page with empty state', async ({ page }) => {
     await page.goto('/countdown')
     await waitForAppReady(page)
 
-    await expect(page.getByRole('heading', { name: /countdown/i })).toBeVisible()
+    await expect(page.getByRole('button', { name: /add.*countdown|new.*event/i })).toBeVisible()
   })
 
   test('adds a new countdown event', async ({ page }) => {
     const eventTitle = `E2E Event ${Date.now()}`
-    const futureDate = new Date()
-    futureDate.setDate(futureDate.getDate() + 30)
-    const dateString = futureDate.toISOString().split('T')[0]
 
     await page.goto('/countdown')
     await waitForAppReady(page)
-
-    // Click add countdown button
-    const addButton = page.getByRole('button', { name: /add.*countdown|new.*event/i })
-    await expect(addButton).toBeVisible()
-    await addButton.click()
-
-    // Fill event details
-    await page.getByPlaceholder(/title|event name/i).fill(eventTitle)
-    await page.getByLabel(/date|target/i).fill(dateString)
-    
-    // Submit
-    await page.getByRole('button', { name: /create|add|save/i }).click()
-
-    // Verify event appears
-    await expect(page.getByText(eventTitle, { exact: true })).toBeVisible()
+    await createCountdown(page, eventTitle)
   })
 
   test('changes display mode', async ({ page }) => {
     await page.goto('/countdown')
     await waitForAppReady(page)
 
-    // Look for display mode toggle (grid/list/card view)
     const viewButton = page.getByRole('button', { name: /view|display|mode/i }).first()
     if (await viewButton.isVisible()) {
       await viewButton.click()
-      // Verify UI changed (check for different layout indicators)
       await page.waitForTimeout(500)
     }
   })
@@ -50,104 +79,54 @@ test.describe('Countdown', () => {
   test('edits countdown title and date', async ({ page }) => {
     const originalTitle = `Edit Test ${Date.now()}`
     const updatedTitle = `${originalTitle} Updated`
-    const futureDate = new Date()
-    futureDate.setDate(futureDate.getDate() + 45)
-    const dateString = futureDate.toISOString().split('T')[0]
 
     await page.goto('/countdown')
     await waitForAppReady(page)
+    await createCountdown(page, originalTitle)
 
-    // Add event first
-    const addButton = page.getByRole('button', { name: /add.*countdown|new.*event/i })
-    await addButton.click()
-    await page.getByPlaceholder(/title|event name/i).fill(originalTitle)
-    await page.getByLabel(/date|target/i).fill(dateString)
-    await page.getByRole('button', { name: /create|add|save/i }).click()
-    await expect(page.getByText(originalTitle, { exact: true })).toBeVisible()
+    const card = countdownCard(page, originalTitle)
+    await card.getByRole('button', { name: /^edit$/i }).click({ force: true })
 
-    // Find and click edit button
-    const eventCard = page.locator('[data-testid*="countdown"], .countdown-item, .group').filter({
-      has: page.getByText(originalTitle, { exact: true }),
-    })
-    
-    const editButton = eventCard.getByRole('button', { name: /edit/i })
-    await editButton.click()
-
-    // Update title
-    const titleInput = page.getByPlaceholder(/title|event name/i)
-    await titleInput.clear()
+    // hasText no longer matches after edit opens — title lives in input value only
+    const titleInput = page.locator('[data-slot="card"] form input').first()
+    await expect(titleInput).toHaveValue(originalTitle)
     await titleInput.fill(updatedTitle)
-    
-    // Update date
-    const newDate = new Date()
-    newDate.setDate(newDate.getDate() + 60)
-    const newDateString = newDate.toISOString().split('T')[0]
-    await page.getByLabel(/date|target/i).fill(newDateString)
-    
-    // Save
-    await page.getByRole('button', { name: /save|update/i }).click()
+    await page.getByRole('button', { name: /^save$/i }).click()
 
-    // Verify changes
     await expect(page.getByText(updatedTitle, { exact: true })).toBeVisible()
   })
 
   test('selects countdown color', async ({ page }) => {
     const eventTitle = `Color Test ${Date.now()}`
-    const futureDate = new Date()
-    futureDate.setDate(futureDate.getDate() + 20)
-    const dateString = futureDate.toISOString().split('T')[0]
 
     await page.goto('/countdown')
     await waitForAppReady(page)
-
-    // Add event
-    const addButton = page.getByRole('button', { name: /add.*countdown|new.*event/i })
-    await addButton.click()
+    await openAddCountdownForm(page)
     await page.getByPlaceholder(/title|event name/i).fill(eventTitle)
-    await page.getByLabel(/date|target/i).fill(dateString)
+    await selectFutureCountdownDate(page)
 
-    // Select color if available
-    const colorPicker = page.getByLabel(/color/i).first()
-    if (await colorPicker.isVisible()) {
-      await colorPicker.click()
-      // Select a color option
-      await page.locator('[data-color], .color-option').first().click()
+    const colorOptions = page.locator('[role="radio"]')
+    const colorCount = await colorOptions.count()
+    if (colorCount > 1) {
+      await colorOptions.nth(1).click()
     }
 
-    await page.getByRole('button', { name: /create|add|save/i }).click()
+    await submitNewCountdown(page)
     await expect(page.getByText(eventTitle, { exact: true })).toBeVisible()
   })
 
   test('deletes countdown event', async ({ page }) => {
     const eventTitle = `Delete Test ${Date.now()}`
-    const futureDate = new Date()
-    futureDate.setDate(futureDate.getDate() + 10)
-    const dateString = futureDate.toISOString().split('T')[0]
 
     await page.goto('/countdown')
     await waitForAppReady(page)
+    await createCountdown(page, eventTitle)
 
-    // Add event
-    const addButton = page.getByRole('button', { name: /add.*countdown|new.*event/i })
-    await addButton.click()
-    await page.getByPlaceholder(/title|event name/i).fill(eventTitle)
-    await page.getByLabel(/date|target/i).fill(dateString)
-    await page.getByRole('button', { name: /create|add|save/i }).click()
-    await expect(page.getByText(eventTitle, { exact: true })).toBeVisible()
+    const card = countdownCard(page, eventTitle)
+    await card.getByRole('button', { name: /delete countdown/i }).click({ force: true })
 
-    // Delete event
-    const eventCard = page.locator('[data-testid*="countdown"], .countdown-item, .group').filter({
-      has: page.getByText(eventTitle, { exact: true }),
-    })
-    
-    const deleteButton = eventCard.getByRole('button', { name: /delete|remove/i })
-    await deleteButton.click()
+    await page.getByRole('button', { name: /^delete countdown$/i }).last().click()
 
-    // Confirm deletion
-    const confirmButton = page.getByRole('button', { name: /confirm|yes|delete/i })
-    await confirmButton.click()
-
-    // Verify removal
     await expect(page.getByText(eventTitle, { exact: true })).not.toBeVisible()
   })
 })

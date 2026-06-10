@@ -5,11 +5,12 @@ import { generateId } from '@/lib/utils'
 export function habitReducer(state: AppState, action: Action): AppState {
   switch (action.type) {
     case 'ADD_HABIT': {
+      const payload = action.payload as Partial<Habit> & { name: string }
       const newHabit: Habit = {
-        ...action.payload,
-        id: generateId(),
-        completions: [],
-        createdAt: new Date().toISOString(),
+        name: payload.name,
+        id: payload.id ?? generateId(),
+        completions: payload.completions ?? [],
+        createdAt: payload.createdAt ?? new Date().toISOString(),
       }
       return { ...state, habits: [...state.habits, newHabit] }
     }

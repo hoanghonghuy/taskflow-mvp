@@ -15,21 +15,30 @@ test.describe('Pomodoro', () => {
     await page.goto('/pomodoro')
     await waitForAppReady(page)
 
-    // Find and click start button
-    const startButton = page.getByRole('button', { name: /start|play/i })
+    const stopButton = page.getByRole('button', { name: /^stop$/i })
+    if (await stopButton.isVisible()) {
+      await stopButton.click()
+      await expect(page.getByRole('button', { name: /^start$/i })).toBeVisible()
+    }
+
+    const startButton = page.getByRole('button', { name: /^start$/i })
     await expect(startButton).toBeVisible()
-    await startButton.click()
 
-    // Wait a moment for timer to run
-    await page.waitForTimeout(2000)
+    await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          response.url().includes('/api/pomodoro/state') &&
+          response.request().method() === 'PUT' &&
+          response.ok(),
+      ),
+      startButton.click(),
+    ])
 
-    // Find and click pause button
-    const pauseButton = page.getByRole('button', { name: /pause/i })
-    await expect(pauseButton).toBeVisible()
+    const pauseButton = page.getByRole('button', { name: /^pause$/i })
+    await expect(pauseButton).toBeVisible({ timeout: 15_000 })
     await pauseButton.click()
 
-    // Verify timer is paused (start button should be visible again)
-    await expect(page.getByRole('button', { name: /start|resume/i })).toBeVisible()
+    await expect(page.getByRole('button', { name: /^start$/i })).toBeVisible()
   })
 
   test('stops timer', async ({ page }) => {
@@ -56,7 +65,7 @@ test.describe('Pomodoro', () => {
     await waitForAppReady(page)
 
     const taskTitle = `Focus Task ${Date.now()}`
-    const addTaskButton = page.getByLabel('Add Task', { exact: true })
+    const addTaskButton = page.locator('button[aria-label*="Add"], button[aria-label*="Thêm"]').last()
     await addTaskButton.click()
     await page.getByPlaceholder('e.g., Pay electricity bill').fill(taskTitle)
     await page.getByRole('button', { name: 'Create Task' }).click()

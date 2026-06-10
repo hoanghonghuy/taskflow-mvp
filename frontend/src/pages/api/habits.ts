@@ -36,17 +36,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       case 'POST': {
         // If id is provided, treat as "complete habit for date"; otherwise create habit
         if (idValue) {
-          const dateValue = Array.isArray(date) ? date[0] : date
+          const queryDate = Array.isArray(date) ? date[0] : date
+          const bodyDate =
+            typeof req.body === 'object' &&
+            req.body !== null &&
+            'date' in req.body &&
+            typeof req.body.date === 'string'
+              ? req.body.date
+              : undefined
+          const dateValue = queryDate ?? bodyDate
+          const completeBody = dateValue ? { date: dateValue } : {}
           const response = token
             ? await backendFetchWithToken(`/api/habits/${encodeURIComponent(idValue)}/complete`, token, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ date: dateValue ?? null }),
+                body: JSON.stringify(completeBody),
               })
             : await backendFetch(`/api/habits/${encodeURIComponent(idValue)}/complete`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ date: dateValue ?? null }),
+                body: JSON.stringify(completeBody),
               });
 
           if (response.status === 204) {
