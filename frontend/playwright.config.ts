@@ -106,7 +106,16 @@ export default defineConfig({
         storageState: userAuthFile,
       },
       dependencies: ['setup'],
-      testMatch: /(?:tasks|navigation)\.spec\.ts/,
+      testMatch: /(?:tasks|navigation|habits|countdown|pomodoro|settings|profile|achievements|ai)\.spec\.ts/,
+    },
+    {
+      name: 'mobile',
+      use: {
+        ...devices['Pixel 5'],
+        storageState: userAuthFile,
+      },
+      dependencies: ['setup'],
+      testMatch: /mobile-navigation\.spec\.ts/,
     },
     {
       name: 'admin',

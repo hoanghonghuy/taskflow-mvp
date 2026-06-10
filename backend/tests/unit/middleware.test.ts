@@ -88,6 +88,22 @@ describe('middleware/errorHandler', () => {
     expect(res.statusCode).toBe(500)
   })
 
+  it('handles production AppError with status 500', () => {
+    const originalEnv = process.env.NODE_ENV
+    process.env.NODE_ENV = 'production'
+    const res = mockRes()
+    errorHandler(new AppError(500, 'server_error', 'Internal error'), {} as Request, res, jest.fn())
+    expect(res.statusCode).toBe(500)
+    expect(res.body).toMatchObject({ success: false, error: 'server_error' })
+    process.env.NODE_ENV = originalEnv
+  })
+
+  it('handles non-Error throw', () => {
+    const res = mockRes()
+    errorHandler('string error' as unknown as Error, {} as Request, res, jest.fn())
+    expect(res.statusCode).toBe(500)
+  })
+
   it('asyncHandler forwards errors', async () => {
     const handler = asyncHandler(async () => {
       throw new AppError(404, 'not_found', 'missing')

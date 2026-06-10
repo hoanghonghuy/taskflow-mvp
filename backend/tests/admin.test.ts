@@ -152,4 +152,86 @@ describe('Admin API', () => {
       .set(authHeader(adminToken))
       .expect(200)
   })
+
+  it('lists users with search query', async () => {
+    await registerAndLogin()
+    const { token: adminToken } = await registerAndLoginAdmin()
+
+    const listRes = await request(app)
+      .get('/api/admin/users?search=test')
+      .set(authHeader(adminToken))
+      .expect(200)
+
+    const list = apiData<{ items: Array<{ id: string }>; total: number }>(listRes)
+    expect(typeof list.total).toBe('number')
+  })
+
+  it('lists users without role filter', async () => {
+    await registerAndLogin()
+    const { token: adminToken } = await registerAndLoginAdmin()
+
+    const listRes = await request(app)
+      .get('/api/admin/users')
+      .set(authHeader(adminToken))
+      .expect(200)
+
+    const list = apiData<{ items: Array<{ id: string }>; total: number }>(listRes)
+    expect(list.total).toBeGreaterThanOrEqual(2)
+  })
+
+  it('returns 409 when updating user with duplicate email', async () => {
+    const email1 = `user1-${Date.now()}@test.com`
+    const email2 = `user2-${Date.now()}@test.com`
+    const user1 = await registerAndLogin(email1)
+    const user2 = await registerAndLogin(email2)
+    const { token: adminToken } = await registerAndLoginAdmin()
+
+    await request(app)
+      .patch(`/api/admin/users/${user2.userId}`)
+      .set(authHeader(adminToken))
+      .send({ email: email1 })
+      .expect(409)
+  })
+
+  it('returns 404 for non-existent user GET', async () => {
+    const { token: adminToken } = await registerAndLoginAdmin()
+
+    await request(app)
+      .get('/api/admin/users/fake-id-12345')
+      .set(authHeader(adminToken))
+      .expect(404)
+  })
+
+  it('returns 404 for non-existent user PATCH', async () => {
+    const { token: adminToken } = await registerAndLoginAdmin()
+
+    await request(app)
+      .patch('/api/admin/users/fake-id-99999')
+      .set(authHeader(adminToken))
+      .send({ name: 'New Name' })
+      .expect(404)
+  })
+
+  it('returns 404 for non-existent user DELETE', async () => {
+    const { token: adminToken } = await registerAndLoginAdmin()
+
+    await request(app)
+      .delete('/api/admin/users/fake-id-00000')
+      .set(authHeader(adminToken))
+      .expect(404)
+  })
+
+  it('updates user with name only', async () => {
+    const userSession = await registerAndLogin()
+    const { token: adminToken } = await registerAndLoginAdmin()
+
+    const patchRes = await request(app)
+      .patch(`/api/admin/users/${userSession.userId}`)
+      .set(authHeader(adminToken))
+      .send({ name: 'Only Name' })
+      .expect(200)
+
+    const updated = apiData<{ name: string }>(patchRes)
+    expect(updated.name).toBe('Only Name')
+  })
 })

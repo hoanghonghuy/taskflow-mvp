@@ -91,6 +91,54 @@ describe('openai.service', () => {
     expect(body.messages[0].content).toContain('Vietnamese')
   })
 
+  it('chat handles assistant role in history', async () => {
+    await chat('en', [{ role: 'assistant', text: 'Hello' }, { role: 'user', text: 'Hi' }], false, false)
+    const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body as string)
+    expect(body.messages.some((m: { role: string }) => m.role === 'assistant')).toBe(true)
+  })
+
+  it('chat handles empty content response', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        choices: [{ message: { content: null } }],
+      }),
+    }) as unknown as typeof fetch
+
+    const result = await chat('en', [], false, false)
+    expect(result).toBe('')
+  })
+
+  it('chat handles non-string content response', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        choices: [{ message: { content: 123 } }],
+      }),
+    }) as unknown as typeof fetch
+
+    const result = await chat('en', [], false, false)
+    expect(result).toBe('')
+  })
+
+  it('generateBriefing uses English label', async () => {
+    await generateBriefing('en', 'context')
+    const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body as string)
+    expect(body.messages[0].content).toContain('English')
+  })
+
+  it('generateSubtasks with null description', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        choices: [{ message: { content: '{"subtasks":[{"title":"Sub"}]}' } }],
+      }),
+    }) as unknown as typeof fetch
+
+    const result = await generateSubtasks('en', 'Task', null)
+    expect(result).toHaveLength(1)
+  })
+
   it('throws on API error response', async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: false,

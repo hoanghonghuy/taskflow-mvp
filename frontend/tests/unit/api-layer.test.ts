@@ -77,6 +77,381 @@ describe('api client', () => {
   })
 })
 
+describe('admin API client', () => {
+  it('fetchAdminStats retrieves stats', async () => {
+    const stats = {
+      totalUsers: 10,
+      regularUsers: 8,
+      totalTasks: 50,
+      totalHabits: 20,
+      totalLists: 5,
+      totalPomodoroSessions: 30,
+      totalCountdowns: 3,
+      newUsersLast7Days: 2,
+      recentUsers: [],
+    }
+    mockFetch.mockResolvedValue(jsonResponse(stats))
+    const { fetchAdminStats } = await import('@/lib/api/admin')
+
+    const result = await fetchAdminStats()
+    expect(result.totalUsers).toBe(10)
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/api/admin/stats',
+      expect.objectContaining({ credentials: 'include' })
+    )
+  })
+
+  it('fetchAdminUsers with query params', async () => {
+    const userList = { items: [], total: 0, page: 1, pageSize: 20 }
+    mockFetch.mockResolvedValue(jsonResponse(userList))
+    const { fetchAdminUsers } = await import('@/lib/api/admin')
+
+    await fetchAdminUsers({ page: 2, pageSize: 10, search: 'test', role: 'admin' })
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/api/admin/users?page=2&pageSize=10&search=test&role=admin',
+      expect.anything()
+    )
+  })
+
+  it('fetchAdminUsers without params', async () => {
+    mockFetch.mockResolvedValue(jsonResponse({ items: [], total: 0, page: 1, pageSize: 20 }))
+    const { fetchAdminUsers } = await import('@/lib/api/admin')
+
+    await fetchAdminUsers()
+    expect(mockFetch).toHaveBeenCalledWith('/api/admin/users', expect.anything())
+  })
+
+  it('fetchAdminUser by id', async () => {
+    const user = { id: 'u1', name: 'User', email: 'user@example.com', role: 'user' as const, createdAt: '2026-01-01', taskCount: 5, habitCount: 2, listCount: 1, pomodoroSessionCount: 10, countdownCount: 1 }
+    mockFetch.mockResolvedValue(jsonResponse(user))
+    const { fetchAdminUser } = await import('@/lib/api/admin')
+
+    const result = await fetchAdminUser('u1')
+    expect(result.id).toBe('u1')
+    expect(mockFetch).toHaveBeenCalledWith('/api/admin/users/u1', expect.anything())
+  })
+
+  it('updateAdminUser patches user', async () => {
+    const updated = { id: 'u1', name: 'Updated', email: 'new@example.com', role: 'user' as const, createdAt: '2026-01-01' }
+    mockFetch.mockResolvedValue(jsonResponse(updated))
+    const { updateAdminUser } = await import('@/lib/api/admin')
+
+    const result = await updateAdminUser('u1', { name: 'Updated', email: 'new@example.com' })
+    expect(result.name).toBe('Updated')
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/api/admin/users/u1',
+      expect.objectContaining({ method: 'PATCH' })
+    )
+  })
+
+  it('deleteAdminUser calls DELETE', async () => {
+    mockFetch.mockResolvedValue({ ok: true, status: 204, json: async () => null } as Response)
+    const { deleteAdminUser } = await import('@/lib/api/admin')
+
+    await deleteAdminUser('u1')
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/api/admin/users/u1',
+      expect.objectContaining({ method: 'DELETE' })
+    )
+  })
+})
+
+describe('tasks API client', () => {
+  it('reorderTasks calls reorder endpoint', async () => {
+    const tasks = [{ Id: 't1', Title: 'Task 1', Completed: false, ListId: 'inbox' }]
+    mockFetch.mockResolvedValue(jsonResponse(tasks))
+    const { reorderTasks } = await import('@/lib/api/tasks')
+
+    const result = await reorderTasks(['t1', 't2', 't3'])
+    expect(result).toHaveLength(1)
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/api/tasks/reorder',
+      expect.objectContaining({ method: 'POST' })
+    )
+  })
+
+  it('reorderTasks handles empty response', async () => {
+    mockFetch.mockResolvedValue(jsonResponse(null))
+    const { reorderTasks } = await import('@/lib/api/tasks')
+
+    const result = await reorderTasks(['a', 'b'])
+    expect(result).toEqual([])
+  })
+
+  it('deleteTask handles 404 gracefully', async () => {
+    mockFetch.mockResolvedValue({ ok: false, status: 404, json: async () => ({ error: 'not found' }) } as Response)
+    const { deleteTask } = await import('@/lib/api/tasks')
+
+    await expect(deleteTask('missing')).resolves.toBeUndefined()
+  })
+
+  it('deleteTask throws on other errors', async () => {
+    mockFetch.mockResolvedValue({ ok: false, status: 500, json: async () => ({ error: 'server error' }) } as Response)
+    const { deleteTask } = await import('@/lib/api/tasks')
+
+    await expect(deleteTask('t1')).rejects.toThrow('Failed to delete task: 500')
+  })
+})
+
+describe('AI API client', () => {
+  it('analyzeTaskText returns parsed result', async () => {
+    const analysis = { title: 'Buy milk', priority: 'high', tags: ['shopping'] }
+    mockFetch.mockResolvedValue(jsonResponse(analysis))
+    const { analyzeTaskText } = await import('@/lib/api/ai')
+
+    const result = await analyzeTaskText('buy milk tomorrow', 'en')
+    expect(result?.title).toBe('Buy milk')
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/api/ai/tasks/analyze',
+      expect.objectContaining({ method: 'POST' })
+    )
+  })
+
+  it('analyzeTaskText throws on error', async () => {
+    mockFetch.mockResolvedValue({ ok: false, status: 500, json: async () => ({}) } as Response)
+    const { analyzeTaskText } = await import('@/lib/api/ai')
+
+    await expect(analyzeTaskText('text', 'en')).rejects.toThrow('Failed to analyze task text: 500')
+  })
+
+  it('fetchBriefing returns content string', async () => {
+    const briefing = { content: 'Today you have 3 tasks' }
+    mockFetch.mockResolvedValue(jsonResponse(briefing))
+    const { fetchBriefing } = await import('@/lib/api/ai')
+
+    const result = await fetchBriefing('en')
+    expect(result).toBe('Today you have 3 tasks')
+  })
+
+  it('fetchBriefing throws on empty content', async () => {
+    mockFetch.mockResolvedValue(jsonResponse({ content: '' }))
+    const { fetchBriefing } = await import('@/lib/api/ai')
+
+    await expect(fetchBriefing('en')).rejects.toThrow('Empty briefing content')
+  })
+
+  it('fetchBriefing throws on error response', async () => {
+    mockFetch.mockResolvedValue({ ok: false, status: 503, json: async () => ({}) } as Response)
+    const { fetchBriefing } = await import('@/lib/api/ai')
+
+    await expect(fetchBriefing('en')).rejects.toThrow('Failed to load briefing: 503')
+  })
+
+  it('generateSubtasks returns subtask array', async () => {
+    const subtasks = { subtasks: [{ title: 'Step 1' }, { title: 'Step 2' }] }
+    mockFetch.mockResolvedValue(jsonResponse(subtasks))
+    const { generateSubtasks } = await import('@/lib/api/ai')
+
+    const result = await generateSubtasks('Complex task', 'Details here', 'en')
+    expect(result).toHaveLength(2)
+    expect(result[0].title).toBe('Step 1')
+  })
+
+  it('generateSubtasks returns empty array on invalid response', async () => {
+    mockFetch.mockResolvedValue(jsonResponse({ subtasks: null }))
+    const { generateSubtasks } = await import('@/lib/api/ai')
+
+    const result = await generateSubtasks('Task', undefined, 'en')
+    expect(result).toEqual([])
+  })
+
+  it('generateSubtasks throws on error', async () => {
+    mockFetch.mockResolvedValue({ ok: false, status: 429, json: async () => ({}) } as Response)
+    const { generateSubtasks } = await import('@/lib/api/ai')
+
+    await expect(generateSubtasks('Task', 'desc', 'en')).rejects.toThrow('Failed to generate subtasks: 429')
+  })
+
+  it('sendChatMessage returns reply content', async () => {
+    const reply = { content: 'AI response here' }
+    mockFetch.mockResolvedValue(jsonResponse(reply))
+    const { sendChatMessage } = await import('@/lib/api/ai')
+
+    const result = await sendChatMessage({
+      messages: [{ role: 'user', text: 'Hello' }],
+      language: 'en',
+      thinkingMode: true,
+      searchGrounding: false,
+    })
+    expect(result).toBe('AI response here')
+  })
+
+  it('sendChatMessage throws on empty reply', async () => {
+    mockFetch.mockResolvedValue(jsonResponse({ content: '   ' }))
+    const { sendChatMessage } = await import('@/lib/api/ai')
+
+    await expect(sendChatMessage({ messages: [], language: 'en' })).rejects.toThrow('Empty chat response')
+  })
+
+  it('sendChatMessage throws on error', async () => {
+    mockFetch.mockResolvedValue({ ok: false, status: 500, json: async () => ({}) } as Response)
+    const { sendChatMessage } = await import('@/lib/api/ai')
+
+    await expect(sendChatMessage({ messages: [], language: 'en' })).rejects.toThrow('Failed to send chat message: 500')
+  })
+})
+
+describe('habits API client', () => {
+  it('completeHabit throws on error', async () => {
+    mockFetch.mockResolvedValue({ ok: false, status: 500, json: async () => ({}) } as Response)
+    const { completeHabit } = await import('@/lib/api/habits')
+
+    await expect(completeHabit('h1', '2026-06-10')).rejects.toThrow('Failed to complete habit: 500')
+  })
+
+  it('uncompleteHabit handles 404 gracefully', async () => {
+    mockFetch.mockResolvedValue({ ok: false, status: 404, json: async () => ({}) } as Response)
+    const { uncompleteHabit } = await import('@/lib/api/habits')
+
+    await expect(uncompleteHabit('h1', '2026-06-10')).resolves.toBeUndefined()
+  })
+
+  it('uncompleteHabit throws on other errors', async () => {
+    mockFetch.mockResolvedValue({ ok: false, status: 500, json: async () => ({}) } as Response)
+    const { uncompleteHabit } = await import('@/lib/api/habits')
+
+    await expect(uncompleteHabit('h1', '2026-06-10')).rejects.toThrow('Failed to uncomplete habit: 500')
+  })
+
+  it('deleteHabit handles 404 gracefully', async () => {
+    mockFetch.mockResolvedValue({ ok: false, status: 404, json: async () => ({}) } as Response)
+    const { deleteHabit } = await import('@/lib/api/habits')
+
+    await expect(deleteHabit('h1')).resolves.toBeUndefined()
+  })
+
+  it('deleteHabit throws on other errors', async () => {
+    mockFetch.mockResolvedValue({ ok: false, status: 500, json: async () => ({}) } as Response)
+    const { deleteHabit } = await import('@/lib/api/habits')
+
+    await expect(deleteHabit('h1')).rejects.toThrow('Failed to delete habit: 500')
+  })
+})
+
+describe('countdown API client', () => {
+  it('updateCountdown sends partial payload', async () => {
+    const updated = { Id: 'c1', Title: 'Updated', TargetDate: '2027-01-01T00:00:00Z', Color: 'blue' }
+    mockFetch.mockResolvedValue(jsonResponse(updated))
+    const { updateCountdown } = await import('@/lib/api/countdown')
+
+    const result = await updateCountdown('c1', { title: 'Updated', color: 'blue' })
+    expect(result?.title).toBe('Updated')
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/api/countdown/c1',
+      expect.objectContaining({ method: 'PUT' })
+    )
+  })
+})
+
+describe('settings API client', () => {
+  it('fetchPomodoroSettings extracts pomodoroSettings', async () => {
+    const settings = { pomodoroSettings: { focusDuration: 25, shortBreakDuration: 5, longBreakDuration: 15, sessionsUntilLongBreak: 4 } }
+    mockFetch.mockResolvedValue(jsonResponse(settings))
+    const { fetchPomodoroSettings } = await import('@/lib/api/settings')
+
+    const result = await fetchPomodoroSettings()
+    expect(result?.focusDuration).toBe(25)
+  })
+
+  it('fetchPomodoroSettings returns null on missing data', async () => {
+    mockFetch.mockResolvedValue(jsonResponse({}))
+    const { fetchPomodoroSettings } = await import('@/lib/api/settings')
+
+    const result = await fetchPomodoroSettings()
+    expect(result).toBeNull()
+  })
+
+  it('updatePomodoroSettings wraps payload', async () => {
+    mockFetch.mockResolvedValue(jsonResponse({}))
+    const { updatePomodoroSettings } = await import('@/lib/api/settings')
+
+    await updatePomodoroSettings({ focusDuration: 30, shortBreakDuration: 5, longBreakDuration: 20, sessionsUntilLongBreak: 3 })
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/api/settings',
+      expect.objectContaining({
+        method: 'PUT',
+        body: expect.stringContaining('pomodoroSettings'),
+      })
+    )
+  })
+})
+
+describe('pomodoro API client', () => {
+  it('fetchPomodoroState handles 204 no content', async () => {
+    mockFetch.mockResolvedValue({ ok: true, status: 204, json: async () => null } as Response)
+    const { fetchPomodoroState } = await import('@/lib/api/pomodoro')
+    
+    const fallback: PomodoroState = {
+      isActive: false,
+      isPaused: false,
+      remainingTime: 1500,
+      currentSession: 'focus',
+      focusedTaskId: null,
+      focusedHabitId: null,
+      sessionsCompleted: 0,
+      settings: { focusDuration: 25, shortBreakDuration: 5, longBreakDuration: 15, sessionsUntilLongBreak: 4 },
+    }
+
+    const result = await fetchPomodoroState(fallback)
+    expect(result).toBeNull()
+  })
+
+  it('fetchPomodoroState returns null on error', async () => {
+    mockFetch.mockResolvedValue({ ok: false, status: 500, json: async () => ({}) } as Response)
+    const { fetchPomodoroState } = await import('@/lib/api/pomodoro')
+    
+    const fallback: PomodoroState = {
+      isActive: false,
+      isPaused: false,
+      remainingTime: 1500,
+      currentSession: 'focus',
+      focusedTaskId: null,
+      focusedHabitId: null,
+      sessionsCompleted: 0,
+      settings: { focusDuration: 25, shortBreakDuration: 5, longBreakDuration: 15, sessionsUntilLongBreak: 4 },
+    }
+
+    const result = await fetchPomodoroState(fallback)
+    expect(result).toBeNull()
+  })
+
+  it('updatePomodoroState with keepalive option', async () => {
+    mockFetch.mockResolvedValue(jsonResponse({}))
+    const { updatePomodoroState } = await import('@/lib/api/pomodoro')
+    
+    const state: PomodoroState = {
+      isActive: true,
+      isPaused: false,
+      remainingTime: 1200,
+      currentSession: 'focus',
+      focusedTaskId: 't1',
+      focusedHabitId: null,
+      sessionsCompleted: 2,
+      settings: { focusDuration: 25, shortBreakDuration: 5, longBreakDuration: 15, sessionsUntilLongBreak: 4 },
+    }
+
+    await updatePomodoroState(state, { keepalive: true })
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/api/pomodoro/state',
+      expect.objectContaining({ method: 'PUT', keepalive: true })
+    )
+  })
+
+  it('createPomodoroSession throws on error', async () => {
+    mockFetch.mockResolvedValue({ ok: false, status: 400, json: async () => ({}) } as Response)
+    const { createPomodoroSession } = await import('@/lib/api/pomodoro')
+
+    await expect(
+      createPomodoroSession({
+        startTime: '2026-06-10T12:00:00Z',
+        durationSeconds: 1500,
+        type: 'focus',
+        taskId: 't1',
+      })
+    ).rejects.toThrow('Failed to create pomodoro session: 400')
+  })
+})
+
 describe('mappers', () => {
   it('mapTasksFromApi normalizes PascalCase API fields', () => {
     const [task] = mapTasksFromApi([

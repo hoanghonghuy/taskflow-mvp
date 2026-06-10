@@ -105,6 +105,55 @@ describe('gemini.service', () => {
     expect(text).toBe('Hello!')
   })
 
+  it('chat handles assistant role in history', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        candidates: [{ content: { parts: [{ text: 'Response' }] } }],
+      }),
+    }) as unknown as typeof fetch
+
+    await chat('en', [{ role: 'assistant', text: 'Previous' }, { role: 'user', text: 'Hi' }], false, false)
+    const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body as string)
+    expect(body.contents.length).toBeGreaterThan(0)
+  })
+
+  it('chat with search grounding enabled', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        candidates: [{ content: { parts: [{ text: 'Grounded response' }] } }],
+      }),
+    }) as unknown as typeof fetch
+
+    const text = await chat('en', [{ role: 'user', text: 'Query' }], false, true)
+    expect(text).toBe('Grounded response')
+  })
+
+  it('chat handles empty parts response', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        candidates: [{ content: { parts: [] } }],
+      }),
+    }) as unknown as typeof fetch
+
+    const result = await chat('en', [], false, false)
+    expect(result).toBe('')
+  })
+
+  it('chat handles non-string text in parts', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        candidates: [{ content: { parts: [{ text: null }] } }],
+      }),
+    }) as unknown as typeof fetch
+
+    const result = await chat('en', [], false, false)
+    expect(result).toBe('')
+  })
+
   it('throws on API error response', async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: false,
