@@ -1,5 +1,14 @@
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
 import { test, expect } from '@playwright/test'
 import { waitForAdminReady } from './helpers/app-ready'
+import { isMockE2e } from './helpers/env'
+
+function getE2eUserEmail(): string {
+  const metaPath = path.join(__dirname, '../playwright/.auth/e2e-user.json')
+  const meta = JSON.parse(readFileSync(metaPath, 'utf8')) as { email: string }
+  return meta.email
+}
 
 test.describe('Admin area', () => {
   test('loads admin dashboard with stats', async ({ page }) => {
@@ -16,7 +25,9 @@ test.describe('Admin area', () => {
     await waitForAdminReady(page)
 
     await expect(page.getByRole('heading', { name: 'User management' })).toBeVisible()
-    await expect(page.getByText('demo@taskflow.app')).toBeVisible()
+
+    const expectedEmail = isMockE2e() ? 'demo@taskflow.app' : getE2eUserEmail()
+    await expect(page.getByText(expectedEmail)).toBeVisible({ timeout: 15_000 })
   })
 
   test('redirects non-admin users away from admin', async ({ browser }) => {

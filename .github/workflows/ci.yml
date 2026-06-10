@@ -69,11 +69,26 @@ jobs:
       - run: npm test
 
   frontend-e2e:
-    name: Frontend (Playwright)
+    name: Frontend (Playwright + Postgres)
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: taskflow_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: taskflow
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d taskflow_db"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://postgres:taskflow@localhost:5432/taskflow_db?sslmode=disable
+      JWT_KEY: ci-jwt-key-must-be-at-least-32-chars-long
+      CI: true
     steps:
       - uses: actions/checkout@v4
 
@@ -83,13 +98,23 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - name: Install backend dependencies
+        working-directory: backend
+        run: |
+          npm ci
+          npx prisma generate
 
-      - name: Run Playwright e2e (mock mode)
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright e2e (real backend + Postgres)
+        working-directory: frontend
         run: npm run test:e2e
-        env:
-          CI: true
 
       - uses: actions/upload-artifact@v4
         if: failure()

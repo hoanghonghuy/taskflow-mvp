@@ -120,27 +120,36 @@ REAL_BACKEND_TEST=true BACKEND_URL=http://localhost:8081 npm test -- real-backen
 
 ### E2E browser (Playwright)
 
-Smoke test UI trên trình duyệt — mặc định dùng `MOCK_MODE=true`, **không cần Docker**:
+Smoke test UI — **mặc định dùng Postgres + Express API thật** (Playwright tự start backend port `8099` + frontend port `3099`).
+
+**Yêu cầu:** Postgres đang chạy (ví dụ `docker compose up -d postgres`).
 
 ```bash
-cd frontend
-npm run test:e2e          # headless
-npm run test:e2e:ui       # UI mode (debug)
-npm run test:e2e:report   # xem HTML report sau khi chạy
+cd backend && npm ci && npx prisma generate   # lần đầu
+cd frontend && npm ci && npx playwright install chromium
+cd frontend && npm run test:e2e
 ```
 
-E2E với backend + Postgres thật (Docker đang chạy):
+Biến env tùy chọn (mặc định trong `playwright.config.ts`):
+
+| Biến | Mặc định |
+|------|----------|
+| `DATABASE_URL` | `postgresql://postgres:taskflow@localhost:5434/taskflow_db` |
+| `E2E_BACKEND_PORT` | `8099` |
+| `E2E_ADMIN_EMAIL` | `e2e-admin@taskflow.test` |
+| `E2E_ADMIN_PASSWORD` | `E2eAdminPass123!` |
+
+Mock mode (không cần DB, nhanh hơn):
 
 ```bash
-docker compose up -d
 cd frontend
 # PowerShell:
-$env:E2E_REAL_BACKEND="true"; $env:BACKEND_URL="http://localhost:8081"; npm run test:e2e
+$env:E2E_MOCK_MODE="true"; npm run test:e2e:mock
 ```
 
-Lần đầu trên máy mới: `npx playwright install chromium`
+Lệnh khác: `npm run test:e2e:ui`, `npm run test:e2e:report`
 
-**Coverage e2e (mock mode):** auth, i18n (vi/en), tasks, navigation, admin.
+**Coverage e2e:** auth, i18n (vi/en), tasks, navigation, admin (DB thật).
 
 ### CI (GitHub Actions)
 
@@ -150,7 +159,7 @@ Workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) chạy trên pus
 |-----|----------|
 | `backend-test` | Jest + Postgres 16 service |
 | `frontend-unit` | Vitest |
-| `frontend-e2e` | Playwright (mock mode, Chromium) |
+| `frontend-e2e` | Playwright + Postgres + backend API thật |
 
 Khi e2e fail trên CI, artifact `playwright-report` được upload để debug.
 

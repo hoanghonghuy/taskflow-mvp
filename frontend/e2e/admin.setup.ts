@@ -1,21 +1,27 @@
 import { mkdirSync } from 'node:fs'
 import path from 'node:path'
 import { test as setup, expect } from '@playwright/test'
-import { submitRegister } from './helpers/auth'
+import { submitLogin, submitRegister } from './helpers/auth'
+import { E2E_ADMIN_EMAIL, E2E_ADMIN_PASSWORD, isMockE2e } from './helpers/env'
 import { E2E_PASSWORD, uniqueE2eAdminEmail } from './helpers/test-data'
 
 const authDir = path.join(__dirname, '../playwright/.auth')
 const adminAuthFile = path.join(authDir, 'admin.json')
 
-setup('register admin and save session', async ({ page }) => {
+setup('authenticate admin and save session', async ({ page }) => {
   mkdirSync(authDir, { recursive: true })
 
-  const email = uniqueE2eAdminEmail('setup')
-  const password = E2E_PASSWORD
-
-  await submitRegister(page, { name: 'E2E Admin', email, password })
-
-  await expect(page).toHaveURL(/\/dashboard/, { timeout: 30_000 })
+  if (isMockE2e()) {
+    const email = uniqueE2eAdminEmail('setup')
+    await submitRegister(page, { name: 'E2E Admin', email, password: E2E_PASSWORD })
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 30_000 })
+  } else {
+    await submitLogin(page, {
+      email: E2E_ADMIN_EMAIL,
+      password: E2E_ADMIN_PASSWORD,
+    })
+    await expect(page).toHaveURL(/\/admin/, { timeout: 30_000 })
+  }
 
   await page.context().storageState({ path: adminAuthFile })
 })
