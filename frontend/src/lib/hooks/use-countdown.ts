@@ -219,7 +219,7 @@ export const useCountdown = () => {
         e instanceof Error ? e.message : t('countdown.notifications.addFailedBody' as TranslationKey),
       )
     }
-  }, [dispatch, error, t])
+  }, [dispatch, error, success, t])
 
   const updateCountdown = useCallback(async (id: string, updates: Partial<CountdownEvent>) => {
     const existingCountdown = countdownEvents.find(c => c.id === id)
