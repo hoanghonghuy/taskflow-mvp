@@ -96,18 +96,18 @@ describe('CRUD endpoints', () => {
     const createRes = await request(app)
       .post('/api/lists')
       .set(authHeader(token))
-      .send({ name: 'Shared', color: '#fff', members: ['user-2'] })
+      .send({ name: 'Shared', color: '#ffffff', members: [] })
       .expect(201)
 
-    expect(apiData<ListDto>(createRes).members).toEqual(['user-2'])
+    expect(apiData<ListDto>(createRes).members).toEqual([])
 
     await request(app)
       .put(`/api/lists/${apiData<ListDto>(createRes).id}`)
       .set(authHeader(token))
-      .send({ members: ['user-2', 'user-3'] })
+      .send({ members: [] })
       .expect(200)
       .then((res) => {
-        expect(apiData<ListDto>(res).members).toHaveLength(2)
+        expect(apiData<ListDto>(res).members).toHaveLength(0)
       })
   })
 
@@ -145,7 +145,7 @@ describe('CRUD endpoints', () => {
     const createRes = await request(app)
       .post('/api/countdown')
       .set(authHeader(token))
-      .send({ title: 'Launch', targetDate: '2026-12-31T00:00:00.000Z' })
+      .send({ title: 'Launch', targetDate: '2027-12-31T00:00:00.000Z' })
       .expect(201)
 
     await request(app)

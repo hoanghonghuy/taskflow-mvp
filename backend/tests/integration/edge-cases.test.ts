@@ -34,7 +34,7 @@ describe('Edge cases & remaining routes', () => {
     const listRes = await request(app)
       .post('/api/lists')
       .set(authHeader(token))
-      .send({ name: 'Temp', color: '#000' })
+      .send({ name: 'Temp', color: '#000000' })
       .expect(201)
 
     await request(app)
@@ -89,7 +89,7 @@ describe('Edge cases & remaining routes', () => {
     const created = await request(app)
       .post('/api/countdown')
       .set(authHeader(token))
-      .send({ title: 'Old', targetDate: '2026-01-01T00:00:00.000Z' })
+      .send({ title: 'Old', targetDate: '2027-01-01T00:00:00.000Z' })
       .expect(201)
 
     await request(app)

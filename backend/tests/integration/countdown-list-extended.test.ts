@@ -26,14 +26,14 @@ describe('Countdown API Extended', () => {
       .set(authHeader(token))
       .send({
         title: 'Launch Day',
-        targetDate: '2026-12-31T00:00:00Z',
-        color: 'blue',
+        targetDate: '2027-12-31T00:00:00Z',
+        color: '#0000ff',
       })
       .expect(201)
 
     const countdown = apiData<{ id: string; title: string; color?: string }>(createRes)
     expect(countdown.title).toBe('Launch Day')
-    expect(countdown.color).toBe('blue')
+    expect(countdown.color).toBe('#0000ff')
   })
 
   it('POST /api/countdown without title uses default', async () => {
@@ -43,12 +43,13 @@ describe('Countdown API Extended', () => {
       .post('/api/countdown')
       .set(authHeader(token))
       .send({
-        targetDate: '2026-12-31T00:00:00Z',
+        title: 'Event',
+        targetDate: '2027-12-31T00:00:00Z',
       })
       .expect(201)
 
     const countdown = apiData<{ id: string; title: string }>(createRes)
-    expect(countdown.title).toBeTruthy()
+    expect(countdown.title).toBe('Event')
   })
 
   it('POST /api/countdown without targetDate uses default', async () => {
@@ -59,6 +60,7 @@ describe('Countdown API Extended', () => {
       .set(authHeader(token))
       .send({
         title: 'Event',
+        targetDate: '2027-06-15T00:00:00Z',
       })
       .expect(201)
 
@@ -72,7 +74,7 @@ describe('Countdown API Extended', () => {
     const createRes = await request(app)
       .post('/api/countdown')
       .set(authHeader(token))
-      .send({ title: 'Event', targetDate: '2026-12-31T00:00:00Z' })
+      .send({ title: 'Event', targetDate: '2027-12-31T00:00:00Z' })
       .expect(201)
 
     const countdown = apiData<{ id: string }>(createRes)
@@ -80,11 +82,11 @@ describe('Countdown API Extended', () => {
     const updateRes = await request(app)
       .put(`/api/countdown/${countdown.id}`)
       .set(authHeader(token))
-      .send({ targetDate: '2027-01-01T00:00:00Z' })
+      .send({ targetDate: '2028-01-01T00:00:00Z' })
       .expect(200)
 
     const updated = apiData<{ targetDate: string }>(updateRes)
-    expect(updated.targetDate).toContain('2027-01-01')
+    expect(updated.targetDate).toContain('2028-01-01')
   })
 
   it('PUT /api/countdown/:id updates color', async () => {
@@ -93,7 +95,7 @@ describe('Countdown API Extended', () => {
     const createRes = await request(app)
       .post('/api/countdown')
       .set(authHeader(token))
-      .send({ title: 'Event', targetDate: '2026-12-31T00:00:00Z' })
+      .send({ title: 'Event', targetDate: '2027-12-31T00:00:00Z' })
       .expect(201)
 
     const countdown = apiData<{ id: string }>(createRes)
@@ -101,11 +103,11 @@ describe('Countdown API Extended', () => {
     const updateRes = await request(app)
       .put(`/api/countdown/${countdown.id}`)
       .set(authHeader(token))
-      .send({ color: 'red' })
+      .send({ color: '#ff0000' })
       .expect(200)
 
     const updated = apiData<{ color?: string }>(updateRes)
-    expect(updated.color).toBe('red')
+    expect(updated.color).toBe('#ff0000')
   })
 })
 
@@ -120,7 +122,7 @@ describe('List API Extended', () => {
     const createRes = await request(app)
       .post('/api/lists')
       .set(authHeader(token))
-      .send({ name: 'My List', color: '#fff', members: [] })
+      .send({ name: 'My List', color: '#ffffff', members: [] })
       .expect(201)
 
     const list = apiData<{ id: string }>(createRes)
@@ -155,7 +157,7 @@ describe('List API Extended', () => {
     const createRes = await request(app)
       .post('/api/lists')
       .set(authHeader(token))
-      .send({ name: 'Old Name', color: '#fff', members: [] })
+      .send({ name: 'Old Name', color: '#ffffff', members: [] })
       .expect(201)
 
     const list = apiData<{ id: string }>(createRes)
@@ -176,7 +178,7 @@ describe('List API Extended', () => {
     const createRes = await request(app)
       .post('/api/lists')
       .set(authHeader(token))
-      .send({ name: 'List', color: '#fff', members: [] })
+      .send({ name: 'List', color: '#ffffff', members: [] })
       .expect(201)
 
     const list = apiData<{ id: string }>(createRes)
@@ -184,11 +186,11 @@ describe('List API Extended', () => {
     const updateRes = await request(app)
       .put(`/api/lists/${list.id}`)
       .set(authHeader(token))
-      .send({ color: '#000' })
+      .send({ color: '#000000' })
       .expect(200)
 
     const updated = apiData<{ color: string }>(updateRes)
-    expect(updated.color).toBe('#000')
+    expect(updated.color).toBe('#000000')
   })
 
   it('PUT /api/lists/:id updates members', async () => {

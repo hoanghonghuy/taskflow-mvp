@@ -1,10 +1,12 @@
 # E2E Test Progress Summary
 
-**Ngày cập nhật:** 2026-06-10
+**Ngày cập nhật:** 2026-06-11
 
 ## Kết quả hiện tại
 
 **E2E Tests:** 57 passed / 0 failed / 1 skipped (63 tests tổng)
+**Backend Tests:** 155 passed / 0 failed (21 test suites)
+**Frontend Tests:** 223 passed / 2 skipped (25 test suites)
 
 - Từ baseline: **9 failed → 0 failed**
 - Pass rate: **100%** (không tính skip có chủ đích)
@@ -28,11 +30,23 @@
 | `pomodoro.spec.ts` | Reset timer trước start/pause test |
 | `tasks.spec.ts` | Selector song ngữ EN/VI |
 
-## Công việc còn lại (checklist)
+## Validations đã thêm (P2)
 
-- [x] P0: Full E2E pass
+### Countdown Validation
+- `title`: required, min 1 char, max 200 chars
+- `targetDate`: required, must be future date, ISO datetime format
+- `color`: optional, hex format `#RRGGBB`, default `#3b82f6`
+
+### List Validation
+- `name`: required, min 1 char, max 100 chars
+- `color`: optional, hex format `#RRGGBB`
+- `members`: optional, array of UUIDs (validated format + existence in DB), max 50 members
+
+## Công việc đã hoàn thành
+
+- [x] P0: Full E2E pass ✅ **57/57 passed**
 - [x] P0: Chạy E2E 2–3 vòng phát hiện flaky ✅ **57/57 passed x3 vòng**
 - [x] P1: Lint trong CI ✅ **Thêm lint + typecheck job**
 - [x] P1: Sửa lint errors ✅ **0 errors, 4 warnings**
 - [x] P1: Nâng coverage thresholds ✅ **Backend 96→78/94/96/96, Frontend 75/65/85/75**
-- [ ] P2: Backend validation (countdown, list members) — *Cần quyết định requirements*
+- [x] P2: Backend validation (countdown, list members) ✅ **Validator + service layer checks**
