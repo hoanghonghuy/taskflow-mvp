@@ -64,7 +64,7 @@
 
 - [x] **Profile edit tên** — UI trên `/profile` gọi `PATCH /api/auth/me`
 - [x] **Share list UI** — mời user theo email, xóa member; Inbox không chia sẻ
-- [x] **Recurrence MVP** — UI TaskDetail; backend advance `dueDate` khi complete; `lib/recurrence.ts`
+- [x] **Recurrence MVP** — UI TaskDetail; backend advance `dueDate` khi complete; `lib/recurrence.ts`; calendar expand preview
 
 ### P2 — Chưa xử lý (MVP+ / hạ tầng)
 - [ ] **P2-10** AI rate limit in-memory — không chia sẻ giữa nhiều instance backend

@@ -67,7 +67,9 @@ const CalendarView: React.FC = () => {
   }, [getTasksForDate, selectedDate])
 
   const moveTaskToDate = (taskId: string, targetDate: Date) => {
-    const task = tasks.find(t => t.id === taskId)
+    // Extract original ID if this is a recurring instance
+    const originalId = taskId.includes('_') ? taskId.split('_')[0] : taskId
+    const task = tasks.find(t => t.id === originalId)
     if (!task) return
 
     const originalDate = task.dueDate ? new Date(task.dueDate) : new Date()

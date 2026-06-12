@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useSettings } from '@/components/providers/settings-provider'
 import { isSameDay } from '@/lib/utils/date-helpers'
+import { expandRecurringTask } from '@/lib/utils/recurrence'
 import type { Task } from '@/types'
 
 type ViewMode = 'month' | 'agenda'
@@ -124,6 +125,13 @@ export const useCalendar = (): UseCalendarReturn => {
   // Group tasks by date for efficient lookup
   const tasksByDate = useMemo(() => {
     const map = new Map<string, Task[]>()
+    
+    // Compute range for recurring task expansion (current view +/- padding)
+    const minDate = new Date(days[0])
+    minDate.setDate(minDate.getDate() - 7)
+    const maxDate = new Date(days[days.length - 1])
+    maxDate.setDate(maxDate.getDate() + 7)
+
     tasks.forEach(task => {
       if (task.dueDate) {
         const date = new Date(task.dueDate)
@@ -132,10 +140,27 @@ export const useCalendar = (): UseCalendarReturn => {
           map.set(key, [])
         }
         map.get(key)!.push(task)
+
+        // Expand recurring instances
+        if (task.recurrence) {
+          const instances = expandRecurringTask(task, minDate, maxDate, 60)
+          instances.forEach(({ id, instanceDate }) => {
+            const instanceKey = instanceDate.toDateString()
+            if (!map.has(instanceKey)) {
+              map.set(instanceKey, [])
+            }
+            // Create virtual task for this instance
+            map.get(instanceKey)!.push({
+              ...task,
+              id,
+              dueDate: instanceDate.toISOString(),
+            })
+          })
+        }
       }
     })
     return map
-  }, [tasks])
+  }, [tasks, days])
 
   // Agenda navigation
   const shiftAgendaRange = useCallback((days: number) => {

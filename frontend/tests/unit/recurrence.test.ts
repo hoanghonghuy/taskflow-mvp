@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildRecurrencePattern, getNextOccurrence } from '@/lib/utils/recurrence'
+import { buildRecurrencePattern, expandRecurringTask, getNextOccurrence } from '@/lib/utils/recurrence'
 
 describe('recurrence utils', () => {
   it('buildRecurrencePattern defaults interval to 1', () => {
@@ -10,5 +10,52 @@ describe('recurrence utils', () => {
     const from = new Date('2026-06-10T08:00:00.000Z')
     const next = getNextOccurrence(from, { type: 'daily', interval: 1 })
     expect(next?.toISOString().slice(0, 10)).toBe('2026-06-11')
+  })
+
+  it('expandRecurringTask generates instances in range', () => {
+    const task = {
+      id: 'task-123',
+      dueDate: '2026-06-01T09:00:00.000Z',
+      recurrence: { type: 'daily' as const, interval: 1 },
+    }
+    const instances = expandRecurringTask(
+      task,
+      new Date('2026-06-01T00:00:00.000Z'),
+      new Date('2026-06-05T23:59:59.999Z'),
+    )
+    expect(instances.length).toBe(5)
+    expect(instances[0].id).toBe('task-123_2026-06-01')
+    expect(instances[4].id).toBe('task-123_2026-06-05')
+  })
+
+  it('expandRecurringTask respects endDate', () => {
+    const task = {
+      id: 'task-456',
+      dueDate: '2026-06-01T09:00:00.000Z',
+      recurrence: {
+        type: 'daily' as const,
+        interval: 1,
+        endDate: '2026-06-03T00:00:00.000Z',
+      },
+    }
+    const instances = expandRecurringTask(
+      task,
+      new Date('2026-06-01T00:00:00.000Z'),
+      new Date('2026-06-10T23:59:59.999Z'),
+    )
+    expect(instances.length).toBeLessThanOrEqual(3)
+  })
+
+  it('expandRecurringTask returns empty when no recurrence', () => {
+    const task = {
+      id: 'task-789',
+      dueDate: '2026-06-01T09:00:00.000Z',
+    }
+    const instances = expandRecurringTask(
+      task,
+      new Date('2026-06-01T00:00:00.000Z'),
+      new Date('2026-06-10T23:59:59.999Z'),
+    )
+    expect(instances).toEqual([])
   })
 })

@@ -62,3 +62,50 @@ export function recurrenceTypeKey(type: RecurrencePattern['type']): TranslationK
 export function buildRecurrencePattern(type: RecurrencePattern['type']): RecurrencePattern {
   return { type, interval: 1 }
 }
+
+/**
+ * Expand recurring task instances within calendar range.
+ * Returns virtual tasks with ID suffix `_YYYY-MM-DD` for each occurrence.
+ */
+export function expandRecurringTask(
+  task: { id: string; dueDate?: string; recurrence?: RecurrencePattern },
+  rangeStart: Date,
+  rangeEnd: Date,
+  maxInstances: number = 100,
+): Array<{ id: string; instanceDate: Date }> {
+  if (!task.recurrence || !task.dueDate) return []
+
+  const instances: Array<{ id: string; instanceDate: Date }> = []
+  const start = startOfDay(rangeStart)
+  const end = startOfDay(rangeEnd)
+  const anchor = startOfDay(new Date(task.dueDate))
+
+  let current = anchor < start ? start : anchor
+
+  // Find first occurrence >= rangeStart
+  if (anchor < start) {
+    let candidate = anchor
+    for (let i = 0; i < 1000; i++) {
+      const nextCandidate = getNextOccurrence(candidate, task.recurrence)
+      if (!nextCandidate || nextCandidate >= start) {
+        current = nextCandidate || candidate
+        break
+      }
+      candidate = nextCandidate
+    }
+  }
+
+  // Generate instances in range
+  for (let i = 0; i < maxInstances; i++) {
+    if (current > end) break
+    if (current >= start) {
+      const isoDate = current.toISOString().slice(0, 10)
+      instances.push({ id: `${task.id}_${isoDate}`, instanceDate: new Date(current) })
+    }
+    const next = getNextOccurrence(current, task.recurrence)
+    if (!next) break
+    current = next
+  }
+
+  return instances
+}
