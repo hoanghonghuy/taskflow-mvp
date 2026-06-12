@@ -775,7 +775,24 @@
     "none": "Không có",
     "daily": "Hàng ngày",
     "weekly": "Hàng tuần",
-    "monthly": "Hàng tháng"
+    "monthly": "Hàng tháng",
+    "interval": "Mỗi",
+    "day": "ngày",
+    "days": "ngày",
+    "week": "tuần",
+    "weeks": "tuần",
+    "month": "tháng",
+    "months": "tháng",
+    "on": "vào",
+    "weekdays": {
+      "sun": "CN",
+      "mon": "T2",
+      "tue": "T3",
+      "wed": "T4",
+      "thu": "T5",
+      "fri": "T6",
+      "sat": "T7"
+    }
   },
   "reminder": {
     "title": "Lời nhắc",

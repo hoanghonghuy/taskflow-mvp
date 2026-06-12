@@ -110,6 +110,24 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
     applyTaskUpdates(updates)
   }
 
+  const handleRecurrenceIntervalChange = (interval: number) => {
+    if (!task.recurrence) return
+    applyTaskUpdates({
+      recurrence: { ...task.recurrence, interval: Math.max(1, interval) },
+    })
+  }
+
+  const handleToggleWeekday = (day: number) => {
+    if (!task.recurrence || task.recurrence.type !== 'weekly') return
+    const current = task.recurrence.daysOfWeek || []
+    const updated = current.includes(day)
+      ? current.filter((d) => d !== day)
+      : [...current, day].sort((a, b) => a - b)
+    applyTaskUpdates({
+      recurrence: { ...task.recurrence, daysOfWeek: updated.length > 0 ? updated : undefined },
+    })
+  }
+
   const handleStartFocus = () => {
     dispatch({ type: 'SET_FOCUSED_TASK', payload: task.id })
     dispatch({ type: 'START_TIMER' })
@@ -436,6 +454,59 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                 <option value="weekly">{t('recurrence.weekly')}</option>
                 <option value="monthly">{t('recurrence.monthly')}</option>
               </select>
+              {task.recurrence && (
+                <div className="mt-3 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">{t('recurrence.interval')}</span>
+                    <input
+                      type="number"
+                      min="1"
+                      max="99"
+                      value={task.recurrence.interval || 1}
+                      onChange={(e) => handleRecurrenceIntervalChange(parseInt(e.target.value) || 1)}
+                      className="w-16 p-1 bg-background border border-border rounded text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    />
+                    <span className="text-xs text-muted-foreground">
+                      {task.recurrence.type === 'daily'
+                        ? (task.recurrence.interval || 1) === 1
+                          ? t('recurrence.day')
+                          : t('recurrence.days')
+                        : task.recurrence.type === 'weekly'
+                          ? (task.recurrence.interval || 1) === 1
+                            ? t('recurrence.week')
+                            : t('recurrence.weeks')
+                          : (task.recurrence.interval || 1) === 1
+                            ? t('recurrence.month')
+                            : t('recurrence.months')}
+                    </span>
+                  </div>
+                  {task.recurrence.type === 'weekly' && (
+                    <div>
+                      <div className="text-xs text-muted-foreground mb-2">{t('recurrence.on')}</div>
+                      <div className="flex gap-1">
+                        {[0, 1, 2, 3, 4, 5, 6].map((day) => {
+                          const labels = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const
+                          const isSelected = (task.recurrence?.daysOfWeek || []).includes(day)
+                          return (
+                            <button
+                              key={day}
+                              type="button"
+                              onClick={() => handleToggleWeekday(day)}
+                              className={`flex-1 px-2 py-1 text-xs rounded transition-colors ${
+                                isSelected
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'bg-secondary text-muted-foreground hover:bg-muted'
+                              }`}
+                            >
+                              {t(`recurrence.weekdays.${labels[day]}` as TranslationKey)}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
