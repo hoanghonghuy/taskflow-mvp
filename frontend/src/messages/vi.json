@@ -971,9 +971,16 @@
     "members": "Thành viên",
     "owner": "Chủ sở hữu",
     "invite": "Mời người khác",
+    "inviteEmailPlaceholder": "dongnghiep@example.com",
+    "inviteButton": "Mời",
+    "inviteHint": "Nhập email của user đã đăng ký Taskflow.",
+    "inviteFailed": "Không thể mời user",
+    "userNotFound": "Không tìm thấy user với email này.",
+    "cannotInviteSelf": "Bạn không thể mời chính mình.",
+    "alreadyMember": "User này đã là thành viên.",
+    "remove": "Xóa",
     "empty": "Mọi người đã có trong danh sách này.",
     "done": "Xong",
-    "unavailable": "Chia sẻ danh sách chưa khả dụng. Tính năng cộng tác giữa các tài khoản thật sẽ được bổ sung sau.",
     "aria": {
       "removeMember": "Xóa {{memberName}}",
       "addMember": "Thêm {{memberName}}"

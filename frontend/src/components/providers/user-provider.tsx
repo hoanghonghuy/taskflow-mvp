@@ -15,6 +15,7 @@ interface UserContextType {
   register: (name: string, email: string, password: string) => Promise<void>
   logout: () => void
   updateProfile: (updates: Partial<User>) => Promise<void>
+  refreshCollaborators: () => Promise<void>
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined)
@@ -185,6 +186,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
   }, [user, lastRefreshAt, refreshSession])
 
+  const refreshCollaborators = useCallback(async () => {
+    try {
+      const collaborators = await authApi.fetchCollaborators()
+      setAllUsers(collaborators)
+    } catch {
+      setAllUsers([])
+    }
+  }, [])
+
   const updateProfile = useCallback(async (updates: Partial<User>) => {
     if (!user) return
 
@@ -216,6 +226,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         register,
         logout,
         updateProfile,
+        refreshCollaborators,
       }}
     >
       {children}

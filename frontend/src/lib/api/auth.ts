@@ -92,3 +92,21 @@ export async function fetchCollaborators(): Promise<User[]> {
   const data = json ? unwrapApiData<User[]>(json, response.status) : null
   return Array.isArray(data) ? data : []
 }
+
+export async function lookupUserByEmail(email: string): Promise<User | null> {
+  const response = await apiFetch(
+    `/api/auth/lookup-user?email=${encodeURIComponent(email.trim())}`,
+    { method: 'GET' },
+  )
+  if (response.status === 404) return null
+  if (!response.ok) {
+    const json = await response.json().catch(() => null)
+    const message =
+      (json as { message?: string } | null)?.message ??
+      `Lookup failed with status ${response.status}`
+    throw new Error(message)
+  }
+  const json = await response.json().catch(() => null)
+  const data = json ? unwrapApiData<User>(json, response.status) : null
+  return data ?? null
+}

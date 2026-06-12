@@ -110,6 +110,35 @@ describe('Auth', () => {
     expect(res.body.error).toBeDefined()
   })
 
+  it('looks up user by email for list sharing', async () => {
+    await request(app)
+      .post('/api/auth/register')
+      .send({ name: 'Invite Target', email: 'invite-target@test.com', password: 'TestPassword123!' })
+      .expect(200)
+
+    const { token } = await registerAndLogin('inviter@test.com')
+
+    const found = await request(app)
+      .get('/api/auth/users/lookup')
+      .query({ email: 'invite-target@test.com' })
+      .set(authHeader(token))
+      .expect(200)
+
+    expect(apiData<{ email: string }>(found).email).toBe('invite-target@test.com')
+
+    await request(app)
+      .get('/api/auth/users/lookup')
+      .query({ email: 'inviter@test.com' })
+      .set(authHeader(token))
+      .expect(400)
+
+    await request(app)
+      .get('/api/auth/users/lookup')
+      .query({ email: 'missing@test.com' })
+      .set(authHeader(token))
+      .expect(404)
+  })
+
   it('seeds default lists on register', async () => {
     const { token } = await registerAndLogin('lists@test.com')
     const res = await request(app).get('/api/lists').set(authHeader(token)).expect(200)

@@ -2,7 +2,13 @@ import type { Request, Response } from 'express'
 import { sendError, sendSuccess } from '../lib/response'
 import { AppError } from '../middleware/errorHandler'
 import * as authService from '../services/authService'
-import { loginSchema, refreshSchema, registerSchema, updateMeSchema } from '../validators/auth.validator'
+import {
+  loginSchema,
+  lookupUserQuerySchema,
+  refreshSchema,
+  registerSchema,
+  updateMeSchema,
+} from '../validators/auth.validator'
 
 export async function register(req: Request, res: Response): Promise<void> {
   try {
@@ -61,5 +67,19 @@ export async function logout(req: Request, res: Response): Promise<void> {
 export async function collaborators(req: Request, res: Response): Promise<void> {
   const users = await authService.getCollaborators(req.userId!)
   sendSuccess(res, users)
+}
+
+export async function lookupUser(req: Request, res: Response): Promise<void> {
+  try {
+    const query = lookupUserQuerySchema.parse(req.query)
+    const user = await authService.lookupUserByEmail(req.userId!, query.email)
+    sendSuccess(res, user)
+  } catch (err) {
+    if (err instanceof AppError && (err.statusCode === 400 || err.statusCode === 404)) {
+      sendError(res, err.statusCode, err.error, err.message)
+      return
+    }
+    throw err
+  }
 }
 

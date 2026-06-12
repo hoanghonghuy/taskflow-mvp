@@ -986,9 +986,16 @@
     "members": "Members",
     "owner": "Owner",
     "invite": "Invite others",
+    "inviteEmailPlaceholder": "colleague@example.com",
+    "inviteButton": "Invite",
+    "inviteHint": "Enter the email of a registered Taskflow user.",
+    "inviteFailed": "Could not invite user",
+    "userNotFound": "No user found with this email.",
+    "cannotInviteSelf": "You cannot invite yourself.",
+    "alreadyMember": "This user is already a member.",
+    "remove": "Remove",
     "empty": "Everyone is already in this list.",
     "done": "Done",
-    "unavailable": "List sharing is not available yet. Collaboration between real accounts will be added in a future release.",
     "aria": {
       "removeMember": "Remove {{memberName}}",
       "addMember": "Add {{memberName}}"

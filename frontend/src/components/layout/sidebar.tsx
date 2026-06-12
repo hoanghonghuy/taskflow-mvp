@@ -226,7 +226,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-medium text-muted-foreground">{taskCount}</span>
-                          {onShareList && (
+                          {onShareList && list.name !== 'Inbox' && (
                             <button 
                               onClick={(e) => { e.stopPropagation(); onShareList(list.id); }} 
                               className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-primary p-0.5 rounded"

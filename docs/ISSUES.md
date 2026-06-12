@@ -63,6 +63,7 @@
 ### UX nghiệp vụ đã bổ sung
 
 - [x] **Profile edit tên** — UI trên `/profile` gọi `PATCH /api/auth/me`
+- [x] **Share list UI** — mời user theo email, xóa member; Inbox không chia sẻ
 
 ### P2 — Chưa xử lý (MVP+ / hạ tầng)
 - [ ] **P2-10** AI rate limit in-memory — không chia sẻ giữa nhiều instance backend
@@ -71,14 +72,27 @@
 - [ ] **P4-2** Contract test `real-backend-contract.test.ts` vẫn skipped mặc định  
   Chạy: `REAL_BACKEND_TEST=true BACKEND_URL=http://localhost:8081 npm test -- real-backend-contract`
 
+### AI — tạm không mở (quyết định product)
+
+> **Không bật AI trên UI trong giai đoạn hiện tại.** Giữ trải nghiệm "đang phát triển".
+
+| Hạng mục | Trạng thái |
+|----------|------------|
+| `AI_FEATURES_ENABLED` | `false` — `frontend/src/lib/feature-flags.ts` |
+| UX khi user bấm AI | Toast / copy "đang phát triển" (E2E `ai.spec.ts` cover path này) |
+| Backend | API Gemini/OpenAI **vẫn giữ** — dùng khi dev/test hoặc bật sau |
+| Settings UI | Không nhập API key; hướng dẫn env server |
+| Khi nào mở | Chưa lên lịch — cần quyết định product riêng (key, rate limit P2-10, UX key) |
+
+**Không làm trong backlog gần:** đổi flag sang `true`, UI nhập key, bật briefing/chat/analyze trên production UI.
+
 ### P3 — Giới hạn MVP có chủ đích
 
 | Mục | Ghi chú |
 |-----|---------|
 | Landing `/` | Redirect `/login` |
-| AI trên UI | `AI_FEATURES_ENABLED = false` |
+| AI trên UI | Xem mục **AI — tạm không mở** ở trên |
 | Forgot password | UI báo chưa hỗ trợ |
-| Share list | Modal unavailable — API có, UI chưa dùng |
 | MOCK_MODE | Pomodoro state không persist; AI 204 |
 | Undo/Redo | Vẫn revert UI trước, rồi sync server — không phải true server-side undo |
 
@@ -92,6 +106,7 @@
 | `PATCH` | `/api/auth/me` | Cập nhật tên |
 | `POST` | `/api/auth/logout` | Revoke refresh tokens |
 | `GET` | `/api/auth/collaborators` | Users trong members của lists |
+| `GET` | `/api/auth/users/lookup?email=` | Tìm user để mời vào list |
 
 Settings thêm field `boardColumns` (persist `boardColumnsJson`).
 

@@ -111,6 +111,18 @@ export async function logout(userId: string): Promise<void> {
   await authRepository.revokeAllRefreshTokensForUser(userId)
 }
 
+export async function lookupUserByEmail(requesterId: string, email: string): Promise<UserDto> {
+  const normalized = email.trim().toLowerCase()
+  const found = await authRepository.findUserByEmail(normalized)
+  if (!found) {
+    throw new AppError(404, 'not_found', 'User not found')
+  }
+  if (found.id === requesterId) {
+    throw new AppError(400, 'invalid_request', 'Cannot invite yourself')
+  }
+  return mapUser(found)
+}
+
 export async function getCollaborators(userId: string): Promise<UserDto[]> {
   const lists = await listRepository.findListsByUserId(userId)
   const memberIds = new Set<string>()

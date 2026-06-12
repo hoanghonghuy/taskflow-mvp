@@ -816,9 +816,9 @@ export function useListActions() {
       dispatch(listActions.delete(listId))
     }, [dispatch, showError, t]),
 
-    shareList: useCallback(async (listId: string, userId: string) => {
+    shareList: useCallback(async (listId: string, userId: string): Promise<boolean> => {
       const existing = state.lists.find((l) => l.id === listId)
-      if (!existing) return
+      if (!existing) return false
 
       const nextMembers = existing.members.includes(userId)
         ? existing.members
@@ -832,18 +832,20 @@ export function useListActions() {
           }
 
         dispatch({ type: 'UPDATE_LIST', payload: updatedList })
+        return true
       } catch (err) {
         console.error('Failed to share list via API', err)
         showError(
           t('toast.api.listShareFailedTitle' as TranslationKey),
           err instanceof Error ? err.message : undefined,
         )
+        return false
       }
     }, [dispatch, showError, state.lists, t]),
 
-    unshareList: useCallback(async (listId: string, userId: string) => {
+    unshareList: useCallback(async (listId: string, userId: string): Promise<boolean> => {
       const existing = state.lists.find((l) => l.id === listId)
-      if (!existing) return
+      if (!existing) return false
 
       const nextMembers = existing.members.filter((id) => id !== userId)
 
@@ -855,12 +857,14 @@ export function useListActions() {
           }
 
         dispatch({ type: 'UPDATE_LIST', payload: updatedList })
+        return true
       } catch (err) {
         console.error('Failed to unshare list via API', err)
         showError(
           t('toast.api.listUnshareFailedTitle' as TranslationKey),
           err instanceof Error ? err.message : undefined,
         )
+        return false
       }
     }, [dispatch, showError, state.lists, t]),
   }

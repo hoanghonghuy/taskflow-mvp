@@ -135,23 +135,27 @@ Frontend thêm: `week-streak` (`constants.tsx`).
 
 ---
 
-## 9. Lists & Collaboration — ~55%
+## 9. Lists & Collaboration — ~72%
 
 | User story | Thực tế | Gap |
 |------------|---------|-----|
 | Tạo/xóa list (trừ Inbox) | ✅ Sidebar | Không rename/đổi màu từ UI |
-| Share list / members | ❌ UX | `ShareListModal` chỉ hiện *unavailable*; API `updateList` members **có sẵn** |
-| Assignee task | Phụ thuộc share | Dùng 1 mình gần như không assign được |
+| Share list / members | ✅ | Mời theo email (`lookup-user`); xóa member; Inbox không share |
+| Assignee task | ⚠️ | Cần share list trước — assignee dropdown dùng `collaborators` |
+| Member thấy list của owner | ❌ | Members chỉ lưu metadata; chưa multi-tenant list view |
 
 ---
 
-## 10. AI — ~15% UI / ~55% BE
+## 10. AI — ~15% UI / ~55% BE *(cố ý chưa ship)*
+
+**Quyết định (2026-06-12):** Tạm **không mở** AI trên UI. User thấy trạng thái "đang phát triển" — đúng kỳ vọng MVP hiện tại, không phải bug.
 
 | Layer | Thực tế |
 |-------|---------|
-| Backend | Briefing, analyze task, subtasks, chat — Gemini/OpenAI |
-| UI | `AI_FEATURES_ENABLED = false` → toast "đang phát triển" |
+| Backend | Briefing, analyze task, subtasks, chat — Gemini/OpenAI (giữ cho dev/test) |
+| UI | `AI_FEATURES_ENABLED = false` → toast "đang phát triển" / coming soon |
 | Settings | Không nhập key; dùng env server |
+| Roadmap | **Chưa lên lịch** bật UI — xem [ISSUES.md](./ISSUES.md) mục "AI — tạm không mở" |
 
 ---
 
@@ -182,9 +186,9 @@ Frontend thêm: `week-streak` (`constants.tsx`).
 Đã ghi trong [ISSUES.md](./ISSUES.md) mục P3:
 
 - Landing `/` → `/login`
-- AI UI tắt
+- AI UI tắt — cố ý, toast "đang phát triển" (không ưu tiên mở)
 - Forgot password chưa hỗ trợ
-- Share list UI unavailable
+- ~~Share list UI unavailable~~ → ✅ đã mở (mời theo email)
 - Undo không phải server-side undo thật
 
 ---
@@ -198,10 +202,10 @@ Frontend thêm: `week-streak` (`constants.tsx`).
 | ~~P1~~ | ~~BC-2: week-streak~~ | ✅ Done |
 | ~~P2~~ | ~~BC-3: completedAt persist~~ | ✅ Done |
 | ~~P3~~ | ~~BC-4: Matrix label~~ | ✅ Done |
-| **P2** | Mở Share list UI | Collaboration đã invest backend |
+| ~~P2~~ | ~~Mở Share list UI~~ | ✅ Done |
 | **P3** | Recurrence UI+logic hoặc ẩn field | Tránh hứa feature ảo |
-| **P4** | Bật AI khi key sẵn sàng | Backend đã xong |
 | **P4** | Forgot password hoặc gỡ link | Tránh dead-end UX |
+| ~~AI UI~~ | ~~Bật khi key sẵn sàng~~ | **Hoãn** — giữ "đang phát triển" (xem ISSUES.md) |
 
 ---
 

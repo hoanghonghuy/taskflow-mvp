@@ -18,3 +18,7 @@ export const refreshSchema = z.object({
 export const updateMeSchema = z.object({
   name: z.string().min(1).optional(),
 })
+
+export const lookupUserQuerySchema = z.object({
+  email: z.string().email(),
+})

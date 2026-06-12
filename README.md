@@ -90,7 +90,7 @@ npm run dev          # http://localhost:3000
 ### Ghi chú MVP tạm thời
 
 - `/` redirect sang `/login` (landing page giữ trong code, chưa xóa)
-- AI trên UI tắt qua `AI_FEATURES_ENABLED` trong `frontend/src/lib/feature-flags.ts` — hiện toast “đang phát triển”; backend vẫn hỗ trợ Gemini / OpenAI-compatible
+- **AI trên UI tạm không mở** — `AI_FEATURES_ENABLED = false` (`frontend/src/lib/feature-flags.ts`); user thấy toast “đang phát triển”. Backend vẫn có API Gemini/OpenAI cho dev/test; chưa lên lịch bật UI (chi tiết: [docs/ISSUES.md](docs/ISSUES.md))
 
 ## Tài khoản admin (dev)
 
