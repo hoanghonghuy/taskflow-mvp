@@ -3,6 +3,8 @@
 > Cập nhật: **2026-06-12** (sau đợt fix backlog P0–P4).
 > Đánh dấu `[x]` khi đã xử lý xong.
 
+**Đánh giá nghiệp vụ từng tính năng:** [FEATURE-COMPLETENESS.md](./FEATURE-COMPLETENESS.md)
+
 ---
 
 ## Tóm tắt nhanh
@@ -50,6 +52,13 @@
 ---
 
 ## Còn mở / giới hạn
+
+### Bug nghiệp vụ (từ rà soát FEATURE-COMPLETENESS)
+
+- [ ] **BC-1** Comment đầu tiên — `TaskDetail.tsx` chặn form khi `comments.length === 0`
+- [ ] **BC-2** Achievement `week-streak` — frontend có, backend `getUnlockedAchievementIds` không tính
+- [ ] **BC-3** `completedAt` chỉ local reducer — heatmap dashboard mất sau reload
+- [ ] **BC-4** Matrix hiển thị theo priority, không phải Eisenhower — dễ hiểu nhầm nghiệp vụ
 
 ### P2 — Chưa xử lý (MVP+ / hạ tầng)
 - [ ] **P2-10** AI rate limit in-memory — không chia sẻ giữa nhiều instance backend
