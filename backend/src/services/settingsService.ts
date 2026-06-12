@@ -38,6 +38,9 @@ export async function updateSettings(
     const merged = mergePomodoroSettings(current, body.pomodoroSettings as Record<string, unknown>)
     data.pomodoroSettingsJson = toJsonString(merged)
   }
+  if ('boardColumns' in body && Array.isArray(body.boardColumns)) {
+    data.boardColumnsJson = toJsonString(body.boardColumns)
+  }
 
   const updated = await settingsRepository.updateByUserId(userId, data)
   return mapSettingsToDto(updated)

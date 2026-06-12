@@ -122,6 +122,7 @@ model UserSettings {
   pomodoroStateJson      String?
   pomodoroStateUpdatedAt DateTime?
   pomodoroSettingsJson   String?
+  boardColumnsJson       String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

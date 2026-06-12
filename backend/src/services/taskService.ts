@@ -110,6 +110,10 @@ export async function reorderTasks(userId: string, taskIds: string[]): Promise<T
     throw new AppError(400, 'invalid_request', 'taskIds must include every task')
   }
 
+  if (new Set(taskIds).size !== taskIds.length) {
+    throw new AppError(400, 'invalid_request', 'Duplicate task id in reorder list')
+  }
+
   for (const id of taskIds) {
     if (!existingIds.has(id)) {
       throw new AppError(400, 'invalid_request', 'Invalid task id in reorder list')

@@ -92,6 +92,25 @@ describe('CRUD endpoints', () => {
     expect(apiData<Array<{ id: string }>>(listRes).map((t) => t.id)).toEqual([secondId, firstId])
   })
 
+  it('rejects duplicate ids in reorder payload', async () => {
+    const listsRes = await request(app).get('/api/lists').set(authHeader(token)).expect(200)
+    const listId = apiData<ListRef[]>(listsRes)[0].id
+
+    const created = await request(app)
+      .post('/api/tasks')
+      .set(authHeader(token))
+      .send({ title: 'Only', listId })
+      .expect(201)
+
+    const taskId = apiData<TaskDto>(created).id
+
+    await request(app)
+      .post('/api/tasks/reorder')
+      .set(authHeader(token))
+      .send({ taskIds: [taskId, taskId] })
+      .expect(400)
+  })
+
   it('lists CRUD with members', async () => {
     const createRes = await request(app)
       .post('/api/lists')
@@ -159,8 +178,14 @@ describe('CRUD endpoints', () => {
       .expect(204)
   })
 
-  it('pomodoro state returns 204 then 200', async () => {
-    await request(app).get('/api/pomodoro/state').set(authHeader(token)).expect(204)
+  it('pomodoro state returns null then saved state', async () => {
+    await request(app)
+      .get('/api/pomodoro/state')
+      .set(authHeader(token))
+      .expect(200)
+      .then((res) => {
+        expect(apiData<PomodoroStateDto | null>(res)).toBeNull()
+      })
 
     await request(app)
       .put('/api/pomodoro/state')

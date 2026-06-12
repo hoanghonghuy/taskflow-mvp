@@ -14,9 +14,10 @@ export async function fetchPomodoroState(
   fallback: PomodoroState,
 ): Promise<Partial<PomodoroState> | null> {
   const response = await apiFetch('/api/pomodoro/state')
-  if (!response.ok || response.status === 204) return null
+  if (!response.ok) return null
   const raw = await response.json().catch(() => null)
   const json = raw ? unwrapApiData<unknown>(raw, response.status) : null
+  if (json == null) return null
   return mapPomodoroStateFromApi(json, fallback)
 }
 

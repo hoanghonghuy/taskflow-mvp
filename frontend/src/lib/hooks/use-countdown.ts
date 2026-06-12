@@ -237,11 +237,10 @@ export const useCountdown = () => {
     if (typeof updates.color === 'string') payload.color = updates.color
 
     try {
-      const updated =
-        (await countdownApi.updateCountdown(id, payload)) ?? {
-          ...existingCountdown,
-          ...updates,
-        }
+      const updated = await countdownApi.updateCountdown(id, payload)
+      if (!updated) {
+        throw new Error('Update countdown returned no data')
+      }
 
       dispatch(countdownActions.update(updated))
       success(
@@ -249,15 +248,10 @@ export const useCountdown = () => {
         t('countdown.notifications.updatedBody' as TranslationKey, { title: updated.title }),
       )
     } catch (e) {
-      console.error('Failed to update countdown via API, falling back to local state', e)
-      const updatedCountdown: CountdownEvent = {
-        ...existingCountdown,
-        ...updates,
-      }
-      dispatch(countdownActions.update(updatedCountdown))
-      success(
-        t('countdown.notifications.updatedTitle' as TranslationKey),
-        t('countdown.notifications.updatedBody' as TranslationKey, { title: updatedCountdown.title }),
+      console.error('Failed to update countdown via API', e)
+      error(
+        t('countdown.notifications.updateFailedTitle' as TranslationKey),
+        e instanceof Error ? e.message : t('countdown.notifications.updateFailedBody' as TranslationKey),
       )
     }
   }, [dispatch, countdownEvents, success, error, t])
@@ -274,15 +268,18 @@ export const useCountdown = () => {
 
     try {
       await countdownApi.deleteCountdown(id)
+      dispatch(countdownActions.delete(id))
+      success(
+        t('countdown.notifications.deletedTitle' as TranslationKey),
+        t('countdown.notifications.deletedBody' as TranslationKey, { title: countdownToDelete.title }),
+      )
     } catch (e) {
-      console.error('Failed to delete countdown via API, deleting locally', e)
+      console.error('Failed to delete countdown via API', e)
+      error(
+        t('countdown.notifications.deleteFailedTitle' as TranslationKey),
+        e instanceof Error ? e.message : t('countdown.notifications.deleteFailedBody' as TranslationKey),
+      )
     }
-
-    dispatch(countdownActions.delete(id))
-    success(
-      t('countdown.notifications.deletedTitle' as TranslationKey),
-      t('countdown.notifications.deletedBody' as TranslationKey, { title: countdownToDelete.title }),
-    )
   }, [dispatch, countdownEvents, success, error, t])
 
   // Form state helpers

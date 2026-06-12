@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from 'react'
-import { useTaskManager } from '@/components/providers/task-manager-provider'
+import { useColumnActions } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/i18n/hooks'
 import { useConfirmation } from '@/lib/hooks/use-confirmation'
 import type { TranslationKey } from '@/lib/i18n/types'
@@ -26,7 +26,7 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
   onOpenTaskForm,
   onColumnDragStart,
 }) => {
-  const { dispatch } = useTaskManager()
+  const { updateColumn, deleteColumn } = useColumnActions()
   const { t } = useI18n()
   const { confirm } = useConfirmation()
   const [isDragOver, setIsDragOver] = useState(false)
@@ -51,10 +51,7 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
   const handleRenameSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (columnName.trim() && columnName.trim() !== column.name) {
-      dispatch({
-        type: 'UPDATE_COLUMN',
-        payload: { columnId: column.id, name: columnName.trim() },
-      })
+      void updateColumn(column.id, columnName.trim())
     }
     setIsRenaming(false)
   }
@@ -70,10 +67,7 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
 
     if (!isConfirmed) return
 
-    dispatch({
-      type: 'DELETE_COLUMN',
-      payload: { columnId: column.id, listId: column.listId },
-    })
+    void deleteColumn(column.id, column.listId)
   }
 
   return (

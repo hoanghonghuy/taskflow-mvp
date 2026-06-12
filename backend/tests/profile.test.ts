@@ -6,6 +6,7 @@ type ProfileSummaryDto = {
   unlockedAchievements: number
 }
 
+import { todayDateString } from '../src/lib/date'
 import { app, authHeader, registerAndLogin, resetDatabase, apiData } from './helpers'
 import { getProfileSummary, getAchievements } from '../src/services/profileService'
 import { prisma } from '../src/lib/prisma'
@@ -51,13 +52,26 @@ describe('Profile', () => {
 
   it('classifies due dates into today vs upcoming', async () => {
     const { userId } = await registerAndLogin('due@test.com')
-    const today = new Date().toISOString().slice(0, 10)
-    const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10)
+    const today = todayDateString()
+    const [y, m, d] = today.split('-').map(Number)
+    const tomorrow = new Date(Date.UTC(y, m - 1, d + 1)).toISOString().slice(0, 10)
 
     await prisma.todoTask.createMany({
       data: [
-        { title: 'Today', dueDate: new Date(today), completed: false, userId, listId: 'inbox' },
-        { title: 'Tomorrow', dueDate: new Date(tomorrow), completed: false, userId, listId: 'inbox' },
+        {
+          title: 'Today',
+          dueDate: new Date(`${today}T12:00:00+07:00`),
+          completed: false,
+          userId,
+          listId: 'inbox',
+        },
+        {
+          title: 'Tomorrow',
+          dueDate: new Date(`${tomorrow}T12:00:00+07:00`),
+          completed: false,
+          userId,
+          listId: 'inbox',
+        },
       ],
     })
 

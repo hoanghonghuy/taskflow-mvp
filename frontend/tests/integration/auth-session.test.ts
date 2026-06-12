@@ -48,7 +48,7 @@ describe('auth session API (real backend mode)', () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
       status: 200,
-      json: async () => ({}),
+      json: async () => ({ success: true, data: { id: 'u1', email: 'a@test.com', name: 'A' } }),
     } as Response)
     const { default: handler } = await import('@/pages/api/auth/session')
 
@@ -57,13 +57,13 @@ describe('auth session API (real backend mode)', () => {
     })
 
     expect(fetch).toHaveBeenCalledWith(
-      'http://localhost:8080/api/profile/summary',
+      'http://localhost:8080/api/auth/me',
       expect.objectContaining({
         headers: expect.objectContaining({ Authorization: 'Bearer abc' }),
       }),
     )
     expect(res.status).toHaveBeenCalledWith(200)
-    expect(res.json.mock.calls[0][0]).toEqual({ authenticated: true })
+    expect(res.json.mock.calls[0][0]).toMatchObject({ authenticated: true })
   })
 
   it('refreshes when access token is invalid but refresh token exists', async () => {
@@ -76,7 +76,12 @@ describe('auth session API (real backend mode)', () => {
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: async () => ({ token: 'new-token', refreshToken: 'new-refresh' }),
+        json: async () => ({ success: true, data: { token: 'new-token', refreshToken: 'new-refresh' } }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ success: true, data: { id: 'u1', email: 'a@test.com', name: 'A' } }),
       } as Response)
     const { default: handler } = await import('@/pages/api/auth/session')
 

@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import { config } from './config'
+import { sendError } from './lib/response'
 import { errorHandler } from './middleware/errorHandler'
 import { authRouter } from './routes/auth'
 import { tasksRouter } from './routes/tasks'
@@ -37,6 +38,10 @@ export function createApp() {
   app.use('/api/profile', profileRouter)
   app.use('/api/ai', aiRouter)
   app.use('/api/admin', adminRouter)
+
+  app.use((_req, res) => {
+    sendError(res, 404, 'not_found', 'Route not found')
+  })
 
   app.use(errorHandler)
 

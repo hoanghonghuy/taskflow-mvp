@@ -8,6 +8,12 @@ import {
 
 export type { PomodoroSettingsDto }
 
+export interface BoardColumnDto {
+  id: string
+  name: string
+  listId: string
+}
+
 export interface SettingsDto {
   language: string
   theme: string
@@ -19,6 +25,7 @@ export interface SettingsDto {
   bottomNavActions: string[]
   geminiApiKey: string | null
   pomodoroSettings: PomodoroSettingsDto
+  boardColumns: BoardColumnDto[]
 }
 
 export function mapSettingsToDto(settings: UserSettings): SettingsDto {
@@ -38,7 +45,19 @@ export function mapSettingsToDto(settings: UserSettings): SettingsDto {
     ]),
     geminiApiKey: settings.geminiApiKey ? 'configured' : null,
     pomodoroSettings: parsePomodoroSettings(settings.pomodoroSettingsJson),
+    boardColumns: parseBoardColumns(settings.boardColumnsJson),
   }
+}
+
+function parseBoardColumns(json: string | null | undefined): BoardColumnDto[] {
+  const parsed = parseJsonArray<{ id?: unknown; name?: unknown; listId?: unknown }>(json, [])
+  return parsed
+    .map((column) => ({
+      id: String(column.id ?? '').trim(),
+      name: String(column.name ?? '').trim(),
+      listId: String(column.listId ?? '').trim(),
+    }))
+    .filter((column) => column.id && column.name && column.listId)
 }
 
 export function defaultSettingsData(userId: string) {
@@ -56,6 +75,7 @@ export function defaultSettingsData(userId: string) {
     pomodoroStateJson: null,
     pomodoroStateUpdatedAt: null,
     pomodoroSettingsJson: null,
+    boardColumnsJson: null,
   }
 }
 

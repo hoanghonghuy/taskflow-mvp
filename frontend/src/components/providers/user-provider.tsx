@@ -14,7 +14,7 @@ interface UserContextType {
   login: (email: string, password: string) => Promise<User>
   register: (name: string, email: string, password: string) => Promise<void>
   logout: () => void
-  updateProfile: (updates: Partial<User>) => void
+  updateProfile: (updates: Partial<User>) => Promise<void>
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined)
@@ -22,6 +22,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined)
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const { t } = useI18n()
   const [user, setUser] = useState<User | null>(null)
+  const [allUsers, setAllUsers] = useState<User[]>([])
   const [authReady, setAuthReady] = useState(false)
   const [lastRefreshAt, setLastRefreshAt] = useState<number | null>(null)
 
@@ -35,30 +36,56 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
         if (ok) {
           if (data?.authenticated) {
-            const savedUser = localStorage.getItem('user')
-            if (savedUser) {
-              try {
-                setUser(JSON.parse(savedUser) as User)
-                localStorage.setItem('isAuthenticated', 'true')
-              } catch (error) {
-                console.error(t('console.failedParseUser'), error)
-                localStorage.removeItem('user')
-                localStorage.removeItem('isAuthenticated')
+            let resolvedUser: User | null = data.user ?? null
+
+            if (!resolvedUser) {
+              const savedUser = localStorage.getItem('user')
+              if (savedUser) {
+                try {
+                  resolvedUser = JSON.parse(savedUser) as User
+                } catch (error) {
+                  console.error(t('console.failedParseUser'), error)
+                  localStorage.removeItem('user')
+                }
               }
+            }
+
+            if (!resolvedUser) {
+              resolvedUser = await authApi.fetchCurrentUser()
+            }
+
+            if (resolvedUser) {
+              setUser(resolvedUser)
+              localStorage.setItem('user', JSON.stringify(resolvedUser))
+              localStorage.setItem('isAuthenticated', 'true')
+              try {
+                const collaborators = await authApi.fetchCollaborators()
+                setAllUsers(collaborators)
+              } catch {
+                setAllUsers([])
+              }
+            } else {
+              setUser(null)
+              setAllUsers([])
+              localStorage.removeItem('user')
+              localStorage.removeItem('isAuthenticated')
             }
           } else {
             setUser(null)
+            setAllUsers([])
             localStorage.removeItem('user')
             localStorage.removeItem('isAuthenticated')
           }
         } else {
           setUser(null)
+          setAllUsers([])
           localStorage.removeItem('user')
           localStorage.removeItem('isAuthenticated')
         }
       } catch {
         if (!cancelled) {
           setUser(null)
+          setAllUsers([])
           localStorage.removeItem('user')
           localStorage.removeItem('isAuthenticated')
         }
@@ -108,6 +135,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }
 
     setUser(null)
+    setAllUsers([])
     localStorage.removeItem('user')
     localStorage.removeItem('isAuthenticated')
     localStorage.removeItem('taskflowState')
@@ -157,20 +185,30 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
   }, [user, lastRefreshAt, refreshSession])
 
-  const updateProfile = useCallback((updates: Partial<User>) => {
+  const updateProfile = useCallback(async (updates: Partial<User>) => {
+    if (!user) return
+
+    if (updates.name) {
+      const updated = await authApi.updateCurrentUser({ name: updates.name })
+      if (!updated) return
+      setUser(updated)
+      localStorage.setItem('user', JSON.stringify(updated))
+      return
+    }
+
     setUser((prev) => {
       if (!prev) return null
-      const updated = { ...prev, ...updates }
-      localStorage.setItem('user', JSON.stringify(updated))
-      return updated
+      const next = { ...prev, ...updates }
+      localStorage.setItem('user', JSON.stringify(next))
+      return next
     })
-  }, [])
+  }, [user])
 
   return (
     <UserContext.Provider
       value={{
         user,
-        allUsers: [],
+        allUsers,
         isAuthenticated: authReady && !!user,
         isAdmin: authReady && user?.role === 'ADMIN',
         authReady,

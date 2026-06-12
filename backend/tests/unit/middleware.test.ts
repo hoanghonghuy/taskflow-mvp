@@ -3,6 +3,9 @@ import { ZodError, z } from 'zod'
 import { requireAdmin, requireAuth } from '../../src/middleware/auth'
 import { AppError, asyncHandler, errorHandler } from '../../src/middleware/errorHandler'
 import { signToken } from '../../src/lib/jwt'
+import * as authRepository from '../../src/repositories/authRepository'
+
+jest.mock('../../src/repositories/authRepository')
 
 function mockRes(): Response & { statusCode: number; body: unknown } {
   const res = {
@@ -46,20 +49,50 @@ describe('middleware/auth', () => {
 })
 
 describe('middleware/requireAdmin', () => {
-  it('returns 403 for non-admin role', () => {
-    const req = { userRole: 'USER' } as Request
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('returns 401 without userId', async () => {
+    const req = {} as Request
     const res = mockRes()
     const next = jest.fn()
-    requireAdmin(req, res, next)
+    await requireAdmin(req, res, next)
+    expect(res.statusCode).toBe(401)
+    expect(next).not.toHaveBeenCalled()
+  })
+
+  it('returns 403 for non-admin role', async () => {
+    jest.mocked(authRepository.findUserById).mockResolvedValue({
+      id: 'u1',
+      name: 'User',
+      email: 'u@test.com',
+      passwordHash: 'h',
+      role: 'USER',
+      createdAt: new Date(),
+    })
+    const req = { userId: 'u1' } as Request
+    const res = mockRes()
+    const next = jest.fn()
+    await requireAdmin(req, res, next)
     expect(res.statusCode).toBe(403)
     expect(next).not.toHaveBeenCalled()
   })
 
-  it('allows admin role', () => {
-    const req = { userRole: 'ADMIN' } as Request
+  it('allows admin role from database', async () => {
+    jest.mocked(authRepository.findUserById).mockResolvedValue({
+      id: 'a1',
+      name: 'Admin',
+      email: 'a@test.com',
+      passwordHash: 'h',
+      role: 'ADMIN',
+      createdAt: new Date(),
+    })
+    const req = { userId: 'a1' } as Request
     const res = mockRes()
     const next = jest.fn()
-    requireAdmin(req, res, next)
+    await requireAdmin(req, res, next)
+    expect(req.userRole).toBe('ADMIN')
     expect(next).toHaveBeenCalled()
   })
 })

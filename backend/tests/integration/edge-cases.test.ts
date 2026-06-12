@@ -30,6 +30,22 @@ describe('Edge cases & remaining routes', () => {
     expect(res.body.error).toBeDefined()
   })
 
+  it('lists: cannot delete Inbox list', async () => {
+    const listsRes = await request(app).get('/api/lists').set(authHeader(token)).expect(200)
+    const inbox = apiData<Array<{ id: string; name: string }>>(listsRes).find((l) => l.name === 'Inbox')
+    expect(inbox).toBeDefined()
+
+    await request(app).delete(`/api/lists/${inbox!.id}`).set(authHeader(token)).expect(400)
+  })
+
+  it('tasks: rejects invalid listId', async () => {
+    await request(app)
+      .post('/api/tasks')
+      .set(authHeader(token))
+      .send({ title: 'Bad list', listId: '00000000-0000-0000-0000-000000000099' })
+      .expect(400)
+  })
+
   it('lists: delete removes related tasks', async () => {
     const listRes = await request(app)
       .post('/api/lists')

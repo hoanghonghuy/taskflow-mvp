@@ -26,3 +26,29 @@ export async function revokeRefreshToken(id: string): Promise<void> {
     data: { revoked: true },
   })
 }
+
+export async function findUserById(id: string): Promise<User | null> {
+  return prisma.user.findUnique({ where: { id } })
+}
+
+export async function updateUserName(id: string, name: string): Promise<User> {
+  return prisma.user.update({
+    where: { id },
+    data: { name },
+  })
+}
+
+export async function revokeAllRefreshTokensForUser(userId: string): Promise<void> {
+  await prisma.refreshToken.updateMany({
+    where: { userId, revoked: false },
+    data: { revoked: true },
+  })
+}
+
+export async function findUsersByIds(ids: string[]) {
+  if (ids.length === 0) return []
+  return prisma.user.findMany({
+    where: { id: { in: ids } },
+    select: { id: true, name: true, email: true, role: true },
+  })
+}

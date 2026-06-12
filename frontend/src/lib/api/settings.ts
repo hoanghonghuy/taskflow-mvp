@@ -61,3 +61,12 @@ export async function updatePomodoroSettings(settings: PomodoroSettingsDto): Pro
     body: JSON.stringify({ pomodoroSettings: settings }),
   })
 }
+
+export async function updateBoardColumns(
+  boardColumns: Array<{ id: string; name: string; listId: string }>,
+): Promise<void> {
+  await apiFetch('/api/settings', {
+    method: 'PUT',
+    body: JSON.stringify({ boardColumns }),
+  })
+}

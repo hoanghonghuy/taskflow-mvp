@@ -1,5 +1,6 @@
 import type { Prisma } from '@prisma/client'
 import { toJsonString } from '../lib/json'
+import { AppError } from '../middleware/errorHandler'
 import { mapListToDto, type ListDto } from '../mappers/list.mapper'
 import * as listRepository from '../repositories/listRepository'
 import { prisma } from '../lib/prisma'
@@ -16,7 +17,7 @@ async function validateMembers(memberIds: string[]): Promise<void> {
   const invalidIds = memberIds.filter((id) => !existingIds.has(id))
 
   if (invalidIds.length > 0) {
-    throw new Error(`Invalid user IDs: ${invalidIds.join(', ')}`)
+    throw new AppError(400, 'invalid_request', `Invalid user IDs: ${invalidIds.join(', ')}`)
   }
 }
 
@@ -57,7 +58,11 @@ export async function updateList(
   if (!existing) return null
 
   const data: Prisma.TodoListUpdateInput = {}
-  if ('name' in body && body.name != null) data.name = String(body.name).trim()
+  if ('name' in body && body.name != null) {
+    const name = String(body.name).trim()
+    if (!name) throw new AppError(400, 'invalid_request', 'Name must not be empty')
+    data.name = name
+  }
   if ('color' in body && body.color != null) data.color = String(body.color)
   if ('members' in body && body.members != null) {
     const members = Array.isArray(body.members) ? body.members.map(String) : []
@@ -73,6 +78,10 @@ export async function updateList(
 export async function deleteList(userId: string, id: string): Promise<boolean> {
   const existing = await listRepository.findListByIdAndUserId(id, userId)
   if (!existing) return false
+
+  if (existing.name === 'Inbox') {
+    throw new AppError(400, 'invalid_request', 'Cannot delete the Inbox list')
+  }
 
   await listRepository.deleteTasksByListId(userId, id)
   await listRepository.deleteList(id)

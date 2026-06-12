@@ -6,4 +6,5 @@ export {
   useListActions,
   useHabitActions,
   usePomodoroActions,
+  useColumnActions,
 } from '@/lib/store/task-manager'

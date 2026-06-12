@@ -26,20 +26,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   // ---- Mock mode: authenticated if a token cookie is present ----
   if (isMockMode()) {
-    return res.status(token || refreshToken ? 200 : 401).json({
-      authenticated: Boolean(token || refreshToken),
-    })
+    const authenticated = Boolean(token || refreshToken)
+    if (!authenticated) {
+      return res.status(401).json({ authenticated: false })
+    }
+    const { buildMockAuthUser } = await import('@/lib/server/mock-backend')
+    return res.status(200).json({ authenticated: true, user: buildMockAuthUser({}) })
   }
 
   try {
     if (token) {
-      const validationResponse = await backendFetchWithToken('/api/profile/summary', token)
-      if (validationResponse.ok) {
-        return res.status(200).json({ authenticated: true })
+      const meResponse = await backendFetchWithToken('/api/auth/me', token)
+      if (meResponse.ok) {
+        const meBody = await meResponse.json().catch(() => null)
+        const user = unwrapBackendPayload(meBody)
+        return res.status(200).json({ authenticated: true, user })
       }
 
-      if (validationResponse.status !== 401 || !refreshToken) {
-        return res.status(validationResponse.status).json({ authenticated: false })
+      if (meResponse.status !== 401 || !refreshToken) {
+        return res.status(meResponse.status).json({ authenticated: false })
       }
     }
 
@@ -84,7 +89,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.setHeader('Set-Cookie', cookies)
     }
 
-    return res.status(200).json({ authenticated: true })
+    const meResponse = await backendFetchWithToken('/api/auth/me', data.token)
+    const meBody = await meResponse.json().catch(() => null)
+    const user = meResponse.ok ? unwrapBackendPayload(meBody) : null
+    return res.status(200).json({ authenticated: true, user })
   } catch (error) {
     console.error('API Error (auth/session):', error)
     return res.status(500).json({ authenticated: false })

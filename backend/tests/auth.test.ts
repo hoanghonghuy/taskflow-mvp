@@ -64,6 +64,23 @@ describe('Auth', () => {
       .expect(401)
   })
 
+  it('returns current user from /api/auth/me and supports profile update + logout', async () => {
+    const { token } = await registerAndLogin('me@test.com', 'TestPassword123!')
+
+    const meRes = await request(app).get('/api/auth/me').set(authHeader(token)).expect(200)
+    expect(apiData<{ email: string }>(meRes).email).toBe('me@test.com')
+
+    const patchRes = await request(app)
+      .patch('/api/auth/me')
+      .set(authHeader(token))
+      .send({ name: 'Updated Name' })
+      .expect(200)
+
+    expect(apiData<{ name: string }>(patchRes).name).toBe('Updated Name')
+
+    await request(app).post('/api/auth/logout').set(authHeader(token)).expect(200)
+  })
+
   it('returns 409 for duplicate email', async () => {
     const email = 'dup@test.com'
     await request(app)

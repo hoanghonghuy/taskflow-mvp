@@ -28,4 +28,11 @@ export {
 } from './actions'
 
 // Re-export provider hooks (will be defined in provider file)
-export { useTaskManager, useTaskActions, useListActions, useHabitActions, usePomodoroActions } from '@/components/providers/task-manager-provider'
+export {
+  useTaskManager,
+  useTaskActions,
+  useListActions,
+  useHabitActions,
+  usePomodoroActions,
+  useColumnActions,
+} from '@/components/providers/task-manager-provider'

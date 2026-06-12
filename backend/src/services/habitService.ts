@@ -1,10 +1,12 @@
 import type { Prisma } from '@prisma/client'
+import { todayDateString } from '../lib/date'
 import { parseJsonArray, toJsonString } from '../lib/json'
+import { AppError } from '../middleware/errorHandler'
 import { mapHabitToDto, type HabitDto } from '../mappers/habit.mapper'
 import * as habitRepository from '../repositories/habitRepository'
 
 function todayUtc(): string {
-  return new Date().toISOString().slice(0, 10)
+  return todayDateString()
 }
 
 function parseDateOrToday(date?: string | null): string {
@@ -41,7 +43,11 @@ export async function updateHabit(
   if (!existing) return null
 
   const data: Prisma.HabitUpdateInput = {}
-  if ('name' in body && body.name != null) data.name = String(body.name).trim()
+  if ('name' in body && body.name != null) {
+    const name = String(body.name).trim()
+    if (!name) throw new AppError(400, 'invalid_request', 'Name must not be empty')
+    data.name = name
+  }
 
   const updated = await habitRepository.updateHabit(id, data)
   return mapHabitToDto(updated)

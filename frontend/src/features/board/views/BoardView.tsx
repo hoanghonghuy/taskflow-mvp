@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
-import { useTaskManager, useTaskActions } from '@/components/providers/task-manager-provider'
+import { useTaskManager, useTaskActions, useColumnActions } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/i18n/hooks'
 import BoardColumn from '@/features/board/components/BoardColumn'
 import { PlusIcon } from '@/lib/icons'
@@ -12,9 +12,10 @@ interface BoardViewProps {
 }
 
 const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
-  const { state, dispatch } = useTaskManager()
+  const { state } = useTaskManager()
   const { t } = useI18n()
   const { moveTaskToColumn } = useTaskActions()
+  const { addColumn, reorderColumns } = useColumnActions()
   const initialListId = state.lists.find(l => l.id !== 'inbox')?.id || state.lists[0]?.id || ''
   const [selectedListId, setSelectedListId] = useState<string>(() => initialListId)
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null)
@@ -55,10 +56,7 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
 
   const handleColumnDrop = (droppedOnId: string) => {
     if (draggedColumnId && draggedColumnId !== droppedOnId) {
-      dispatch({
-        type: 'REORDER_COLUMNS',
-        payload: { listId: selectedListId, draggedId: draggedColumnId, droppedOnId },
-      })
+      void reorderColumns(selectedListId, draggedColumnId, droppedOnId)
     }
     setDraggedColumnId(null)
   }
@@ -66,10 +64,7 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
   const handleAddColumn = (e?: React.FormEvent) => {
     e?.preventDefault()
     if (newColumnName.trim() && selectedListId) {
-      dispatch({
-        type: 'ADD_COLUMN',
-        payload: { listId: selectedListId, name: newColumnName.trim() },
-      })
+      void addColumn(selectedListId, newColumnName.trim())
       setNewColumnName('')
       setIsAddingColumn(false)
     }

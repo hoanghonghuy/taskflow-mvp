@@ -25,6 +25,13 @@ function mockSession(authenticated: boolean) {
     ok: true,
     json: async () => ({ authenticated }),
   } as Response)
+
+  if (authenticated) {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ success: true, data: [] }),
+    } as Response)
+  }
 }
 
 describe('UserProvider', () => {

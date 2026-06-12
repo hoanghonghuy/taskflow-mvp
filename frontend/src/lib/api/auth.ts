@@ -4,7 +4,7 @@ import { apiFetch, unwrapApiData } from './client'
 const AUTH_PATH = '/api/auth/[...nextauth]'
 const SESSION_PATH = '/api/auth/session'
 
-export type SessionResponse = { authenticated?: boolean } | null
+export type SessionResponse = { authenticated?: boolean; user?: User } | null
 
 export async function fetchSession(): Promise<{ ok: boolean; data: SessionResponse }> {
   const response = await apiFetch(SESSION_PATH, { method: 'GET' })
@@ -64,4 +64,31 @@ export async function refreshSession(): Promise<boolean> {
     body: JSON.stringify({ action: 'refresh' }),
   })
   return response.ok
+}
+
+export async function fetchCurrentUser(): Promise<User | null> {
+  const response = await apiFetch('/api/auth/me', { method: 'GET' })
+  if (!response.ok) return null
+  const json = await response.json().catch(() => null)
+  const data = json ? unwrapApiData<User>(json, response.status) : null
+  return data ?? null
+}
+
+export async function updateCurrentUser(updates: Partial<Pick<User, 'name'>>): Promise<User | null> {
+  const response = await apiFetch('/api/auth/me', {
+    method: 'PATCH',
+    body: JSON.stringify(updates),
+  })
+  if (!response.ok) return null
+  const json = await response.json().catch(() => null)
+  const data = json ? unwrapApiData<User>(json, response.status) : null
+  return data ?? null
+}
+
+export async function fetchCollaborators(): Promise<User[]> {
+  const response = await apiFetch('/api/auth/collaborators', { method: 'GET' })
+  if (!response.ok) return []
+  const json = await response.json().catch(() => null)
+  const data = json ? unwrapApiData<User[]>(json, response.status) : null
+  return Array.isArray(data) ? data : []
 }

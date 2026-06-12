@@ -377,8 +377,12 @@ describe('settings API client', () => {
 })
 
 describe('pomodoro API client', () => {
-  it('fetchPomodoroState handles 204 no content', async () => {
-    mockFetch.mockResolvedValue({ ok: true, status: 204, json: async () => null } as Response)
+  it('fetchPomodoroState handles empty state payload', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ success: true, data: null }),
+    } as Response)
     const { fetchPomodoroState } = await import('@/lib/api/pomodoro')
     
     const fallback: PomodoroState = {

@@ -93,7 +93,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   if (action === 'logout') {
-    // Clear auth cookie
+    const token = getCookie(req, TOKEN_COOKIE_NAME)
+    if (token) {
+      try {
+        await fetch(`${BACKEND_URL}/api/auth/logout`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+        })
+      } catch (error) {
+        console.error('Backend logout failed', error)
+      }
+    }
+
     res.setHeader('Set-Cookie', [
       buildExpiredAuthCookie(TOKEN_COOKIE_NAME),
       buildExpiredAuthCookie(REFRESH_COOKIE_NAME),

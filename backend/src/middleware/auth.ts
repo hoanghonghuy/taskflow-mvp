@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from 'express'
 import { verifyToken } from '../lib/jwt'
+import * as authRepository from '../repositories/authRepository'
 import { isAdminRole } from '../types/roles'
 
 declare global {
@@ -30,10 +31,23 @@ export function requireAuth(req: Request, res: Response, next: NextFunction): vo
   next()
 }
 
-export function requireAdmin(req: Request, res: Response, next: NextFunction): void {
-  if (!isAdminRole(req.userRole)) {
-    res.status(403).json({ error: 'forbidden', message: 'Admin access required' })
-    return
+export async function requireAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const userId = req.userId
+    if (!userId) {
+      res.status(401).json({ error: 'unauthorized', message: 'Authentication required' })
+      return
+    }
+
+    const user = await authRepository.findUserById(userId)
+    if (!user || !isAdminRole(user.role)) {
+      res.status(403).json({ error: 'forbidden', message: 'Admin access required' })
+      return
+    }
+
+    req.userRole = user.role
+    next()
+  } catch (err) {
+    next(err)
   }
-  next()
 }

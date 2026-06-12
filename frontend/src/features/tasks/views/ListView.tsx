@@ -13,7 +13,7 @@ import type { SortOrder } from '@/lib/utils/task-helpers'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
 
 const ListView: React.FC = () => {
-  const { state, dispatch, canUndo, canRedo } = useTaskManager()
+  const { state, dispatch, canUndo, canRedo, syncFromBackend } = useTaskManager()
   const { t } = useI18n()
   const { allUsers } = useUser()
   const { openSearch, openBriefing, openTaskForm } = useModal()
@@ -58,12 +58,14 @@ const ListView: React.FC = () => {
   const handleUndo = () => {
     if (canUndo) {
       dispatch({ type: 'UNDO' })
+      void syncFromBackend()
     }
   }
 
   const handleRedo = () => {
     if (canRedo) {
       dispatch({ type: 'REDO' })
+      void syncFromBackend()
     }
   }
 

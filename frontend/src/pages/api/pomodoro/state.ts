@@ -16,10 +16,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         const response = await backendFetchWithToken('/api/pomodoro/state', token)
 
-        if (response.status === 204) {
-          return res.status(204).end()
-        }
-
         const data = await response.json().catch(() => null)
         if (data === null || data === undefined) {
           return res.status(response.status).end()

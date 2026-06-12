@@ -2,9 +2,11 @@ import { randomBytes } from 'crypto'
 import { config } from '../config'
 import { hashPassword, verifyPassword } from '../lib/password'
 import { signToken } from '../lib/jwt'
+import { parseJsonArray } from '../lib/json'
 import { seedDefaultListsForUser } from '../seed'
 import { AppError } from '../middleware/errorHandler'
 import * as authRepository from '../repositories/authRepository'
+import * as listRepository from '../repositories/listRepository'
 import type { AuthResponse, UserDto } from '../types/auth.types'
 
 export type { AuthResponse, UserDto } from '../types/auth.types'
@@ -81,6 +83,48 @@ export async function login(email: string, password: string): Promise<AuthRespon
   if (!valid) return null
 
   return issueTokens(user)
+}
+
+export async function getMe(userId: string): Promise<UserDto | null> {
+  const user = await authRepository.findUserById(userId)
+  return user ? mapUser(user) : null
+}
+
+export async function updateMe(
+  userId: string,
+  body: Record<string, unknown>,
+): Promise<UserDto | null> {
+  const user = await authRepository.findUserById(userId)
+  if (!user) return null
+
+  if ('name' in body && body.name != null) {
+    const name = String(body.name).trim()
+    if (!name) throw new AppError(400, 'invalid_request', 'Name must not be empty')
+    const updated = await authRepository.updateUserName(userId, name)
+    return mapUser(updated)
+  }
+
+  return mapUser(user)
+}
+
+export async function logout(userId: string): Promise<void> {
+  await authRepository.revokeAllRefreshTokensForUser(userId)
+}
+
+export async function getCollaborators(userId: string): Promise<UserDto[]> {
+  const lists = await listRepository.findListsByUserId(userId)
+  const memberIds = new Set<string>()
+
+  for (const list of lists) {
+    for (const memberId of parseJsonArray<string>(list.members)) {
+      if (memberId && memberId !== userId) {
+        memberIds.add(memberId)
+      }
+    }
+  }
+
+  const users = await authRepository.findUsersByIds([...memberIds])
+  return users.map(mapUser)
 }
 
 export async function refresh(refreshTokenValue: string): Promise<AuthResponse> {

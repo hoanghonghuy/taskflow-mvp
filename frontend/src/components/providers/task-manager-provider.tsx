@@ -14,10 +14,11 @@ import * as pomodoroApi from '@/lib/api/pomodoro'
 import * as profileApi from '@/lib/api/profile'
 import * as settingsApi from '@/lib/api/settings'
 import * as tasksApi from '@/lib/api/tasks'
-import type { Task, List, Habit, Comment, PomodoroState, AppState } from '@/types'
-import type { TaskManagerContextType } from '@/lib/store/task-manager/types'
+import type { Task, List, Habit, Comment, PomodoroState, AppState, Column } from '@/types'
+import type { Action, TaskManagerContextType } from '@/lib/store/task-manager/types'
 import type { TranslationKey } from '@/lib/i18n/types'
-import { buildBoardColumns } from '@/lib/utils/task-helpers'
+import { columnReducer } from '@/lib/store/task-manager/reducers/column-reducer'
+import { resolveBoardColumns } from '@/lib/utils/task-helpers'
 
 interface HistoryState {
   past: AppState[]
@@ -46,6 +47,54 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
   )
 
   const pomodoroRef = useRef<PomodoroState>(historyState.present.pomodoro)
+
+  const syncFromBackend = useCallback(async () => {
+    if (!isAuthenticated) return
+
+    try {
+      const [tasks, lists, habits, countdownEvents] = await Promise.all([
+        tasksApi.fetchTasks(),
+        listsApi.fetchLists(),
+        habitsApi.fetchHabits(),
+        countdownApi.fetchCountdowns(),
+      ])
+
+      const tagSet = new Set<string>()
+      for (const task of tasks) {
+        for (const tag of task.tags ?? []) {
+          if (tag) tagSet.add(tag)
+        }
+      }
+
+      let savedBoardColumns: Column[] = []
+      try {
+        const settingsPayload = await settingsApi.fetchSettings()
+        const boardColumns = (settingsPayload as { boardColumns?: Column[] } | null)?.boardColumns
+        if (Array.isArray(boardColumns)) {
+          savedBoardColumns = boardColumns
+        }
+      } catch (error) {
+        console.error('Failed to load board columns from settings', error)
+      }
+
+      const columns = resolveBoardColumns(savedBoardColumns, lists, tasks)
+
+      dispatch({
+        type: 'LOAD_STATE',
+        payload: {
+          ...historyState.present,
+          tasks,
+          lists,
+          columns,
+          habits,
+          countdownEvents,
+          tags: Array.from(tagSet).sort(),
+        },
+      })
+    } catch (error) {
+      console.error('Failed to sync data from backend', error)
+    }
+  }, [dispatch, historyState.present, isAuthenticated])
 
   // Save to localStorage whenever state changes (debounced)
   useEffect(() => {
@@ -149,7 +198,18 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
             ? inboxListId
             : lists.find((l) => l.id === previousActive)?.id ?? inboxListId
 
-        const columns = buildBoardColumns(lists, tasks)
+        let savedBoardColumns: Column[] = []
+        try {
+          const settingsPayload = await settingsApi.fetchSettings()
+          const boardColumns = (settingsPayload as { boardColumns?: Column[] } | null)?.boardColumns
+          if (Array.isArray(boardColumns)) {
+            savedBoardColumns = boardColumns
+          }
+        } catch (error) {
+          console.error('Failed to load board columns from settings', error)
+        }
+
+        const columns = resolveBoardColumns(savedBoardColumns, lists, tasks)
 
         const nextState: AppState = {
           ...historyState.present,
@@ -321,6 +381,7 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
         dispatch,
         canUndo,
         canRedo,
+        syncFromBackend,
       }}
     >
       {children}
@@ -558,27 +619,148 @@ export function useTaskActions() {
       const existing = state.tasks.find((t) => t.id === taskId)
       if (!existing) return
 
+      const before = existing
+      dispatch(taskActions.moveToColumn(taskId, newColumnId, listId))
+
       try {
         const updatedTask = await tasksApi.updateTask(taskId, {
-          columnId: null,
+          columnId: newColumnId,
           listId,
         })
 
         if (updatedTask) {
           dispatch({ type: 'UPDATE_TASK', payload: updatedTask })
-          return
         }
       } catch (err) {
         console.error('Failed to move task to column via API', err)
+        dispatch({ type: 'UPDATE_TASK', payload: before })
         showError(
           t('toast.api.taskMoveFailedTitle' as TranslationKey),
           err instanceof Error ? err.message : undefined,
         )
-        return
       }
-
-      // If the API fails, keep local state unchanged.
     }, [dispatch, showError, state.tasks, t]),
+
+    deleteTag: useCallback(async (tagName: string) => {
+      const tagToDelete = tagName.trim()
+      if (!tagToDelete) return
+
+      const affectedTasks = state.tasks.filter((task) =>
+        task.tags.some((tag) => tag === tagToDelete),
+      )
+
+      const beforeTasks = state.tasks
+      const beforeActiveTag = state.activeTag
+
+      dispatch({ type: 'DELETE_TAG', payload: tagToDelete })
+
+      if (affectedTasks.length === 0) return
+
+      try {
+        const updates = await Promise.all(
+          affectedTasks.map(async (task) => {
+            const tags = task.tags.filter((tag) => tag !== tagToDelete)
+            const updated =
+              (await tasksApi.updateTask(task.id, { tags })) ?? { ...task, tags }
+            return updated
+          }),
+        )
+
+        for (const updatedTask of updates) {
+          dispatch({ type: 'UPDATE_TASK', payload: updatedTask })
+        }
+      } catch (err) {
+        console.error('Failed to delete tag via API', err)
+        dispatch({ type: 'SET_TASKS', payload: beforeTasks })
+        dispatch({ type: 'ADD_TAG', payload: { name: tagToDelete } })
+        dispatch({ type: 'SET_ACTIVE_TAG', payload: beforeActiveTag })
+        showError(
+          t('toast.api.taskUpdateFailedTitle' as TranslationKey),
+          err instanceof Error ? err.message : undefined,
+        )
+      }
+    }, [dispatch, showError, state.activeTag, state.tasks, t]),
+  }
+}
+
+async function persistBoardColumns(columns: Column[]): Promise<void> {
+  await settingsApi.updateBoardColumns(columns)
+}
+
+export function useColumnActions() {
+  const { state, dispatch } = useTaskManager()
+  const { error: showError } = useToast()
+  const { t } = useI18n()
+
+  const applyColumnChange = useCallback(
+    async (action: Action) => {
+      const nextColumns = columnReducer(state, action).columns
+      dispatch(action)
+
+      try {
+        await persistBoardColumns(nextColumns)
+      } catch (err) {
+        console.error('Failed to persist board columns via API', err)
+        showError(
+          t('toast.api.taskUpdateFailedTitle' as TranslationKey),
+          err instanceof Error ? err.message : undefined,
+        )
+      }
+    },
+    [dispatch, showError, state, t],
+  )
+
+  return {
+    addColumn: useCallback(
+      (listId: string, name: string) =>
+        applyColumnChange({ type: 'ADD_COLUMN', payload: { listId, name } }),
+      [applyColumnChange],
+    ),
+    updateColumn: useCallback(
+      (columnId: string, name: string) =>
+        applyColumnChange({ type: 'UPDATE_COLUMN', payload: { columnId, name } }),
+      [applyColumnChange],
+    ),
+    deleteColumn: useCallback(
+      async (columnId: string, listId: string) => {
+        const action = { type: 'DELETE_COLUMN', payload: { columnId, listId } } as const
+        const nextState = columnReducer(state, action)
+        const affectedTasks = state.tasks.filter((task) => task.columnId === columnId)
+
+        dispatch(action)
+
+        try {
+          await persistBoardColumns(nextState.columns)
+          await Promise.all(
+            affectedTasks.map(async (task) => {
+              const updatedTask = nextState.tasks.find((t) => t.id === task.id)
+              if (!updatedTask) return
+              const saved = await tasksApi.updateTask(task.id, {
+                columnId: updatedTask.columnId ?? null,
+              })
+              if (saved) {
+                dispatch({ type: 'UPDATE_TASK', payload: saved })
+              }
+            }),
+          )
+        } catch (err) {
+          console.error('Failed to delete column via API', err)
+          showError(
+            t('toast.api.taskUpdateFailedTitle' as TranslationKey),
+            err instanceof Error ? err.message : undefined,
+          )
+        }
+      },
+      [dispatch, showError, state, t],
+    ),
+    reorderColumns: useCallback(
+      (listId: string, draggedId: string, droppedOnId: string) =>
+        applyColumnChange({
+          type: 'REORDER_COLUMNS',
+          payload: { listId, draggedId, droppedOnId },
+        }),
+      [applyColumnChange],
+    ),
   }
 }
 

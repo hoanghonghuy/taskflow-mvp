@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { buildBoardColumns, filterTasksByList, groupUpcomingTasks, sortTasks } from '@/lib/utils/task-helpers'
+import {
+  buildBoardColumns,
+  filterTasksByList,
+  groupUpcomingTasks,
+  resolveBoardColumns,
+  sortTasks,
+} from '@/lib/utils/task-helpers'
 import type { Task } from '@/types'
 
 const t = (key: string) => key
@@ -74,5 +80,16 @@ describe('buildBoardColumns', () => {
     expect(columns.find((c) => c.id === 'todo' && c.listId === 'inbox')).toBeDefined()
     expect(columns.find((c) => c.id === 'work-todo' && c.listId === 'work')).toBeDefined()
     expect(columns.find((c) => c.id === 'custom-col' && c.listId === 'work')).toBeDefined()
+  })
+})
+
+describe('resolveBoardColumns', () => {
+  it('merges saved columns with defaults', () => {
+    const lists = [{ id: 'work', name: 'Work', color: '#000', members: [] }]
+    const tasks: Task[] = []
+    const saved = [{ id: 'custom', name: 'Review', listId: 'work' }]
+    const columns = resolveBoardColumns(saved, lists, tasks)
+    expect(columns.find((c) => c.id === 'custom')).toBeDefined()
+    expect(columns.find((c) => c.id === 'work-todo')).toBeDefined()
   })
 })

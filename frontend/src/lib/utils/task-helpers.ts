@@ -48,6 +48,32 @@ export function buildBoardColumns(lists: List[], tasks: Task[]): Column[] {
   return columns
 }
 
+/** Merge persisted board columns with defaults derived from lists/tasks. */
+export function resolveBoardColumns(
+  savedColumns: Column[],
+  lists: List[],
+  tasks: Task[],
+): Column[] {
+  if (savedColumns.length === 0) {
+    return buildBoardColumns(lists, tasks)
+  }
+
+  const byId = new Map<string, Column>()
+  for (const column of savedColumns) {
+    if (column.id && column.name && column.listId) {
+      byId.set(column.id, column)
+    }
+  }
+
+  for (const column of buildBoardColumns(lists, tasks)) {
+    if (!byId.has(column.id)) {
+      byId.set(column.id, column)
+    }
+  }
+
+  return [...byId.values()]
+}
+
 export function resolveInboxListIdFromLists(lists: List[]): string | null {
   const inbox = lists.find((l) => l.name === 'Inbox' || l.id === 'inbox')
   return inbox?.id ?? null

@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react'
 import { useTaskManager } from '@/lib/hooks/use-task-manager'
-import { useListActions } from '@/components/providers/task-manager-provider'
+import { useListActions, useTaskActions } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/i18n/hooks'
 import { useUser } from '@/components/providers/user-provider'
 import { SPECIAL_LISTS_CONFIG, TAG_COLORS } from '@/lib/task-constants'
@@ -24,6 +24,7 @@ interface SidebarProps {
 export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: SidebarProps) {
   const { state, dispatch } = useTaskManager()
   const { addList, deleteList } = useListActions()
+  const { deleteTag } = useTaskActions()
   const { t } = useI18n()
   const { user } = useUser()
   const router = useRouter()
@@ -81,7 +82,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
     })
 
     if (isConfirmed) {
-      dispatch({ type: 'DELETE_TAG', payload: tagName })
+      await deleteTag(tagName)
       addToast.success(t('sidebar.deleteTag.success', { tagName }))
     }
   }

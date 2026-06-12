@@ -1,15 +1,8 @@
+import { dateOnlyFromDate, todayDateString } from '../lib/date'
 import { parseJsonArray } from '../lib/json'
 import * as habitRepository from '../repositories/habitRepository'
 import * as pomodoroRepository from '../repositories/pomodoroRepository'
 import * as taskRepository from '../repositories/taskRepository'
-
-function todayUtc(): string {
-  return new Date().toISOString().slice(0, 10)
-}
-
-function dateOnlyFromDate(d: Date): string {
-  return d.toISOString().slice(0, 10)
-}
 
 export function getLongestHabitCompletionStreak(
   habits: Array<{ completions: string }>,
@@ -78,7 +71,7 @@ export async function getProfileSummary(userId: string) {
 
   const totalTasks = tasks.length
   const completedTasks = tasks.filter((t) => t.completed).length
-  const today = todayUtc()
+  const today = todayDateString()
   const completedHabitsToday = habits.filter((h) =>
     parseJsonArray<string>(h.completions).includes(today),
   ).length
