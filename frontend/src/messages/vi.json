@@ -594,9 +594,12 @@
       "soundEnabledTitle": "Đã bật âm thanh",
       "soundEnabledDescription": "Âm thanh thông báo đã được bật",
       "soundDisabledTitle": "Đã tắt âm thanh",
-      "soundDisabledDescription": "Âm thanh thông báo đã được tắt"
+      "soundDisabledDescription": "Âm thanh thông báo đã được tắt",
+      "enableMasterFirst": "Bật thông báo ở trên trước",
+      "typeAlwaysOnHint": "Luôn bật trong phiên bản này — tắt từng loại sẽ có sau"
     },
     "languageLabel": "Ngôn ngữ",
+    "languageHelper": "Chọn ngôn ngữ hiển thị menu, nhãn và thông báo.",
     "themeLabel": "Chủ đề",
     "theme": {
       "light": "Sáng",
@@ -666,7 +669,8 @@
       "title": "Thanh điều hướng dưới",
       "subtitle": "Kéo và thả để tùy chỉnh các tính năng xuất hiện trong thanh điều hướng dưới",
       "visible": "Hiển thị",
-      "hidden": "Ẩn"
+      "hidden": "Ẩn",
+      "maxVisible": "Đã đủ số mục — hãy ẩn một tính năng khác trước"
     },
     "pomodoro": {
       "title": "Cài đặt Pomodoro",
@@ -1074,6 +1078,7 @@
     "thinkingMode": "Chế độ Suy nghĩ",
     "searchWeb": "Tìm kiếm Web",
     "sources": "Nguồn",
+    "aiUnavailable": "AI chưa khả dụng",
     "mockResponse": "Mình hiểu là bạn đang hỏi về \"{{input}}\". Đây là phản hồi giả lập. Khi tích hợp Gemini, mình sẽ có thể hỗ trợ bạn bằng AI thực thụ cho nhiệm vụ, thói quen và mục tiêu năng suất của bạn.",
     "error": {
       "generic": "Đã xảy ra lỗi.",

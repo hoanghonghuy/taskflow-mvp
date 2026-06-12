@@ -1,20 +1,33 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { useSettings } from '@/components/providers/settings-provider'
 import { useToast } from '@/lib/hooks/use-toast'
 import { useI18n } from '@/lib/i18n/hooks'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Switch } from '@/components/ui/switch'
+import { SwitchField } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 import { BellIcon, BellOffIcon, Volume2Icon, VolumeXIcon } from 'lucide-react'
+
+function getBrowserNotificationPermission(): NotificationPermission | 'unsupported' {
+  if (typeof window === 'undefined' || !('Notification' in window)) {
+    return 'unsupported'
+  }
+  return Notification.permission
+}
 
 export const NotificationSettings: React.FC = () => {
   const { t } = useI18n()
   const { settings, updateSettings } = useSettings()
   const { success, error } = useToast()
+
+  const [notificationPermission, setNotificationPermission] = useState<
+    NotificationPermission | 'unsupported'
+  >(() =>
+    typeof window === 'undefined' ? 'unsupported' : getBrowserNotificationPermission(),
+  )
 
   const handleNotificationToggle = (enabled: boolean) => {
     updateSettings({ notifications: enabled })
@@ -29,7 +42,7 @@ export const NotificationSettings: React.FC = () => {
   }
 
   const handleBrowserNotificationTest = async () => {
-    if (!('Notification' in window)) {
+    if (notificationPermission === 'unsupported') {
       error(
         t('settings.notifications.notSupportedTitle'),
         t('settings.notifications.notSupportedDescription')
@@ -40,6 +53,7 @@ export const NotificationSettings: React.FC = () => {
     if (Notification.permission === 'default') {
       const permission = await Notification.requestPermission()
       if (permission === 'granted') {
+        setNotificationPermission('granted')
         new Notification(t('settings.notifications.testNotificationTitle'), {
           body: t('settings.notifications.testNotificationBody'),
           icon: '/favicon.ico'
@@ -81,7 +95,6 @@ export const NotificationSettings: React.FC = () => {
   const handleSoundToggle = (enabled: boolean) => {
     updateSettings({ soundEnabled: enabled })
     if (enabled) {
-      // Play a test sound
       const audio = new Audio('/notification-sound.mp3')
       audio.volume = 0.5
       audio.play().catch(() => {
@@ -102,6 +115,9 @@ export const NotificationSettings: React.FC = () => {
     }
   }
 
+  const notificationsDisabled = !settings.notifications
+  const alwaysOnHint = t('settings.notifications.typeAlwaysOnHint')
+
   return (
     <div className="space-y-6">
       <Card>
@@ -115,62 +131,52 @@ export const NotificationSettings: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Master Notification Toggle */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <label htmlFor="notifications-enabled" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                {t('settings.notifications.enabled')}
-              </label>
-              <p className="text-sm text-muted-foreground">
-                {t('settings.notifications.enabledDescription')}
-              </p>
-            </div>
-            <Switch
-              id="notifications-enabled"
-              checked={settings.notifications}
-              onCheckedChange={handleNotificationToggle}
-            />
-          </div>
+          <SwitchField
+            id="notifications-enabled"
+            label={t('settings.notifications.enabled')}
+            description={t('settings.notifications.enabledDescription')}
+            checked={settings.notifications}
+            onCheckedChange={handleNotificationToggle}
+          />
 
           <Separator />
 
-          {/* Browser Notifications */}
-          <div className={`space-y-4 ${!settings.notifications ? 'opacity-50 pointer-events-none' : ''}`}>
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
+          <div className={`space-y-4 ${notificationsDisabled ? 'opacity-50 pointer-events-none' : ''}`}>
+            <div className="flex items-center justify-between gap-4">
+              <div className="space-y-0.5 min-w-0">
                 <span className="text-sm font-medium leading-none">{t('settings.notifications.browser')}</span>
                 <p className="text-sm text-muted-foreground">
                   {t('settings.notifications.browserDescription')}
                 </p>
               </div>
-              <Badge variant={Notification.permission === 'granted' ? 'default' : 'secondary'}>
-                {Notification.permission === 'granted' 
+              <Badge variant={notificationPermission === 'granted' ? 'default' : 'secondary'}>
+                {notificationPermission === 'granted'
                   ? t('settings.notifications.permitted')
-                  : t('settings.notifications.notPermitted')
-                }
+                  : t('settings.notifications.notPermitted')}
               </Badge>
             </div>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={handleBrowserNotificationTest}
               className="w-full"
+              disabled={notificationsDisabled}
             >
               {t('settings.notifications.testBrowser')}
             </Button>
           </div>
 
-          {/* Toast Notifications */}
-          <div className={`space-y-4 ${!settings.notifications ? 'opacity-50 pointer-events-none' : ''}`}>
+          <div className={`space-y-4 ${notificationsDisabled ? 'opacity-50 pointer-events-none' : ''}`}>
             <div className="space-y-0.5">
               <span className="text-sm font-medium leading-none">{t('settings.notifications.toast')}</span>
               <p className="text-sm text-muted-foreground">
                 {t('settings.notifications.toastDescription')}
               </p>
             </div>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={handleToastTest}
               className="w-full"
+              disabled={notificationsDisabled}
             >
               {t('settings.notifications.testToast')}
             </Button>
@@ -178,57 +184,50 @@ export const NotificationSettings: React.FC = () => {
 
           <Separator />
 
-          {/* Sound Settings */}
-          <div className={`space-y-4 ${!settings.notifications ? 'opacity-50 pointer-events-none' : ''}`}>
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <label htmlFor="sound-enabled" className="text-sm font-medium leading-none flex items-center gap-2">
+          <div className={notificationsDisabled ? 'opacity-50 pointer-events-none' : ''}>
+            <SwitchField
+              id="sound-enabled"
+              label={
+                <span className="inline-flex items-center gap-2">
                   {settings.soundEnabled ? <Volume2Icon className="h-4 w-4" /> : <VolumeXIcon className="h-4 w-4" />}
                   {t('settings.notifications.sound')}
-                </label>
-                <p className="text-sm text-muted-foreground">
-                  {t('settings.notifications.soundDescription')}
-                </p>
-              </div>
-              <Switch
-                id="sound-enabled"
-                checked={settings.soundEnabled || false}
-                onCheckedChange={handleSoundToggle}
-              />
-            </div>
+                </span>
+              }
+              description={t('settings.notifications.soundDescription')}
+              checked={settings.soundEnabled || false}
+              onCheckedChange={handleSoundToggle}
+              disabled={notificationsDisabled}
+              disabledReason={notificationsDisabled ? t('settings.notifications.enableMasterFirst') : undefined}
+            />
           </div>
 
-          {/* Notification Types */}
-          <div className={`space-y-4 ${!settings.notifications ? 'opacity-50 pointer-events-none' : ''}`}>
+          <div className={`space-y-4 ${notificationsDisabled ? 'opacity-50' : ''}`}>
             <span className="text-sm font-medium leading-none">{t('settings.notifications.types')}</span>
             <div className="grid gap-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">{t('settings.notifications.taskReminders')}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {t('settings.notifications.taskRemindersDescription')}
-                  </p>
-                </div>
-                <Switch defaultChecked disabled />
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">{t('settings.notifications.countdownCompletions')}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {t('settings.notifications.countdownCompletionsDescription')}
-                  </p>
-                </div>
-                <Switch defaultChecked disabled />
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">{t('settings.notifications.taskActions')}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {t('settings.notifications.taskActionsDescription')}
-                  </p>
-                </div>
-                <Switch defaultChecked disabled />
-              </div>
+              <SwitchField
+                id="notify-task-reminders"
+                label={t('settings.notifications.taskReminders')}
+                description={t('settings.notifications.taskRemindersDescription')}
+                defaultChecked
+                disabled
+                disabledReason={alwaysOnHint}
+              />
+              <SwitchField
+                id="notify-countdown"
+                label={t('settings.notifications.countdownCompletions')}
+                description={t('settings.notifications.countdownCompletionsDescription')}
+                defaultChecked
+                disabled
+                disabledReason={alwaysOnHint}
+              />
+              <SwitchField
+                id="notify-task-actions"
+                label={t('settings.notifications.taskActions')}
+                description={t('settings.notifications.taskActionsDescription')}
+                defaultChecked
+                disabled
+                disabledReason={alwaysOnHint}
+              />
             </div>
           </div>
         </CardContent>

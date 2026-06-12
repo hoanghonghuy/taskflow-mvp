@@ -130,9 +130,12 @@ const SettingsView: React.FC = () => {
         <section>
           <h2 className="text-lg font-semibold mb-4">{t('settings.languageLabel')}</h2>
           <div className="bg-card border border-border rounded-lg p-4 max-w-md">
-            <div className="flex items-center justify-between gap-4">
-              <span className="font-medium text-sm">{t('settings.languageLabel')}</span>
-              <LanguageToggle showIcon={false} />
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="min-w-0">
+                <p className="font-medium text-sm">{t('settings.languageLabel')}</p>
+                <p className="text-sm text-muted-foreground">{t('settings.languageHelper')}</p>
+              </div>
+              <LanguageToggle showIcon={false} size="md" />
             </div>
           </div>
         </section>
@@ -272,9 +275,11 @@ const SettingsView: React.FC = () => {
                       }}
                     >
                       <Switch
+                        size="sm"
                         checked={isVisible}
                         onCheckedChange={() => handleBottomNavToggle(feature.view)}
                         disabled={disabled}
+                        title={disabled ? t('settings.bottomNav.maxVisible' as TranslationKey) : undefined}
                       />
                     </div>
                   </div>

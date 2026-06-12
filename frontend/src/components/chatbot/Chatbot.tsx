@@ -7,6 +7,7 @@ import { useI18n } from '@/lib/i18n/hooks'
 import { useToast } from '@/components/providers/toast-provider'
 import type { ChatMessage } from '@/types'
 import Spinner from '@/components/ui/spinner'
+import { SwitchField } from '@/components/ui/switch'
 import * as aiApi from '@/lib/api/ai'
 
 interface ChatbotProps {
@@ -146,37 +147,43 @@ const Chatbot: React.FC<ChatbotProps> = ({ onClose }) => {
         </div>
 
         <footer className="p-4 border-t border-border">
-          <div className="flex items-center justify-start flex-wrap gap-x-4 gap-y-2 mb-2">
-            <label htmlFor="thinking-mode" className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
-              <input
-                id="thinking-mode"
-                type="checkbox"
-                checked={useThinkingMode}
-                onChange={(e) => {
-                  setUseThinkingMode(e.target.checked)
-                  if (e.target.checked) setUseSearchGrounding(false)
-                }}
-                className="h-4 w-4 rounded text-primary focus:ring-primary"
-                disabled={!isAvailable}
-              />
-              <SparklesIcon className="h-4 w-4" /> 
-              {t('chatbot.thinkingMode')}
-            </label>
-            <label htmlFor="search-grounding" className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
-              <input
-                id="search-grounding"
-                type="checkbox"
-                checked={useSearchGrounding}
-                onChange={(e) => {
-                  setUseSearchGrounding(e.target.checked)
-                  if (e.target.checked) setUseThinkingMode(false)
-                }}
-                className="h-4 w-4 rounded text-primary focus:ring-primary"
-                disabled={!isAvailable}
-              />
-              <GlobeAltIcon className="h-4 w-4" /> 
-              {t('chatbot.searchWeb')}
-            </label>
+          <div className="grid gap-3 sm:grid-cols-2 mb-3">
+            <SwitchField
+              id="thinking-mode"
+              size="sm"
+              className="rounded-lg border border-border bg-secondary/30 px-3 py-2"
+              label={
+                <span className="inline-flex items-center gap-2 text-xs">
+                  <SparklesIcon className="h-4 w-4" />
+                  {t('chatbot.thinkingMode')}
+                </span>
+              }
+              checked={useThinkingMode}
+              onCheckedChange={(checked) => {
+                setUseThinkingMode(checked)
+                if (checked) setUseSearchGrounding(false)
+              }}
+              disabled={!isAvailable}
+              disabledReason={!isAvailable ? t('chatbot.aiUnavailable') : undefined}
+            />
+            <SwitchField
+              id="search-grounding"
+              size="sm"
+              className="rounded-lg border border-border bg-secondary/30 px-3 py-2"
+              label={
+                <span className="inline-flex items-center gap-2 text-xs">
+                  <GlobeAltIcon className="h-4 w-4" />
+                  {t('chatbot.searchWeb')}
+                </span>
+              }
+              checked={useSearchGrounding}
+              onCheckedChange={(checked) => {
+                setUseSearchGrounding(checked)
+                if (checked) setUseThinkingMode(false)
+              }}
+              disabled={!isAvailable}
+              disabledReason={!isAvailable ? t('chatbot.aiUnavailable') : undefined}
+            />
           </div>
           <div className="relative">
             <textarea

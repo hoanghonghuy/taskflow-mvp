@@ -609,9 +609,12 @@
       "soundEnabledTitle": "Sound Enabled",
       "soundEnabledDescription": "Notification sounds are now active",
       "soundDisabledTitle": "Sound Disabled",
-      "soundDisabledDescription": "Notification sounds have been turned off"
+      "soundDisabledDescription": "Notification sounds have been turned off",
+      "enableMasterFirst": "Turn on notifications above first",
+      "typeAlwaysOnHint": "Always on in this version — per-type toggles coming later"
     },
     "languageLabel": "Language",
+    "languageHelper": "Choose the language for menus, labels, and notifications.",
     "themeLabel": "Theme",
     "theme": {
       "light": "Light",
@@ -681,7 +684,8 @@
       "title": "Bottom Navigation",
       "subtitle": "Drag and drop to customize which features appear in the bottom navigation bar",
       "visible": "Visible",
-      "hidden": "Hidden"
+      "hidden": "Hidden",
+      "maxVisible": "Maximum items shown — hide another feature first"
     },
     "pomodoro": {
       "title": "Pomodoro Settings",
@@ -1089,6 +1093,7 @@
     "thinkingMode": "Thinking Mode",
     "searchWeb": "Search Web",
     "sources": "Sources",
+    "aiUnavailable": "AI is not available",
     "mockResponse": "I understand you're asking about \"{{input}}\". This is a mock response. When the Gemini API is integrated, I'll be able to provide real AI-powered assistance with your tasks, habits, and productivity goals.",
     "error": {
       "generic": "An error occurred.",
