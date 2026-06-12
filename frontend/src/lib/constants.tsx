@@ -286,10 +286,26 @@ export const PaperAirplaneIcon: React.FC<{ className?: string }> = ({ className 
   </svg>
 )
 
-export const GlobeAltIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m-2.395 1.533A11.959 11.959 0 0112 21.75c-3.183 0-6.22-.62-8.47-1.733m14.94-5.832A8.99 8.99 0 0112 13.5a8.99 8.99 0 01-2.47-.332M8.47 14.418a11.96 11.96 0 01-1.186-2.168m1.186 2.168L8.47 14.418z" />
+export const GlobeIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={2}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+    aria-hidden
+  >
+    <circle cx="12" cy="12" r="10" />
+    <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+    <path d="M2 12h20" />
   </svg>
+)
+
+export const GlobeAltIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <GlobeIcon className={className} />
 )
 
 export const UserGroupIcon: React.FC<{ className?: string }> = ({ className }) => (

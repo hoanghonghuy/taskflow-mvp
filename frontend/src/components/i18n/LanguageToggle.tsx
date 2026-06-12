@@ -1,11 +1,11 @@
 'use client'
 
 import { useMemo } from 'react'
+import { Globe } from 'lucide-react'
 
 import { SegmentedControl } from '@/components/ui/segmented-control'
 import { useSettings } from '@/components/providers/settings-provider'
 import { useI18n } from '@/lib/i18n/hooks'
-import { GlobeAltIcon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 import type { Settings } from '@/types'
 
@@ -47,7 +47,7 @@ export function LanguageToggle({
       )}
     >
       {showIcon && (
-        <GlobeAltIcon className="h-4 w-4 text-muted-foreground shrink-0" aria-hidden />
+        <Globe className="size-[18px] shrink-0 text-foreground" strokeWidth={1.75} aria-hidden />
       )}
       <SegmentedControl
         value={language}

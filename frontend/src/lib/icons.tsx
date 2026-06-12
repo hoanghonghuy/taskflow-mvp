@@ -40,6 +40,7 @@ export {
   ChatBubbleLeftRightIcon,
   CubeTransparentIcon,
   PaperAirplaneIcon,
+  GlobeIcon,
   GlobeAltIcon,
   UserGroupIcon,
   SunIcon,
