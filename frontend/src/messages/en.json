@@ -799,6 +799,8 @@
     "month": "month",
     "months": "months",
     "on": "on",
+    "endDate": "End date",
+    "noEndDate": "No end date",
     "weekdays": {
       "sun": "Sun",
       "mon": "Mon",

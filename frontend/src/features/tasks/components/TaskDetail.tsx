@@ -128,6 +128,13 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
     })
   }
 
+  const handleRecurrenceEndDateChange = (value: string) => {
+    if (!task.recurrence) return
+    applyTaskUpdates({
+      recurrence: { ...task.recurrence, endDate: value || undefined },
+    })
+  }
+
   const handleStartFocus = () => {
     dispatch({ type: 'SET_FOCUSED_TASK', payload: task.id })
     dispatch({ type: 'START_TIMER' })
@@ -505,6 +512,16 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                       </div>
                     </div>
                   )}
+                  <div>
+                    <div className="text-xs text-muted-foreground mb-2">{t('recurrence.endDate')}</div>
+                    <input
+                      type="date"
+                      value={task.recurrence.endDate ? new Date(task.recurrence.endDate).toISOString().split('T')[0] : ''}
+                      onChange={(e) => handleRecurrenceEndDateChange(e.target.value)}
+                      className="w-full p-2 bg-background border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                      placeholder={t('recurrence.noEndDate')}
+                    />
+                  </div>
                 </div>
               )}
             </div>

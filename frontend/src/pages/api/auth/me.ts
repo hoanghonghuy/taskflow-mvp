@@ -11,7 +11,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (!token) {
         return res.status(401).json({ success: false, error: 'unauthorized' })
       }
-      return res.status(200).json({ success: true, data: buildMockAuthUser() })
+      return res.status(200).json({ success: true, data: buildMockAuthUser({}) })
     }
 
     const token = getAuthTokenFromRequest(req)

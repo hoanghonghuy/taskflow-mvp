@@ -784,6 +784,8 @@
     "month": "tháng",
     "months": "tháng",
     "on": "vào",
+    "endDate": "Ngày kết thúc",
+    "noEndDate": "Không kết thúc",
     "weekdays": {
       "sun": "CN",
       "mon": "T2",
