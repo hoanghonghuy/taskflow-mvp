@@ -75,7 +75,11 @@ export async function updateTask(
     data.title = title
   }
   if ('description' in body) data.description = body.description != null ? String(body.description) : null
-  if ('completed' in body) data.completed = Boolean(body.completed)
+  if ('completed' in body) {
+    const completed = Boolean(body.completed)
+    data.completed = completed
+    data.completedAt = completed ? new Date() : null
+  }
   if ('dueDate' in body) data.dueDate = parseOptionalDate(body.dueDate)
   if ('priority' in body && body.priority != null) data.priority = normalizePriority(body.priority)
   if ('listId' in body && body.listId != null) {

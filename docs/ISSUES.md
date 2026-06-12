@@ -14,7 +14,7 @@
 | Backend tests | **161/161 pass** — coverage ~94% statements (ngưỡng Jest đã căn theo thực tế) |
 | Frontend tests | **224/224 pass** — 2 contract test skipped (cần `REAL_BACKEND_TEST=true` + backend chạy) |
 | E2E Playwright | Có `e2e/board.spec.ts` — drag-drop persist sau reload |
-| Migration mới | `20260612120000_add_board_columns_json` — chạy `npx prisma migrate deploy` trước khi dùng board columns persist |
+| Migration mới | `20260612120000_add_board_columns_json`, `20260612140000_add_task_completed_at` — chạy `npx prisma migrate deploy` |
 
 ---
 
@@ -55,10 +55,14 @@
 
 ### Bug nghiệp vụ (từ rà soát FEATURE-COMPLETENESS)
 
-- [ ] **BC-1** Comment đầu tiên — `TaskDetail.tsx` chặn form khi `comments.length === 0`
-- [ ] **BC-2** Achievement `week-streak` — frontend có, backend `getUnlockedAchievementIds` không tính
-- [ ] **BC-3** `completedAt` chỉ local reducer — heatmap dashboard mất sau reload
-- [ ] **BC-4** Matrix hiển thị theo priority, không phải Eisenhower — dễ hiểu nhầm nghiệp vụ
+- [x] **BC-1** Comment đầu tiên — form comment luôn hiển thị trong `TaskDetail.tsx`
+- [x] **BC-2** Achievement `week-streak` — backend `getTaskCompletionStreak` + unlock trong `profileService`
+- [x] **BC-3** `completedAt` persist DB — migration `20260612140000_add_task_completed_at`, set khi toggle complete
+- [x] **BC-4** Matrix đổi label → "Priority Matrix" (i18n en/vi), khớp logic priority
+
+### UX nghiệp vụ đã bổ sung
+
+- [x] **Profile edit tên** — UI trên `/profile` gọi `PATCH /api/auth/me`
 
 ### P2 — Chưa xử lý (MVP+ / hạ tầng)
 - [ ] **P2-10** AI rate limit in-memory — không chia sẻ giữa nhiều instance backend

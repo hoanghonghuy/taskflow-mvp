@@ -117,7 +117,10 @@ export function mapTasksFromApi(items: unknown[]): Task[] {
       title,
       description,
       completed,
-      completedAt: undefined,
+      completedAt: (() => {
+        const raw = t.completedAt ?? t.CompletedAt
+        return raw ? new Date(String(raw)).toISOString() : undefined
+      })(),
       dueDate,
       priority,
       listId,

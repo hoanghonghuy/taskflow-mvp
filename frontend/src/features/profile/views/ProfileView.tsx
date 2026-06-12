@@ -22,9 +22,12 @@ type ProfileSummary = {
 }
 
 const ProfileView: React.FC = () => {
-  const { user } = useUser()
+  const { user, updateProfile } = useUser()
   const { state } = useTaskManager()
   const { t } = useI18n()
+  const [isEditing, setIsEditing] = useState(false)
+  const [editName, setEditName] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
 
   const localStats = useMemo<ProfileSummary>(() => {
     const totalTasks = state.tasks.length
@@ -82,6 +85,35 @@ const ProfileView: React.FC = () => {
 
   const stats = remoteStats ?? localStats
 
+  const handleStartEdit = () => {
+    setEditName(user?.name ?? '')
+    setIsEditing(true)
+  }
+
+  const handleCancelEdit = () => {
+    setIsEditing(false)
+    setEditName('')
+  }
+
+  const handleSaveName = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const trimmed = editName.trim()
+    if (!trimmed || trimmed === user?.name) {
+      handleCancelEdit()
+      return
+    }
+
+    setIsSaving(true)
+    try {
+      await updateProfile({ name: trimmed })
+      setIsEditing(false)
+    } catch (error) {
+      console.error('Failed to update profile name', error)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   const formatDuration = (seconds: number) => {
     const hours = Math.floor(seconds / 3600)
     const minutes = Math.floor((seconds % 3600) / 60)
@@ -94,18 +126,61 @@ const ProfileView: React.FC = () => {
       <AppPageContainer>
         <header className="py-6 border-b border-border shrink-0 hidden md:block">
           <h1 className="text-3xl font-bold">{t('nav.profile')}</h1>
-          <p className="text-muted-foreground">Your profile and statistics</p>
+          <p className="text-muted-foreground">{t('profile.subtitle')}</p>
         </header>
       </AppPageContainer>
       <AppPageMain className="py-4 md:py-6">
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Profile Card */}
           <div className="bg-card border border-border rounded-lg p-6">
-            <div className="flex items-center gap-6">
-              <Avatar user={user} className="w-20 h-20" />
-              <div>
-                <h2 className="text-2xl font-bold">{user?.name}</h2>
-                <p className="text-muted-foreground">{user?.email}</p>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+              <Avatar user={user} className="w-20 h-20 shrink-0" />
+              <div className="flex-1 min-w-0">
+                {isEditing ? (
+                  <form onSubmit={handleSaveName} className="space-y-3 max-w-md">
+                    <label className="block text-sm font-medium text-muted-foreground">
+                      {t('profile.name')}
+                    </label>
+                    <input
+                      type="text"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      className="w-full px-3 py-2 rounded-md border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      autoFocus
+                      required
+                      minLength={1}
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        type="submit"
+                        disabled={isSaving || !editName.trim()}
+                        className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium disabled:opacity-50"
+                      >
+                        {t('profile.save')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCancelEdit}
+                        disabled={isSaving}
+                        className="px-4 py-2 rounded-md border border-border text-sm font-medium hover:bg-secondary/50"
+                      >
+                        {t('profile.cancel')}
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <>
+                    <h2 className="text-2xl font-bold truncate">{user?.name}</h2>
+                    <p className="text-muted-foreground truncate">{user?.email}</p>
+                    <button
+                      type="button"
+                      onClick={handleStartEdit}
+                      className="mt-3 text-sm font-medium text-primary hover:underline"
+                    >
+                      {t('profile.edit')}
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>

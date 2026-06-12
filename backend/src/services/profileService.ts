@@ -1,4 +1,4 @@
-import { dateOnlyFromDate, todayDateString } from '../lib/date'
+import { dateOnlyFromDate, DEFAULT_TIME_ZONE, todayDateString } from '../lib/date'
 import { parseJsonArray } from '../lib/json'
 import * as habitRepository from '../repositories/habitRepository'
 import * as pomodoroRepository from '../repositories/pomodoroRepository'
@@ -40,11 +40,46 @@ export function getLongestHabitCompletionStreak(
   return best
 }
 
+export function getTaskCompletionStreak(
+  tasks: Array<{ completed: boolean; completedAt: Date | null }>,
+  timeZone: string = DEFAULT_TIME_ZONE,
+): number {
+  const dates = new Set<string>()
+
+  for (const task of tasks) {
+    if (task.completed && task.completedAt) {
+      dates.add(dateOnlyFromDate(task.completedAt, timeZone))
+    }
+  }
+
+  if (dates.size === 0) return 0
+
+  const ordered = [...dates].sort()
+  let best = 1
+  let current = 1
+
+  for (let i = 1; i < ordered.length; i++) {
+    const prev = new Date(ordered[i - 1] + 'T00:00:00Z')
+    const curr = new Date(ordered[i] + 'T00:00:00Z')
+    const diffDays = Math.round((curr.getTime() - prev.getTime()) / 86400000)
+
+    if (diffDays === 1) {
+      current++
+      if (current > best) best = current
+    } else if (diffDays > 1) {
+      current = 1
+    }
+  }
+
+  return best
+}
+
 export function getUnlockedAchievementIds(
   totalTasks: number,
   completedTasks: number,
   habits: Array<{ completions: string }>,
   focusSessions: Array<{ durationSeconds: number }>,
+  tasks: Array<{ completed: boolean; completedAt: Date | null }> = [],
 ): string[] {
   const result: string[] = []
 
@@ -58,6 +93,10 @@ export function getUnlockedAchievementIds(
 
   const totalFocusSeconds = focusSessions.reduce((sum, s) => sum + s.durationSeconds, 0)
   if (totalFocusSeconds >= 3600) result.push('focus-1h')
+
+  if (getTaskCompletionStreak(tasks) >= 7) {
+    result.push('week-streak')
+  }
 
   return result
 }
@@ -99,6 +138,7 @@ export async function getProfileSummary(userId: string) {
     completedTasks,
     habits,
     focusSessions,
+    tasks,
   )
 
   return {
@@ -128,5 +168,5 @@ export async function getAchievements(userId: string): Promise<string[]> {
     .filter((s) => s.type.toLowerCase() === 'focus')
     .map((s) => ({ durationSeconds: s.durationSeconds }))
 
-  return getUnlockedAchievementIds(totalTasks, completedTasks, habits, focusSessions)
+  return getUnlockedAchievementIds(totalTasks, completedTasks, habits, focusSessions, tasks)
 }

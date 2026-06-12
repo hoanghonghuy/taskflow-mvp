@@ -26,6 +26,7 @@ export interface TaskDto {
   title: string
   description: string | null
   completed: boolean
+  completedAt: string | null
   createdAt: string
   dueDate: string | null
   priority: string
@@ -47,6 +48,7 @@ export function mapTaskToDto(task: TodoTask): TaskDto {
     title: task.title,
     description: task.description,
     completed: task.completed,
+    completedAt: task.completedAt?.toISOString() ?? null,
     createdAt: task.createdAt.toISOString(),
     dueDate: task.dueDate?.toISOString() ?? null,
     priority: task.priority,

@@ -527,12 +527,12 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
             </div>
           </div>
 
-          {task.comments && task.comments.length > 0 && (
-            <div className="border-t border-border pt-4">
-              <h3 className="text-sm font-medium text-muted-foreground mb-2">
-                {t('taskDetail.commentsLabel')}
-              </h3>
-              <div className="space-y-2">
+          <div className="border-t border-border pt-4">
+            <h3 className="text-sm font-medium text-muted-foreground mb-2">
+              {t('taskDetail.commentsLabel')}
+            </h3>
+            {task.comments.length > 0 && (
+              <div className="space-y-2 mb-2">
                 {task.comments.map((comment) => {
                   const commentUser = allUsers?.find(u => u.id === comment.userId) || null
                   return (
@@ -549,28 +549,28 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                   )
                 })}
               </div>
-              <form 
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  const input = e.currentTarget.querySelector('input') as HTMLInputElement
-                  if (input?.value.trim()) {
-                    handleAddComment(input.value.trim())
-                    input.value = ''
-                  }
-                }}
-                className="mt-2 flex gap-2"
-              >
-                <input
-                  type="text"
-                  placeholder={t('taskDetail.addCommentPlaceholder')}
-                  className="flex-1 p-2 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                />
-                <button type="submit" className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:bg-primary/90">
-                  {t('taskDetail.addButton')}
-                </button>
-              </form>
-            </div>
-          )}
+            )}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                const input = e.currentTarget.querySelector('input') as HTMLInputElement
+                if (input?.value.trim()) {
+                  handleAddComment(input.value.trim())
+                  input.value = ''
+                }
+              }}
+              className="flex gap-2"
+            >
+              <input
+                type="text"
+                placeholder={t('taskDetail.addCommentPlaceholder')}
+                className="flex-1 p-2 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+              <button type="submit" className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:bg-primary/90">
+                {t('taskDetail.addButton')}
+              </button>
+            </form>
+          </div>
         </div>
       </div>
 

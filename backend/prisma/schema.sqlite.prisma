@@ -57,6 +57,7 @@ model TodoTask {
   title           String
   description     String?
   completed       Boolean   @default(false)
+  completedAt     DateTime?
   createdAt       DateTime  @default(now())
   dueDate         DateTime?
   priority        String    @default("none")

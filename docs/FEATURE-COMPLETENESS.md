@@ -164,16 +164,16 @@ Frontend thêm: `week-streak` (`constants.tsx`).
 
 ---
 
-## Bug nghiệp vụ (ưu tiên sửa)
+## Bug nghiệp vụ — đã sửa (2026-06-12)
 
-User **không làm được việc** dù API đã có:
+| ID | Mô tả | Trạng thái |
+|----|-------|------------|
+| **BC-1** | Comment đầu tiên không thêm được | ✅ Form comment luôn hiển thị |
+| **BC-2** | Achievement `week-streak` lệch client/server | ✅ Backend `getTaskCompletionStreak` |
+| **BC-3** | `completedAt` chỉ local | ✅ Cột DB + set khi toggle complete |
+| **BC-4** | Matrix gợi Eisenhower | ✅ Đổi label "Priority Matrix" (i18n) |
 
-| ID | Mô tả | File |
-|----|-------|------|
-| **BC-1** | Comment đầu tiên không thêm được | `TaskDetail.tsx` L530 — điều kiện `comments.length > 0` |
-| **BC-2** | Achievement `week-streak` lệch client/server | `constants.tsx` vs `profileService.ts` |
-| **BC-3** | `completedAt` chỉ local → heatmap dashboard sai sau reload | `task-reducer.ts`, dashboard heatmap |
-| **BC-4** | Matrix gợi Eisenhower nhưng logic chỉ theo priority | `MatrixView.tsx` |
+**Profile edit tên:** ✅ UI trên `/profile` (API đã có từ trước).
 
 ---
 
@@ -193,13 +193,13 @@ User **không làm được việc** dù API đã có:
 
 | Ưu tiên | Hạng mục | Lý do |
 |---------|----------|-------|
-| **P0** | BC-1: Sửa bug comment đầu tiên | API có, UX chặn hoàn toàn |
-| **P1** | Profile edit tên (API đã có) | User story cơ bản thiếu UI |
-| **P1** | BC-2: Đồng bộ `week-streak` hoặc bỏ khỏi UI | Lệch client/server |
+| ~~P0~~ | ~~BC-1: Comment đầu tiên~~ | ✅ Done |
+| ~~P1~~ | ~~Profile edit tên~~ | ✅ Done |
+| ~~P1~~ | ~~BC-2: week-streak~~ | ✅ Done |
+| ~~P2~~ | ~~BC-3: completedAt persist~~ | ✅ Done |
+| ~~P3~~ | ~~BC-4: Matrix label~~ | ✅ Done |
 | **P2** | Mở Share list UI | Collaboration đã invest backend |
-| **P2** | BC-3: `completedAt` persist / heatmap đúng | Dashboard productivity |
 | **P3** | Recurrence UI+logic hoặc ẩn field | Tránh hứa feature ảo |
-| **P3** | BC-4: Đổi tên Matrix hoặc Eisenhower thật | Tránh hiểu nhầm nghiệp vụ |
 | **P4** | Bật AI khi key sẵn sàng | Backend đã xong |
 | **P4** | Forgot password hoặc gỡ link | Tránh dead-end UX |
 

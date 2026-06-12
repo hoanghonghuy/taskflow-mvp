@@ -694,8 +694,10 @@
   },
   "profile": {
     "title": "Hồ sơ",
+    "subtitle": "Hồ sơ và thống kê của bạn",
     "edit": "Chỉnh sửa hồ sơ",
     "save": "Lưu thay đổi",
+    "cancel": "Hủy",
     "name": "Tên",
     "email": "Email",
     "avatar": "Ảnh đại diện",
@@ -846,8 +848,8 @@
     }
   },
   "matrix": {
-    "title": "Ma trận Eisenhower",
-    "subtitle": "Sắp xếp ưu tiên nhiệm vụ dựa trên tính khẩn cấp và quan trọng.",
+    "title": "Ma trận Ưu tiên",
+    "subtitle": "Nhiệm vụ chưa hoàn thành được nhóm theo mức ưu tiên.",
     "axis": {
       "urgent": "Khẩn cấp",
       "notUrgent": "Không khẩn cấp",
@@ -855,20 +857,20 @@
       "notImportant": "Không quan trọng"
     },
     "q1": {
-      "title": "Khẩn cấp & Quan trọng",
-      "subtitle": "Làm những nhiệm vụ này trước."
+      "title": "Khẩn cấp & Cao",
+      "subtitle": "Ưu tiên cao nhất — làm trước."
     },
     "q2": {
-      "title": "Không khẩn cấp & Quan trọng",
-      "subtitle": "Lên lịch cho những nhiệm vụ này."
+      "title": "Ưu tiên thấp",
+      "subtitle": "Nhiệm vụ ít khẩn cấp hơn."
     },
     "q3": {
-      "title": "Khẩn cấp & Không quan trọng",
-      "subtitle": "Ủy thác những nhiệm vụ này."
+      "title": "Ưu tiên trung bình",
+      "subtitle": "Nhiệm vụ mức ưu tiên thường."
     },
     "q4": {
-      "title": "Không khẩn cấp & Không quan trọng",
-      "subtitle": "Loại bỏ những nhiệm vụ này."
+      "title": "Không ưu tiên",
+      "subtitle": "Nhiệm vụ chưa gán mức ưu tiên."
     },
     "empty": "Không có nhiệm vụ nào trong góc phần tư này."
   },

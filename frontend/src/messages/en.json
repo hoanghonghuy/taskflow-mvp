@@ -709,8 +709,10 @@
   },
   "profile": {
     "title": "Profile",
+    "subtitle": "Your profile and statistics",
     "edit": "Edit Profile",
     "save": "Save Changes",
+    "cancel": "Cancel",
     "name": "Name",
     "email": "Email",
     "avatar": "Avatar",
@@ -861,8 +863,8 @@
     }
   },
   "matrix": {
-    "title": "Eisenhower Matrix",
-    "subtitle": "Prioritize your tasks based on urgency and importance.",
+    "title": "Priority Matrix",
+    "subtitle": "Incomplete tasks grouped by priority level.",
     "axis": {
       "urgent": "Urgent",
       "notUrgent": "Not Urgent",
@@ -870,20 +872,20 @@
       "notImportant": "Not Important"
     },
     "q1": {
-      "title": "Urgent & Important",
-      "subtitle": "Do these tasks first."
+      "title": "Urgent & High",
+      "subtitle": "Highest priority — tackle first."
     },
     "q2": {
-      "title": "Not Urgent & Important",
-      "subtitle": "Schedule these tasks."
+      "title": "Low Priority",
+      "subtitle": "Lower urgency tasks."
     },
     "q3": {
-      "title": "Urgent & Not Important",
-      "subtitle": "Delegate these tasks."
+      "title": "Medium Priority",
+      "subtitle": "Standard priority tasks."
     },
     "q4": {
-      "title": "Not Urgent & Not Important",
-      "subtitle": "Eliminate these tasks."
+      "title": "No Priority",
+      "subtitle": "Unprioritized tasks."
     },
     "empty": "No tasks in this quadrant."
   },
