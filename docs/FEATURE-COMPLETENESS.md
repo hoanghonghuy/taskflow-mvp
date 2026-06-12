@@ -34,19 +34,19 @@ README hứa: *list, board, matrix, calendar; kéo-thả persist DB*.
 | Today / Upcoming / Inbox | Lọc task theo ngày & inbox | ✅ Filter client, Inbox map UUID thật | Không phải entity DB riêng (chấp nhận được MVP) |
 | List view + reorder | Sắp xếp thứ tự task | ✅ Drag → `POST /api/tasks/reorder` | Reorder **toàn bộ** task; kéo trong list lọc vẫn đổi thứ tự global |
 | Board Kanban | Cột + kéo task giữa cột | ✅ Persist `boardColumnsJson` + E2E reload | Inbox **không** có trên board |
-| Calendar | Xem task theo ngày | ✅ Kéo đổi `dueDate` | Không tạo task từ calendar; không expand recurrence |
+| Calendar | Xem task theo ngày | ✅ Kéo đổi `dueDate` | Không tạo task từ calendar; chỉ hiện lần lặp kế tiếp (không expand preview) |
 | Matrix (Eisenhower) | Phân loại urgent/important | ⚠️ Chỉ map theo **priority**, read-only | Không phải ma trận Eisenhower; không kéo đổi ô |
 | Subtasks | Checklist trong task | ✅ TaskDetail + sync API | AI generate subtask tắt (AI off) |
 | Tags | Gắn/lọc tag | ✅ TaskDetail + sidebar filter | Form tạo không có tag; "Add tag" sidebar chỉ local registry |
 | Comments | Thảo luận trên task | ❌ **Bug** | Form comment chỉ hiện khi `comments.length > 0` → **không thêm được comment đầu tiên** |
 | Assignee | Giao việc | ⚠️ TaskDetail có dropdown | Chỉ có user trong `collaborators` (members list); dùng 1 mình thì gần như vô dụng |
-| Recurrence | Task lặp lại | ❌ | Field API/DB có; **không UI**, không logic expand instance |
+| Recurrence | Task lặp lại | ⚠️ MVP | UI TaskDetail (daily/weekly/monthly); hoàn thành → advance `dueDate` + ghi `completedAt`; chưa expand nhiều instance trên calendar |
 | Reminder | Nhắc trước hạn | ⚠️ | Lưu `reminderMinutes` + `Notification` trình duyệt (tab mở); không push/email |
 | Search | Tìm task nhanh | ⚠️ | Client-side title/description/tags; không server search |
 | Undo/Redo | Hoàn tác thao tác | ⚠️ | Revert UI rồi sync server — không phải undo server-side |
 | Focus time trên task | Thời gian pomodoro gắn task | ❌ | `totalFocusTime` mapper luôn `undefined`; heatmap phụ thuộc `completedAt` local (mất sau reload) |
 
-**Mức hoàn thiện: ~78%**
+**Mức hoàn thiện: ~82%**
 
 File tham chiếu: `TaskForm.tsx`, `TaskDetail.tsx`, `task-manager-provider.tsx`, `task-helpers.ts`, `board.spec.ts`.
 
@@ -203,7 +203,7 @@ Frontend thêm: `week-streak` (`constants.tsx`).
 | ~~P2~~ | ~~BC-3: completedAt persist~~ | ✅ Done |
 | ~~P3~~ | ~~BC-4: Matrix label~~ | ✅ Done |
 | ~~P2~~ | ~~Mở Share list UI~~ | ✅ Done |
-| **P3** | Recurrence UI+logic hoặc ẩn field | Tránh hứa feature ảo |
+| ~~**P3**~~ | ~~Recurrence UI+logic~~ | ✅ MVP: UI + advance on complete; chưa calendar expand |
 | **P4** | Forgot password hoặc gỡ link | Tránh dead-end UX |
 | ~~AI UI~~ | ~~Bật khi key sẵn sàng~~ | **Hoãn** — giữ "đang phát triển" (xem ISSUES.md) |
 

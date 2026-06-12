@@ -7,7 +7,8 @@ import { useTaskActions } from '@/lib/hooks/use-task-manager'
 import * as aiApi from '@/lib/api/ai'
 import { generateId } from '@/lib/utils'
 import { useConfirmation } from '@/lib/hooks/use-confirmation'
-import type { Task, Subtask, Priority, Comment } from '@/types'
+import type { Task, Subtask, Priority, Comment, RecurrencePattern } from '@/types'
+import { buildRecurrencePattern, recurrenceTypeKey } from '@/lib/utils/recurrence'
 import type { TranslationKey } from '@/lib/i18n/types'
 import { 
   CheckIcon, 
@@ -17,7 +18,8 @@ import {
   StopwatchIcon,
   SparklesIcon,
   GripVerticalIcon,
-  PlayCircleIcon
+  PlayCircleIcon,
+  RepeatIcon,
 } from '@/lib/icons'
 import { PRIORITY_MAP } from '@/lib/task-constants'
 import { useGemini } from '@/lib/hooks/use-gemini'
@@ -65,6 +67,9 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   const reminderDisplay = task.reminderMinutes
     ? t(reminderLabels[task.reminderMinutes] ?? 'taskDetail.noReminder')
     : t('taskDetail.noReminder')
+  const recurrenceDisplay = task.recurrence
+    ? t(recurrenceTypeKey(task.recurrence.type))
+    : t('recurrence.none')
   const dueDateDisplay = task.dueDate
     ? new Date(task.dueDate).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })
     : t('common.noResults')
@@ -90,6 +95,19 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   const applyTaskUpdates = (updates: Partial<Task>) => {
     const updatedTask = { ...task, ...updates }
     void updateTaskApi(updatedTask)
+  }
+
+  const handleRecurrenceChange = (value: string) => {
+    if (!value) {
+      applyTaskUpdates({ recurrence: undefined })
+      return
+    }
+    const type = value as RecurrencePattern['type']
+    const updates: Partial<Task> = { recurrence: buildRecurrencePattern(type) }
+    if (!task.dueDate) {
+      updates.dueDate = new Date().toISOString()
+    }
+    applyTaskUpdates(updates)
   }
 
   const handleStartFocus = () => {
@@ -312,6 +330,12 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                 <span>{reminderDisplay}</span>
               </span>
             )}
+            {task.recurrence && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1">
+                <RepeatIcon className="h-3.5 w-3.5" />
+                <span>{recurrenceDisplay}</span>
+              </span>
+            )}
           </div>
         </section>
 
@@ -396,6 +420,21 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                 <option value="15">15 {t('taskDetail.minutes')}</option>
                 <option value="30">30 {t('taskDetail.minutes')}</option>
                 <option value="60">1 {t('taskDetail.hour')}</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <span className="text-xs uppercase tracking-wide text-muted-foreground">
+                {t('taskDetail.recurrenceLabel')}
+              </span>
+              <select
+                value={task.recurrence?.type ?? ''}
+                onChange={(e) => handleRecurrenceChange(e.target.value)}
+                className="w-full p-2 bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+              >
+                <option value="">{t('recurrence.none')}</option>
+                <option value="daily">{t('recurrence.daily')}</option>
+                <option value="weekly">{t('recurrence.weekly')}</option>
+                <option value="monthly">{t('recurrence.monthly')}</option>
               </select>
             </div>
           </div>

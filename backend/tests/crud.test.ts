@@ -2,7 +2,14 @@
 import { app, authHeader, registerAndLogin, resetDatabase, apiData } from './helpers'
 
 type ListRef = { id: string }
-type TaskDto = { id: string; title: string; completed?: boolean; subtasks?: unknown[] }
+type TaskDto = {
+  id: string
+  title: string
+  completed?: boolean
+  completedAt?: string | null
+  dueDate?: string | null
+  subtasks?: unknown[]
+}
 type ListDto = { id: string; members?: string[] }
 type HabitDto = { id: string; completions: string[] }
 type PomodoroStateDto = { remainingSeconds: number }
@@ -57,6 +64,35 @@ describe('CRUD endpoints', () => {
 
     await request(app).delete(`/api/tasks/${taskId}`).set(authHeader(token)).expect(204)
     await request(app).get(`/api/tasks/${taskId}`).set(authHeader(token)).expect(404)
+  })
+
+  it('completing a recurring task advances dueDate and stays open', async () => {
+    const listsRes = await request(app).get('/api/lists').set(authHeader(token)).expect(200)
+    const listId = apiData<ListRef[]>(listsRes)[0].id
+
+    const createRes = await request(app)
+      .post('/api/tasks')
+      .set(authHeader(token))
+      .send({
+        title: 'Daily standup',
+        listId,
+        dueDate: '2026-06-10T09:00:00.000Z',
+        recurrence: { type: 'daily', interval: 1 },
+      })
+      .expect(201)
+
+    const taskId = apiData<TaskDto>(createRes).id
+
+    const completeRes = await request(app)
+      .put(`/api/tasks/${taskId}`)
+      .set(authHeader(token))
+      .send({ completed: true })
+      .expect(200)
+
+    const updated = apiData<TaskDto>(completeRes)
+    expect(updated.completed).toBe(false)
+    expect(updated.completedAt).toBeTruthy()
+    expect(updated.dueDate?.slice(0, 10)).toBe('2026-06-11')
   })
 
   it('reorders tasks and persists sortOrder', async () => {

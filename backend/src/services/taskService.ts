@@ -1,6 +1,7 @@
 import type { Prisma } from '@prisma/client'
 import { toJsonString } from '../lib/json'
 import { normalizeListId } from '../lib/inbox-list'
+import { getNextOccurrence, parseRecurrence } from '../lib/recurrence'
 import { mapTaskToDto, type TaskDto } from '../mappers/task.mapper'
 import { AppError } from '../middleware/errorHandler'
 import * as taskRepository from '../repositories/taskRepository'
@@ -77,8 +78,33 @@ export async function updateTask(
   if ('description' in body) data.description = body.description != null ? String(body.description) : null
   if ('completed' in body) {
     const completed = Boolean(body.completed)
-    data.completed = completed
-    data.completedAt = completed ? new Date() : null
+    if (completed) {
+      const recurrence = parseRecurrence(existing.recurrence)
+      if (recurrence && existing.dueDate) {
+        const nextDue = getNextOccurrence(existing.dueDate, recurrence)
+        if (nextDue) {
+          const preserved = new Date(nextDue)
+          preserved.setUTCHours(
+            existing.dueDate.getUTCHours(),
+            existing.dueDate.getUTCMinutes(),
+            existing.dueDate.getUTCSeconds(),
+            existing.dueDate.getUTCMilliseconds(),
+          )
+          data.completed = false
+          data.completedAt = new Date()
+          data.dueDate = preserved
+        } else {
+          data.completed = true
+          data.completedAt = new Date()
+        }
+      } else {
+        data.completed = true
+        data.completedAt = new Date()
+      }
+    } else {
+      data.completed = false
+      data.completedAt = null
+    }
   }
   if ('dueDate' in body) data.dueDate = parseOptionalDate(body.dueDate)
   if ('priority' in body && body.priority != null) data.priority = normalizePriority(body.priority)

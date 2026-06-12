@@ -261,6 +261,7 @@
     "priorityLabel": "Priority",
     "dueDateLabel": "Due Date",
     "reminderLabel": "Reminder",
+    "recurrenceLabel": "Repeat",
     "noReminder": "No reminder",
     "minutes": "minutes",
     "hour": "hour",

@@ -257,6 +257,7 @@
     "priorityLabel": "Độ ưu tiên",
     "dueDateLabel": "Hạn chót",
     "reminderLabel": "Nhắc nhở",
+    "recurrenceLabel": "Lặp lại",
     "noReminder": "Không nhắc nhở",
     "minutes": "phút",
     "hour": "giờ",
