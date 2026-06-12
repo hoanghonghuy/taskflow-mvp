@@ -167,4 +167,4 @@ Khi e2e fail trên CI, artifact `playwright-report` được upload để debug.
 
 - [backend/README.md](backend/README.md) — API endpoints, biến env chi tiết
 - [REFACTOR-LAYERING.md](REFACTOR-LAYERING.md) — kiến trúc layer frontend/backend
-- [ISSUES.md](ISSUES.md) — backlog / ghi chú kỹ thuật
+- [docs/ISSUES.md](docs/ISSUES.md) — trạng thái code & backlog kỹ thuật
