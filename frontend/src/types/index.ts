@@ -34,6 +34,7 @@ export interface RecurrencePattern {
   interval: number;
   daysOfWeek?: number[];
   endDate?: string;
+  completedDates?: string[];
 }
 
 export interface Comment {

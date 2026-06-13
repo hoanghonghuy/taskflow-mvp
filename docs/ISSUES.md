@@ -93,7 +93,7 @@
 - [x] **P2-8** `validateMembers` → `AppError` 400
 - [x] **P2-9** Ngày habit/profile dùng `Asia/Ho_Chi_Minh` (`lib/date.ts`)
 - [x] **P2-11** Global 404 JSON envelope
-- [x] **P2-12** `GET /api/pomodoro/state` trả `{ success, data: null }` thay vì 204
+- [x] **P2-12** `GET /api/pomodoro/state` trả `204 No Content` khi chưa có state (khôi phục hành vi API gốc)
 
 ### P4 — Test & CI
 - [x] **P4-1** Căn lại ngưỡng coverage Jest backend (~94%)

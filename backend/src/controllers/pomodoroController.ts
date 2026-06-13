@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express'
-import { sendCreated, sendError, sendSuccess } from '../lib/response'
+import { sendCreated, sendError, sendNoContent, sendSuccess } from '../lib/response'
 import * as pomodoroService from '../services/pomodoroService'
 import {
   createPomodoroSessionSchema,
@@ -28,6 +28,10 @@ export async function createSession(req: Request, res: Response): Promise<void> 
 
 export async function getState(req: Request, res: Response): Promise<void> {
   const state = await pomodoroService.getPomodoroState(req.userId!)
+  if (!state) {
+    sendNoContent(res)
+    return
+  }
   sendSuccess(res, state)
 }
 

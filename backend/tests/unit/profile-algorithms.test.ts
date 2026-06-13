@@ -31,11 +31,17 @@ describe('profile algorithms', () => {
     expect(getTaskCompletionStreak(tasks)).toBe(2)
   })
 
-  it('getTaskCompletionStreak counts recurring tasks left open (completed=false)', () => {
+  it('getTaskCompletionStreak counts recurring completions via recurrence.completedDates', () => {
     const tasks = [
-      { completed: false, completedAt: new Date('2026-06-01T10:00:00Z') },
-      { completed: false, completedAt: new Date('2026-06-02T10:00:00Z') },
-      { completed: false, completedAt: new Date('2026-06-03T10:00:00Z') },
+      {
+        completed: false,
+        completedAt: null,
+        recurrence: JSON.stringify({
+          type: 'daily',
+          interval: 1,
+          completedDates: ['2026-06-01', '2026-06-02', '2026-06-03'],
+        }),
+      },
     ]
     expect(getTaskCompletionStreak(tasks)).toBe(3)
   })

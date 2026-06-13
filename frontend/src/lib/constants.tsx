@@ -466,9 +466,12 @@ export const ACHIEVEMENT_DEFINITIONS = [
         checkDate.setDate(today.getDate() - i)
         const dateStr = toYYYYMMDD(checkDate)
 
-        const hasCompletedTasks = state.tasks.some((task: Task) =>
-          task.completedAt != null && task.completedAt.startsWith(dateStr)
-        )
+        const hasCompletedTasks = state.tasks.some((task: Task) => {
+          if (task.completed && task.completedAt != null && task.completedAt.startsWith(dateStr)) {
+            return true
+          }
+          return task.recurrence?.completedDates?.includes(dateStr) ?? false
+        })
 
         if (hasCompletedTasks) {
           streakDays++

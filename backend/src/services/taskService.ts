@@ -1,7 +1,7 @@
 import type { Prisma } from '@prisma/client'
 import { toJsonString } from '../lib/json'
 import { normalizeListId } from '../lib/inbox-list'
-import { getNextOccurrence, parseRecurrence } from '../lib/recurrence'
+import { getNextOccurrence, parseRecurrence, appendCompletionDate } from '../lib/recurrence'
 import { mapTaskToDto, type TaskDto } from '../mappers/task.mapper'
 import { AppError } from '../middleware/errorHandler'
 import * as pomodoroRepository from '../repositories/pomodoroRepository'
@@ -97,8 +97,9 @@ export async function updateTask(
             existing.dueDate.getUTCMilliseconds(),
           )
           data.completed = false
-          data.completedAt = new Date()
+          data.completedAt = null
           data.dueDate = preserved
+          data.recurrence = appendCompletionDate(existing.recurrence, new Date())
         } else {
           data.completed = true
           data.completedAt = new Date()

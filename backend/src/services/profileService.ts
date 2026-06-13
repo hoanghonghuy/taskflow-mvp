@@ -1,5 +1,6 @@
 import { dateOnlyFromDate, DEFAULT_TIME_ZONE, todayDateString } from '../lib/date'
 import { parseJsonArray } from '../lib/json'
+import { getCompletionDatesFromRecurrence } from '../lib/recurrence'
 import * as habitRepository from '../repositories/habitRepository'
 import * as pomodoroRepository from '../repositories/pomodoroRepository'
 import * as taskRepository from '../repositories/taskRepository'
@@ -41,14 +42,17 @@ export function getLongestHabitCompletionStreak(
 }
 
 export function getTaskCompletionStreak(
-  tasks: Array<{ completed: boolean; completedAt: Date | null }>,
+  tasks: Array<{ completed: boolean; completedAt: Date | null; recurrence?: string | null }>,
   timeZone: string = DEFAULT_TIME_ZONE,
 ): number {
   const dates = new Set<string>()
 
   for (const task of tasks) {
-    if (task.completedAt) {
+    if (task.completed && task.completedAt) {
       dates.add(dateOnlyFromDate(task.completedAt, timeZone))
+    }
+    for (const date of getCompletionDatesFromRecurrence(task.recurrence)) {
+      dates.add(date)
     }
   }
 
@@ -79,7 +83,7 @@ export function getUnlockedAchievementIds(
   completedTasks: number,
   habits: Array<{ completions: string }>,
   focusSessions: Array<{ durationSeconds: number }>,
-  tasks: Array<{ completed: boolean; completedAt: Date | null }> = [],
+  tasks: Array<{ completed: boolean; completedAt: Date | null; recurrence?: string | null }> = [],
 ): string[] {
   const result: string[] = []
 

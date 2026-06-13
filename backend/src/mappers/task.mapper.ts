@@ -19,6 +19,7 @@ export interface RecurrenceDto {
   interval: number
   daysOfWeek?: number[]
   endDate?: string
+  completedDates?: string[]
 }
 
 export interface TaskDto {

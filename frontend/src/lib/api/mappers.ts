@@ -62,11 +62,19 @@ export function mapTasksFromApi(items: unknown[]): Task[] {
       const endRaw = r.endDate ?? r.EndDate
       const endDate = endRaw ? new Date(endRaw).toISOString() : undefined
 
+      const completedDatesRaw = r.completedDates ?? r.CompletedDates
+      const completedDates = Array.isArray(completedDatesRaw)
+        ? (completedDatesRaw as unknown[])
+            .map((d) => String(d))
+            .filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))
+        : undefined
+
       recurrence = {
         type,
         interval: interval > 0 ? interval : 1,
         ...(daysOfWeek && daysOfWeek.length > 0 ? { daysOfWeek } : {}),
         ...(endDate ? { endDate } : {}),
+        ...(completedDates && completedDates.length > 0 ? { completedDates } : {}),
       }
     }
 

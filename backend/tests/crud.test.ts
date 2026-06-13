@@ -9,6 +9,7 @@ type TaskDto = {
   completedAt?: string | null
   dueDate?: string | null
   subtasks?: unknown[]
+  recurrence?: { completedDates?: string[] } | null
 }
 type ListDto = { id: string; members?: string[] }
 type HabitDto = { id: string; completions: string[] }
@@ -91,7 +92,8 @@ describe('CRUD endpoints', () => {
 
     const updated = apiData<TaskDto>(completeRes)
     expect(updated.completed).toBe(false)
-    expect(updated.completedAt).toBeTruthy()
+    expect(updated.completedAt).toBeNull()
+    expect(updated.recurrence?.completedDates?.length).toBeGreaterThan(0)
     expect(updated.dueDate?.slice(0, 10)).toBe('2026-06-11')
   })
 
@@ -214,14 +216,11 @@ describe('CRUD endpoints', () => {
       .expect(204)
   })
 
-  it('pomodoro state returns null then saved state', async () => {
+  it('pomodoro state returns 204 then saved state', async () => {
     await request(app)
       .get('/api/pomodoro/state')
       .set(authHeader(token))
-      .expect(200)
-      .then((res) => {
-        expect(apiData<PomodoroStateDto | null>(res)).toBeNull()
-      })
+      .expect(204)
 
     await request(app)
       .put('/api/pomodoro/state')

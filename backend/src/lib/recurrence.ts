@@ -1,4 +1,5 @@
-import { parseJsonObject } from './json'
+import { dateOnlyFromDate, DEFAULT_TIME_ZONE } from './date'
+import { parseJsonObject, toJsonString } from './json'
 
 export type RecurrenceType = 'daily' | 'weekly' | 'monthly'
 
@@ -87,4 +88,25 @@ export function getNextOccurrence(fromDate: Date, pattern: RecurrenceInput): Dat
   }
 
   return isPastEnd(next, pattern.endDate) ? null : next
+}
+
+/** YYYY-MM-DD completion log stored inside recurrence JSON (for open recurring tasks). */
+export function getCompletionDatesFromRecurrence(raw: string | null | undefined): string[] {
+  const obj = parseJsonObject<{ completedDates?: unknown }>(raw)
+  if (!Array.isArray(obj?.completedDates)) return []
+  return obj.completedDates
+    .map((d) => String(d))
+    .filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))
+}
+
+export function appendCompletionDate(
+  raw: string | null | undefined,
+  at: Date,
+  timeZone: string = DEFAULT_TIME_ZONE,
+): string {
+  const obj = parseJsonObject<Record<string, unknown>>(raw) ?? {}
+  const dateStr = dateOnlyFromDate(at, timeZone)
+  const existing = getCompletionDatesFromRecurrence(raw)
+  const merged = existing.includes(dateStr) ? existing : [...existing, dateStr]
+  return toJsonString({ ...obj, completedDates: merged })
 }

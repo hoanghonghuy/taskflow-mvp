@@ -1,4 +1,4 @@
-import { getNextOccurrence, parseRecurrence } from '../../src/lib/recurrence'
+import { appendCompletionDate, getCompletionDatesFromRecurrence, getNextOccurrence, parseRecurrence } from '../../src/lib/recurrence'
 
 describe('parseRecurrence', () => {
   it('parses weekly pattern with daysOfWeek', () => {
@@ -56,5 +56,14 @@ describe('getNextOccurrence', () => {
       endDate: '2026-06-01T00:00:00.000Z',
     })
     expect(next).toBeNull()
+  })
+
+  it('appendCompletionDate stores YYYY-MM-DD in recurrence JSON', () => {
+    const raw = appendCompletionDate(
+      JSON.stringify({ type: 'daily', interval: 1 }),
+      new Date('2026-06-10T15:00:00.000Z'),
+      'UTC',
+    )
+    expect(getCompletionDatesFromRecurrence(raw)).toEqual(['2026-06-10'])
   })
 })
