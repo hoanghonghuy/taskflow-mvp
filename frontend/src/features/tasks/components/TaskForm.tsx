@@ -34,7 +34,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
   const { t, currentLanguage } = useI18n()
   const { isAvailable: isGeminiAvailable } = useGemini()
   const { runIfEnabled } = useAiFeature()
-  const showAiAssist = AI_FEATURES_ENABLED ? isGeminiAvailable : true
+  const showAiAssist = AI_FEATURES_ENABLED && isGeminiAvailable
   const addToast = useToast()
 
   const resolveInboxListId = () => {

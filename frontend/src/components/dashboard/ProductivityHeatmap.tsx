@@ -10,7 +10,13 @@ import type { FocusSession } from '@/types'
 const CELL_SIZE = 12 // w-3
 const CELL_GAP = 4   // gap-1
 const WEEK_WIDTH = CELL_SIZE + CELL_GAP
-const DAY_LABELS_WIDTH = 30 // width for day labels
+
+/** CN + T2–T7 — vừa cột nhãn, không wrap như "Thứ 2". */
+const VI_DAY_LABELS = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'] as const
+
+function dayLabelsWidth(language: string): number {
+  return language === 'vi' ? 28 : 30
+}
 
 const LIGHT_SCALE = [
   'var(--color-heatmap-light-0)',
@@ -103,17 +109,20 @@ const ProductivityHeatmap: React.FC = () => {
   }, [state.tasks, focusHistory])
 
   // Calculate which days and month labels to show based on width
-  const { weeks, monthLabels, dayLabels } = useMemo(() => {
-    const localDayLabels = Array.from({ length: 7 }, (_, i) => {
-      // A known Sunday is Jan 7, 2024
-      const day = new Date(2024, 0, 7 + i)
-      return day.toLocaleDateString(settings.language, { weekday: 'short' })
-    })
+  const { weeks, monthLabels, dayLabels, labelsWidth } = useMemo(() => {
+    const labelsWidth = dayLabelsWidth(settings.language)
+    const localDayLabels =
+      settings.language === 'vi'
+        ? [...VI_DAY_LABELS]
+        : Array.from({ length: 7 }, (_, i) => {
+            const day = new Date(2024, 0, 7 + i)
+            return day.toLocaleDateString(settings.language, { weekday: 'short' })
+          })
 
     // Use a minimum width if containerWidth is 0 to ensure heatmap renders
     const effectiveWidth = containerWidth > 0 ? containerWidth : 400
 
-    const availableWidth = effectiveWidth > DAY_LABELS_WIDTH ? effectiveWidth - DAY_LABELS_WIDTH : 0
+    const availableWidth = effectiveWidth > labelsWidth ? effectiveWidth - labelsWidth : 0
     const numWeeks = Math.max(1, Math.min(52, Math.floor(availableWidth / WEEK_WIDTH)))
     
     const today = new Date()
@@ -155,7 +164,7 @@ const ProductivityHeatmap: React.FC = () => {
       }
     }
     
-    return { weeks: weeksData, monthLabels: labels, dayLabels: localDayLabels }
+    return { weeks: weeksData, monthLabels: labels, dayLabels: localDayLabels, labelsWidth }
 
   }, [containerWidth, settings.language])
   
@@ -206,7 +215,7 @@ const ProductivityHeatmap: React.FC = () => {
     <div ref={containerRef} className="overflow-hidden">
       <div className="flex flex-col">
         {/* Month Labels */}
-        <div className="h-5 mb-1 relative" style={{ marginLeft: `${DAY_LABELS_WIDTH}px` }}>
+        <div className="h-5 mb-1 relative" style={{ marginLeft: `${labelsWidth}px` }}>
           {monthLabels.map(({ label, index }) => (
             <div
               key={label + index}
@@ -220,14 +229,17 @@ const ProductivityHeatmap: React.FC = () => {
 
         <div className="flex gap-3">
           {/* Day Labels */}
-          <div className="flex flex-col gap-1 text-xs text-muted-foreground pt-0.5" style={{ minWidth: `${DAY_LABELS_WIDTH - 3}px`, width: `${DAY_LABELS_WIDTH - 3}px` }}>
-            <div className="h-3"></div> {/* Sun */}
-            <div className="h-3">{dayLabels[1]}</div>
-            <div className="h-3"></div> {/* Tue */}
-            <div className="h-3">{dayLabels[3]}</div>
-            <div className="h-3"></div> {/* Thu */}
-            <div className="h-3">{dayLabels[5]}</div>
-            <div className="h-3"></div> {/* Sat */}
+          <div
+            className="flex flex-col gap-1 text-xs text-muted-foreground pt-0.5 shrink-0"
+            style={{ width: `${labelsWidth}px` }}
+          >
+            <div className="h-3" aria-hidden />
+            <div className="h-3 whitespace-nowrap leading-3">{dayLabels[1]}</div>
+            <div className="h-3" aria-hidden />
+            <div className="h-3 whitespace-nowrap leading-3">{dayLabels[3]}</div>
+            <div className="h-3" aria-hidden />
+            <div className="h-3 whitespace-nowrap leading-3">{dayLabels[5]}</div>
+            <div className="h-3" aria-hidden />
           </div>
 
           {/* Heatmap Grid */}

@@ -13,16 +13,25 @@ export async function seedAdminUser(): Promise<void> {
   }
 
   const existing = await prisma.user.findUnique({ where: { email } })
+  const passwordHash = await hashPassword(password)
+
   if (existing) {
+    const data: { role: 'ADMIN'; passwordHash: string; name?: string } = {
+      role: 'ADMIN',
+      passwordHash,
+    }
+    if (name && existing.name !== name) {
+      data.name = name
+    }
+
+    await prisma.user.update({ where: { id: existing.id }, data })
+
     if (existing.role !== 'ADMIN') {
-      await prisma.user.update({
-        where: { id: existing.id },
-        data: { role: 'ADMIN' },
-      })
       console.log(`[seed] Promoted existing user to ADMIN: ${email}`)
+    } else {
+      console.log(`[seed] Synced ADMIN credentials from env: ${email}`)
     }
   } else {
-    const passwordHash = await hashPassword(password)
     const user = await prisma.user.create({
       data: {
         name,

@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation'
 import { useModal } from '@/components/providers/modal-provider'
 import { useSettings } from '@/components/providers/settings-provider'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
+import { AI_FEATURES_ENABLED } from '@/lib/feature-flags'
 import * as profileApi from '@/lib/api/profile'
 
 const useCountUp = (end: number, duration = 1200) => {
@@ -316,6 +317,7 @@ export default function DashboardPage() {
               )}
             </div>
 
+            {AI_FEATURES_ENABLED && (
             <div className="bg-card border border-border rounded-lg p-4 flex flex-col gap-3">
               <div className="flex items-start gap-3">
                 <div className="bg-primary/10 text-primary p-3 rounded-full shrink-0">
@@ -337,6 +339,7 @@ export default function DashboardPage() {
                 {t('dashboard.cta.button')}
               </button>
             </div>
+            )}
           </div>
         </div>
       </AppPageMain>

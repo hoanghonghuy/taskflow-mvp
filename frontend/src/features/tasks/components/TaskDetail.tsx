@@ -42,7 +42,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   const { confirm } = useConfirmation()
   const { isAvailable: isGeminiAvailable } = useGemini()
   const { runIfEnabled } = useAiFeature()
-  const showAiAssist = AI_FEATURES_ENABLED ? isGeminiAvailable : true
+  const showAiAssist = AI_FEATURES_ENABLED && isGeminiAvailable
   const task = useMemo<Task | null>(() => {
     return state.tasks.find(t => t.id === taskId) ?? null
   }, [state.tasks, taskId])

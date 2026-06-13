@@ -17,6 +17,7 @@ import TaskForm from '@/features/tasks/components/TaskForm'
 import ShareListModal from '@/components/collaboration/ShareListModal'
 import Chatbot from '@/components/chatbot/Chatbot'
 import { useModal } from '@/components/providers/modal-provider'
+import { AI_FEATURES_ENABLED } from '@/lib/feature-flags'
 import * as authApi from '@/lib/api/auth'
 
 export default function AppLayout({
@@ -166,7 +167,7 @@ export default function AppLayout({
       <Sidebar 
         isOpen={isSidebarOpen} 
         onClose={() => setSidebarOpen(false)}
-        onChatbotToggle={modal.openChatbot}
+        onChatbotToggle={AI_FEATURES_ENABLED ? modal.openChatbot : undefined}
         onShareList={modal.openShareList}
       />
 

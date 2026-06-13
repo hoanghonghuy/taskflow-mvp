@@ -11,6 +11,7 @@ import { SPECIAL_LISTS_CONFIG } from '@/lib/task-constants'
 import { PlusIcon } from '@/lib/icons'
 import type { SortOrder } from '@/lib/utils/task-helpers'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
+import { AI_FEATURES_ENABLED } from '@/lib/feature-flags'
 
 const ListView: React.FC = () => {
   const { state, dispatch, canUndo, canRedo, syncFromBackend } = useTaskManager()
@@ -82,7 +83,7 @@ const ListView: React.FC = () => {
           title={getActiveListName()}
           listMembers={listMembers}
           onSearch={openSearch}
-          onBriefing={openBriefing}
+          onBriefing={AI_FEATURES_ENABLED ? openBriefing : undefined}
           onSortToggle={handleSortToggle}
           sortOrder={state.sortOrder}
           canUndo={canUndo}
