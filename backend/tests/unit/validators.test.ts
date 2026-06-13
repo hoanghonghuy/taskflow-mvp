@@ -3,10 +3,24 @@ import { createTaskSchema, updateTaskSchema } from '../../src/validators/task.va
 import { loginSchema, registerSchema } from '../../src/validators/auth.validator'
 import { completeHabitSchema } from '../../src/validators/habit.validator'
 import { updateUserBodySchema } from '../../src/validators/admin.validator'
+import { createCountdownSchema, updateCountdownSchema } from '../../src/validators/countdown.validator'
 
 describe('validators', () => {
   it('createTaskSchema rejects empty title', () => {
     expect(() => createTaskSchema.parse({ title: '   ', listId: 'inbox' })).toThrow(ZodError)
+  })
+
+  it('createCountdownSchema rejects whitespace-only title', () => {
+    expect(() =>
+      createCountdownSchema.parse({
+        title: '   ',
+        targetDate: '2027-12-31T00:00:00Z',
+      }),
+    ).toThrow(ZodError)
+  })
+
+  it('updateCountdownSchema rejects whitespace-only title', () => {
+    expect(() => updateCountdownSchema.parse({ title: '   ' })).toThrow(ZodError)
   })
 
   it('createTaskSchema accepts valid payload with or without listId', () => {

@@ -1,5 +1,6 @@
 import type { Prisma } from '@prisma/client'
 import { mapCountdownToDto, type CountdownDto } from '../mappers/countdown.mapper'
+import { AppError } from '../middleware/errorHandler'
 import * as countdownRepository from '../repositories/countdownRepository'
 
 export async function listCountdowns(userId: string): Promise<CountdownDto[]> {
@@ -16,7 +17,8 @@ export async function createCountdown(
   userId: string,
   body: Record<string, unknown>,
 ): Promise<CountdownDto> {
-  const title = String(body.title ?? '').trim() || 'Untitled'
+  const title = String(body.title ?? '').trim()
+  if (!title) throw new AppError(400, 'invalid_request', 'Title is required')
   const targetDate = body.targetDate ? new Date(String(body.targetDate)) : new Date()
   const color = String(body.color ?? '#3b82f6')
 
@@ -39,7 +41,11 @@ export async function updateCountdown(
   if (!existing) return null
 
   const data: Prisma.CountdownEventUpdateInput = {}
-  if ('title' in body && body.title != null) data.title = String(body.title).trim()
+  if ('title' in body && body.title != null) {
+    const title = String(body.title).trim()
+    if (!title) throw new AppError(400, 'invalid_request', 'Title is required')
+    data.title = title
+  }
   if ('targetDate' in body && body.targetDate != null) {
     data.targetDate = new Date(String(body.targetDate))
   }

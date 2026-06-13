@@ -36,6 +36,37 @@ describe('Countdown API Extended', () => {
     expect(countdown.color).toBe('#0000ff')
   })
 
+  it('POST /api/countdown rejects whitespace-only title', async () => {
+    const { token } = await registerAndLogin()
+
+    await request(app)
+      .post('/api/countdown')
+      .set(authHeader(token))
+      .send({
+        title: '   ',
+        targetDate: '2027-12-31T00:00:00Z',
+      })
+      .expect(400)
+  })
+
+  it('PUT /api/countdown/:id rejects whitespace-only title', async () => {
+    const { token } = await registerAndLogin()
+
+    const createRes = await request(app)
+      .post('/api/countdown')
+      .set(authHeader(token))
+      .send({ title: 'Event', targetDate: '2027-12-31T00:00:00Z' })
+      .expect(201)
+
+    const countdown = apiData<{ id: string }>(createRes)
+
+    await request(app)
+      .put(`/api/countdown/${countdown.id}`)
+      .set(authHeader(token))
+      .send({ title: '   ' })
+      .expect(400)
+  })
+
   it('POST /api/countdown without title uses default', async () => {
     const { token } = await registerAndLogin()
 
