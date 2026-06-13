@@ -44,6 +44,32 @@ describe('mappers', () => {
     expect(dto.recurrence?.type).toBe('daily')
     expect(dto.dueDate).toBe(now.toISOString())
     expect(dto.sortOrder).toBe(2)
+    expect(dto.totalFocusTime).toBe(0)
+  })
+
+  it('mapTaskToDto includes totalFocusTime when provided', () => {
+    const task = {
+      id: 't3',
+      title: 'Focused',
+      description: null,
+      completed: false,
+      completedAt: null,
+      createdAt: now,
+      dueDate: null,
+      priority: 'none',
+      listId: 'inbox',
+      tags: '[]',
+      subtasks: '[]',
+      comments: '[]',
+      recurrence: null,
+      reminderMinutes: null,
+      assigneeId: null,
+      columnId: null,
+      sortOrder: 0,
+      userId: 'u1',
+    } as TodoTask
+
+    expect(mapTaskToDto(task, 3600).totalFocusTime).toBe(3600)
   })
 
   it('mapTaskToDto handles invalid JSON gracefully', () => {

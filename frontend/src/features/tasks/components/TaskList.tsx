@@ -9,7 +9,7 @@ import { PlusIcon, ArrowUpIcon, ArrowDownIcon } from '@/lib/icons'
 import { EMPTY_STATE_ILLUSTRATIONS } from '@/lib/task-constants'
 import { useI18n } from '@/lib/i18n/hooks'
 import { filterTasksByList, sortTasks, groupUpcomingTasks } from '@/lib/utils/task-helpers'
-import { isSameDay, startOfDay, endOfDay } from '@/lib/utils/date-helpers'
+import { isSameDay, startOfDay } from '@/lib/utils/date-helpers'
 
 interface TaskListProps {
   onAddTask?: () => void
@@ -20,7 +20,7 @@ const PAGE_SIZE = 50
 const TaskList: React.FC<TaskListProps> = ({ onAddTask }) => {
   const { state } = useTaskManager()
   const { reorderTasks } = useTaskActions()
-  const { t } = useI18n()
+  const { t, currentLanguage } = useI18n()
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null)
   const [isCompletedOpen, setIsCompletedOpen] = useState(false)
 
@@ -31,7 +31,6 @@ const TaskList: React.FC<TaskListProps> = ({ onAddTask }) => {
 
   const summary = useMemo(() => {
     const today = startOfDay(new Date())
-    const endOfWeek = endOfDay(startOfDay(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 7)))
 
     return filteredTasks.reduce(
       (acc, task) => {
@@ -45,7 +44,7 @@ const TaskList: React.FC<TaskListProps> = ({ onAddTask }) => {
           acc.today += 1
         } else if (dueDate < today) {
           acc.overdue += 1
-        } else if (dueDate <= endOfWeek) {
+        } else if (dueDate > today) {
           acc.upcoming += 1
         }
 
@@ -118,8 +117,8 @@ const TaskList: React.FC<TaskListProps> = ({ onAddTask }) => {
 
   const groupedUpcomingTasks = useMemo(() => {
     if (state.activeListId !== 'upcoming') return null
-    return groupUpcomingTasks(uncompletedTasks, t)
-  }, [state.activeListId, uncompletedTasks, t])
+    return groupUpcomingTasks(uncompletedTasks, t, currentLanguage)
+  }, [state.activeListId, uncompletedTasks, t, currentLanguage])
 
   const upcomingGroupOrder = useMemo(() => {
     if (!groupedUpcomingTasks) return []

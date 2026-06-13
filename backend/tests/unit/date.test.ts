@@ -1,4 +1,4 @@
-import { dateOnlyFromDate, todayDateString } from '../../src/lib/date'
+import { dateOnlyFromDate, todayDateString, todayUtcDateString } from '../../src/lib/date'
 
 describe('date helpers', () => {
   it('returns YYYY-MM-DD for Asia/Ho_Chi_Minh', () => {
@@ -12,5 +12,15 @@ describe('date helpers', () => {
     expect(instant.toISOString().slice(0, 10)).toBe('2026-06-12')
     expect(dateOnlyFromDate(instant, 'Asia/Ho_Chi_Minh')).toBe('2026-06-13')
     expect(dateOnlyFromDate(instant, 'UTC')).toBe('2026-06-12')
+  })
+
+  it('todayUtcDateString uses UTC calendar day when zones differ', () => {
+    jest.useFakeTimers()
+    jest.setSystemTime(new Date('2026-06-12T20:00:00.000Z'))
+
+    expect(todayUtcDateString()).toBe('2026-06-12')
+    expect(todayDateString('Asia/Ho_Chi_Minh')).toBe('2026-06-13')
+
+    jest.useRealTimers()
   })
 })

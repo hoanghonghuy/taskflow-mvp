@@ -8,6 +8,7 @@ import { Avatar } from '@/components/ui/avatar'
 import { CalendarIcon, CheckCircleIcon, ClockIcon, TrophyIcon } from 'lucide-react'
 import { toYYYYMMDD } from '@/lib/utils/date-helpers'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
+import { useToast } from '@/lib/hooks/use-toast'
 import * as profileApi from '@/lib/api/profile'
 
 type ProfileSummary = {
@@ -25,6 +26,7 @@ const ProfileView: React.FC = () => {
   const { user, updateProfile } = useUser()
   const { state } = useTaskManager()
   const { t } = useI18n()
+  const { error: showError, success } = useToast()
   const [isEditing, setIsEditing] = useState(false)
   const [editName, setEditName] = useState('')
   const [isSaving, setIsSaving] = useState(false)
@@ -105,10 +107,16 @@ const ProfileView: React.FC = () => {
 
     setIsSaving(true)
     try {
-      await updateProfile({ name: trimmed })
+      const saved = await updateProfile({ name: trimmed })
+      if (!saved) {
+        showError(t('profile.updateFailedTitle'), t('profile.updateFailedBody'))
+        return
+      }
+      success(t('profile.updateSuccessTitle'), t('profile.updateSuccessBody'))
       setIsEditing(false)
-    } catch (error) {
-      console.error('Failed to update profile name', error)
+    } catch (err) {
+      console.error('Failed to update profile name', err)
+      showError(t('profile.updateFailedTitle'), t('profile.updateFailedBody'))
     } finally {
       setIsSaving(false)
     }

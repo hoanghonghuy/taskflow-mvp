@@ -92,7 +92,6 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
         comments: [],
       }
       addTask(newTask)
-      addToast.success(t('taskForm.createTask'))
       onClose()
     }
   }

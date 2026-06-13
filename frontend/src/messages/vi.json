@@ -268,6 +268,7 @@
     "progressLabel": "Tiến độ",
     "addSubtaskPlaceholder": "Thêm nhiệm vụ con...",
     "addButton": "Thêm",
+    "createdAtLabel": "Ngày tạo",
     "commentsLabel": "Bình luận",
     "addCommentPlaceholder": "Thêm bình luận...",
     "startFocusButton": "Bắt đầu Tập trung",
@@ -545,6 +546,40 @@
     "earned": "Đã đạt được",
     "notEarned": "Chưa đạt được"
   },
+  "achievements": {
+    "subtitle": "Thành tích và huy hiệu của bạn",
+    "locked": {
+      "description": "Đã khóa",
+      "status": "Đã khóa"
+    },
+    "ready": "Sẵn sàng mở khóa!",
+    "items": {
+      "firstTask": {
+        "title": "Bước đầu tiên",
+        "description": "Tạo nhiệm vụ đầu tiên"
+      },
+      "complete10": {
+        "title": "Khởi đầu",
+        "description": "Hoàn thành 10 nhiệm vụ"
+      },
+      "complete50": {
+        "title": "Năng suất",
+        "description": "Hoàn thành 50 nhiệm vụ"
+      },
+      "weekStreak": {
+        "title": "Chiến binh tuần",
+        "description": "Hoàn thành nhiệm vụ 7 ngày liên tiếp"
+      },
+      "habit7DayStreak": {
+        "title": "Anh hùng thói quen",
+        "description": "Duy trì chuỗi thói quen 7 ngày"
+      },
+      "focus1h": {
+        "title": "Tập trung sâu",
+        "description": "Tích lũy 1 giờ tập trung"
+      }
+    }
+  },
   "settings": {
     "title": "Cài đặt",
     "subtitle": "Tùy chỉnh cài đặt ứng dụng",
@@ -667,7 +702,7 @@
     },
     "bottomNav": {
       "title": "Thanh điều hướng dưới",
-      "subtitle": "Kéo và thả để tùy chỉnh các tính năng xuất hiện trong thanh điều hướng dưới",
+      "subtitle": "Chọn tính năng hiển thị trên thanh điều hướng dưới (tối đa 4 mục)",
       "visible": "Hiển thị",
       "hidden": "Ẩn",
       "maxVisible": "Đã đủ số mục — hãy ẩn một tính năng khác trước"
@@ -719,7 +754,11 @@
     "completionRate": "tỷ lệ hoàn thành",
     "completedToday": "Đã hoàn thành hôm nay",
     "sessions": "phiên",
-    "unlocked": "Đã mở khóa"
+    "unlocked": "Đã mở khóa",
+    "updateSuccessTitle": "Đã cập nhật hồ sơ",
+    "updateSuccessBody": "Tên của bạn đã được lưu.",
+    "updateFailedTitle": "Không thể cập nhật hồ sơ",
+    "updateFailedBody": "Vui lòng thử lại sau."
   },
   "feature": {
     "toggleSidebar": "Bật/tắt thanh bên",
@@ -820,6 +859,12 @@
     "overdue": "Quá hạn",
     "all": "Tất cả",
     "loading": "Đang tải...",
+    "notFoundTitle": "404",
+    "notFoundBody": "Không tìm thấy trang.",
+    "goToDashboard": "Về bảng điều khiển",
+    "errorTitle": "Đã xảy ra lỗi",
+    "errorBody": "Có lỗi không mong muốn. Vui lòng thử lại.",
+    "tryAgain": "Thử lại",
     "noResults": "Không tìm thấy kết quả",
     "close": "Đóng",
     "confirm": "Xác nhận",

@@ -35,6 +35,9 @@ const isPast = (date: Date): boolean => {
   return date.getTime() < today.getTime()
 }
 
+const TASK_ACTION_CLASS =
+  'opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity'
+
 interface TaskItemProps {
   task: Task
   isDraggable: boolean
@@ -92,7 +95,8 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
 
   const handleStartFocus = (e: React.MouseEvent) => {
     e.stopPropagation()
-    dispatch({ type: 'SET_FOCUSED_TASK', payload: task.id })
+    const originalId = task.id.split('_')[0]
+    dispatch({ type: 'SET_FOCUSED_TASK', payload: originalId })
     dispatch({ type: 'START_TIMER' })
   }
 
@@ -218,7 +222,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
             )}
           </div>
           {task.subtasks.length > 0 && (
-            <button onClick={handleToggleSubtasksVisibility} className="p-1 rounded-full opacity-0 group-hover:opacity-100 hover:bg-secondary transition-opacity">
+            <button onClick={handleToggleSubtasksVisibility} className={`p-1 rounded-full ${TASK_ACTION_CLASS} hover:bg-secondary`}>
               {isSubtasksOpen ? <ArrowUpIcon className="h-4 w-4 text-muted-foreground" /> : <ArrowDownIcon className="h-4 w-4 text-muted-foreground" />}
             </button>
           )}
@@ -227,7 +231,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
           {!task.completed && (
             <button
               onClick={handleStartFocus}
-              className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary"
+              className={`${TASK_ACTION_CLASS} text-muted-foreground hover:text-primary`}
               aria-label={t('taskItem.aria.startFocus')}
             >
               <PlayCircleIcon className="h-6 w-6" />
@@ -235,7 +239,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
           )}
           <button
             onClick={handleQuickDelete}
-            className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+            className={`${TASK_ACTION_CLASS} text-muted-foreground hover:text-destructive`}
             aria-label={t('task.delete')}
           >
             <TrashIcon className="h-5 w-5" />

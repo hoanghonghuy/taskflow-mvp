@@ -1,17 +1,13 @@
 import type { Prisma } from '@prisma/client'
-import { todayDateString } from '../lib/date'
+import { todayUtcDateString } from '../lib/date'
 import { parseJsonArray, toJsonString } from '../lib/json'
 import { AppError } from '../middleware/errorHandler'
 import { mapHabitToDto, type HabitDto } from '../mappers/habit.mapper'
 import * as habitRepository from '../repositories/habitRepository'
 
-function todayUtc(): string {
-  return todayDateString()
-}
-
 function parseDateOrToday(date?: string | null): string {
   if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) return date
-  return todayUtc()
+  return todayUtcDateString()
 }
 
 export async function listHabits(userId: string): Promise<HabitDto[]> {

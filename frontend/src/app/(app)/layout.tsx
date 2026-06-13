@@ -18,7 +18,6 @@ import ShareListModal from '@/components/collaboration/ShareListModal'
 import Chatbot from '@/components/chatbot/Chatbot'
 import { useModal } from '@/components/providers/modal-provider'
 import { AI_FEATURES_ENABLED } from '@/lib/feature-flags'
-import * as authApi from '@/lib/api/auth'
 
 export default function AppLayout({
   children,
@@ -27,9 +26,9 @@ export default function AppLayout({
 }) {
   const router = useRouter()
   const pathname = usePathname()
-  const { isAuthenticated, authReady, logout } = useUser()
+  const { isAuthenticated, authReady } = useUser()
+  const { isHydrating, state } = useTaskManager()
   const { t } = useI18n()
-  const { state } = useTaskManager()
   const modal = useModal()
   const [isSidebarOpen, setSidebarOpen] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
@@ -98,63 +97,20 @@ export default function AppLayout({
     return ''
   })()
 
-  const [checkingSession, setCheckingSession] = useState(true)
-
   useEffect(() => {
-    let isMounted = true
-
-    const verifySession = async () => {
-      if (!authReady) {
-        return
-      }
-
-      if (!isAuthenticated) {
-        if (isMounted) {
-          setCheckingSession(false)
-          router.replace('/login')
-        }
-        return
-      }
-
-      try {
-        const { ok, data } = await authApi.fetchSession()
-
-        if (!ok || data?.authenticated !== true) {
-          await logout()
-          if (isMounted) {
-            router.replace('/login')
-          }
-          return
-        }
-      } catch {
-        await logout()
-        if (isMounted) {
-          router.replace('/login')
-        }
-        return
-      }
-
-      if (isMounted) {
-        setCheckingSession(false)
-      }
+    if (authReady && !isAuthenticated) {
+      router.replace('/login')
     }
-
-    void verifySession()
-
-    return () => {
-      isMounted = false
-    }
-  }, [authReady, isAuthenticated, logout, router])
+  }, [authReady, isAuthenticated, router])
 
   // Theme is handled by SettingsProvider
 
-  // Show loading state during hydration and session verification to prevent mismatch
-  if (!authReady || checkingSession) {
+  if (!authReady || !isAuthenticated || isHydrating) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Loading...</p>
+          <p className="mt-4 text-muted-foreground">{t('common.loading')}</p>
         </div>
       </div>
     )

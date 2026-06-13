@@ -13,6 +13,14 @@ import { useRouter } from 'next/navigation'
 import { useConfirmation } from '@/components/providers/confirmation-provider'
 import { useToast } from '@/components/providers/toast-provider'
 import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import type { List } from '@/types'
+
+const LIST_ACTION_BUTTON_CLASS =
+  'opacity-100 md:opacity-0 md:group-hover:opacity-100 text-muted-foreground p-0.5 rounded'
+
+function isInboxList(list: Pick<List, 'id' | 'name'>): boolean {
+  return list.id === 'inbox' || list.name === 'Inbox'
+}
 
 interface SidebarProps {
   isOpen: boolean
@@ -226,10 +234,10 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-medium text-muted-foreground">{taskCount}</span>
-                          {onShareList && list.name !== 'Inbox' && (
+                          {onShareList && !isInboxList(list) && (
                             <button 
                               onClick={(e) => { e.stopPropagation(); onShareList(list.id); }} 
-                              className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-primary p-0.5 rounded"
+                              className={`${LIST_ACTION_BUTTON_CLASS} hover:text-primary`}
                               aria-label={t('sidebar.aria.shareList', { listName: list.name })}
                             >
                               <UserPlusIcon className="h-4 w-4" />
@@ -237,7 +245,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                           )}
                           <button 
                             onClick={(e) => { e.stopPropagation(); handleDeleteList(list.id, list.name); }} 
-                            className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive p-0.5 rounded"
+                            className={`${LIST_ACTION_BUTTON_CLASS} hover:text-destructive`}
                             aria-label={t('sidebar.aria.deleteList', { listName: list.name })}
                           >
                             <TrashIcon className="h-4 w-4" />

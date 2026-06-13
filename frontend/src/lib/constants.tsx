@@ -2,6 +2,7 @@
 import React from 'react'
 import { Priority, PomodoroSettings, AppState, Task } from '@/types'
 import type { TranslationKey } from '@/lib/i18n/types'
+import { toYYYYMMDD } from '@/lib/utils/date-helpers'
 
 // Icons
 export const CalendarDayIcon: React.FC<{ className?: string }> = ({ className }) => (
@@ -438,60 +439,49 @@ export const DEFAULT_COLUMNS = [
 export const ACHIEVEMENT_DEFINITIONS = [
   {
     id: 'first-task',
-    title: 'First Step',
-    description: 'Create your first task',
     icon: '🎯',
     condition: (state: AppState) => state.tasks.length >= 1,
   },
   {
     id: 'complete-10',
-    title: 'Getting Started',
-    description: 'Complete 10 tasks',
     icon: '🌟',
-    condition: (state: AppState) => 
+    condition: (state: AppState) =>
       state.tasks.filter(t => t.completed).length >= 10,
   },
   {
     id: 'complete-50',
-    title: 'Productive',
-    description: 'Complete 50 tasks',
     icon: '🔥',
-    condition: (state: AppState) => 
+    condition: (state: AppState) =>
       state.tasks.filter(t => t.completed).length >= 50,
   },
   {
     id: 'week-streak',
-    title: 'Week Warrior',
-    description: 'Complete tasks 7 days in a row',
     icon: '⚡',
     condition: (state: AppState) => {
-      // Check if tasks were completed 7 days in a row
       const today = new Date()
       let streakDays = 0
-      
+
       for (let i = 0; i < 7; i++) {
         const checkDate = new Date(today)
         checkDate.setDate(today.getDate() - i)
-        const dateStr = checkDate.toISOString().split('T')[0]
-        
-        const hasCompletedTasks = state.tasks.some((task: Task) => 
-          task.completed && task.completedAt && task.completedAt.startsWith(dateStr)
+        const dateStr = toYYYYMMDD(checkDate)
+
+        const hasCompletedTasks = state.tasks.some((task: Task) =>
+          task.completedAt != null && task.completedAt.startsWith(dateStr)
         )
-        
+
         if (hasCompletedTasks) {
           streakDays++
         } else if (i > 0) {
-          break // Break if streak is broken (but allow today to be incomplete)
+          break
         }
       }
-      
+
       return streakDays >= 7
     },
   },
   {
     id: 'habit-7-day-streak',
-    title: 'Habit Hero',
-    description: 'Maintain a 7-day habit streak',
     icon: '📆',
     condition: (state: AppState) => {
       const dates = new Set<string>()
@@ -530,8 +520,6 @@ export const ACHIEVEMENT_DEFINITIONS = [
   },
   {
     id: 'focus-1h',
-    title: 'Deep Focus',
-    description: 'Accumulate 1 hour of focus time',
     icon: '⏱️',
     condition: (state: AppState) => {
       const totalSeconds = state.pomodoro.focusHistory.reduce((acc, session) => acc + session.duration, 0)

@@ -69,8 +69,25 @@ const COUNTDOWN_COLOR_OPTIONS: CountdownColorOption[] = [
   },
 ] as const
 
-const getColorOption = (value: string | undefined) =>
-  COUNTDOWN_COLOR_OPTIONS.find(option => option.value === value) ?? COUNTDOWN_COLOR_OPTIONS[0]
+const LEGACY_HEX_COLORS: Record<string, string> = {
+  '#3b82f6': 'sky',
+  '#2563eb': 'sky',
+  '#ef4444': 'sunset',
+  '#f97316': 'sunset',
+  '#22c55e': 'forest',
+  '#10b981': 'forest',
+  '#a855f7': 'violet',
+  '#8b5cf6': 'violet',
+  '#f59e0b': 'amber',
+  '#eab308': 'amber',
+}
+
+const getColorOption = (value: string | undefined) => {
+  const normalized = value
+    ? LEGACY_HEX_COLORS[value.toLowerCase()] ?? value
+    : COUNTDOWN_COLOR_OPTIONS[0].value
+  return COUNTDOWN_COLOR_OPTIONS.find(option => option.value === normalized) ?? COUNTDOWN_COLOR_OPTIONS[0]
+}
 
 interface CountdownTimeLeft {
   days: number
@@ -127,6 +144,13 @@ export const useCountdown = () => {
 
     return () => clearInterval(timer)
   }, [])
+
+  // Request notification permission when user has countdown events
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('Notification' in window)) return
+    if (Notification.permission !== 'default' || countdownEvents.length === 0) return
+    void Notification.requestPermission()
+  }, [countdownEvents.length])
 
   // Check for completed countdowns and send notifications
   useEffect(() => {

@@ -50,6 +50,19 @@ describe('extended reducers', () => {
     expect(s.lists[0].members).toEqual(['u2'])
   })
 
+  it('columnReducer reassigns tasks when deleting first column', () => {
+    let s = columnReducer(state(), { type: 'ADD_COLUMN', payload: { name: 'C1', listId: 'inbox' } })
+    const col1 = s.columns[0].id
+    s = columnReducer(s, { type: 'ADD_COLUMN', payload: { name: 'C2', listId: 'inbox' } })
+    const col2 = s.columns[1].id
+    s = {
+      ...s,
+      tasks: [{ ...sampleTask(), columnId: col1, listId: 'inbox' }],
+    }
+    s = columnReducer(s, { type: 'DELETE_COLUMN', payload: { columnId: col1, listId: 'inbox' } })
+    expect(s.tasks[0].columnId).toBe(col2)
+  })
+
   it('columnReducer update, delete, move task', () => {
     let s = columnReducer(state(), { type: 'ADD_COLUMN', payload: { name: 'C1', listId: 'inbox' } })
     const col1 = s.columns[0].id
@@ -61,6 +74,7 @@ describe('extended reducers', () => {
       tasks: [{ ...sampleTask(), columnId: col2, listId: 'inbox' }],
     }
     s = columnReducer(s, { type: 'DELETE_COLUMN', payload: { columnId: col2, listId: 'inbox' } })
+    expect(s.tasks[0].columnId).toBe(col1)
     s = columnReducer(s, {
       type: 'MOVE_TASK_TO_COLUMN',
       payload: { taskId: 't1', newColumnId: col1, listId: 'inbox' },
@@ -99,6 +113,29 @@ describe('extended reducers', () => {
     expect(s.pomodoro.sessionsCompleted).toBeGreaterThanOrEqual(1)
   })
 
+  it('pomodoroReducer records focus session without linked task or habit', () => {
+    const s = pomodoroReducer(
+      {
+        ...state(),
+        pomodoro: {
+          ...state().pomodoro,
+          isActive: true,
+          isPaused: false,
+          remainingTime: 1,
+          currentSession: 'focus',
+          focusedTaskId: null,
+          focusedHabitId: null,
+          focusHistory: [],
+          sessionsCompleted: 0,
+        },
+      },
+      { type: 'TICK_TIMER' },
+    )
+    expect(s.pomodoro.focusHistory).toHaveLength(1)
+    expect(s.pomodoro.focusHistory[0].taskId).toBeUndefined()
+    expect(s.pomodoro.focusHistory[0].habitId).toBeUndefined()
+  })
+
   it('viewReducer active list/tag and sort', () => {
     let s = viewReducer(state(), { type: 'SET_ACTIVE_LIST', payload: 'work' })
     expect(s.activeListId).toBe('work')
@@ -123,7 +160,8 @@ describe('extended reducers', () => {
   })
 
   it('action creators and composite reducer', () => {
-    const { id: _taskId, ...taskWithoutId } = sampleTask()
+    const { id, ...taskWithoutId } = sampleTask()
+    void id
     let s = taskManagerReducer(state(), taskActions.add(taskWithoutId))
     s = taskManagerReducer(s, listActions.add({ name: 'L', color: '#fff', members: [] }))
     s = taskManagerReducer(s, habitActions.add({ name: 'H' }))

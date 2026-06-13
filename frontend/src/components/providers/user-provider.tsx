@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, useCallback, useEffect } from 'react'
-import { useI18n } from '@/lib/i18n/hooks'
+import { onSessionExpired } from '@/lib/auth/session-events'
 import * as authApi from '@/lib/api/auth'
 import type { User } from '@/types'
 
@@ -14,14 +14,13 @@ interface UserContextType {
   login: (email: string, password: string) => Promise<User>
   register: (name: string, email: string, password: string) => Promise<void>
   logout: () => void
-  updateProfile: (updates: Partial<User>) => Promise<void>
+  updateProfile: (updates: Partial<User>) => Promise<boolean>
   refreshCollaborators: () => Promise<void>
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined)
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
-  const { t } = useI18n()
   const [user, setUser] = useState<User | null>(null)
   const [allUsers, setAllUsers] = useState<User[]>([])
   const [authReady, setAuthReady] = useState(false)
@@ -45,7 +44,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                 try {
                   resolvedUser = JSON.parse(savedUser) as User
                 } catch (error) {
-                  console.error(t('console.failedParseUser'), error)
+                  console.error('Failed to parse saved user from localStorage', error)
                   localStorage.removeItem('user')
                 }
               }
@@ -101,7 +100,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true
     }
-  }, [t])
+  }, [])
 
   const login = useCallback(async (email: string, password: string) => {
     const loggedInUser = await authApi.login(email, password)
@@ -141,6 +140,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('isAuthenticated')
     localStorage.removeItem('taskflowState')
   }, [])
+
+  useEffect(() => {
+    return onSessionExpired(() => {
+      void logout()
+    })
+  }, [logout])
 
   const refreshSession = useCallback(async () => {
     if (!user) return
@@ -195,15 +200,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  const updateProfile = useCallback(async (updates: Partial<User>) => {
-    if (!user) return
+  const updateProfile = useCallback(async (updates: Partial<User>): Promise<boolean> => {
+    if (!user) return false
 
     if (updates.name) {
       const updated = await authApi.updateCurrentUser({ name: updates.name })
-      if (!updated) return
+      if (!updated) return false
       setUser(updated)
       localStorage.setItem('user', JSON.stringify(updated))
-      return
+      return true
     }
 
     setUser((prev) => {
@@ -212,6 +217,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('user', JSON.stringify(next))
       return next
     })
+    return true
   }, [user])
 
   return (

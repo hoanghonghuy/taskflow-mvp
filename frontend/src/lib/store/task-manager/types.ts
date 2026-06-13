@@ -95,5 +95,6 @@ export interface TaskManagerContextType {
   dispatch: (action: Action) => void
   canUndo: boolean
   canRedo: boolean
+  isHydrating: boolean
   syncFromBackend: () => Promise<void>
 }

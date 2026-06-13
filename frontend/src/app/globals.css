@@ -394,6 +394,10 @@ body {
   position: relative;
 }
 
+.grid-cols-30 {
+  grid-template-columns: repeat(30, minmax(0, 1fr));
+}
+
 .bottom-nav-button {
   border-radius: 1.25rem;
   padding: 0.35rem 0.5rem;

@@ -40,9 +40,10 @@ export default function ProfileDropdown({ user, onClose, variant = 'floating' }:
     onClose()
   }
 
-  const handleLogoutClick = () => {
-    logout()
+  const handleLogoutClick = async () => {
     onClose()
+    await logout()
+    router.replace('/login')
   }
 
   if (!user) return null

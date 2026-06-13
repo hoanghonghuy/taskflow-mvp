@@ -143,7 +143,8 @@ export const sortTasks = (tasks: Task[], sortOrder: SortOrder, allTasks: Task[])
 
 export const groupUpcomingTasks = (
   tasks: Task[],
-  t: TranslationFunction
+  t: TranslationFunction,
+  locale?: string,
 ): { [key: string]: Task[] } => {
   const groups: { [key: string]: Task[] } = {}
   const today = new Date()
@@ -169,9 +170,9 @@ export const groupUpcomingTasks = (
     if (isTomorrow(dueDate)) {
       groupKey = t('specialLists.tomorrow')
     } else if (dueDate > tomorrow && dueDate <= endOfWeek) {
-      groupKey = dueDate.toLocaleDateString(undefined, { weekday: 'long' })
+      groupKey = dueDate.toLocaleDateString(locale, { weekday: 'long' })
     } else {
-      groupKey = dueDate.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })
+      groupKey = dueDate.toLocaleDateString(locale, { weekday: 'long', month: 'short', day: 'numeric' })
     }
 
     if (!groups[groupKey]) {

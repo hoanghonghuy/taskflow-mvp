@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { usePomodoroActions } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/i18n/hooks'
@@ -16,7 +17,39 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import type { Task, Habit } from '@/types'
 import type { TranslationKey } from '@/lib/i18n/types'
 
+function PomodoroOverflowMenu({
+  onOpenStatistics,
+  t,
+  onOpenSettings,
+}: {
+  onOpenStatistics: () => void
+  t: (key: TranslationKey, options?: Record<string, string | number>) => string
+  onOpenSettings: () => void
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-muted/80 text-muted-foreground hover:bg-muted border border-border/60"
+        >
+          <span className="text-lg leading-none">⋯</span>
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuItem onClick={onOpenStatistics}>
+          {t('pomodoro.overviewMenu.statistics' as TranslationKey)}
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={onOpenSettings}>
+          {t('nav.settings' as TranslationKey)}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
 const PomodoroView: React.FC = () => {
+  const router = useRouter()
   const { state } = useTaskManager()
   const { startTimer, pauseTimer, resetTimer, skipBreak, setFocusedTask, setFocusedHabit } = usePomodoroActions()
   const { t } = useI18n()
@@ -48,6 +81,28 @@ const PomodoroView: React.FC = () => {
   const totalFocusDurationToday = todaysFocusRecords.reduce((acc, curr) => acc + curr.duration, 0)
   const totalPomosAllTime = pomodoro.sessionsCompleted
   const totalFocusDurationAllTime = pomodoro.focusHistory.reduce((acc, curr) => acc + curr.duration, 0)
+
+  const focusByTask = useMemo(() => {
+    const totals = new Map<string, number>()
+    for (const record of pomodoro.focusHistory) {
+      if (!record.taskId) continue
+      totals.set(record.taskId, (totals.get(record.taskId) ?? 0) + record.duration)
+    }
+    return Array.from(totals.entries())
+      .map(([taskId, seconds]) => ({
+        taskId,
+        title: state.tasks.find(task => task.id === taskId)?.title ?? t('pomodoro.generalFocus'),
+        seconds,
+      }))
+      .sort((a, b) => b.seconds - a.seconds)
+  }, [pomodoro.focusHistory, state.tasks, t])
+
+  const recentFocusSessions = useMemo(
+    () => [...pomodoro.focusHistory].reverse().slice(0, 20),
+    [pomodoro.focusHistory],
+  )
+
+  const openPomodoroSettings = () => router.push('/settings')
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -211,61 +266,21 @@ const PomodoroView: React.FC = () => {
       </AppPageContainer>
       <AppPageMain className="py-4 md:py-8">
         <div className="mb-4 flex justify-end lg:hidden">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-muted/80 text-muted-foreground hover:bg-muted border border-border/60"
-              >
-                <span className="text-lg leading-none">⋯</span>
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem>
-                {t('pomodoro.overviewMenu.fullScreen' as TranslationKey)}
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                {t('pomodoro.overviewMenu.miniMode' as TranslationKey)}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setStatisticsOpen(true)}>
-                {t('pomodoro.overviewMenu.statistics' as TranslationKey)}
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                {t('pomodoro.overviewMenu.focusSettings' as TranslationKey)}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <PomodoroOverflowMenu
+            onOpenStatistics={() => setStatisticsOpen(true)}
+            onOpenSettings={openPomodoroSettings}
+            t={t}
+          />
         </div>
 
         <div className="flex flex-col lg:flex-row h-full gap-8">
           <div className="flex-1 flex flex-col items-center justify-center lg:justify-start">
             <div className="hidden lg:flex w-full justify-end mb-4">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-muted/80 text-muted-foreground hover:bg-muted border border-border/60"
-                  >
-                    <span className="text-lg leading-none">⋯</span>
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem>
-                    {t('pomodoro.overviewMenu.fullScreen' as TranslationKey)}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    {t('pomodoro.overviewMenu.miniMode' as TranslationKey)}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => setStatisticsOpen(true)}>
-                    {t('pomodoro.overviewMenu.statistics' as TranslationKey)}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    {t('pomodoro.overviewMenu.focusSettings' as TranslationKey)}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <PomodoroOverflowMenu
+                onOpenStatistics={() => setStatisticsOpen(true)}
+                onOpenSettings={openPomodoroSettings}
+                t={t}
+              />
             </div>
 
             <div className="text-center mb-8">
@@ -382,34 +397,7 @@ const PomodoroView: React.FC = () => {
           </div>
 
           <div className="w-full lg:w-96 space-y-6">
-            <div className="hidden">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-muted/80 text-muted-foreground hover:bg-muted border border-border/60"
-                  >
-                    <span className="text-lg leading-none">⋯</span>
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem>
-                    {t('pomodoro.overviewMenu.fullScreen' as TranslationKey)}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    {t('pomodoro.overviewMenu.miniMode' as TranslationKey)}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => setStatisticsOpen(true)}>
-                    {t('pomodoro.overviewMenu.statistics' as TranslationKey)}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    {t('pomodoro.overviewMenu.focusSettings' as TranslationKey)}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <Card className="flex-1">
+            <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <StopwatchIcon className="h-5 w-5" />
@@ -469,70 +457,6 @@ const PomodoroView: React.FC = () => {
                   )}
                 </CardContent>
               </Card>
-            </div>
-
-            <div className="block">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <StopwatchIcon className="h-5 w-5" />
-                    {t('pomodoro.overviewTitle' as TranslationKey)}
-                  </CardTitle>
-                  <CardDescription>
-                    {t('pomodoro.todaySubtitle')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="rounded-lg bg-secondary/50 p-4">
-                      <p className="text-xs font-medium text-muted-foreground uppercase">
-                        {t('pomodoro.todayPomos')}
-                      </p>
-                      <p className="mt-2 text-2xl font-semibold">{totalPomosToday}</p>
-                    </div>
-                    <div className="rounded-lg bg-secondary/50 p-4">
-                      <p className="text-xs font-medium text-muted-foreground uppercase">
-                        {t('pomodoro.focusTime')}
-                      </p>
-                      <p className="mt-2 text-2xl font-semibold">{formatDuration(totalFocusDurationToday)}</p>
-                    </div>
-                    <div className="rounded-lg bg-secondary/50 p-4">
-                      <p className="text-xs font-medium text-muted-foreground uppercase">
-                        {t('pomodoro.totalSessionsLabel')}
-                      </p>
-                      <p className="mt-2 text-2xl font-semibold">{totalPomosAllTime}</p>
-                    </div>
-                    <div className="rounded-lg bg-secondary/50 p-4">
-                      <p className="text-xs font-medium text-muted-foreground uppercase">
-                        {t('pomodoro.allTimeFocus')}
-                      </p>
-                      <p className="mt-2 text-2xl font-semibold">{formatDuration(totalFocusDurationAllTime)}</p>
-                    </div>
-                  </div>
-
-                  {todaysFocusRecords.length > 0 && (
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-medium text-muted-foreground">{t('pomodoro.recentSessions')}</h4>
-                      <div className="space-y-1 max-h-32 overflow-y-auto">
-                        {todaysFocusRecords.slice(-3).reverse().map((record, index) => {
-                          const task = state.tasks.find(t => t.id === record.taskId)
-                          return (
-                            <div key={index} className="flex items-center justify-between text-sm p-2 bg-muted/50 rounded">
-                              <span className="truncate">
-                                {task?.title || t('pomodoro.generalFocus')}
-                              </span>
-                              <span className="text-muted-foreground">
-                                {formatDuration(record.duration)}
-                              </span>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
 
             <Card>
               <CardHeader>
@@ -894,9 +818,59 @@ const PomodoroView: React.FC = () => {
                   </div>
                 )}
 
-                <p className="text-sm text-muted-foreground">
-                  {t('pomodoro.statisticsEmpty' as TranslationKey)}
-                </p>
+                {statisticsTab === 'task' && (
+                  focusByTask.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">
+                      {t('pomodoro.statisticsEmpty' as TranslationKey)}
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      {focusByTask.map(entry => (
+                        <div
+                          key={entry.taskId}
+                          className="flex items-center justify-between rounded-lg border border-border/60 p-3"
+                        >
+                          <span className="truncate text-sm font-medium">{entry.title}</span>
+                          <span className="text-sm text-muted-foreground">{formatDuration(entry.seconds)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )
+                )}
+
+                {statisticsTab === 'focus' && (
+                  recentFocusSessions.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">
+                      {t('pomodoro.statisticsEmpty' as TranslationKey)}
+                    </p>
+                  ) : (
+                    <div className="space-y-2 max-h-80 overflow-y-auto">
+                      {recentFocusSessions.map((record, index) => {
+                        const task = record.taskId
+                          ? state.tasks.find(item => item.id === record.taskId)
+                          : null
+                        const habit = record.habitId
+                          ? state.habits.find(item => item.id === record.habitId)
+                          : null
+                        const label = task?.title ?? habit?.name ?? t('pomodoro.generalFocus')
+                        return (
+                          <div
+                            key={`${record.startTime}-${index}`}
+                            className="flex items-center justify-between rounded-lg border border-border/60 p-3"
+                          >
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-medium">{label}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {new Date(record.startTime).toLocaleString()}
+                              </p>
+                            </div>
+                            <span className="text-sm text-muted-foreground">{formatDuration(record.duration)}</span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )
+                )}
               </div>
             </div>
           </div>

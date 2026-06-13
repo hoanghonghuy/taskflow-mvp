@@ -50,7 +50,6 @@ const Chatbot: React.FC<ChatbotProps> = ({ onClose }) => {
       timestamp: Date.now(),
     }
 
-    const currentInput = input
     const conversationForBackend = [...messages, userMessage].map((m) => ({
       role: m.role === 'user' ? 'user' : 'model',
       text: m.text,

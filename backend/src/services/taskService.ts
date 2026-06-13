@@ -4,6 +4,7 @@ import { normalizeListId } from '../lib/inbox-list'
 import { getNextOccurrence, parseRecurrence } from '../lib/recurrence'
 import { mapTaskToDto, type TaskDto } from '../mappers/task.mapper'
 import { AppError } from '../middleware/errorHandler'
+import * as pomodoroRepository from '../repositories/pomodoroRepository'
 import * as taskRepository from '../repositories/taskRepository'
 
 const VALID_PRIORITIES = new Set(['none', 'low', 'medium', 'high', 'urgent'])
@@ -24,13 +25,18 @@ function normalizePriority(value: unknown): string {
 }
 
 export async function listTasks(userId: string): Promise<TaskDto[]> {
-  const tasks = await taskRepository.findTasksByUserId(userId)
-  return tasks.map(mapTaskToDto)
+  const [tasks, focusByTaskId] = await Promise.all([
+    taskRepository.findTasksByUserId(userId),
+    pomodoroRepository.sumFocusSecondsByTaskId(userId),
+  ])
+  return tasks.map((task) => mapTaskToDto(task, focusByTaskId.get(task.id) ?? 0))
 }
 
 export async function getTask(userId: string, id: string): Promise<TaskDto | null> {
   const task = await taskRepository.findTaskByIdAndUserId(id, userId)
-  return task ? mapTaskToDto(task) : null
+  if (!task) return null
+  const totalFocusTime = await pomodoroRepository.sumFocusSecondsForTask(userId, id)
+  return mapTaskToDto(task, totalFocusTime)
 }
 
 export async function createTask(userId: string, body: Record<string, unknown>): Promise<TaskDto> {
@@ -57,7 +63,7 @@ export async function createTask(userId: string, body: Record<string, unknown>):
     user: { connect: { id: userId } },
   })
 
-  return mapTaskToDto(task)
+  return mapTaskToDto(task, 0)
 }
 
 export async function updateTask(
@@ -122,7 +128,8 @@ export async function updateTask(
   if ('assigneeId' in body) data.assigneeId = body.assigneeId != null ? String(body.assigneeId) : null
 
   const updated = await taskRepository.updateTask(id, data)
-  return mapTaskToDto(updated)
+  const totalFocusTime = await pomodoroRepository.sumFocusSecondsForTask(userId, id)
+  return mapTaskToDto(updated, totalFocusTime)
 }
 
 export async function deleteTask(userId: string, id: string): Promise<boolean> {
@@ -152,5 +159,6 @@ export async function reorderTasks(userId: string, taskIds: string[]): Promise<T
 
   await taskRepository.updateTaskSortOrders(userId, taskIds)
   const tasks = await taskRepository.findTasksByUserId(userId)
-  return tasks.map(mapTaskToDto)
+  const focusByTaskId = await pomodoroRepository.sumFocusSecondsByTaskId(userId)
+  return tasks.map((task) => mapTaskToDto(task, focusByTaskId.get(task.id) ?? 0))
 }

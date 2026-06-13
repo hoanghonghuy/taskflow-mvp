@@ -20,7 +20,7 @@ export function createApiMocks(
 ) {
   const json = vi.fn() as Mock
   const end = vi.fn() as Mock
-  const status = vi.fn((code: number) => ({ json, end })) as Mock<
+  const status = vi.fn(() => ({ json, end })) as Mock<
     (code: number) => { json: Mock; end: Mock }
   >
   const setHeader = vi.fn() as Mock

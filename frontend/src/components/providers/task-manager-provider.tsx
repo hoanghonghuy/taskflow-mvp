@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useReducer, useCallback, useEffect, useRef } from 'react'
+import { createContext, useContext, useReducer, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useI18n } from '@/lib/i18n/hooks'
 import { taskActions, listActions, habitActions, pomodoroActions } from '@/lib/store/task-manager/actions'
 import { historyReducer } from '@/lib/store/task-manager/history-reducer'
@@ -33,6 +33,7 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
   const { isAuthenticated } = useUser()
   const hasLoadedFromBackend = useRef(false)
   const wasAuthenticatedRef = useRef(isAuthenticated)
+  const [isHydrating, setIsHydrating] = useState(false)
   // Initialize with history state
   const [historyState, dispatch] = useReducer(
     historyReducer,
@@ -113,7 +114,7 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
     pomodoroRef.current = historyState.present.pomodoro
   }, [historyState.present.pomodoro])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!isAuthenticated) {
       return
     }
@@ -123,6 +124,7 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
     }
 
     hasLoadedFromBackend.current = true
+    setIsHydrating(true)
 
     const loadFromBackend = async () => {
       try {
@@ -230,6 +232,8 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
         dispatch({ type: 'LOAD_STATE', payload: nextState })
       } catch (error) {
         console.error('Failed to load data from backend', error)
+      } finally {
+        setIsHydrating(false)
       }
     }
 
@@ -329,6 +333,7 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
   useEffect(() => {
     if (!isAuthenticated) {
       hasLoadedFromBackend.current = false
+      setIsHydrating(false)
       dispatch({ type: 'LOAD_STATE', payload: INITIAL_STATE })
     }
   }, [isAuthenticated, dispatch])
@@ -381,6 +386,7 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
         dispatch,
         canUndo,
         canRedo,
+        isHydrating,
         syncFromBackend,
       }}
     >
@@ -446,7 +452,7 @@ export function useTaskActions() {
       }
     }, [dispatch, success, showError, t]),
 
-    updateTask: useCallback(async (task: Task) => {
+    updateTask: useCallback(async (task: Task, options?: { silent?: boolean }) => {
       try {
         const updatedTask = (await tasksApi.updateTask(task.id, {
           title: task.title,
@@ -465,10 +471,12 @@ export function useTaskActions() {
         })) ?? task
 
         dispatch({ type: 'UPDATE_TASK', payload: updatedTask })
-        success(
-          t('toast.taskUpdatedTitle' as TranslationKey),
-          t('toast.taskUpdatedBody' as TranslationKey, { title: updatedTask.title }),
-        )
+        if (!options?.silent) {
+          success(
+            t('toast.taskUpdatedTitle' as TranslationKey),
+            t('toast.taskUpdatedBody' as TranslationKey, { title: updatedTask.title }),
+          )
+        }
       } catch (err) {
         console.error('Failed to update task via API', err)
         showError(

@@ -1,5 +1,4 @@
 import type {
-  Comment,
   CountdownEvent,
   FocusSession,
   Habit,
@@ -132,7 +131,12 @@ export function mapTasksFromApi(items: unknown[]): Task[] {
       assigneeId,
       comments,
       createdAt,
-      totalFocusTime: undefined,
+      totalFocusTime:
+        typeof t.totalFocusTime === 'number'
+          ? t.totalFocusTime
+          : typeof t.TotalFocusTime === 'number'
+            ? t.TotalFocusTime
+            : 0,
       sortOrder:
         typeof t.sortOrder === 'number'
           ? t.sortOrder

@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useCallback, useEffect, useRef } f
 import { useTranslation } from 'react-i18next'
 import { useI18n } from '@/lib/i18n/hooks'
 import { ApiError } from '@/lib/api/client'
+import { emitSessionExpired } from '@/lib/auth/session-events'
 import * as settingsApi from '@/lib/api/settings'
 import { mapSettingsFromApi } from '@/lib/api/settings'
 import { setLocaleCookie } from '@/lib/i18n/locale-cookie'
@@ -35,14 +36,8 @@ const DEFAULT_SETTINGS: Settings = {
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined)
 
-function isUserAuthenticated(): boolean {
-  return typeof window !== 'undefined' && window.localStorage.getItem('isAuthenticated') === 'true'
-}
-
-function clearStaleAuth(): void {
-  if (typeof window === 'undefined') return
-  localStorage.removeItem('isAuthenticated')
-  localStorage.removeItem('user')
+function handleAuthFailure(): void {
+  emitSessionExpired()
 }
 
 interface SettingsProviderProps {
@@ -114,7 +109,7 @@ export function SettingsProvider({ children, initialLocale }: SettingsProviderPr
 
     const loadFromBackend = async () => {
       if (typeof window === 'undefined') return
-      if (!isUserAuthenticated()) return
+      if (localStorage.getItem('isAuthenticated') !== 'true') return
 
       try {
         const data = await settingsApi.fetchSettings()
@@ -138,7 +133,7 @@ export function SettingsProvider({ children, initialLocale }: SettingsProviderPr
         }
       } catch (error) {
         if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
-          clearStaleAuth()
+          handleAuthFailure()
           return
         }
         console.error('Failed to load settings from backend', error)
@@ -153,11 +148,12 @@ export function SettingsProvider({ children, initialLocale }: SettingsProviderPr
   }, [applyLanguage])
 
   const persistToBackend = useCallback((payload: Partial<Settings>) => {
-    if (!isUserAuthenticated()) return
+    if (typeof window === 'undefined') return
+    if (localStorage.getItem('isAuthenticated') !== 'true') return
 
     void settingsApi.updateSettings(payload).catch((error) => {
       if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
-        clearStaleAuth()
+        handleAuthFailure()
         return
       }
       console.error('Failed to persist settings to backend', error)

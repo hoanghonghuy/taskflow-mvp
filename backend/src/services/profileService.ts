@@ -47,7 +47,7 @@ export function getTaskCompletionStreak(
   const dates = new Set<string>()
 
   for (const task of tasks) {
-    if (task.completed && task.completedAt) {
+    if (task.completedAt) {
       dates.add(dateOnlyFromDate(task.completedAt, timeZone))
     }
   }

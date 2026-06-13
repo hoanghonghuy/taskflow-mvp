@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useRef, useEffect } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/i18n/hooks'
 import { useTaskActions } from '@/lib/hooks/use-task-manager'
@@ -51,6 +51,15 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
   const [draggedTagIndex, setDraggedTagIndex] = useState<number | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
+  const pendingSyncRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (pendingSyncRef.current) {
+        clearTimeout(pendingSyncRef.current)
+      }
+    }
+  }, [taskId])
 
   if (!task) {
     return null
@@ -92,9 +101,25 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
     dispatch({ type: 'SET_SELECTED_TASK', payload: null })
   }
 
-  const applyTaskUpdates = (updates: Partial<Task>) => {
+  const applyTaskUpdates = (updates: Partial<Task>, options?: { debounce?: boolean }) => {
     const updatedTask = { ...task, ...updates }
-    void updateTaskApi(updatedTask)
+    dispatch({ type: 'UPDATE_TASK', payload: updatedTask })
+
+    if (pendingSyncRef.current) {
+      clearTimeout(pendingSyncRef.current)
+      pendingSyncRef.current = null
+    }
+
+    const runSync = () => {
+      pendingSyncRef.current = null
+      void updateTaskApi(updatedTask, { silent: true })
+    }
+
+    if (options?.debounce) {
+      pendingSyncRef.current = setTimeout(runSync, 500)
+    } else {
+      void updateTaskApi(updatedTask, { silent: true })
+    }
   }
 
   const handleRecurrenceChange = (value: string) => {
@@ -317,7 +342,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
             <input
               type="text"
               value={task.title}
-              onChange={(e) => applyTaskUpdates({ title: e.target.value })}
+              onChange={(e) => applyTaskUpdates({ title: e.target.value }, { debounce: true })}
               className="text-2xl md:text-3xl font-semibold bg-transparent w-full focus:outline-none"
             />
             <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold border ${priorityClasses.checkboxBorderColor.replace('border-', 'border')} ${priorityClasses.color}`}>
@@ -327,7 +352,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             {createdAtDisplay && (
               <span className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1">
-                <span className="font-medium">{t('taskDetail.addButton')}</span>
+                <span className="font-medium">{t('taskDetail.createdAtLabel')}</span>
                 <span>{createdAtDisplay}</span>
               </span>
             )}
@@ -372,7 +397,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
             <textarea
               id="task-description"
               value={task.description || ''}
-              onChange={(e) => applyTaskUpdates({ description: e.target.value })}
+              onChange={(e) => applyTaskUpdates({ description: e.target.value }, { debounce: true })}
               rows={4}
               placeholder={t('taskDetail.descriptionPlaceholder')}
               className="mt-1 w-full p-2 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"

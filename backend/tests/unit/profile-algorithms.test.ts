@@ -31,6 +31,15 @@ describe('profile algorithms', () => {
     expect(getTaskCompletionStreak(tasks)).toBe(2)
   })
 
+  it('getTaskCompletionStreak counts recurring tasks left open (completed=false)', () => {
+    const tasks = [
+      { completed: false, completedAt: new Date('2026-06-01T10:00:00Z') },
+      { completed: false, completedAt: new Date('2026-06-02T10:00:00Z') },
+      { completed: false, completedAt: new Date('2026-06-03T10:00:00Z') },
+    ]
+    expect(getTaskCompletionStreak(tasks)).toBe(3)
+  })
+
   it('getUnlockedAchievementIds applies all rules', () => {
     const taskStreak = Array.from({ length: 7 }, (_, i) => ({
       completed: true,

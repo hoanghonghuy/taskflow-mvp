@@ -297,9 +297,11 @@ const CalendarView: React.FC = () => {
                 ) : (
                   <div className="space-y-2">
                     {selectedTasks.map(task => (
-                      <div
+                      <button
                         key={task.id}
-                        className="flex items-center justify-between rounded-xl border border-border/60 p-3 bg-muted/30"
+                        type="button"
+                        onClick={() => handleTaskClick(task)}
+                        className="w-full flex items-center justify-between rounded-xl border border-border/60 p-3 bg-muted/30 text-left hover:bg-muted/50 transition-colors"
                       >
                         <div>
                           <p className="font-medium text-sm">{task.title}</p>
@@ -315,7 +317,7 @@ const CalendarView: React.FC = () => {
                         >
                           {t(PRIORITY_MAP[task.priority || 'none'].label)}
                         </span>
-                      </div>
+                      </button>
                     ))}
                   </div>
                 )}

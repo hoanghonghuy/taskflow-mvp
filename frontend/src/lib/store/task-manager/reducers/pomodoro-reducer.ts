@@ -12,39 +12,37 @@ function completePomodoroSession(state: AppState): AppState {
       ? 'longBreak'
       : 'shortBreak'
 
-    if (focusedTaskId || focusedHabitId) {
-      const entry: FocusSession = {
-        startTime: new Date().toISOString(),
-        duration: settings.focusDuration * 60,
-      }
+    const entry: FocusSession = {
+      startTime: new Date().toISOString(),
+      duration: settings.focusDuration * 60,
+    }
 
-      if (focusedTaskId) {
-        entry.taskId = focusedTaskId
-      }
+    if (focusedTaskId) {
+      entry.taskId = focusedTaskId
+    }
 
-      if (focusedHabitId) {
-        entry.habitId = focusedHabitId
-      }
+    if (focusedHabitId) {
+      entry.habitId = focusedHabitId
+    }
 
-      const focusHistory = [
-        ...state.pomodoro.focusHistory,
-        entry,
-      ]
+    const focusHistory = [
+      ...state.pomodoro.focusHistory,
+      entry,
+    ]
 
-      return {
-        ...state,
-        pomodoro: {
-          ...state.pomodoro,
-          currentSession: nextSession,
-          sessionsCompleted: newSessionsCompleted,
-          remainingTime:
-            (nextSession === 'longBreak'
-              ? settings.longBreakDuration
-              : settings.shortBreakDuration) * 60,
-          isActive: false,
-          focusHistory,
-        },
-      }
+    return {
+      ...state,
+      pomodoro: {
+        ...state.pomodoro,
+        currentSession: nextSession,
+        sessionsCompleted: newSessionsCompleted,
+        remainingTime:
+          (nextSession === 'longBreak'
+            ? settings.longBreakDuration
+            : settings.shortBreakDuration) * 60,
+        isActive: false,
+        focusHistory,
+      },
     }
   } else {
     nextSession = 'focus'

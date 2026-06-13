@@ -39,9 +39,10 @@ export interface TaskDto {
   reminderMinutes: number | null
   assigneeId: string | null
   sortOrder: number
+  totalFocusTime: number
 }
 
-export function mapTaskToDto(task: TodoTask): TaskDto {
+export function mapTaskToDto(task: TodoTask, totalFocusTime = 0): TaskDto {
   const recurrence = parseJsonObject<RecurrenceDto>(task.recurrence)
   return {
     id: task.id,
@@ -61,5 +62,6 @@ export function mapTaskToDto(task: TodoTask): TaskDto {
     reminderMinutes: task.reminderMinutes,
     assigneeId: task.assigneeId,
     sortOrder: task.sortOrder,
+    totalFocusTime,
   }
 }

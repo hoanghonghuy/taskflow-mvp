@@ -23,14 +23,16 @@ export function columnReducer(state: AppState, action: Action): AppState {
 
     case 'DELETE_COLUMN': {
       const { columnId, listId } = action.payload
-      const columnsForList = state.columns.filter(c => c.listId === listId)
-      const firstColumnId = columnsForList[0]?.id
+      const remainingColumns = state.columns.filter(
+        c => c.listId === listId && c.id !== columnId,
+      )
+      const fallbackColumnId = remainingColumns[0]?.id
 
       return {
         ...state,
         columns: state.columns.filter(c => c.id !== columnId),
         tasks: state.tasks.map(t =>
-          t.columnId === columnId ? { ...t, columnId: firstColumnId } : t,
+          t.columnId === columnId ? { ...t, columnId: fallbackColumnId } : t,
         ),
       }
     }

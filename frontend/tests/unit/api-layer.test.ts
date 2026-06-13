@@ -14,6 +14,26 @@ import type { PomodoroState, Settings } from '@/types'
 
 const mockFetch = vi.fn()
 
+function basePomodoroState(overrides: Partial<PomodoroState> = {}): PomodoroState {
+  return {
+    isActive: false,
+    isPaused: false,
+    remainingTime: 1500,
+    currentSession: 'focus',
+    focusedTaskId: null,
+    focusedHabitId: null,
+    sessionsCompleted: 0,
+    focusHistory: [],
+    settings: {
+      focusDuration: 25,
+      shortBreakDuration: 5,
+      longBreakDuration: 15,
+      sessionsUntilLongBreak: 4,
+    },
+    ...overrides,
+  }
+}
+
 function jsonResponse(body: unknown, status = 200): Response {
   const payload =
     status >= 400
@@ -106,9 +126,9 @@ describe('admin API client', () => {
     mockFetch.mockResolvedValue(jsonResponse(userList))
     const { fetchAdminUsers } = await import('@/lib/api/admin')
 
-    await fetchAdminUsers({ page: 2, pageSize: 10, search: 'test', role: 'admin' })
+    await fetchAdminUsers({ page: 2, pageSize: 10, search: 'test', role: 'ADMIN' })
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/admin/users?page=2&pageSize=10&search=test&role=admin',
+      '/api/admin/users?page=2&pageSize=10&search=test&role=ADMIN',
       expect.anything()
     )
   })
@@ -385,16 +405,7 @@ describe('pomodoro API client', () => {
     } as Response)
     const { fetchPomodoroState } = await import('@/lib/api/pomodoro')
     
-    const fallback: PomodoroState = {
-      isActive: false,
-      isPaused: false,
-      remainingTime: 1500,
-      currentSession: 'focus',
-      focusedTaskId: null,
-      focusedHabitId: null,
-      sessionsCompleted: 0,
-      settings: { focusDuration: 25, shortBreakDuration: 5, longBreakDuration: 15, sessionsUntilLongBreak: 4 },
-    }
+    const fallback = basePomodoroState()
 
     const result = await fetchPomodoroState(fallback)
     expect(result).toBeNull()
@@ -404,16 +415,7 @@ describe('pomodoro API client', () => {
     mockFetch.mockResolvedValue({ ok: false, status: 500, json: async () => ({}) } as Response)
     const { fetchPomodoroState } = await import('@/lib/api/pomodoro')
     
-    const fallback: PomodoroState = {
-      isActive: false,
-      isPaused: false,
-      remainingTime: 1500,
-      currentSession: 'focus',
-      focusedTaskId: null,
-      focusedHabitId: null,
-      sessionsCompleted: 0,
-      settings: { focusDuration: 25, shortBreakDuration: 5, longBreakDuration: 15, sessionsUntilLongBreak: 4 },
-    }
+    const fallback = basePomodoroState()
 
     const result = await fetchPomodoroState(fallback)
     expect(result).toBeNull()
@@ -423,16 +425,12 @@ describe('pomodoro API client', () => {
     mockFetch.mockResolvedValue(jsonResponse({}))
     const { updatePomodoroState } = await import('@/lib/api/pomodoro')
     
-    const state: PomodoroState = {
+    const state = basePomodoroState({
       isActive: true,
-      isPaused: false,
       remainingTime: 1200,
-      currentSession: 'focus',
       focusedTaskId: 't1',
-      focusedHabitId: null,
       sessionsCompleted: 2,
-      settings: { focusDuration: 25, shortBreakDuration: 5, longBreakDuration: 15, sessionsUntilLongBreak: 4 },
-    }
+    })
 
     await updatePomodoroState(state, { keepalive: true })
     expect(mockFetch).toHaveBeenCalledWith(
@@ -515,16 +513,7 @@ describe('mappers', () => {
   })
 
   it('mapPomodoroStateFromApi and pomodoroStateToApiPayload round-trip core fields', () => {
-    const fallback: PomodoroState = {
-      isActive: false,
-      isPaused: false,
-      remainingTime: 1500,
-      currentSession: 'focus',
-      focusedTaskId: null,
-      focusedHabitId: null,
-      sessionsCompleted: 0,
-      settings: { focusDuration: 25, shortBreakDuration: 5, longBreakDuration: 15, sessionsUntilLongBreak: 4 },
-    }
+    const fallback = basePomodoroState()
 
     const mapped = mapPomodoroStateFromApi(
       {
@@ -567,7 +556,7 @@ describe('settings api', () => {
     )
     expect(mapped.language).toBe('vi')
     expect(mapped.theme).toBe('dark')
-    expect((mapped as Record<string, unknown>).geminiApiKey).toBeUndefined()
+    expect('geminiApiKey' in mapped).toBe(false)
   })
 
   it('fetchSettings and updateSettings call API', async () => {
@@ -664,16 +653,7 @@ describe('domain api modules', () => {
   })
 
   it('pomodoro api fetches sessions and state', async () => {
-    const fallback: PomodoroState = {
-      isActive: false,
-      isPaused: false,
-      remainingTime: 1500,
-      currentSession: 'focus',
-      focusedTaskId: null,
-      focusedHabitId: null,
-      sessionsCompleted: 0,
-      settings: { focusDuration: 25, shortBreakDuration: 5, longBreakDuration: 15, sessionsUntilLongBreak: 4 },
-    }
+    const fallback = basePomodoroState()
 
     mockFetch
       .mockResolvedValueOnce(

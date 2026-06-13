@@ -272,6 +272,7 @@
     "progressLabel": "Progress",
     "addSubtaskPlaceholder": "Add subtask...",
     "addButton": "Add",
+    "createdAtLabel": "Created",
     "commentsLabel": "Comments",
     "addCommentPlaceholder": "Add comment...",
     "startFocusButton": "Start Focus",
@@ -554,11 +555,38 @@
     "notEarned": "Not earned yet"
   },
   "achievements": {
+    "subtitle": "Your achievements and badges",
     "locked": {
       "description": "Locked",
       "status": "Locked"
     },
-    "ready": "Ready to unlock!"
+    "ready": "Ready to unlock!",
+    "items": {
+      "firstTask": {
+        "title": "First Step",
+        "description": "Create your first task"
+      },
+      "complete10": {
+        "title": "Getting Started",
+        "description": "Complete 10 tasks"
+      },
+      "complete50": {
+        "title": "Productive",
+        "description": "Complete 50 tasks"
+      },
+      "weekStreak": {
+        "title": "Week Warrior",
+        "description": "Complete tasks 7 days in a row"
+      },
+      "habit7DayStreak": {
+        "title": "Habit Hero",
+        "description": "Maintain a 7-day habit streak"
+      },
+      "focus1h": {
+        "title": "Deep Focus",
+        "description": "Accumulate 1 hour of focus time"
+      }
+    }
   },
   "settings": {
     "title": "Settings",
@@ -682,7 +710,7 @@
     },
     "bottomNav": {
       "title": "Bottom Navigation",
-      "subtitle": "Drag and drop to customize which features appear in the bottom navigation bar",
+      "subtitle": "Choose which features appear in the bottom navigation bar (up to 4 visible)",
       "visible": "Visible",
       "hidden": "Hidden",
       "maxVisible": "Maximum items shown — hide another feature first"
@@ -734,7 +762,11 @@
     "completionRate": "completion rate",
     "completedToday": "Completed today",
     "sessions": "sessions",
-    "unlocked": "Unlocked"
+    "unlocked": "Unlocked",
+    "updateSuccessTitle": "Profile updated",
+    "updateSuccessBody": "Your name has been saved.",
+    "updateFailedTitle": "Could not update profile",
+    "updateFailedBody": "Please try again later."
   },
   "feature": {
     "toggleSidebar": "Toggle Sidebar",
@@ -835,6 +867,12 @@
     "overdue": "Overdue",
     "all": "All",
     "loading": "Loading...",
+    "notFoundTitle": "404",
+    "notFoundBody": "Page not found.",
+    "goToDashboard": "Go to dashboard",
+    "errorTitle": "Something went wrong",
+    "errorBody": "An unexpected error occurred. Please try again.",
+    "tryAgain": "Try again",
     "noResults": "No results found",
     "close": "Close",
     "confirm": "Confirm",

@@ -4,6 +4,7 @@ import React from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/i18n/hooks'
 import { ACHIEVEMENT_DEFINITIONS } from '@/lib/achievements'
+import { achievementDescriptionKey, achievementTitleKey } from '@/lib/achievements-i18n'
 
 const AchievementsView: React.FC = () => {
   const { state } = useTaskManager()
@@ -22,13 +23,15 @@ const AchievementsView: React.FC = () => {
     <div className="flex-1 flex flex-col overflow-y-auto">
       <header className="p-6 border-b border-border flex-shrink-0 hidden md:block">
         <h1 className="text-3xl font-bold">{t('nav.achievements')}</h1>
-        <p className="text-muted-foreground">Your achievements and badges</p>
+        <p className="text-muted-foreground">{t('achievements.subtitle')}</p>
       </header>
       <main className="flex-1 p-4 md:p-6 overflow-y-auto pb-20 md:pb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {sortedAchievements.map(achievement => {
             const isUnlocked = unlockedSet.has(achievement.id)
             const isCompleted = achievement.condition(state)
+            const title = t(achievementTitleKey(achievement.id))
+            const description = t(achievementDescriptionKey(achievement.id))
 
             return (
               <div
@@ -38,7 +41,7 @@ const AchievementsView: React.FC = () => {
                   transition-all duration-300
                   ${isUnlocked ? 'opacity-100 shadow-md' : 'opacity-50 filter grayscale'}
                 `}
-                title={isUnlocked ? achievement.description : t('achievements.locked.description')}
+                title={isUnlocked ? description : t('achievements.locked.description')}
               >
                 <div className={`
                   p-4 rounded-full mb-4 text-4xl
@@ -46,8 +49,8 @@ const AchievementsView: React.FC = () => {
                 `}>
                   {achievement.icon}
                 </div>
-                <h3 className="font-bold text-lg mb-2">{achievement.title}</h3>
-                <p className="text-sm text-muted-foreground mb-2">{achievement.description}</p>
+                <h3 className="font-bold text-lg mb-2">{title}</h3>
+                <p className="text-sm text-muted-foreground mb-2">{description}</p>
                 {!isUnlocked && (
                   <p className="text-xs text-muted-foreground mt-1">
                     {t('achievements.locked.status')}
