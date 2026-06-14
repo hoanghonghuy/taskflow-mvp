@@ -50,3 +50,13 @@ export async function seedAdminUser(): Promise<void> {
     console.log(`[seed] Demoted ${demoted} extra ADMIN account(s) to USER`)
   }
 }
+
+if (require.main === module) {
+  seedAdminUser()
+    .then(() => prisma.$disconnect())
+    .catch((err) => {
+      console.error('[seed] Failed to seed admin user', err)
+      void prisma.$disconnect()
+      process.exit(1)
+    })
+}

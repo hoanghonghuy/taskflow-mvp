@@ -33,3 +33,56 @@ describe('seed', () => {
     expect(count).toBe(3)
   })
 })
+
+describe('seedDemoUser', () => {
+  const envBackup = { ...process.env }
+
+  beforeEach(async () => {
+    await resetDatabase()
+    process.env = { ...envBackup }
+  })
+
+  afterAll(() => {
+    process.env = envBackup
+  })
+
+  it('creates demo user with rich sample data', async () => {
+    process.env.DEMO_EMAIL = 'demo-seed@test.com'
+    process.env.DEMO_PASSWORD = 'DemoPass123!'
+    process.env.DEMO_NAME = 'Seed Demo'
+
+    const { seedDemoUser } = await import('../../src/seedDemoUser')
+    await seedDemoUser()
+
+    const user = await prisma.user.findUnique({ where: { email: 'demo-seed@test.com' } })
+    expect(user?.role).toBe('USER')
+
+    const [tasks, habits, countdowns, sessions, settings] = await Promise.all([
+      prisma.todoTask.count({ where: { userId: user!.id } }),
+      prisma.habit.count({ where: { userId: user!.id } }),
+      prisma.countdownEvent.count({ where: { userId: user!.id } }),
+      prisma.pomodoroSession.count({ where: { userId: user!.id } }),
+      prisma.userSettings.findUnique({ where: { userId: user!.id } }),
+    ])
+
+    expect(tasks).toBeGreaterThanOrEqual(10)
+    expect(habits).toBe(4)
+    expect(countdowns).toBe(3)
+    expect(sessions).toBeGreaterThanOrEqual(8)
+    expect(settings?.language).toBe('vi')
+    expect(settings?.boardColumnsJson).toContain('demo-col-backlog')
+  })
+
+  it('skips re-seeding when demo user already has tasks', async () => {
+    process.env.DEMO_EMAIL = 'demo-idempotent@test.com'
+    process.env.DEMO_PASSWORD = 'DemoPass123!'
+
+    const { seedDemoUser } = await import('../../src/seedDemoUser')
+    await seedDemoUser()
+    await seedDemoUser()
+
+    const user = await prisma.user.findUnique({ where: { email: 'demo-idempotent@test.com' } })
+    const tasks = await prisma.todoTask.count({ where: { userId: user!.id } })
+    expect(tasks).toBe(11)
+  })
+})

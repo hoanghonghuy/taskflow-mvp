@@ -104,6 +104,25 @@ ADMIN_NAME=System Admin
 
 Backend tự tạo/promote admin khi khởi động. Đăng nhập tại `/login` → redirect `/admin`.
 
+## Tài khoản demo (dev)
+
+Thêm vào `backend/.env` (hoặc dùng mặc định trong `.env.example`):
+
+```env
+DEMO_EMAIL=demo@taskflow.app
+DEMO_PASSWORD=Demo123@
+DEMO_NAME=Demo User
+```
+
+Backend tự tạo user **USER** (không phải admin) kèm tasks, habits, countdown, pomodoro sessions, board columns — phù hợp demo app. Đăng nhập tại `/login` → `/dashboard`.
+
+Seed lại từ đầu (xóa data cũ của user demo):
+
+```bash
+# backend/.env: DEMO_SEED_FORCE=true rồi restart backend, hoặc:
+cd backend && DEMO_SEED_FORCE=true npm run seed:demo
+```
+
 ## Test
 
 ```bash
