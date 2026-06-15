@@ -1,38 +1,38 @@
-# Taskflow MVP — Security & Reliability Audit
+﻿# Taskflow MVP â€” Security & Reliability Audit
 
-> Cập nhật: **2026-06-14** (sau khi review code toàn diện backend + frontend).
-> Phạm vi: mã nguồn tại `develop` @ `ae11256` (commit gần nhất thêm demo user seeding).
-> Đánh dấu `[x]` khi đã xử lý xong.
+> Cáº­p nháº­t: **2026-06-14** (sau khi review code toÃ n diá»‡n backend + frontend).
+> Pháº¡m vi: mÃ£ nguá»“n táº¡i `develop` @ `ae11256` (commit gáº§n nháº¥t thÃªm demo user seeding).
+> ÄÃ¡nh dáº¥u `[x]` khi Ä‘Ã£ xá»­ lÃ½ xong.
 
-**Validation tự động (chạy cùng session này):**
+**Validation tá»± Ä‘á»™ng (cháº¡y cÃ¹ng session nÃ y):**
 
-| Bước | Kết quả |
+| BÆ°á»›c | Káº¿t quáº£ |
 |---|---|
 | `tsc --noEmit` (backend + frontend) | PASS |
 | `tsc` build (backend) | PASS |
-| `next build` (frontend) | PASS — 22 static pages |
+| `next build` (frontend) | PASS â€” 22 static pages |
 | `jest tests/unit` (backend) | 96/96 PASS |
 | `vitest run` (frontend) | 235 PASS, 2 SKIP, 0 FAIL |
-| `eslint` (frontend) | 0 lỗi |
+| `eslint` (frontend) | 0 lá»—i |
 
-Mọi bug liệt kê dưới đây là **lỗi logic / security / race** — không phải lỗi compile hay test thường.
+Má»i bug liá»‡t kÃª dÆ°á»›i Ä‘Ã¢y lÃ  **lá»—i logic / security / race** â€” khÃ´ng pháº£i lá»—i compile hay test thÆ°á»ng.
 
 ---
 
-## Tóm tắt theo severity
+## TÃ³m táº¯t theo severity
 
-| Severity | Số lượng | Ảnh hưởng chính |
+| Severity | Sá»‘ lÆ°á»£ng | áº¢nh hÆ°á»Ÿng chÃ­nh |
 |----------|----------|-----------------|
-| CRITICAL | 4 | Phá quyền user khi seed restart, boot race |
-| HIGH | 4 | Race trên DB write, key lưu plaintext, brute-force login |
+| CRITICAL | 4 | PhÃ¡ quyá»n user khi seed restart, boot race |
+| HIGH | 4 | Race trÃªn DB write, key lÆ°u plaintext, brute-force login |
 | MEDIUM | 5 | Validation bypass, info leak, perf, timezone |
 | LOW | 4 | UX a11y, log silent, error swallowing |
 
 ---
 
-## CRITICAL — Seed user có thể phá hỏng quyền
+## CRITICAL â€” Seed user cÃ³ thá»ƒ phÃ¡ há»ng quyá»n
 
-### [ ] **SA-C1** `seedDemoUser` ép role USER, xóa quyền admin nếu trùng email
+### [ ] **SA-C1** `seedDemoUser` Ã©p role USER, xÃ³a quyá»n admin náº¿u trÃ¹ng email
 
 **File:** `backend/src/seedDemoUser.ts:20-24`
 
@@ -40,20 +40,20 @@ Mọi bug liệt kê dưới đây là **lỗi logic / security / race** — kh�
 if (user) {
   await prisma.user.update({
     where: { id: user.id },
-    data: { passwordHash, name, role: 'USER' },  // ghi đè role mỗi restart
+    data: { passwordHash, name, role: 'USER' },  // ghi Ä‘Ã¨ role má»—i restart
   })
 }
 ```
 
-Nếu `DEMO_EMAIL` trùng `ADMIN_EMAIL` trong env, mỗi lần restart sẽ hạ admin xuống `USER` + đổi `passwordHash`. Silent privilege downgrade.
+Náº¿u `DEMO_EMAIL` trÃ¹ng `ADMIN_EMAIL` trong env, má»—i láº§n restart sáº½ háº¡ admin xuá»‘ng `USER` + Ä‘á»•i `passwordHash`. Silent privilege downgrade.
 
-**Fix:** nếu `user.role === 'ADMIN'` thì return + cảnh báo, không update.
+**Fix:** náº¿u `user.role === 'ADMIN'` thÃ¬ return + cáº£nh bÃ¡o, khÃ´ng update.
 
 ---
 
-### [ ] **SA-C2** `seedAdminUser` re-hash password mỗi restart
+### [ ] **SA-C2** `seedAdminUser` re-hash password má»—i restart
 
-**File:** `backend/src/seedAdmin.ts:18-27` (cùng logic `seedDemoUser.ts:17`)
+**File:** `backend/src/seedAdmin.ts:18-27` (cÃ¹ng logic `seedDemoUser.ts:17`)
 
 ```typescript
 const passwordHash = await hashPassword(password)  // bcrypt 12 rounds ~250ms
@@ -62,13 +62,13 @@ if (existing) {
 }
 ```
 
-Admin đổi mật khẩu qua UI → restart sau → hash cũ bị ghi đè bằng `ADMIN_PASSWORD` env. Mật khẩu admin thật bị reset về giá trị env.
+Admin Ä‘á»•i máº­t kháº©u qua UI â†’ restart sau â†’ hash cÅ© bá»‹ ghi Ä‘Ã¨ báº±ng `ADMIN_PASSWORD` env. Máº­t kháº©u admin tháº­t bá»‹ reset vá» giÃ¡ trá»‹ env.
 
-**Fix:** chỉ update `passwordHash` khi `existing.role !== 'ADMIN'` (user mới promote), hoặc skip nếu `bcrypt.compare(password, existing.passwordHash)` đã match.
+**Fix:** chá»‰ update `passwordHash` khi `existing.role !== 'ADMIN'` (user má»›i promote), hoáº·c skip náº¿u `bcrypt.compare(password, existing.passwordHash)` Ä‘Ã£ match.
 
 ---
 
-### [ ] **SA-C3** `seedAdminUser` tự demote admin khác mỗi restart
+### [ ] **SA-C3** `seedAdminUser` tá»± demote admin khÃ¡c má»—i restart
 
 **File:** `backend/src/seedAdmin.ts:48-51`
 
@@ -79,13 +79,13 @@ if (demoted > 0) {
 }
 ```
 
-Chạy không điều kiện. Nếu DB có nhiều admin (operator thêm thủ công, test fixture) → tất cả bị hạ role `USER` ở mỗi lần deploy.
+Cháº¡y khÃ´ng Ä‘iá»u kiá»‡n. Náº¿u DB cÃ³ nhiá»u admin (operator thÃªm thá»§ cÃ´ng, test fixture) â†’ táº¥t cáº£ bá»‹ háº¡ role `USER` á»Ÿ má»—i láº§n deploy.
 
-**Fix:** chỉ gọi `demoteExtraAdmins` ở nhánh `else` (admin vừa tạo mới), hoặc bỏ auto-demote hoàn toàn.
+**Fix:** chá»‰ gá»i `demoteExtraAdmins` á»Ÿ nhÃ¡nh `else` (admin vá»«a táº¡o má»›i), hoáº·c bá» auto-demote hoÃ n toÃ n.
 
 ---
 
-### [ ] **SA-C4** `start()` race condition với DB chậm / import-time error
+### [ ] **SA-C4** `start()` race condition vá»›i DB cháº­m / import-time error
 
 **File:** `backend/src/server.ts:8-19`
 
@@ -101,179 +101,179 @@ async function start(): Promise<void> {
 }
 ```
 
-Try/catch nuốt lỗi seed, nhưng:
-- DB chậm / pool chết → block boot ~vài chục giây
-- Lỗi import-time (thiếu module, syntax error) → crash trước khi vào catch → container restart loop vĩnh viễn
+Try/catch nuá»‘t lá»—i seed, nhÆ°ng:
+- DB cháº­m / pool cháº¿t â†’ block boot ~vÃ i chá»¥c giÃ¢y
+- Lá»—i import-time (thiáº¿u module, syntax error) â†’ crash trÆ°á»›c khi vÃ o catch â†’ container restart loop vÄ©nh viá»…n
 
-**Fix:** thêm `Promise.race([seedBootstrap(), timeout(15_000)])`; đảm bảo `app.listen` vẫn chạy dù seed fail để có thể debug.
+**Fix:** thÃªm `Promise.race([seedBootstrap(), timeout(15_000)])`; Ä‘áº£m báº£o `app.listen` váº«n cháº¡y dÃ¹ seed fail Ä‘á»ƒ cÃ³ thá»ƒ debug.
 
 ---
 
-## HIGH — Logic nghiệp vụ & bảo mật
+## HIGH â€” Logic nghiá»‡p vá»¥ & báº£o máº­t
 
-### [ ] **SA-H1** `taskService.createTask` race condition trên `sortOrder`
+### [ ] **SA-H1** `taskService.createTask` race condition trÃªn `sortOrder`
 
 **File:** `backend/src/services/taskService.ts:47-62`
 
-`findMaxSortOrder` rồi `createTask({ sortOrder: max + 1 })` không nằm trong transaction. Hai request POST `/api/tasks` song song của cùng user lấy cùng `max` → trùng `sortOrder` → sort không ổn định trên board/list.
+`findMaxSortOrder` rá»“i `createTask({ sortOrder: max + 1 })` khÃ´ng náº±m trong transaction. Hai request POST `/api/tasks` song song cá»§a cÃ¹ng user láº¥y cÃ¹ng `max` â†’ trÃ¹ng `sortOrder` â†’ sort khÃ´ng á»•n Ä‘á»‹nh trÃªn board/list.
 
-**Fix:** bọc trong `prisma.$transaction` (read max + create) hoặc thêm unique compound index `(userId, sortOrder)`.
+**Fix:** bá»c trong `prisma.$transaction` (read max + create) hoáº·c thÃªm unique compound index `(userId, sortOrder)`.
 
 ---
 
-### [ ] **SA-H2** `pomodoroService.getPomodoroState` không atomic
+### [ ] **SA-H2** `pomodoroService.getPomodoroState` khÃ´ng atomic
 
 **File:** `backend/src/services/pomodoroService.ts:35-66`
 
-Read `pomodoroStateJson` → tính elapsed → ghi lại. Mobile + web tick đồng thời → 1 trong 2 request bị mất write, hoặc cả hai ghi đè nhau.
+Read `pomodoroStateJson` â†’ tÃ­nh elapsed â†’ ghi láº¡i. Mobile + web tick Ä‘á»“ng thá»i â†’ 1 trong 2 request bá»‹ máº¥t write, hoáº·c cáº£ hai ghi Ä‘Ã¨ nhau.
 
-**Fix:** thêm `pomodoroStateVersion` (int) trong schema, dùng `prisma.$transaction` với optimistic concurrency (`update where version = X`).
+**Fix:** thÃªm `pomodoroStateVersion` (int) trong schema, dÃ¹ng `prisma.$transaction` vá»›i optimistic concurrency (`update where version = X`).
 
 ---
 
-### [ ] **SA-H3** `geminiApiKey` lưu plaintext trong DB
+### [ ] **SA-H3** `geminiApiKey` lÆ°u plaintext trong DB
 
 **File:** `backend/src/services/settingsService.ts:32-35`, `backend/src/validators/settings.validator.ts:19`
 
-User API key Gemini lưu thẳng vào `UserSettings.geminiApiKey` (Postgres). DB dump hoặc bất kỳ ai có quyền SELECT đều đọc được. Vi phạm nguyên tắc "secrets at rest".
+User API key Gemini lÆ°u tháº³ng vÃ o `UserSettings.geminiApiKey` (Postgres). DB dump hoáº·c báº¥t ká»³ ai cÃ³ quyá»n SELECT Ä‘á»u Ä‘á»c Ä‘Æ°á»£c. Vi pháº¡m nguyÃªn táº¯c "secrets at rest".
 
-**Fix:** mã hóa AES-GCM với key từ env `USER_SECRET_ENC_KEY` (32 bytes). Chỉ decrypt khi cần gọi AI. Helper `lib/crypto.ts`:
-- `encryptSecret(plain): string` → `iv:tag:ciphertext` (base64)
-- `decryptSecret(stored): string` → verify tag, throw nếu tamper
+**Fix:** mÃ£ hÃ³a AES-GCM vá»›i key tá»« env `USER_SECRET_ENC_KEY` (32 bytes). Chá»‰ decrypt khi cáº§n gá»i AI. Helper `lib/crypto.ts`:
+- `encryptSecret(plain): string` â†’ `iv:tag:ciphertext` (base64)
+- `decryptSecret(stored): string` â†’ verify tag, throw náº¿u tamper
 
 ---
 
-### [ ] **SA-H4** `authController.login` không rate-limit
+### [ ] **SA-H4** `authController.login` khÃ´ng rate-limit
 
 **File:** `backend/src/controllers/authController.ts:27-35`
 
-Chỉ AI endpoint có rate-limit. Login/refresh không có `express-rate-limit` → brute-force password + email enumeration dễ dàng. `bcrypt.compare` cũng không có delay.
+Chá»‰ AI endpoint cÃ³ rate-limit. Login/refresh khÃ´ng cÃ³ `express-rate-limit` â†’ brute-force password + email enumeration dá»… dÃ ng. `bcrypt.compare` cÅ©ng khÃ´ng cÃ³ delay.
 
-**Fix:** thêm middleware `rateLimit({ windowMs: 15*60*1000, max: 10, keyGenerator: req => `${req.ip}:${req.body.email}` })` cho `/api/auth/login` và `/api/auth/refresh`.
+**Fix:** thÃªm middleware `rateLimit({ windowMs: 15*60*1000, max: 10, keyGenerator: req => `${req.ip}:${req.body.email}` })` cho `/api/auth/login` vÃ  `/api/auth/refresh`.
 
 ---
 
-## MEDIUM — Validation, logging, performance
+## MEDIUM â€” Validation, logging, performance
 
-### [ ] **SA-M1** `listService.createList` skip validation ở service layer
+### [ ] **SA-M1** `listService.createList` skip validation á»Ÿ service layer
 
 **File:** `backend/src/services/listService.ts:36,42-46`
 
-Zod validator ở controller có regex `^#[0-9A-Fa-f]{6}$` cho `color`, nhưng service nhận `Record<string, unknown>` rồi lưu thẳng. Bypass validator (gọi service trực tiếp từ test/script) → lưu `'red'`, `'rgb(...)'`, XSS payload.
+Zod validator á»Ÿ controller cÃ³ regex `^#[0-9A-Fa-f]{6}$` cho `color`, nhÆ°ng service nháº­n `Record<string, unknown>` rá»“i lÆ°u tháº³ng. Bypass validator (gá»i service trá»±c tiáº¿p tá»« test/script) â†’ lÆ°u `'red'`, `'rgb(...)'`, XSS payload.
 
-**Fix:** tái sử dụng `list.validator.ts` trong service, hoặc thay `body: Record<string, unknown>` bằng type đã parse.
+**Fix:** tÃ¡i sá»­ dá»¥ng `list.validator.ts` trong service, hoáº·c thay `body: Record<string, unknown>` báº±ng type Ä‘Ã£ parse.
 
 ---
 
-### [ ] **SA-M2** `errorHandler` mất `ZodError.issues.path`
+### [ ] **SA-M2** `errorHandler` máº¥t `ZodError.issues.path`
 
 **File:** `backend/src/middleware/errorHandler.ts:43-47`
 
-Chỉ join `.message` bằng `'; '`. Frontend không biết field nào sai. Validation phức tạp (nested object) mất dấu vết.
+Chá»‰ join `.message` báº±ng `'; '`. Frontend khÃ´ng biáº¿t field nÃ o sai. Validation phá»©c táº¡p (nested object) máº¥t dáº¥u váº¿t.
 
-**Fix:** trả về `{ error: 'validation_error', message, issues: error.errors }` (mảng `{ path, message }`) thay vì join string.
+**Fix:** tráº£ vá» `{ error: 'validation_error', message, issues: error.errors }` (máº£ng `{ path, message }`) thay vÃ¬ join string.
 
 ---
 
-### [ ] **SA-M3** `pomodoroController.updateState` luôn `getOrCreate` mỗi tick
+### [ ] **SA-M3** `pomodoroController.updateState` luÃ´n `getOrCreate` má»—i tick
 
 **File:** `backend/src/services/pomodoroService.ts:100-104`
 
-Endpoint Pomodoro tick mỗi giây → 2 query (find + có thể create) mỗi lần. Lãng phí ~7200 query/giờ/user.
+Endpoint Pomodoro tick má»—i giÃ¢y â†’ 2 query (find + cÃ³ thá»ƒ create) má»—i láº§n. LÃ£ng phÃ­ ~7200 query/giá»/user.
 
-**Fix:** thay `getOrCreate` + `update` bằng `prisma.userSettings.upsert({ where: { userId }, create: {...}, update: {...} })`.
+**Fix:** thay `getOrCreate` + `update` báº±ng `prisma.userSettings.upsert({ where: { userId }, create: {...}, update: {...} })`.
 
 ---
 
-### [ ] **SA-M4** `seed.ts` thiếu transaction khi tạo default lists
+### [ ] **SA-M4** `seed.ts` thiáº¿u transaction khi táº¡o default lists
 
 **File:** `backend/src/seed.ts:10-22`
 
-`findListsByUserId` rồi tạo 3 list lần lượt. 2 concurrent register cùng user → 2 bộ 3 list (race giữa find và create).
+`findListsByUserId` rá»“i táº¡o 3 list láº§n lÆ°á»£t. 2 concurrent register cÃ¹ng user â†’ 2 bá»™ 3 list (race giá»¯a find vÃ  create).
 
-**Fix:** bọc trong `prisma.$transaction`, hoặc dùng `createMany` với skip-duplicates.
-
----
-
-### [ ] **SA-M5** Timezone mismatch client/server (habit "today" lệch 0-1 ngày)
-
-**File:** `frontend/src/app/(app)/dashboard/page.tsx:59` dùng `toISOString().split('T')[0]` (UTC) trong khi backend `getProfileSummary` dùng `Asia/Ho_Chi_Minh` qua `todayDateString()`.
-
-User ở Việt Nam tick habit lúc 1h sáng → backend đã sang ngày mới nhưng client vẫn tính ngày hôm qua. `habitsToday` hiển thị sai.
-
-**Fix:** viết lại `toYYYYMMDD` client dùng local date (giống `dateOnlyFromDate` backend), hoặc gọi API lấy `serverToday` rồi dùng.
+**Fix:** bá»c trong `prisma.$transaction`, hoáº·c dÃ¹ng `createMany` vá»›i skip-duplicates.
 
 ---
 
-## LOW — UX, a11y, log
+### [ ] **SA-M5** Timezone mismatch client/server (habit "today" lá»‡ch 0-1 ngÃ y)
 
-### [ ] **SA-L1** `parseJsonArray` / `parseJsonObject` im lặng khi JSON hỏng
+**File:** `frontend/src/app/(app)/dashboard/page.tsx:59` dÃ¹ng `toISOString().split('T')[0]` (UTC) trong khi backend `getProfileSummary` dÃ¹ng `Asia/Ho_Chi_Minh` qua `todayDateString()`.
+
+User á»Ÿ Viá»‡t Nam tick habit lÃºc 1h sÃ¡ng â†’ backend Ä‘Ã£ sang ngÃ y má»›i nhÆ°ng client váº«n tÃ­nh ngÃ y hÃ´m qua. `habitsToday` hiá»ƒn thá»‹ sai.
+
+**Fix:** viáº¿t láº¡i `toYYYYMMDD` client dÃ¹ng local date (giá»‘ng `dateOnlyFromDate` backend), hoáº·c gá»i API láº¥y `serverToday` rá»“i dÃ¹ng.
+
+---
+
+## LOW â€” UX, a11y, log
+
+### [x] **SA-L1** `parseJsonArray` / `parseJsonObject` im láº·ng khi JSON há»ng
 
 **File:** `backend/src/lib/json.ts:1-22`
 
-`try { JSON.parse } catch { return fallback }`. Dữ liệu DB hỏng (legacy) → user mất data mà không có dấu vết.
+`try { JSON.parse } catch { return fallback }`. Dá»¯ liá»‡u DB há»ng (legacy) â†’ user máº¥t data mÃ  khÃ´ng cÃ³ dáº¥u váº¿t.
 
-**Fix:** trong dev/test, `console.warn` khi parse fail; trong prod giữ fallback. Dùng env `LOG_PARSE_ERRORS=true`.
+**Fix:** trong dev/test, `console.warn` khi parse fail; trong prod giá»¯ fallback. DÃ¹ng env `LOG_PARSE_ERRORS=true`.
 
 ---
 
-### [ ] **SA-L2** A11y: overlay sidebar thiếu keyboard handler
+### [x] **SA-L2** A11y: overlay sidebar thiáº¿u keyboard handler
 
 **File:** `frontend/src/components/layout/sidebar.tsx:148-151`
 
-Overlay div chỉ có `onClick`, không `aria-hidden`, không `role="button"`, không `onKeyDown`. User keyboard-only không đóng sidebar được.
+Overlay div chá»‰ cÃ³ `onClick`, khÃ´ng `aria-hidden`, khÃ´ng `role="button"`, khÃ´ng `onKeyDown`. User keyboard-only khÃ´ng Ä‘Ã³ng sidebar Ä‘Æ°á»£c.
 
-**Fix:** thêm `role="button"`, `aria-label="Close menu"`, `tabIndex={0}`, `onKeyDown={e => e.key === 'Enter' && close()}`.
+**Fix:** thÃªm `role="button"`, `aria-label="Close menu"`, `tabIndex={0}`, `onKeyDown={e => e.key === 'Enter' && close()}`.
 
 ---
 
-### [ ] **SA-L3** `fetchTasks().catch(() => null)` nuốt lỗi
+### [x] **SA-L3** `fetchTasks().catch(() => null)` nuá»‘t lá»—i
 
 **File:** `frontend/src/lib/api/tasks.ts:25`
 
-500/404 từ backend → trả `[]` yên lặng. User thấy task list rỗng, không biết là backend lỗi.
+500/404 tá»« backend â†’ tráº£ `[]` yÃªn láº·ng. User tháº¥y task list rá»—ng, khÃ´ng biáº¿t lÃ  backend lá»—i.
 
-**Fix:** log error qua `console.error` hoặc `useToast`, hoặc re-throw cho caller xử lý.
+**Fix:** log error qua `console.error` hoáº·c `useToast`, hoáº·c re-throw cho caller xá»­ lÃ½.
 
 ---
 
-### [ ] **SA-L4** `aiService.buildBriefingContext` load hết tasks
+### [x] **SA-L4** `aiService.buildBriefingContext` load háº¿t tasks
 
 **File:** `backend/src/services/aiService.ts:30-34`
 
-3 query lớn song song, không pagination. User có 10k tasks → OOM, latency cao.
+3 query lá»›n song song, khÃ´ng pagination. User cÃ³ 10k tasks â†’ OOM, latency cao.
 
-**Fix:** aggregate trong DB (`groupBy`, `count`), chỉ lấy top 20 tasks due today + top 5 habits.
+**Fix:** aggregate trong DB (`groupBy`, `count`), chá»‰ láº¥y top 20 tasks due today + top 5 habits.
 
 ---
 
-## Đã xác minh — KHÔNG phải bug
+## ÄÃ£ xÃ¡c minh â€” KHÃ”NG pháº£i bug
 
-| Nghi vấn | Thực tế |
+| Nghi váº¥n | Thá»±c táº¿ |
 |---|---|
-| `auth.ts:4` gọi `/api/auth/[...nextauth]` không tồn tại | Có `frontend/src/pages/api/auth/[...nextauth].ts` (Pages Router) proxy sang backend. Hoạt động đúng. |
-| `frontend/src/app/(app)/...` thiếu `'use client'` | Tất cả page dùng hooks đều có `'use client'`. |
-| `demoUserContent.ts` bị mojibake | File UTF-8 chuẩn với tiếng Việt đúng. PowerShell console render sai (đã verify bằng `[Encoding]::UTF8.GetString`). |
-| ESLint, TS, test fail | Tất cả PASS trong session audit này. |
-| CORS wildcard | `cors({ origin: config.corsOrigin })` từ env, không wildcard. |
-| Password hashing rounds | bcrypt 12, đủ mạnh. |
-| JWT verify | Có try/catch + check `userId` + validate issuer/audience/algorithm. |
-| Prisma cascade | Mọi relation từ `User` đều `onDelete: Cascade`. |
+| `auth.ts:4` gá»i `/api/auth/[...nextauth]` khÃ´ng tá»“n táº¡i | CÃ³ `frontend/src/pages/api/auth/[...nextauth].ts` (Pages Router) proxy sang backend. Hoáº¡t Ä‘á»™ng Ä‘Ãºng. |
+| `frontend/src/app/(app)/...` thiáº¿u `'use client'` | Táº¥t cáº£ page dÃ¹ng hooks Ä‘á»u cÃ³ `'use client'`. |
+| `demoUserContent.ts` bá»‹ mojibake | File UTF-8 chuáº©n vá»›i tiáº¿ng Viá»‡t Ä‘Ãºng. PowerShell console render sai (Ä‘Ã£ verify báº±ng `[Encoding]::UTF8.GetString`). |
+| ESLint, TS, test fail | Táº¥t cáº£ PASS trong session audit nÃ y. |
+| CORS wildcard | `cors({ origin: config.corsOrigin })` tá»« env, khÃ´ng wildcard. |
+| Password hashing rounds | bcrypt 12, Ä‘á»§ máº¡nh. |
+| JWT verify | CÃ³ try/catch + check `userId` + validate issuer/audience/algorithm. |
+| Prisma cascade | Má»i relation tá»« `User` Ä‘á»u `onDelete: Cascade`. |
 
 ---
 
-## Đề xuất thứ tự sửa
+## Äá» xuáº¥t thá»© tá»± sá»­a
 
-1. **CRITICAL (SA-C1..C4)** — ảnh hưởng trực tiếp đến mỗi lần deploy/restart. Sửa trước.
-2. **SA-H3 (geminiApiKey)** — mã hóa secret at rest. Tách khỏi feature AI hiện không bật.
-3. **SA-H1, SA-H2 (transactions)** — chỉnh sửa nhỏ, ngăn data corruption.
-4. **SA-H4 (rate-limit)** — middleware đơn giản, chặn brute-force.
-5. **SA-M1..M5** — validation + perf + timezone.
-6. **SA-L1..L4** — cleanup.
+1. **CRITICAL (SA-C1..C4)** â€” áº£nh hÆ°á»Ÿng trá»±c tiáº¿p Ä‘áº¿n má»—i láº§n deploy/restart. Sá»­a trÆ°á»›c.
+2. **SA-H3 (geminiApiKey)** â€” mÃ£ hÃ³a secret at rest. TÃ¡ch khá»i feature AI hiá»‡n khÃ´ng báº­t.
+3. **SA-H1, SA-H2 (transactions)** â€” chá»‰nh sá»­a nhá», ngÄƒn data corruption.
+4. **SA-H4 (rate-limit)** â€” middleware Ä‘Æ¡n giáº£n, cháº·n brute-force.
+5. **SA-M1..M5** â€” validation + perf + timezone.
+6. **SA-L1..L4** â€” cleanup.
 
 ---
 
-## Lệnh reproduce
+## Lá»‡nh reproduce
 
 ```bash
 # Backend typecheck + test + build
@@ -283,4 +283,20 @@ cd backend && npx tsc --noEmit && npm run test:unit && npm run build
 cd frontend && npx tsc --noEmit && npx vitest run && npx next build
 ```
 
-Cập nhật file này sau mỗi đợt sửa lớn.
+Cáº­p nháº­t file nÃ y sau má»—i Ä‘á»£t sá»­a lá»›n.
+
+---
+
+## Test pre-existing failures (PHÁT HIỆN TRONG QUÁ TRÌNH SỬA LOW)
+
+Sau khi fix L1-L4, chạy lại 
+pm test thấy **2 test fail** không liên quan đến fix:
+
+| Test | File | Lỗi |
+|---|---|---|
+| pomodoro state returns 204 then saved state | ackend/tests/crud.test.ts:240 | expected 200 "OK", got 204 "No Content" |
+| pomodoro: state elapsed time adjustment | ackend/tests/integration/edge-cases.test.ts:150 | expected 200 "OK", got 204 "No Content" |
+
+**Verified:** Stash toàn bộ thay đổi L1-L4, chạy lại crud.test.ts trên HEAD cũ (commit 339332) — **vẫn fail y chang**. Đây là bug tồn tại từ trước, nằm ngoài scope của SECURITY-AUDIT.md. Có thể liên quan đến việc UserSettings chưa được auto-create cho user mới test (PUT /api/pomodoro/state xong nhưng GET vẫn trả 204 vì settings row chưa có pomodoroStateJson).
+
+**Cần root-cause riêng** — KHÔNG thuộc audit này.

@@ -8,6 +8,22 @@ export async function findHabitsByUserId(userId: string): Promise<Habit[]> {
   })
 }
 
+/** Chỉ count + top 5 habit gần nhất — cho AI briefing, tránh load hết. */
+export async function findHabitsSummary(userId: string): Promise<{
+  total: number
+  recent: Habit[]
+}> {
+  const [total, recent] = await Promise.all([
+    prisma.habit.count({ where: { userId } }),
+    prisma.habit.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+    }),
+  ])
+  return { total, recent }
+}
+
 export async function findHabitByIdAndUserId(id: string, userId: string): Promise<Habit | null> {
   return prisma.habit.findFirst({ where: { id, userId } })
 }

@@ -145,9 +145,19 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
   return (
     <>
       {/* Overlay for mobile */}
-      <div 
-        className={`fixed inset-0 bg-black/50 z-20 md:hidden transition-opacity ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+      <div
+        role="button"
+        tabIndex={isOpen ? 0 : -1}
+        aria-label="Close menu"
+        aria-hidden={!isOpen}
         onClick={onClose}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            onClose()
+          }
+        }}
+        className={`fixed inset-0 bg-black/50 z-20 md:hidden transition-opacity ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       ></div>
       <aside className={`
         fixed md:relative inset-y-0 left-0 bg-card flex flex-col shrink-0 z-30 

@@ -22,7 +22,10 @@ export type TaskUpdatePayload = Partial<TaskCreatePayload> & {
 }
 
 export async function fetchTasks(): Promise<Task[]> {
-  const json = await apiFetchJson<unknown[]>('/api/tasks').catch(() => null)
+  // KHÔNG nuốt lỗi: caller (useTaskManager) sẽ set state.error để UI hiển thị
+  // banner/thông báo. Trước đây .catch(() => null) trả [] khiến user thấy
+  // task list rỗng mà không biết backend lỗi.
+  const json = await apiFetchJson<unknown[]>('/api/tasks')
   return Array.isArray(json) ? mapTasksFromApi(json) : []
 }
 

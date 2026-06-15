@@ -1,10 +1,17 @@
 import type { Prisma, PomodoroSession } from '@prisma/client'
 import { prisma } from '../lib/prisma'
 
-export async function findSessionsByUserId(userId: string): Promise<PomodoroSession[]> {
+export async function findSessionsByUserId(
+  userId: string,
+  options?: { take?: number; since?: Date },
+): Promise<PomodoroSession[]> {
   return prisma.pomodoroSession.findMany({
-    where: { userId },
+    where: {
+      userId,
+      ...(options?.since ? { startTime: { gte: options.since } } : {}),
+    },
     orderBy: { startTime: 'desc' },
+    take: options?.take,
   })
 }
 

@@ -37,30 +37,50 @@ async function resolveAiApiKey(userId: string): Promise<string | undefined> {
 }
 
 export async function buildBriefingContext(userId: string): Promise<string> {
-  const [tasks, habits, sessions] = await Promise.all([
-    taskRepository.findTasksByUserId(userId),
-    habitRepository.findHabitsByUserId(userId),
-    pomodoroRepository.findSessionsByUserId(userId),
+  // Dùng aggregate + top N thay vì load hết tasks/habits/sessions về memory.
+  // User có 10k tasks trước đây sẽ OOM; giờ chỉ cần top 20 due hôm nay.
+  const since = new Date()
+  since.setDate(since.getDate() - 7) // 7 ngày gần nhất cho focus stats
+
+  const [tasks, habits, recentSessions] = await Promise.all([
+    taskRepository.findTasksBriefingSummary(userId, {
+      todayTopN: 20,
+      dueBefore: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    }),
+    habitRepository.findHabitsSummary(userId),
+    pomodoroRepository.findSessionsByUserId(userId, { take: 20, since }),
   ])
 
-  const today = new Date().toISOString().slice(0, 10)
   const lines: string[] = [
-    `Total tasks: ${tasks.length}`,
-    `Completed tasks: ${tasks.filter((t) => t.completed).length}`,
-    `Habits: ${habits.length}`,
-    `Focus sessions: ${sessions.length}`,
+    `Total tasks: ${tasks.total}`,
+    `Completed tasks: ${tasks.completed}`,
+    `Pending tasks: ${tasks.pending}`,
+    `Total habits: ${habits.total}`,
+    `Focus sessions (last 7 days): ${recentSessions.length}`,
     '',
   ]
 
-  const todayTasks = tasks
-    .filter((t) => t.dueDate && t.dueDate.toISOString().slice(0, 10) === today)
-    .slice(0, 20)
-
-  if (todayTasks.length > 0) {
-    lines.push('Tasks due today:')
-    for (const t of todayTasks) {
-      lines.push(`- ${t.title}`)
+  if (tasks.dueTodayTop.length > 0) {
+    lines.push('Tasks due today or overdue (top 20 by priority):')
+    for (const t of tasks.dueTodayTop) {
+      lines.push(`- [${t.priority}] ${t.title}`)
     }
+    lines.push('')
+  }
+
+  if (habits.recent.length > 0) {
+    lines.push('Recent habits:')
+    for (const h of habits.recent) {
+      lines.push(`- ${h.name}`)
+    }
+    lines.push('')
+  }
+
+  if (recentSessions.length > 0) {
+    const focusSeconds = recentSessions
+      .filter((s) => s.type === 'focus')
+      .reduce((sum, s) => sum + s.durationSeconds, 0)
+    lines.push(`Total focus time (last 7 days): ${Math.round(focusSeconds / 60)} min`)
   }
 
   return lines.join('\n')

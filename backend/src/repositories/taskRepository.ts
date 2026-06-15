@@ -10,6 +10,44 @@ export async function findTasksByUserId(userId: string): Promise<TodoTask[]> {
   })
 }
 
+/** Tóm tắt task cho AI briefing: aggregate + top N due today / overdue.
+ *  Tránh load hết tasks về memory khi user có nhiều task. */
+export async function findTasksBriefingSummary(
+  userId: string,
+  options: { todayTopN: number; dueBefore: Date },
+): Promise<{
+  total: number
+  completed: number
+  pending: number
+  dueTodayTop: TodoTask[]
+}> {
+  const [total, completed, dueTodayTop] = await Promise.all([
+    prisma.todoTask.count({ where: { userId } }),
+    prisma.todoTask.count({ where: { userId, completed: true } }),
+    prisma.todoTask.findMany({
+      where: {
+        userId,
+        completed: false,
+        dueDate: { lte: options.dueBefore, not: null },
+      },
+      orderBy: [{ priority: 'desc' }, { dueDate: 'asc' }],
+      take: options.todayTopN,
+      select: {
+        id: true,
+        title: true,
+        priority: true,
+        dueDate: true,
+      },
+    }),
+  ])
+  return {
+    total,
+    completed,
+    pending: total - completed,
+    dueTodayTop: dueTodayTop as unknown as TodoTask[],
+  }
+}
+
 export async function findMaxSortOrder(userId: string, tx: TxClient = prisma): Promise<number> {
   const row = await tx.todoTask.aggregate({
     where: { userId },
