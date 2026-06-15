@@ -18,6 +18,10 @@ import { healthRouter } from './routes/health'
 export function createApp() {
   const app = express()
 
+  // Trust loopback proxy để req.ip hoạt động đúng khi chạy sau nginx/Caddy
+  // ở local. KHÔNG trust "true" / wildcard — sẽ bị spoof IP.
+  app.set('trust proxy', 'loopback')
+
   app.use(
     cors({
       origin: config.corsOrigin,

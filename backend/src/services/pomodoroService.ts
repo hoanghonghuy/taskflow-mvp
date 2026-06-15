@@ -4,6 +4,7 @@ import {
   type PomodoroSessionDto,
   type PomodoroStateDto,
 } from '../mappers/pomodoro.mapper'
+import { ConcurrentUpdateError } from '../repositories/settingsRepository'
 import * as pomodoroRepository from '../repositories/pomodoroRepository'
 import * as settingsRepository from '../repositories/settingsRepository'
 
@@ -40,11 +41,10 @@ export async function getPomodoroState(userId: string): Promise<PomodoroStateDto
   if (!state) return null
 
   let shouldPersist = false
+  const baseUpdatedAt = settings.pomodoroStateUpdatedAt
 
-  if (settings.pomodoroStateUpdatedAt && state.isActive && !state.isPaused) {
-    const elapsedSeconds = Math.floor(
-      (Date.now() - settings.pomodoroStateUpdatedAt.getTime()) / 1000,
-    )
+  if (baseUpdatedAt && state.isActive && !state.isPaused) {
+    const elapsedSeconds = Math.floor((Date.now() - baseUpdatedAt.getTime()) / 1000)
     if (elapsedSeconds > 0) {
       const remaining = state.remainingSeconds - elapsedSeconds
       if (remaining <= 0) {
@@ -59,10 +59,24 @@ export async function getPomodoroState(userId: string): Promise<PomodoroStateDto
   }
 
   if (shouldPersist) {
-    await settingsRepository.updateByUserId(userId, {
-      pomodoroStateJson: toJsonString(state),
-      pomodoroStateUpdatedAt: new Date(),
-    })
+    // Optimistic concurrency: chỉ ghi khi pomodoroStateUpdatedAt chưa đổi.
+    // Nếu 2 request GET đồng thời, request sau sẽ throw ConcurrentUpdateError →
+    // controller trả 409 Conflict, client retry.
+    try {
+      await settingsRepository.updateByUserId(
+        userId,
+        {
+          pomodoroStateJson: toJsonString(state),
+          pomodoroStateUpdatedAt: new Date(),
+        },
+        baseUpdatedAt,
+      )
+    } catch (error) {
+      if (error instanceof ConcurrentUpdateError) {
+        throw error
+      }
+      throw error
+    }
   }
 
   return state

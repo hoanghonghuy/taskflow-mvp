@@ -1,4 +1,5 @@
 import type { Prisma } from '@prisma/client'
+import { decryptSecret, encryptSecret } from '../lib/crypto'
 import { toJsonString } from '../lib/json'
 import { normalizeListId } from '../lib/inbox-list'
 import { mergePomodoroSettings, parsePomodoroSettings } from '../lib/pomodoro-settings'
@@ -31,7 +32,9 @@ export async function updateSettings(
   }
   if ('geminiApiKey' in body) {
     const key = body.geminiApiKey
-    data.geminiApiKey = key != null && String(key).trim() ? String(key).trim() : null
+    const trimmed = key != null ? String(key).trim() : ''
+    // Lưu ciphertext vào DB; chỉ decrypt khi service AI cần dùng.
+    data.geminiApiKey = trimmed ? encryptSecret(trimmed) : null
   }
   if ('pomodoroSettings' in body && body.pomodoroSettings && typeof body.pomodoroSettings === 'object') {
     const current = parsePomodoroSettings(settings.pomodoroSettingsJson)
@@ -44,4 +47,15 @@ export async function updateSettings(
 
   const updated = await settingsRepository.updateByUserId(userId, data)
   return mapSettingsToDto(updated)
+}
+
+/** Helper: lấy geminiApiKey plaintext từ DB (chỉ dùng nội bộ cho AI service). */
+export async function getDecryptedGeminiApiKey(userId: string): Promise<string | null> {
+  const settings = await settingsRepository.findByUserId(userId)
+  if (!settings?.geminiApiKey) return null
+  try {
+    return decryptSecret(settings.geminiApiKey)
+  } catch {
+    return null
+  }
 }

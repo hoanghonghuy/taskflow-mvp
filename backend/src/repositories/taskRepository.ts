@@ -1,6 +1,8 @@
 import type { Prisma, TodoTask } from '@prisma/client'
 import { prisma } from '../lib/prisma'
 
+type TxClient = Prisma.TransactionClient
+
 export async function findTasksByUserId(userId: string): Promise<TodoTask[]> {
   return prisma.todoTask.findMany({
     where: { userId },
@@ -8,8 +10,8 @@ export async function findTasksByUserId(userId: string): Promise<TodoTask[]> {
   })
 }
 
-export async function findMaxSortOrder(userId: string): Promise<number> {
-  const row = await prisma.todoTask.aggregate({
+export async function findMaxSortOrder(userId: string, tx: TxClient = prisma): Promise<number> {
+  const row = await tx.todoTask.aggregate({
     where: { userId },
     _max: { sortOrder: true },
   })
@@ -34,8 +36,11 @@ export async function findTaskByIdAndUserId(id: string, userId: string): Promise
   return prisma.todoTask.findFirst({ where: { id, userId } })
 }
 
-export async function createTask(data: Prisma.TodoTaskCreateInput): Promise<TodoTask> {
-  return prisma.todoTask.create({ data })
+export async function createTask(
+  data: Prisma.TodoTaskCreateInput,
+  tx: TxClient = prisma,
+): Promise<TodoTask> {
+  return tx.todoTask.create({ data })
 }
 
 export async function updateTask(id: string, data: Prisma.TodoTaskUpdateInput): Promise<TodoTask> {

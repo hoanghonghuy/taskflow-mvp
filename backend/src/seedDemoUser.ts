@@ -14,15 +14,26 @@ export async function seedDemoUser(): Promise<void> {
     return
   }
 
-  const passwordHash = await hashPassword(password)
   let user = await prisma.user.findUnique({ where: { email } })
 
   if (user) {
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { passwordHash, name, role: 'USER' },
-    })
+    // Bảo vệ user hiện tại: KHÔNG clobber role nếu user đã là ADMIN.
+    if (user.role === 'ADMIN') {
+      console.warn(`[seed] DEMO_EMAIL "${email}" trùng với ADMIN account; bỏ qua seed demo để tránh hạ quyền`)
+      return
+    }
+
+    // KHÔNG ghi đè passwordHash khi user đã tồn tại: demo user có thể đã đổi
+    // mật khẩu qua UI, reset mỗi restart sẽ vô hiệu hóa mật khẩu thật.
+    // Chỉ sync name từ env nếu khác.
+    if (user.name !== name) {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { name },
+      })
+    }
   } else {
+    const passwordHash = await hashPassword(password)
     user = await prisma.user.create({
       data: {
         name,

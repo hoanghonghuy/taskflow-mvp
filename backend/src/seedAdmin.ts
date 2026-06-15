@@ -13,13 +13,19 @@ export async function seedAdminUser(): Promise<void> {
   }
 
   const existing = await prisma.user.findUnique({ where: { email } })
-  const passwordHash = await hashPassword(password)
 
   if (existing) {
-    const data: { role: 'ADMIN'; passwordHash: string; name?: string } = {
+    const data: { role: 'ADMIN'; passwordHash?: string; name?: string } = {
       role: 'ADMIN',
-      passwordHash,
     }
+
+    // Chỉ ghi đè passwordHash khi user CHƯA phải admin (vd mới promote từ USER).
+    // Nếu user đã là ADMIN thì KHÔNG động vào hash: admin có thể đã đổi mật khẩu
+    // qua UI, ghi đè mỗi restart sẽ reset mật khẩu admin thật.
+    if (existing.role !== 'ADMIN') {
+      data.passwordHash = await hashPassword(password)
+    }
+
     if (name && existing.name !== name) {
       data.name = name
     }
@@ -29,22 +35,30 @@ export async function seedAdminUser(): Promise<void> {
     if (existing.role !== 'ADMIN') {
       console.log(`[seed] Promoted existing user to ADMIN: ${email}`)
     } else {
-      console.log(`[seed] Synced ADMIN credentials from env: ${email}`)
+      console.log(`[seed] ADMIN account unchanged: ${email}`)
     }
-  } else {
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        passwordHash,
-        role: 'ADMIN',
-      },
-    })
 
-    await seedDefaultListsForUser(user.id)
-    console.log(`[seed] Created ADMIN user: ${email}`)
+    // KHÔNG gọi demoteExtraAdmins khi user đã tồn tại: tôn trọng các admin khác
+    // do operator tạo thủ công. Auto-demote chỉ áp dụng khi admin vừa tạo mới
+    // (nhánh bên dưới) để đảm bảo chỉ có 1 admin từ env.
+    return
   }
 
+  const passwordHash = await hashPassword(password)
+  const user = await prisma.user.create({
+    data: {
+      name,
+      email,
+      passwordHash,
+      role: 'ADMIN',
+    },
+  })
+
+  await seedDefaultListsForUser(user.id)
+  console.log(`[seed] Created ADMIN user: ${email}`)
+
+  // Auto-demote chỉ chạy khi admin env vừa được tạo lần đầu, tránh xóa
+  // quyền admin khác ở những lần restart tiếp theo.
   const demoted = await adminRepository.demoteExtraAdmins(email)
   if (demoted > 0) {
     console.log(`[seed] Demoted ${demoted} extra ADMIN account(s) to USER`)

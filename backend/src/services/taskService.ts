@@ -4,6 +4,7 @@ import { normalizeListId } from '../lib/inbox-list'
 import { getNextOccurrence, parseRecurrence, appendCompletionDate } from '../lib/recurrence'
 import { mapTaskToDto, type TaskDto } from '../mappers/task.mapper'
 import { AppError } from '../middleware/errorHandler'
+import { prisma } from '../lib/prisma'
 import * as pomodoroRepository from '../repositories/pomodoroRepository'
 import * as taskRepository from '../repositories/taskRepository'
 
@@ -44,26 +45,49 @@ export async function createTask(userId: string, body: Record<string, unknown>):
   if (!title) throw new AppError(400, 'invalid_request', 'Title must not be empty')
 
   const listId = await normalizeListId(userId, body.listId)
-  const maxSortOrder = await taskRepository.findMaxSortOrder(userId)
 
-  const task = await taskRepository.createTask({
-    title,
-    description: body.description != null ? String(body.description) : null,
-    dueDate: 'dueDate' in body ? parseOptionalDate(body.dueDate) : null,
-    priority: normalizePriority(body.priority),
-    listId,
-    tags: toJsonString(Array.isArray(body.tags) ? body.tags : []),
-    columnId: body.columnId != null ? String(body.columnId) : null,
-    subtasks: toJsonString(Array.isArray(body.subtasks) ? body.subtasks : []),
-    comments: toJsonString(Array.isArray(body.comments) ? body.comments : []),
-    recurrence: body.recurrence ? toJsonString(body.recurrence) : null,
-    reminderMinutes: typeof body.reminderMinutes === 'number' ? body.reminderMinutes : null,
-    assigneeId: body.assigneeId != null ? String(body.assigneeId) : null,
-    sortOrder: maxSortOrder + 1,
-    user: { connect: { id: userId } },
-  })
-
-  return mapTaskToDto(task, 0)
+  // Bọc read max + create trong transaction serializable để tránh 2 request
+  // song song của cùng user lấy cùng maxSortOrder → trùng sortOrder, phá vỡ
+  // thứ tự board/list. Nếu conflict thì Prisma sẽ retry 1 lần.
+  let lastError: unknown
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const task = await prisma.$transaction(
+        async (tx) => {
+          const maxSortOrder = await taskRepository.findMaxSortOrder(userId, tx)
+          return taskRepository.createTask(
+            {
+              title,
+              description: body.description != null ? String(body.description) : null,
+              dueDate: 'dueDate' in body ? parseOptionalDate(body.dueDate) : null,
+              priority: normalizePriority(body.priority),
+              listId,
+              tags: toJsonString(Array.isArray(body.tags) ? body.tags : []),
+              columnId: body.columnId != null ? String(body.columnId) : null,
+              subtasks: toJsonString(Array.isArray(body.subtasks) ? body.subtasks : []),
+              comments: toJsonString(Array.isArray(body.comments) ? body.comments : []),
+              recurrence: body.recurrence ? toJsonString(body.recurrence) : null,
+              reminderMinutes:
+                typeof body.reminderMinutes === 'number' ? body.reminderMinutes : null,
+              assigneeId: body.assigneeId != null ? String(body.assigneeId) : null,
+              sortOrder: maxSortOrder + 1,
+              user: { connect: { id: userId } },
+            },
+            tx,
+          )
+        },
+        { isolationLevel: 'Serializable' },
+      )
+      return mapTaskToDto(task, 0)
+    } catch (error) {
+      lastError = error
+      const message = error instanceof Error ? error.message : String(error)
+      const isSerializationFailure =
+        message.includes('40001') || message.includes('could not serialize')
+      if (!isSerializationFailure) throw error
+    }
+  }
+  throw lastError
 }
 
 export async function updateTask(

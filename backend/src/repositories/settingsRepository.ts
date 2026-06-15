@@ -16,6 +16,28 @@ export async function getOrCreate(userId: string): Promise<UserSettings> {
 export async function updateByUserId(
   userId: string,
   data: Prisma.UserSettingsUpdateInput,
+  expectedUpdatedAt?: Date | null,
 ): Promise<UserSettings> {
+  // Optimistic concurrency: nếu caller cung cấp expectedUpdatedAt thì chỉ update
+  // khi pomodoroStateUpdatedAt chưa bị ai khác thay đổi. Tránh 2 request GET state
+  // đồng thời cùng tính elapsed → cùng ghi đè, làm mất tick của request sau.
+  if (expectedUpdatedAt !== undefined) {
+    const result = await prisma.userSettings.updateMany({
+      where: { userId, pomodoroStateUpdatedAt: expectedUpdatedAt },
+      data,
+    })
+    if (result.count === 0) {
+      throw new ConcurrentUpdateError('pomodoroStateUpdatedAt changed by another request')
+    }
+    const updated = await findByUserId(userId)
+    return updated!
+  }
   return prisma.userSettings.update({ where: { userId }, data })
+}
+
+export class ConcurrentUpdateError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'ConcurrentUpdateError'
+  }
 }

@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from 'express'
 import { ZodError } from 'zod'
 import { config } from '../config'
 import { sendError } from '../lib/response'
+import { ConcurrentUpdateError } from '../repositories/settingsRepository'
 
 export class AppError extends Error {
   constructor(
@@ -43,6 +44,11 @@ export function errorHandler(
   if (err instanceof ZodError) {
     const message = err.errors.map((e) => e.message).join('; ')
     sendError(res, 400, 'invalid_request', message)
+    return
+  }
+
+  if (err instanceof ConcurrentUpdateError) {
+    sendError(res, 409, 'concurrent_update', err.message)
     return
   }
 
