@@ -1,5 +1,5 @@
 import { toJsonString } from './lib/json'
-import * as listRepository from './repositories/listRepository'
+import { prisma } from './lib/prisma'
 
 const DEFAULT_LISTS = [
   { name: 'Inbox', color: '#3b82f6' },
@@ -8,15 +8,23 @@ const DEFAULT_LISTS = [
 ] as const
 
 export async function seedDefaultListsForUser(userId: string): Promise<void> {
-  const existing = await listRepository.findListsByUserId(userId)
-  if (existing.length > 0) return
-
-  for (const list of DEFAULT_LISTS) {
-    await listRepository.createList({
-      name: list.name,
-      color: list.color,
-      members: toJsonString([]),
-      user: { connect: { id: userId } },
+  // Bọc find + createMany trong transaction để tránh 2 request register đồng
+  // thời cùng thấy list rỗng → tạo 2 bộ 3 list trùng nhau. Postgres isolation
+  // mặc định đã ngăn duplicate ở mức row, nhưng transaction giúp fail-fast.
+  await prisma.$transaction(async (tx) => {
+    const existing = await tx.todoList.findMany({
+      where: { userId },
+      select: { id: true },
     })
-  }
+    if (existing.length > 0) return
+
+    await tx.todoList.createMany({
+      data: DEFAULT_LISTS.map((list) => ({
+        name: list.name,
+        color: list.color,
+        members: toJsonString([]),
+        userId,
+      })),
+    })
+  })
 }

@@ -11,6 +11,15 @@ const CELL_SIZE = 12 // w-3
 const CELL_GAP = 4   // gap-1
 const WEEK_WIDTH = CELL_SIZE + CELL_GAP
 
+/** Format local date thành YYYY-MM-DD. Tránh UTC của toISOString() lệch ngày
+ *  với user ở múi giờ dương/âm (khớp với backend `todayDateString()` VN). */
+function toLocalYMD(date: Date): string {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
 /** CN + T2–T7 — vừa cột nhãn, không wrap như "Thứ 2". */
 const VI_DAY_LABELS = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'] as const
 
@@ -86,7 +95,7 @@ const ProductivityHeatmap: React.FC = () => {
     // Count completed tasks
     state.tasks.forEach(task => {
       if (task.completed && task.completedAt) {
-        const dateStr = new Date(task.completedAt).toISOString().split('T')[0]
+        const dateStr = toLocalYMD(new Date(task.completedAt))
         if (!contribs[dateStr]) contribs[dateStr] = { tasks: 0, pomos: 0, total: 0 }
         contribs[dateStr].tasks += 1
         contribs[dateStr].total += 2
@@ -97,7 +106,7 @@ const ProductivityHeatmap: React.FC = () => {
     // Count pomodoro sessions
     focusHistory.forEach(session => {
       if (session?.startTime) {
-        const dateStr = new Date(session.startTime).toISOString().split('T')[0]
+        const dateStr = toLocalYMD(new Date(session.startTime))
         if (!contribs[dateStr]) contribs[dateStr] = { tasks: 0, pomos: 0, total: 0 }
         contribs[dateStr].pomos += 1
         contribs[dateStr].total += 1
@@ -196,7 +205,7 @@ const ProductivityHeatmap: React.FC = () => {
   }
   
   const getTooltipText = (date: Date) => {
-    const dateStr = date.toISOString().split('T')[0]
+    const dateStr = toLocalYMD(date)
     const data = contributions[dateStr]
     const formattedDate = date.toLocaleDateString(settings.language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
     
@@ -251,7 +260,7 @@ const ProductivityHeatmap: React.FC = () => {
                     return <div key={`empty-${weekIndex}-${dayIndex}`} className="w-3 h-3" />
                   }
                   const date = day as Date
-                  const count = contributions[date.toISOString().split('T')[0]]?.total || 0
+                  const count = contributions[toLocalYMD(date)]?.total || 0
                   const isFuture = date > new Date()
 
                   return (

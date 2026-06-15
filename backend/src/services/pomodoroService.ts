@@ -111,8 +111,7 @@ export async function updatePomodoroState(
         : 0,
   }
 
-  await settingsRepository.getOrCreate(userId)
-  await settingsRepository.updateByUserId(userId, {
+  await settingsRepository.upsertByUserId(userId, {
     pomodoroStateJson: toJsonString(normalized),
     pomodoroStateUpdatedAt: new Date(),
   })

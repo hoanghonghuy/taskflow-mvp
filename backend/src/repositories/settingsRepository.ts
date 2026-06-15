@@ -13,6 +13,20 @@ export async function getOrCreate(userId: string): Promise<UserSettings> {
   return prisma.userSettings.create({ data: defaultSettingsData(userId) })
 }
 
+export async function upsertByUserId(
+  userId: string,
+  updateData: Prisma.UserSettingsUpdateInput,
+): Promise<UserSettings> {
+  // Dùng upsert để đảm bảo settings tồn tại và cập nhật trong 1 round-trip.
+  // Tránh race: nếu 2 request cùng lúc, request 1 tạo, request 2 update.
+  const defaults = defaultSettingsData(userId)
+  return prisma.userSettings.upsert({
+    where: { userId },
+    create: { ...defaults, userId },
+    update: updateData,
+  })
+}
+
 export async function updateByUserId(
   userId: string,
   data: Prisma.UserSettingsUpdateInput,

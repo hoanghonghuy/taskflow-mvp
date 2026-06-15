@@ -5,6 +5,8 @@ import { mapListToDto, type ListDto } from '../mappers/list.mapper'
 import * as listRepository from '../repositories/listRepository'
 import { prisma } from '../lib/prisma'
 
+const HEX_COLOR_RE = /^#[0-9A-Fa-f]{6}$/
+
 async function validateMembers(memberIds: string[]): Promise<void> {
   if (memberIds.length === 0) return
 
@@ -21,6 +23,14 @@ async function validateMembers(memberIds: string[]): Promise<void> {
   }
 }
 
+function normalizeColor(input: unknown, fallback: string): string {
+  const value = input == null ? fallback : String(input).trim()
+  if (!HEX_COLOR_RE.test(value)) {
+    throw new AppError(400, 'invalid_request', 'Invalid color format (expected #RRGGBB)')
+  }
+  return value
+}
+
 export async function listLists(userId: string): Promise<ListDto[]> {
   const lists = await listRepository.findListsByUserId(userId)
   return lists.map(mapListToDto)
@@ -33,14 +43,18 @@ export async function getList(userId: string, id: string): Promise<ListDto | nul
 
 export async function createList(userId: string, body: Record<string, unknown>): Promise<ListDto> {
   const name = String(body.name ?? '').trim()
-  const color = String(body.color ?? '#3b82f6')
+  const color = normalizeColor(body.color, '#3b82f6')
   const members = Array.isArray(body.members) ? body.members.map(String) : []
+
+  if (!name) {
+    throw new AppError(400, 'invalid_request', 'Name must not be empty')
+  }
 
   // Validate members exist
   await validateMembers(members)
 
   const list = await listRepository.createList({
-    name: name || 'Untitled',
+    name,
     color,
     members: toJsonString(members),
     user: { connect: { id: userId } },
@@ -63,7 +77,9 @@ export async function updateList(
     if (!name) throw new AppError(400, 'invalid_request', 'Name must not be empty')
     data.name = name
   }
-  if ('color' in body && body.color != null) data.color = String(body.color)
+  if ('color' in body && body.color != null) {
+    data.color = normalizeColor(body.color, existing.color)
+  }
   if ('members' in body && body.members != null) {
     const members = Array.isArray(body.members) ? body.members.map(String) : []
     // Validate members exist

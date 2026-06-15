@@ -42,8 +42,13 @@ export function errorHandler(
   }
 
   if (err instanceof ZodError) {
-    const message = err.errors.map((e) => e.message).join('; ')
-    sendError(res, 400, 'invalid_request', message)
+    const issues = err.errors.map((e) => ({
+      path: e.path.map(String),
+      message: e.message,
+      code: e.code,
+    }))
+    const message = issues.map((i) => (i.path.length ? `${i.path.join('.')}: ${i.message}` : i.message)).join('; ')
+    sendError(res, 400, 'invalid_request', message, { issues })
     return
   }
 

@@ -56,7 +56,16 @@ const isOverdue = (date: Date): boolean => {
   return checkDate.getTime() < today.getTime()
 }
 
-const toYYYYMMDD = (date: Date) => date.toISOString().split('T')[0]
+const toYYYYMMDD = (date: Date) => {
+  // Dùng local date (YYYY-MM-DD) thay vì UTC để khớp với backend
+  // `todayDateString()` (Asia/Ho_Chi_Minh). Trước đây dùng toISOString() trả
+  // về UTC → user ở múi giờ dương tick habit lúc 0-7h sáng sẽ thấy "today"
+  // bị lệch ngày.
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
 
 type DashboardStats = {
   today: number
