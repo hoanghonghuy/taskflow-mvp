@@ -1,6 +1,6 @@
 # Taskflow MVP — Trạng thái code & backlog
 
-> Cập nhật: **2026-06-13** (sau đợt production hardening Phase 1–4 + sync docs Phase 5).
+> Cập nhật: **2026-06-16** (sau PR-1/PR-2, pomodoro upsert, forgot-password MVP, sync docs).
 > Đánh dấu `[x]` khi đã xử lý xong.
 
 **Đánh giá nghiệp vụ từng tính năng:** [FEATURE-COMPLETENESS.md](./FEATURE-COMPLETENESS.md)
@@ -11,12 +11,30 @@
 
 | Hạng mục | Trạng thái |
 |----------|------------|
-| Backend tests | **173/173 pass** — coverage ~94% statements (ngưỡng Jest đã căn theo thực tế) |
-| Frontend tests | **235/235 pass** — 2 contract test skipped (cần `REAL_BACKEND_TEST=true` + backend chạy) |
-| E2E Playwright | 15 spec — thêm logout (`auth.spec.ts`), board drag-drop persist (`board.spec.ts`) |
+| Backend tests | **205/205 pass** — coverage ~93% statements (ngưỡng Jest ~92%) |
+| Frontend tests | **238/238 pass** — 2 contract test skipped (cần `REAL_BACKEND_TEST=true` + backend chạy) |
+| E2E Playwright | 16 test auth (+ forgot-password MVP) — collaboration BE có integration test |
 | Migration mới | `20260612120000_add_board_columns_json`, `20260612140000_add_task_completed_at` — chạy `npx prisma migrate deploy` |
 
-**Đánh giá production (1 user):** MVP **ổn cho dùng hàng ngày** sau hardening; chưa sẵn sàng multi-tenant collaboration hoặc forgot-password thật.
+**Đánh giá production (1 user):** MVP **ổn cho dùng hàng ngày**; collaboration **đọc** list/task đã có; chưa có reset password qua email.
+
+---
+
+## Đã xử lý — 2026-06-16
+
+### Bug & auth
+
+- [x] **POMO-1** `upsertByUserId` — nhánh `create` merge `updateData` (fix Pomodoro state không persist lần đầu)
+- [x] **PR-1** Middleware verify JWT (`jose`) — access token hợp lệ + role; refresh cookie fallback; chặn USER vào `/admin`
+- [x] **PR-2** Collaboration read access — member thấy shared list/task; owner-only mutate; `ownerUserId` trên list; TaskDetail read-only
+- [x] **FP-1** Forgot password MVP — `PASSWORD_RESET_ENABLED = false`; trang hướng dẫn thay thế; ghi chú trên login; E2E `auth.spec.ts`
+
+### Test & docs
+
+- [x] **P4-1b** Căn lại ngưỡng coverage Jest backend (~92%)
+- [x] **P4-4** Integration `collaboration.test.ts` + unit `list-access.test.ts`
+- [x] **P4-5** Frontend unit `verify-access-token.test.ts`
+- [x] **DOC-1** Sync `ISSUES.md`, `FEATURE-COMPLETENESS.md`, `README.md`
 
 ---
 
@@ -35,8 +53,8 @@
 
 ### Phase 2 — Auth & mobile
 
-- [x] **PH2-1** `middleware.ts` — guard route bằng cookie `taskflow_token` / `taskflow_refresh` (presence only, không validate JWT)
-- [x] **PH2-2** Forgot password — bỏ form giả, trang thông báo tĩnh "chưa hỗ trợ"
+- [x] **PH2-1** `middleware.ts` — guard route (ban đầu cookie only; **PR-1** nâng cấp verify JWT trên edge)
+- [x] **PH2-2** Forgot password — bỏ form giả; trang MVP hướng dẫn (**FP-1** 2026-06-16)
 - [x] **PH2-3** Sidebar share/delete hiện trên mobile (`opacity-100 md:opacity-0`)
 - [x] **PH2-4** `vi.json` — block `achievements` đầy đủ
 - [x] **PH2-5** Auth 401 đồng bộ — `session-events.ts`, `api/client.ts`, `user-provider`, `settings-provider`
@@ -117,9 +135,9 @@
 
 ### Production / hạ tầng
 
-- [ ] **PR-1** Middleware chỉ kiểm tra cookie tồn tại — không validate JWT server-side trên edge
-- [ ] **PR-2** Collaboration multi-tenant — member **không** thấy list/task của owner (metadata members chỉ lưu trên list owner)
+- [ ] **PR-2b** Collaboration write — member chưa sửa task/list của owner (chỉ read); board columns owner chưa sync cho member
 - [ ] **P2-10** AI rate limit in-memory — không chia sẻ giữa nhiều instance backend
+- [ ] **FP-2** Forgot password thật — email + reset token (cần `PASSWORD_RESET_ENABLED = true` + mailer)
 
 ### Test
 
@@ -146,10 +164,10 @@
 |-----|---------|
 | Landing `/` | Redirect `/login` |
 | AI trên UI | Xem mục **AI — tạm không mở** ở trên |
-| Forgot password | Trang tĩnh báo chưa hỗ trợ — **không** gửi email reset |
+| Forgot password | `PASSWORD_RESET_ENABLED = false` — trang hướng dẫn, **không** gửi email |
 | MOCK_MODE | Pomodoro state không persist; AI 204 |
 | Undo/Redo | Revert UI local; provider debounce sync — **không** phải server-side undo stack |
-| Route guard | Cookie presence (`middleware.ts`) — không thay thế session validation đầy đủ |
+| Route guard | JWT verify trên edge (`jose`); refresh cookie fallback khi access token hết hạn |
 
 ---
 
@@ -186,6 +204,7 @@ Chi tiết: [README.md](../README.md)
 | P0–P4 (2026-06-12) | Bug data, backend validation, E2E board | ✅ Xong |
 | PH1–PH4 (2026-06-13) | Production hardening UX/auth/data | ✅ Xong |
 | Phase 5 | Sync docs (`ISSUES`, `FEATURE-COMPLETENESS`) | ✅ Xong |
-| PR-1, PR-2 | JWT edge validation, multi-tenant lists | Mở |
+| 2026-06-16 | PR-1, PR-2 read, POMO-1, FP-1, docs | ✅ Xong |
+| PR-2b, FP-2 | Collaboration write, email reset password | Mở |
 
 **Cập nhật file này** sau mỗi đợt sửa lớn.

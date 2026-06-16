@@ -5,3 +5,9 @@
  * Chi tiết: docs/ISSUES.md mục "AI — tạm không mở".
  */
 export const AI_FEATURES_ENABLED = false
+
+/**
+ * Đặt lại mật khẩu qua email — chưa ship MVP.
+ * `false`: `/forgot-password` hiển thị trang hướng dẫn thay thế (không form gửi email).
+ */
+export const PASSWORD_RESET_ENABLED = false

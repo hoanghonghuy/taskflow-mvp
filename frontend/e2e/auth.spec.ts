@@ -11,6 +11,17 @@ test.describe('Authentication UI', () => {
     await expect(page.getByLabel('Email', { exact: true })).toBeVisible()
     await expect(page.getByLabel('Password', { exact: true })).toBeVisible()
     await expect(page.getByRole('link', { name: 'Sign Up' })).toHaveAttribute('href', '/register')
+    await expect(page.getByText('Email reset not available yet')).toBeVisible()
+  })
+
+  test('forgot password page shows MVP guidance instead of reset form', async ({ page }) => {
+    await page.goto('/forgot-password')
+
+    await expect(page.getByText('Not available yet')).toBeVisible()
+    await expect(page.getByText('What you can do instead')).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Sign Up' })).toHaveAttribute('href', '/register')
+    await expect(page.getByRole('link', { name: 'Sign In' })).toHaveAttribute('href', '/login')
+    await expect(page.getByLabel('Email', { exact: true })).toHaveCount(0)
   })
 
   test('registers a new account and lands on dashboard', async ({ page }) => {
