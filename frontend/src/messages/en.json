@@ -303,6 +303,32 @@
     "addTask": "Add Task",
     "completed": "Completed",
     "loadMore": "Load more",
+    "empty": {
+      "today": {
+        "title": "Nothing due today",
+        "body": "You're clear for today. Add a task with today's due date or check Upcoming."
+      },
+      "upcoming": {
+        "title": "No upcoming tasks",
+        "body": "Tasks with a future due date will show up here."
+      },
+      "inbox": {
+        "title": "Inbox is empty",
+        "body": "Capture new tasks here before sorting them into lists."
+      },
+      "tag": {
+        "title": "No tasks with this tag",
+        "body": "Add this tag to a task to see it here."
+      },
+      "default": {
+        "title": "All done!",
+        "body": "You have no open tasks here. Add one to get started."
+      },
+      "allCompleted": {
+        "title": "All tasks completed",
+        "body": "Every task in this view is done. Expand Completed below or add a new task."
+      }
+    },
     "summary": {
       "today": "Due today",
       "upcoming": "Upcoming (7 days)",
@@ -728,7 +754,8 @@
       "shortBreak": "Short Break (minutes)",
       "longBreak": "Long Break (minutes)",
       "longBreakInterval": "Sessions until long break",
-      "note": "Changes to durations apply to future Pomodoro sessions."
+      "note": "Changes to durations apply to future Pomodoro sessions.",
+      "autoStartDescription": "Automatically start the next focus or break session when the current one ends."
     },
     "language": {
       "en": "English",
@@ -826,7 +853,11 @@
     "sortTasks": "Sort tasks",
     "undo": "Undo",
     "redo": "Redo",
-    "clearHistory": "Clear History"
+    "clearHistory": "Clear History",
+    "historyLocalNote": "Undo/redo applies to this browser session only — changes are not reverted on the server.",
+    "undoTooltip": "Undo last change (local session only)",
+    "redoTooltip": "Redo last undone change (local session only)",
+    "clearHistoryTooltip": "Clear undo/redo history (local session only)"
   },
   "recurrence": {
     "title": "Recurrence",
@@ -933,7 +964,15 @@
   },
   "matrix": {
     "title": "Priority Matrix",
-    "subtitle": "Incomplete tasks grouped by priority level.",
+    "subtitle": "Open tasks grouped by priority level.",
+    "description": "Each quadrant represents a priority bucket (High/Urgent, Medium, Low, None). Use this view to see what needs attention first.",
+    "dragHint": "Tip: drag a task to another quadrant to change its priority.",
+    "priorities": {
+      "high": "High / Urgent",
+      "medium": "Medium",
+      "low": "Low",
+      "none": "None"
+    },
     "axis": {
       "urgent": "Urgent",
       "notUrgent": "Not Urgent",
@@ -993,6 +1032,11 @@
     "dueDateLabel": "Due Date",
     "priorityLabel": "Priority",
     "listLabel": "List",
+    "tagsLabel": "Tags",
+    "tagsPlaceholder": "Add tag...",
+    "tagsHelper": "Press Enter to add a tag",
+    "reminderLabel": "Reminder",
+    "removeTagAria": "Remove tag {{tag}}",
     "createTask": "Create Task"
   },
   "briefing": {
@@ -1071,8 +1115,15 @@
     }
   },
   "search": {
-    "placeholder": "Search tasks by title, description, or tag...",
-    "noResults": "No tasks found for \"{{searchTerm}}\""
+    "placeholder": "Search tasks by title, description, tag, subtask, or comment...",
+    "hintEmpty": "Type to search your tasks",
+    "hintScopes": "Matches title, description, tags, subtasks, and comments",
+    "resultCount": "{{count}} result(s)",
+    "noResults": "No tasks found for \"{{searchTerm}}\"",
+    "matchInDescription": "In description",
+    "matchInTag": "Tag",
+    "matchInSubtask": "Subtask",
+    "matchInComment": "Comment"
   },
   "datePicker": {
     "placeholder": "Select a date",

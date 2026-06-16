@@ -251,7 +251,41 @@
     "noTasks": "Bạn chưa có nhiệm vụ nào ở đây. Thêm một cái để bắt đầu.",
     "addTask": "Thêm Nhiệm vụ",
     "completed": "Đã hoàn thành",
-    "loadMore": "Tải thêm"
+    "loadMore": "Tải thêm",
+    "empty": {
+      "today": {
+        "title": "Hôm nay không có việc",
+        "body": "Bạn đã xong việc hôm nay. Thêm task có hạn hôm nay hoặc xem mục Sắp tới."
+      },
+      "upcoming": {
+        "title": "Không có việc sắp tới",
+        "body": "Task có hạn trong tương lai sẽ hiện ở đây."
+      },
+      "inbox": {
+        "title": "Hộp thư đến trống",
+        "body": "Ghi nhanh task mới vào đây trước khi sắp xếp vào danh sách."
+      },
+      "tag": {
+        "title": "Không có task với thẻ này",
+        "body": "Gắn thẻ này vào task để thấy ở đây."
+      },
+      "default": {
+        "title": "Tất cả đã xong!",
+        "body": "Không còn task mở ở đây. Thêm task mới để bắt đầu."
+      },
+      "allCompleted": {
+        "title": "Đã hoàn thành hết",
+        "body": "Mọi task trong view này đã xong. Mở mục Đã hoàn thành bên dưới hoặc thêm task mới."
+      }
+    },
+    "summary": {
+      "today": "Hạn hôm nay",
+      "upcoming": "Sắp tới (7 ngày)",
+      "overdue": "Quá hạn",
+      "total": "Tất cả task",
+      "tasks": "{{count}} task",
+      "tasks_plural": "{{count}} task"
+    }
   },
   "taskDetail": {
     "completed": "Đã hoàn thành",
@@ -720,7 +754,8 @@
       "shortBreak": "Nghỉ ngắn (phút)",
       "longBreak": "Nghỉ dài (phút)",
       "longBreakInterval": "Số phiên trước khi nghỉ dài",
-      "note": "Thay đổi thời lượng sẽ áp dụng cho các phiên Pomodoro tiếp theo."
+      "note": "Thay đổi thời lượng sẽ áp dụng cho các phiên Pomodoro tiếp theo.",
+      "autoStartDescription": "Tự động bắt đầu phiên tập trung hoặc nghỉ tiếp theo khi phiên hiện tại kết thúc."
     },
     "language": {
       "en": "English",
@@ -818,7 +853,11 @@
     "sortTasks": "Sắp xếp nhiệm vụ",
     "undo": "Hoàn tác",
     "redo": "Làm lại",
-    "clearHistory": "Xóa lịch sử"
+    "clearHistory": "Xóa lịch sử",
+    "historyLocalNote": "Hoàn tác/làm lại chỉ áp dụng trong phiên trình duyệt này — không hoàn nguyên dữ liệu trên server.",
+    "undoTooltip": "Hoàn tác thay đổi gần nhất (chỉ local)",
+    "redoTooltip": "Làm lại thay đổi vừa hoàn tác (chỉ local)",
+    "clearHistoryTooltip": "Xóa lịch sử hoàn tác/làm lại (chỉ local)"
   },
   "recurrence": {
     "title": "Lặp lại",
@@ -926,6 +965,14 @@
   "matrix": {
     "title": "Ma trận Ưu tiên",
     "subtitle": "Nhiệm vụ chưa hoàn thành được nhóm theo mức ưu tiên.",
+    "description": "Mỗi góc phần tư tương ứng một mức ưu tiên (Cao/Khẩn cấp, Trung bình, Thấp, Không có). Dùng view này để biết việc nào cần làm trước.",
+    "dragHint": "Mẹo: kéo nhiệm vụ sang góc phần tư khác để đổi mức ưu tiên.",
+    "priorities": {
+      "high": "Cao / Khẩn cấp",
+      "medium": "Trung bình",
+      "low": "Thấp",
+      "none": "Không có"
+    },
     "axis": {
       "urgent": "Khẩn cấp",
       "notUrgent": "Không khẩn cấp",
@@ -985,6 +1032,11 @@
     "dueDateLabel": "Hạn chót",
     "priorityLabel": "Độ ưu tiên",
     "listLabel": "Danh sách",
+    "tagsLabel": "Thẻ",
+    "tagsPlaceholder": "Thêm thẻ...",
+    "tagsHelper": "Nhấn Enter để thêm thẻ",
+    "reminderLabel": "Nhắc nhở",
+    "removeTagAria": "Xóa thẻ {{tag}}",
     "createTask": "Tạo Nhiệm vụ"
   },
   "briefing": {
@@ -1063,8 +1115,15 @@
     }
   },
   "search": {
-    "placeholder": "Tìm kiếm nhiệm vụ theo tiêu đề, mô tả hoặc thẻ...",
-    "noResults": "Không tìm thấy nhiệm vụ nào cho \"{{searchTerm}}\""
+    "placeholder": "Tìm kiếm theo tiêu đề, mô tả, thẻ, subtask hoặc bình luận...",
+    "hintEmpty": "Nhập từ khóa để tìm nhiệm vụ",
+    "hintScopes": "Tìm trong tiêu đề, mô tả, thẻ, subtask và bình luận",
+    "resultCount": "{{count}} kết quả",
+    "noResults": "Không tìm thấy nhiệm vụ nào cho \"{{searchTerm}}\"",
+    "matchInDescription": "Trong mô tả",
+    "matchInTag": "Thẻ",
+    "matchInSubtask": "Subtask",
+    "matchInComment": "Bình luận"
   },
   "datePicker": {
     "placeholder": "Chọn ngày",

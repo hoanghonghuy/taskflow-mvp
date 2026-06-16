@@ -4,12 +4,22 @@ import React, { useState, useMemo } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/i18n/hooks'
 import type { Task } from '@/types'
+import type { TranslationKey } from '@/lib/i18n/types'
 import { CloseIcon, SearchIcon } from '@/lib/icons'
 import TaskItem from '@/features/tasks/components/TaskItem'
 import { useRouter } from 'next/navigation'
+import { filterTasksBySearch, getSearchMatchMeta } from '@/lib/utils/search-helpers'
+import { HighlightText } from '@/components/ui/highlight-text'
 
 interface SearchModalProps {
   onClose: () => void
+}
+
+const matchFieldLabels: Record<string, TranslationKey> = {
+  description: 'search.matchInDescription',
+  tag: 'search.matchInTag',
+  subtask: 'search.matchInSubtask',
+  comment: 'search.matchInComment',
 }
 
 const SearchModal: React.FC<SearchModalProps> = ({ onClose }) => {
@@ -18,17 +28,10 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose }) => {
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState('')
 
-  const searchResults = useMemo(() => {
-    if (!searchTerm.trim()) {
-      return []
-    }
-    const lowercasedTerm = searchTerm.toLowerCase()
-    return state.tasks.filter(task => 
-      task.title.toLowerCase().includes(lowercasedTerm) ||
-      task.description?.toLowerCase().includes(lowercasedTerm) ||
-      task.tags.some(tag => tag.toLowerCase().includes(lowercasedTerm))
-    )
-  }, [searchTerm, state.tasks])
+  const searchResults = useMemo(
+    () => filterTasksBySearch(state.tasks, searchTerm),
+    [searchTerm, state.tasks],
+  )
 
   const handleTaskSelect = (task: Task) => {
     dispatch({ type: 'SET_SELECTED_TASK', payload: task.id })
@@ -46,6 +49,8 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose }) => {
     const list = state.lists.find(l => l.id === listId)
     return list ? list.name : ''
   }
+
+  const trimmedTerm = searchTerm.trim()
 
   return (
     <div 
@@ -72,21 +77,42 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose }) => {
         </header>
         
         <div className="grow p-4 overflow-y-auto">
-          {searchTerm.trim() && searchResults.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">
-              <p>{t('search.noResults', { searchTerm })}</p>
+          {!trimmedTerm && (
+            <div className="text-center py-12 text-muted-foreground space-y-2">
+              <p className="text-sm">{t('search.hintEmpty')}</p>
+              <p className="text-xs">{t('search.hintScopes')}</p>
             </div>
           )}
+          {trimmedTerm && searchResults.length === 0 && (
+            <div className="text-center py-12 text-muted-foreground">
+              <p>{t('search.noResults', { searchTerm: trimmedTerm })}</p>
+            </div>
+          )}
+          {trimmedTerm && searchResults.length > 0 && (
+            <p className="text-xs text-muted-foreground mb-3">
+              {t('search.resultCount', { count: searchResults.length })}
+            </p>
+          )}
           <div className="space-y-2">
-            {searchResults.map(task => (
-              <div key={task.id} onClick={() => handleTaskSelect(task)}>
-                <TaskItem 
-                  task={task} 
-                  isDraggable={false} 
-                  listName={getListName(task.listId)}
-                />
-              </div>
-            ))}
+            {searchResults.map(task => {
+              const matchMeta = getSearchMatchMeta(task, trimmedTerm)
+              return (
+                <div key={task.id} onClick={() => handleTaskSelect(task)} className="cursor-pointer">
+                  <TaskItem 
+                    task={task} 
+                    isDraggable={false} 
+                    listName={getListName(task.listId)}
+                    highlightTerm={trimmedTerm}
+                  />
+                  {matchMeta && (
+                    <p className="text-xs text-muted-foreground px-3 -mt-1 mb-1">
+                      {t(matchFieldLabels[matchMeta.field])}:{' '}
+                      <HighlightText text={matchMeta.snippet} term={trimmedTerm} />
+                    </p>
+                  )}
+                </div>
+              )
+            })}
           </div>
         </div>
       </div>
@@ -95,4 +121,3 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose }) => {
 }
 
 export default SearchModal
-

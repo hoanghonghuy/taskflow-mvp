@@ -7,6 +7,7 @@ import { historyReducer } from '@/lib/store/task-manager/history-reducer'
 import { INITIAL_STATE } from '@/lib/store/task-manager/initial-state'
 import { useToast } from '@/lib/hooks/use-toast'
 import { useUser } from './user-provider'
+import { useSettings } from './settings-provider'
 import * as countdownApi from '@/lib/api/countdown'
 import * as habitsApi from '@/lib/api/habits'
 import * as listsApi from '@/lib/api/lists'
@@ -31,6 +32,7 @@ const TaskManagerContext = createContext<TaskManagerContextType | undefined>(und
 export function TaskManagerProvider({ children }: { children: React.ReactNode }) {
   const { t } = useI18n()
   const { isAuthenticated } = useUser()
+  const { settings: userSettings } = useSettings()
   const hasLoadedFromBackend = useRef(false)
   const wasAuthenticatedRef = useRef(isAuthenticated)
   const [isHydrating, setIsHydrating] = useState(false)
@@ -304,6 +306,15 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
       previous.focusedTaskId !== current.focusedTaskId ||
       previous.focusedHabitId !== current.focusedHabitId
 
+    const sessionCompleted =
+      previous.isActive &&
+      !current.isActive &&
+      previous.currentSession !== current.currentSession
+
+    if (sessionCompleted && userSettings.autoStartPomodoro) {
+      dispatch({ type: 'START_TIMER' })
+    }
+
     if (!structuralChanged) {
       // Ignore changes that only affect remainingTime (TICK_TIMER) to avoid spamming backend.
       return
@@ -312,7 +323,7 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
     void pomodoroApi.updatePomodoroState(current).catch((error) => {
       console.error('Failed to sync pomodoro state to backend', error)
     })
-  }, [historyState.present.pomodoro, isAuthenticated])
+  }, [historyState.present.pomodoro, isAuthenticated, userSettings.autoStartPomodoro, dispatch])
 
   // Ensure pomodoro state is saved when the user logs out
   useEffect(() => {

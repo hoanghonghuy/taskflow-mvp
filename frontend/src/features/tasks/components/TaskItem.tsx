@@ -20,6 +20,7 @@ import { useUser } from '@/components/providers/user-provider'
 import { Avatar } from '@/components/ui/avatar'
 import { useI18n } from '@/lib/i18n/hooks'
 import { useSettings } from '@/components/providers/settings-provider'
+import { HighlightText } from '@/components/ui/highlight-text'
 
 // Helper functions to replace date-fns
 const isToday = (date: Date): boolean => {
@@ -44,9 +45,10 @@ interface TaskItemProps {
   onDragStart?: (taskId: string) => void
   onDrop?: (droppedOnId: string) => void
   listName?: string
+  highlightTerm?: string
 }
 
-const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onDrop, listName }) => {
+const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onDrop, listName, highlightTerm }) => {
   const { dispatch } = useTaskManager()
   const { t } = useI18n()
   const { settings } = useSettings()
@@ -116,6 +118,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
     e.stopPropagation()
     if (isDraggable && onDragStart) {
       e.dataTransfer.effectAllowed = 'move'
+      e.dataTransfer.setData('taskId', task.id.split('_')[0])
       onDragStart(task.id)
     }
   }
@@ -215,7 +218,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
         <div className="ml-4 grow flex items-center gap-2 min-w-0">
           <div className="flex flex-col min-w-0">
             <p className={`text-sm truncate ${task.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
-              {task.title}
+              <HighlightText text={task.title} term={highlightTerm} />
             </p>
             {listName && (
               <span className="text-[11px] text-muted-foreground truncate">{listName}</span>

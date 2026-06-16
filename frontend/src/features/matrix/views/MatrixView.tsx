@@ -1,44 +1,77 @@
 'use client'
 
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
+import { useTaskActions } from '@/lib/hooks/use-task-manager'
 import { useI18n } from '@/lib/i18n/hooks'
 import TaskItem from '@/features/tasks/components/TaskItem'
 import type { Task, Priority } from '@/types'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
 
+interface QuadrantConfig {
+  id: string
+  priorities: Priority[]
+  dropPriority: Priority
+  border: string
+  background: string
+  titleKey: 'matrix.q1.title' | 'matrix.q2.title' | 'matrix.q3.title' | 'matrix.q4.title'
+  subtitleKey: 'matrix.q1.subtitle' | 'matrix.q2.subtitle' | 'matrix.q3.subtitle' | 'matrix.q4.subtitle'
+  priorityLabelKey: 'matrix.priorities.high' | 'matrix.priorities.low' | 'matrix.priorities.medium' | 'matrix.priorities.none'
+}
+
 interface QuadrantProps {
-  title: string
-  subtitle: string
+  config: QuadrantConfig
   tasks: Task[]
-  borderClass: string
-  backgroundClass: string
+  isDragOver: boolean
+  onDragOver: (e: React.DragEvent) => void
+  onDragLeave: () => void
+  onDrop: (e: React.DragEvent) => void
+  onTaskDragStart: (taskId: string) => void
+  onTaskDragEnd: () => void
 }
 
 const Quadrant: React.FC<QuadrantProps> = ({
-  title,
-  subtitle,
+  config,
   tasks,
-  borderClass,
-  backgroundClass,
+  isDragOver,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+  onTaskDragStart,
+  onTaskDragEnd,
 }) => {
   const { t } = useI18n()
 
   return (
     <div
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
       className={`
-        p-4 rounded-xl flex flex-col border
-        ${borderClass} ${backgroundClass}
+        p-4 rounded-xl flex flex-col border transition-all
+        ${config.border} ${config.background}
+        ${isDragOver ? 'ring-2 ring-primary/60 shadow-lg' : ''}
       `}
     >
       <div className="mb-4">
-        <h3 className="font-bold">{title}</h3>
-        <p className="text-xs text-muted-foreground">{subtitle}</p>
+        <div className="flex items-center gap-2">
+          <h3 className="font-bold">{t(config.titleKey)}</h3>
+          <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-background/80 text-muted-foreground border border-border">
+            {t(config.priorityLabelKey)}
+          </span>
+        </div>
+        <p className="text-xs text-muted-foreground">{t(config.subtitleKey)}</p>
       </div>
-      <div className="flex-1 overflow-y-auto pr-2 space-y-2">
+      <div className="flex-1 overflow-y-auto pr-2 space-y-2 min-h-[120px]">
         {tasks.length > 0 ? (
           tasks.map(task => (
-            <TaskItem key={task.id} task={task} isDraggable={false} />
+            <div key={task.id} onDragEnd={onTaskDragEnd}>
+              <TaskItem
+                task={task}
+                isDraggable
+                onDragStart={onTaskDragStart}
+              />
+            </div>
           ))
         ) : (
           <div className="text-center text-sm text-muted-foreground pt-8">
@@ -50,45 +83,57 @@ const Quadrant: React.FC<QuadrantProps> = ({
   )
 }
 
-const QUADRANT_CONFIG = [
+const QUADRANT_CONFIG: QuadrantConfig[] = [
   {
     id: 'urgentImportant',
-    priorities: ['urgent', 'high'] as Priority[],
+    priorities: ['urgent', 'high'],
+    dropPriority: 'high',
     border: 'border-red-500/60',
     background: 'bg-red-500/5',
     titleKey: 'matrix.q1.title',
     subtitleKey: 'matrix.q1.subtitle',
+    priorityLabelKey: 'matrix.priorities.high',
   },
   {
     id: 'notUrgentImportant',
-    priorities: ['low'] as Priority[],
+    priorities: ['low'],
+    dropPriority: 'low',
     border: 'border-blue-500/50',
     background: 'bg-blue-500/5',
     titleKey: 'matrix.q2.title',
     subtitleKey: 'matrix.q2.subtitle',
+    priorityLabelKey: 'matrix.priorities.low',
   },
   {
     id: 'urgentNotImportant',
-    priorities: ['medium'] as Priority[],
+    priorities: ['medium'],
+    dropPriority: 'medium',
     border: 'border-yellow-500/60',
     background: 'bg-yellow-500/5',
     titleKey: 'matrix.q3.title',
     subtitleKey: 'matrix.q3.subtitle',
+    priorityLabelKey: 'matrix.priorities.medium',
   },
   {
     id: 'notUrgentNotImportant',
-    priorities: ['none'] as Priority[],
+    priorities: ['none'],
+    dropPriority: 'none',
     border: 'border-gray-500/50 dark:border-gray-400/40',
     background: 'bg-gray-500/5',
     titleKey: 'matrix.q4.title',
     subtitleKey: 'matrix.q4.subtitle',
+    priorityLabelKey: 'matrix.priorities.none',
   },
-] as const
+]
 
 const MatrixView: React.FC = () => {
   const { state } = useTaskManager()
+  const { updateTask } = useTaskActions()
   const { t } = useI18n()
-  const tasks = state.tasks.filter(t => !t.completed)
+  const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null)
+  const [dragOverQuadrantId, setDragOverQuadrantId] = useState<string | null>(null)
+
+  const tasks = state.tasks.filter(task => !task.completed)
 
   const tasksByQuadrant = useMemo(() => {
     const map: Record<string, Task[]> = {}
@@ -98,7 +143,7 @@ const MatrixView: React.FC = () => {
 
     tasks.forEach(task => {
       const quadrant = QUADRANT_CONFIG.find(config =>
-        config.priorities.includes((task.priority || 'none') as Priority)
+        config.priorities.includes((task.priority || 'none') as Priority),
       )
       const targetId = quadrant?.id ?? 'notUrgentNotImportant'
       map[targetId].push(task)
@@ -107,12 +152,44 @@ const MatrixView: React.FC = () => {
     return map
   }, [tasks])
 
+  const handleTaskDragStart = (taskId: string) => {
+    setDraggedTaskId(taskId.split('_')[0])
+  }
+
+  const handleTaskDragEnd = () => {
+    setDraggedTaskId(null)
+    setDragOverQuadrantId(null)
+  }
+
+  const handleQuadrantDragOver = (e: React.DragEvent, quadrantId: string) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    setDragOverQuadrantId(quadrantId)
+  }
+
+  const handleQuadrantDrop = (e: React.DragEvent, dropPriority: Priority) => {
+    e.preventDefault()
+    const taskId = e.dataTransfer.getData('taskId') || draggedTaskId
+    if (!taskId) return
+
+    const task = state.tasks.find(item => item.id === taskId)
+    if (!task || task.priority === dropPriority) {
+      handleTaskDragEnd()
+      return
+    }
+
+    void updateTask({ ...task, priority: dropPriority }, { silent: true })
+    handleTaskDragEnd()
+  }
+
   return (
     <AppPage>
       <AppPageContainer>
-        <header className="py-6 border-b border-border shrink-0 hidden md:block">
+        <header className="py-6 border-b border-border shrink-0 hidden md:block space-y-2">
           <h1 className="text-2xl md:text-3xl font-bold">{t('matrix.title')}</h1>
           <p className="text-muted-foreground">{t('matrix.subtitle')}</p>
+          <p className="text-sm text-muted-foreground">{t('matrix.description')}</p>
+          <p className="text-xs text-muted-foreground/80">{t('matrix.dragHint')}</p>
         </header>
       </AppPageContainer>
       <AppPageMain className="h-full py-4 md:py-6 md:max-w-none">
@@ -122,11 +199,14 @@ const MatrixView: React.FC = () => {
               {QUADRANT_CONFIG.map(config => (
                 <Quadrant
                   key={config.id}
-                  title={t(config.titleKey)}
-                  subtitle={t(config.subtitleKey)}
+                  config={config}
                   tasks={tasksByQuadrant[config.id] || []}
-                  borderClass={config.border}
-                  backgroundClass={config.background}
+                  isDragOver={dragOverQuadrantId === config.id}
+                  onDragOver={e => handleQuadrantDragOver(e, config.id)}
+                  onDragLeave={() => setDragOverQuadrantId(prev => (prev === config.id ? null : prev))}
+                  onDrop={e => handleQuadrantDrop(e, config.dropPriority)}
+                  onTaskDragStart={handleTaskDragStart}
+                  onTaskDragEnd={handleTaskDragEnd}
                 />
               ))}
             </div>
@@ -138,4 +218,3 @@ const MatrixView: React.FC = () => {
 }
 
 export default MatrixView
-

@@ -105,7 +105,7 @@ const TaskListHeader: React.FC<TaskListHeaderProps> = ({
             {renderSortIcon()}
           </button>
         )}
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-2" title={t('mainContent.historyLocalNote')}>
           {onUndo && (
             <button 
               type="button"
@@ -113,6 +113,7 @@ const TaskListHeader: React.FC<TaskListHeaderProps> = ({
               disabled={!canUndo} 
               className="p-2 rounded-md hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
               aria-label={t('mainContent.undo')}
+              title={t('mainContent.undoTooltip')}
             >
               <UndoIcon className="h-5 w-5 text-muted-foreground" />
             </button>
@@ -124,6 +125,7 @@ const TaskListHeader: React.FC<TaskListHeaderProps> = ({
               disabled={!canRedo} 
               className="p-2 rounded-md hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
               aria-label={t('mainContent.redo')}
+              title={t('mainContent.redoTooltip')}
             >
               <RedoIcon className="h-5 w-5 text-muted-foreground" />
             </button>
@@ -135,6 +137,7 @@ const TaskListHeader: React.FC<TaskListHeaderProps> = ({
               disabled={!canUndo && !canRedo}
               className="p-2 rounded-md hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
               aria-label={t('mainContent.clearHistory')}
+              title={t('mainContent.clearHistoryTooltip')}
             >
               <TrashIcon className="h-5 w-5 text-muted-foreground" />
             </button>

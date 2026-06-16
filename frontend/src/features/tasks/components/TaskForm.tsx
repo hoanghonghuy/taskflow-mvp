@@ -8,6 +8,7 @@ import { useAiFeature } from '@/lib/hooks/use-ai-feature'
 import { AI_FEATURES_ENABLED } from '@/lib/feature-flags'
 import { useToast } from '@/components/providers/toast-provider'
 import type { Task, Priority } from '@/types'
+import type { TranslationKey } from '@/lib/i18n/types'
 import {
   CloseIcon,
   SparklesIcon,
@@ -61,6 +62,9 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
   const [priority, setPriority] = useState<Priority>('none')
   const [listId, setListId] = useState(getInitialListId())
   const [columnId, setColumnId] = useState<string | undefined>(defaultValues?.columnId)
+  const [tags, setTags] = useState<string[]>([])
+  const [newTag, setNewTag] = useState('')
+  const [reminderMinutes, setReminderMinutes] = useState<number | ''>('')
   const [textToAnalyze, setTextToAnalyze] = useState('')
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   
@@ -74,6 +78,19 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
     }
   }, [listId, columnId, state.columns])
 
+  const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') return
+    e.preventDefault()
+    const value = newTag.trim()
+    if (!value || tags.includes(value)) return
+    setTags((prev) => [...prev, value])
+    setNewTag('')
+  }
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setTags((prev) => prev.filter((tag) => tag !== tagToRemove))
+  }
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (title.trim()) {
@@ -85,8 +102,9 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
         priority,
         listId: listId || resolveInboxListId(),
         columnId: columnId,
-        tags: [],
+        tags,
         subtasks: [],
+        reminderMinutes: reminderMinutes === '' ? undefined : reminderMinutes,
         createdAt: new Date().toISOString(),
         totalFocusTime: 0,
         comments: [],
@@ -243,6 +261,60 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
                       </option>
                     )
                   })}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-foreground">
+                  {t('taskForm.tagsLabel')}
+                </label>
+                <div className="flex flex-wrap items-center gap-2 p-2 min-h-[44px] bg-secondary/50 border border-border rounded-md">
+                  {tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-xs font-medium"
+                    >
+                      #{tag}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTag(tag)}
+                        className="rounded-full hover:bg-muted-foreground/20"
+                        aria-label={t('taskForm.removeTagAria', { tag })}
+                      >
+                        <CloseIcon className="h-3 w-3" />
+                      </button>
+                    </span>
+                  ))}
+                  <input
+                    type="text"
+                    value={newTag}
+                    onChange={(e) => setNewTag(e.target.value)}
+                    onKeyDown={handleAddTag}
+                    placeholder={t('taskForm.tagsPlaceholder')}
+                    className="grow min-w-[120px] bg-transparent text-sm focus:outline-none"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">{t('taskForm.tagsHelper')}</p>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-foreground">
+                  {t('taskForm.reminderLabel')}
+                </label>
+                <select
+                  value={reminderMinutes}
+                  onChange={(e) => {
+                    const raw = e.target.value
+                    setReminderMinutes(raw === '' ? '' : parseInt(raw, 10))
+                  }}
+                  className="w-full p-3 bg-secondary/50 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-colors appearance-none cursor-pointer"
+                >
+                  <option value="">{t('taskDetail.noReminder')}</option>
+                  <option value="5">{t('reminder.5min')}</option>
+                  <option value="15">{t('reminder.15min')}</option>
+                  <option value="30">{t('reminder.30min')}</option>
+                  <option value="60">{t('reminder.1hour')}</option>
                 </select>
               </div>
             </div>

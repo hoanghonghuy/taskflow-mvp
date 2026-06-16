@@ -10,12 +10,66 @@ import { EMPTY_STATE_ILLUSTRATIONS } from '@/lib/task-constants'
 import { useI18n } from '@/lib/i18n/hooks'
 import { filterTasksByList, sortTasks, groupUpcomingTasks } from '@/lib/utils/task-helpers'
 import { isSameDay, startOfDay } from '@/lib/utils/date-helpers'
+import type { TranslationKey } from '@/lib/i18n/types'
 
 interface TaskListProps {
   onAddTask?: () => void
 }
 
 const PAGE_SIZE = 50
+
+type EmptyStateVariant = 'today' | 'upcoming' | 'inbox' | 'tag' | 'default' | 'allCompleted'
+
+const EMPTY_STATE_KEYS: Record<EmptyStateVariant, { title: TranslationKey; body: TranslationKey }> = {
+  today: { title: 'taskList.empty.today.title', body: 'taskList.empty.today.body' },
+  upcoming: { title: 'taskList.empty.upcoming.title', body: 'taskList.empty.upcoming.body' },
+  inbox: { title: 'taskList.empty.inbox.title', body: 'taskList.empty.inbox.body' },
+  tag: { title: 'taskList.empty.tag.title', body: 'taskList.empty.tag.body' },
+  default: { title: 'taskList.empty.default.title', body: 'taskList.empty.default.body' },
+  allCompleted: { title: 'taskList.empty.allCompleted.title', body: 'taskList.empty.allCompleted.body' },
+}
+
+function resolveEmptyStateVariant(
+  activeListId: string | null,
+  activeTag: string | null,
+  hasOpenTasks: boolean,
+): EmptyStateVariant {
+  if (!hasOpenTasks && activeListId !== 'today' && activeListId !== 'upcoming' && activeListId !== 'inbox' && !activeTag) {
+    return 'allCompleted'
+  }
+  if (activeTag) return 'tag'
+  if (activeListId === 'today') return 'today'
+  if (activeListId === 'upcoming') return 'upcoming'
+  if (activeListId === 'inbox') return 'inbox'
+  return 'default'
+}
+
+interface TaskListEmptyStateProps {
+  variant: EmptyStateVariant
+  onAddTask?: () => void
+}
+
+const TaskListEmptyState: React.FC<TaskListEmptyStateProps> = ({ variant, onAddTask }) => {
+  const { t } = useI18n()
+  const copy = EMPTY_STATE_KEYS[variant]
+
+  return (
+    <div className="flex flex-col items-center justify-center text-center text-muted-foreground py-12 px-4">
+      {EMPTY_STATE_ILLUSTRATIONS.noTasks}
+      <h2 className="text-xl font-semibold mt-4 text-foreground">{t(copy.title)}</h2>
+      <p className="text-sm mt-2 max-w-sm">{t(copy.body)}</p>
+      {onAddTask && (
+        <button
+          onClick={onAddTask}
+          className="mt-6 flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+        >
+          <PlusIcon className="h-5 w-5" />
+          <span>{t('taskList.addTask')}</span>
+        </button>
+      )}
+    </div>
+  )
+}
 
 const TaskList: React.FC<TaskListProps> = ({ onAddTask }) => {
   const { state } = useTaskManager()
@@ -140,21 +194,16 @@ const TaskList: React.FC<TaskListProps> = ({ onAddTask }) => {
     setDraggedTaskId(null)
   }
 
+  const emptyStateVariant = resolveEmptyStateVariant(
+    state.activeListId,
+    state.activeTag,
+    uncompletedTasks.length > 0,
+  )
+
   if (filteredTasks.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground py-12">
-        {EMPTY_STATE_ILLUSTRATIONS.noTasks}
-        <h2 className="text-xl font-semibold mt-4">{t('taskList.allDone')}</h2>
-        <p className="text-sm mt-2">{t('taskList.noTasks')}</p>
-        {onAddTask && (
-          <button
-            onClick={onAddTask}
-            className="mt-6 flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-          >
-            <PlusIcon className="h-5 w-5" />
-            <span>{t('taskList.addTask')}</span>
-          </button>
-        )}
+      <div className="flex flex-col items-center justify-center h-full">
+        <TaskListEmptyState variant={emptyStateVariant} onAddTask={onAddTask} />
       </div>
     )
   }
@@ -195,19 +244,25 @@ const TaskList: React.FC<TaskListProps> = ({ onAddTask }) => {
         className="rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm"
       >
         {groupedUpcomingTasks ? (
-          upcomingGroupOrder.map(groupName => (
-            groupedUpcomingTasks[groupName] && (
-              <div key={groupName} className="mb-6">
-                <div className="flex items-baseline justify-between mb-3">
-                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{groupName}</h3>
-                  <span className="text-xs text-muted-foreground/80">{formatTaskCount(groupedUpcomingTasks[groupName].length)}</span>
+          uncompletedTasks.length === 0 ? (
+            <TaskListEmptyState variant={emptyStateVariant} onAddTask={onAddTask} />
+          ) : (
+            upcomingGroupOrder.map(groupName => (
+              groupedUpcomingTasks[groupName] && (
+                <div key={groupName} className="mb-6">
+                  <div className="flex items-baseline justify-between mb-3">
+                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{groupName}</h3>
+                    <span className="text-xs text-muted-foreground/80">{formatTaskCount(groupedUpcomingTasks[groupName].length)}</span>
+                  </div>
+                  <div className="space-y-2">
+                    {renderTaskItems(groupedUpcomingTasks[groupName])}
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  {renderTaskItems(groupedUpcomingTasks[groupName])}
-                </div>
-              </div>
-            )
-          ))
+              )
+            ))
+          )
+        ) : uncompletedTasks.length === 0 ? (
+          <TaskListEmptyState variant={emptyStateVariant} onAddTask={onAddTask} />
         ) : (
           <>
             <div className="space-y-2">
