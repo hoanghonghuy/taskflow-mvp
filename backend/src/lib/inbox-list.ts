@@ -16,7 +16,7 @@ export async function normalizeListId(userId: string, listId: unknown): Promise<
     return resolveInboxListId(userId)
   }
 
-  const list = await listRepository.findListByIdAndUserId(raw, userId)
+  const list = await listRepository.findListByIdAccessible(raw, userId)
   if (!list) {
     throw new AppError(400, 'invalid_request', 'Invalid listId')
   }

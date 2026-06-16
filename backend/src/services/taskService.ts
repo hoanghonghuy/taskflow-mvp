@@ -26,17 +26,24 @@ function normalizePriority(value: unknown): string {
 }
 
 export async function listTasks(userId: string): Promise<TaskDto[]> {
-  const [tasks, focusByTaskId] = await Promise.all([
-    taskRepository.findTasksByUserId(userId),
-    pomodoroRepository.sumFocusSecondsByTaskId(userId),
-  ])
+  const tasks = await taskRepository.findTasksAccessibleByUserId(userId)
+  const ownerIds = [...new Set(tasks.map((task) => task.userId))]
+  const focusMaps = await Promise.all(
+    ownerIds.map((ownerId) => pomodoroRepository.sumFocusSecondsByTaskId(ownerId)),
+  )
+  const focusByTaskId = new Map<string, number>()
+  for (const map of focusMaps) {
+    for (const [taskId, seconds] of map) {
+      focusByTaskId.set(taskId, seconds)
+    }
+  }
   return tasks.map((task) => mapTaskToDto(task, focusByTaskId.get(task.id) ?? 0))
 }
 
 export async function getTask(userId: string, id: string): Promise<TaskDto | null> {
-  const task = await taskRepository.findTaskByIdAndUserId(id, userId)
+  const task = await taskRepository.findTaskByIdAccessible(id, userId)
   if (!task) return null
-  const totalFocusTime = await pomodoroRepository.sumFocusSecondsForTask(userId, id)
+  const totalFocusTime = await pomodoroRepository.sumFocusSecondsForTask(task.userId, id)
   return mapTaskToDto(task, totalFocusTime)
 }
 

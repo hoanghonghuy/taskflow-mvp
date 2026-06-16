@@ -1,11 +1,29 @@
 import type { Prisma, TodoTask } from '@prisma/client'
 import { prisma } from '../lib/prisma'
+import { isListAccessible } from '../lib/list-access'
+import * as listRepository from './listRepository'
 
 type TxClient = Prisma.TransactionClient
 
 export async function findTasksByUserId(userId: string): Promise<TodoTask[]> {
   return prisma.todoTask.findMany({
     where: { userId },
+    orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
+  })
+}
+
+/** Own tasks + tasks in lists shared with user as member. */
+export async function findTasksAccessibleByUserId(userId: string): Promise<TodoTask[]> {
+  const sharedListIds = await listRepository.findSharedListIdsForMember(userId)
+  const where =
+    sharedListIds.length > 0
+      ? {
+          OR: [{ userId }, { listId: { in: sharedListIds } }],
+        }
+      : { userId }
+
+  return prisma.todoTask.findMany({
+    where,
     orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
   })
 }
@@ -72,6 +90,16 @@ export async function updateTaskSortOrders(
 
 export async function findTaskByIdAndUserId(id: string, userId: string): Promise<TodoTask | null> {
   return prisma.todoTask.findFirst({ where: { id, userId } })
+}
+
+export async function findTaskByIdAccessible(id: string, userId: string): Promise<TodoTask | null> {
+  const task = await prisma.todoTask.findUnique({ where: { id } })
+  if (!task) return null
+  if (task.userId === userId) return task
+
+  const list = await listRepository.findListByIdAccessible(task.listId, userId)
+  if (!list || list.userId === userId) return null
+  return task
 }
 
 export async function createTask(

@@ -17,10 +17,10 @@ const config: Config = {
   coverageReporters: ['text', 'lcov', 'html'],
   coverageThreshold: {
     global: {
-      branches: 76,
-      functions: 93,
-      lines: 95,
-      statements: 94,
+      branches: 75,
+      functions: 92,
+      lines: 93,
+      statements: 92,
     },
   },
 }

@@ -32,12 +32,12 @@ function normalizeColor(input: unknown, fallback: string): string {
 }
 
 export async function listLists(userId: string): Promise<ListDto[]> {
-  const lists = await listRepository.findListsByUserId(userId)
+  const lists = await listRepository.findListsAccessibleByUserId(userId)
   return lists.map(mapListToDto)
 }
 
 export async function getList(userId: string, id: string): Promise<ListDto | null> {
-  const list = await listRepository.findListByIdAndUserId(id, userId)
+  const list = await listRepository.findListByIdAccessible(id, userId)
   return list ? mapListToDto(list) : null
 }
 
