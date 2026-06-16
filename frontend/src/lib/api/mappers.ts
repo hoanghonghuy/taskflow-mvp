@@ -164,6 +164,16 @@ export function mapListsFromApi(items: unknown[]): List[] {
       name: String(l.name ?? l.Name ?? ''),
       color: String(l.color ?? l.Color ?? '#3b82f6'),
       members: Array.isArray(l.members ?? l.Members) ? ((l.members ?? l.Members) as string[]) : [],
+      ownerUserId:
+        l.ownerUserId != null
+          ? String(l.ownerUserId)
+          : l.OwnerUserId != null
+            ? String(l.OwnerUserId)
+            : l.userId != null
+              ? String(l.userId)
+              : l.UserId != null
+                ? String(l.UserId)
+                : undefined,
     }
   })
 }

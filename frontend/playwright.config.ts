@@ -31,6 +31,9 @@ const frontendServer = {
     MOCK_MODE: useMock ? 'true' : 'false',
     BACKEND_URL: backendUrl,
     NEXT_DIST_DIR: '.next-e2e',
+    JWT_KEY: process.env.JWT_KEY || 'e2e-jwt-key-must-be-at-least-32-chars-long',
+    JWT_ISSUER: 'Taskflow',
+    JWT_AUDIENCE: 'TaskflowClient',
   },
 }
 

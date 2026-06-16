@@ -110,6 +110,7 @@ describe('mappers', () => {
       createdAt: now,
     } as TodoList
     expect(mapListToDto(list).members).toEqual(['u1', 'u2'])
+    expect(mapListToDto(list).ownerUserId).toBe('u1')
   })
 
   it('mapHabitToDto parses completions', () => {

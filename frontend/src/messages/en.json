@@ -254,6 +254,7 @@
   "taskDetail": {
     "completed": "Completed",
     "markComplete": "Mark Complete",
+    "sharedReadOnly": "Shared list — view only. Only the list owner can edit this task.",
     "descriptionLabel": "Description",
     "descriptionPlaceholder": "Add description...",
     "assigneeLabel": "Assignee",

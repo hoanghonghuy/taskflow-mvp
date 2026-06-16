@@ -250,6 +250,7 @@
   "taskDetail": {
     "completed": "Đã hoàn thành",
     "markComplete": "Đánh dấu hoàn thành",
+    "sharedReadOnly": "Danh sách được chia sẻ — chỉ xem. Chỉ chủ danh sách mới được sửa task này.",
     "descriptionLabel": "Mô tả",
     "descriptionPlaceholder": "Thêm mô tả...",
     "assigneeLabel": "Người được giao",

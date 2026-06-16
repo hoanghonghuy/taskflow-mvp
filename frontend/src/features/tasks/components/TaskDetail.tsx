@@ -67,6 +67,11 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
 
   const completedSubtasks = task.subtasks.filter(st => st.completed).length
   const parentList = state.lists.find(list => list.id === task.listId) ?? null
+  const isReadOnly = Boolean(
+    parentList?.ownerUserId &&
+      currentUser?.id &&
+      parentList.ownerUserId !== currentUser.id,
+  )
   const reminderLabels: Record<number, TranslationKey> = {
     5: 'reminder.5min',
     15: 'reminder.15min',
@@ -102,6 +107,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   }
 
   const applyTaskUpdates = (updates: Partial<Task>, options?: { debounce?: boolean }) => {
+    if (isReadOnly) return
     const updatedTask = { ...task, ...updates }
     dispatch({ type: 'UPDATE_TASK', payload: updatedTask })
 
@@ -168,16 +174,19 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   }
 
   const handleSubtaskChange = (subtaskId: string, completed: boolean) => {
+    if (isReadOnly) return
     const newSubtasks = task.subtasks.map(st => st.id === subtaskId ? { ...st, completed } : st)
     void syncSubtasks(task.id, newSubtasks)
   }
 
   const handleDeleteSubtask = (subtaskId: string) => {
+    if (isReadOnly) return
     const newSubtasks = task.subtasks.filter(st => st.id !== subtaskId)
     void syncSubtasks(task.id, newSubtasks)
   }
 
   const handleAddSubtask = (e: React.FormEvent) => {
+    if (isReadOnly) return
     e.preventDefault()
     if (newSubtask.trim()) {
       const subtask: Subtask = { id: Date.now().toString(), title: newSubtask.trim(), completed: false }
@@ -188,6 +197,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   }
 
   const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (isReadOnly) return
     if (e.key === 'Enter' && newTag.trim()) {
       e.preventDefault()
       const trimmedTag = newTag.trim().toLowerCase()
@@ -199,6 +209,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   }
 
   const handleRemoveTag = (tagToRemove: string) => {
+    if (isReadOnly) return
     applyTaskUpdates({ tags: task.tags.filter(tag => tag !== tagToRemove) })
   }
 
@@ -209,6 +220,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   }
   const handleTagDragOver = (e: React.DragEvent<HTMLSpanElement>) => e.preventDefault()
   const handleTagDrop = (e: React.DragEvent<HTMLSpanElement>, dropIndex: number) => {
+    if (isReadOnly) return
     e.preventDefault()
     if (draggedTagIndex === null || draggedTagIndex === dropIndex) {
       setDraggedTagIndex(null)
@@ -254,6 +266,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   }
 
   const handleDeleteTask = async () => {
+    if (isReadOnly) return
     const ok = await confirm({
       title: t('taskDetail.deleteConfirm.title' as TranslationKey, { title: task.title }),
       description: t('taskDetail.deleteConfirm.description' as TranslationKey, { title: task.title }),
@@ -266,6 +279,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   }
 
   const handleAddComment = (content: string) => {
+    if (isReadOnly) return
     const newComment: Comment = {
       id: Date.now().toString(),
       userId: currentUser?.id ?? 'anonymous',
@@ -283,6 +297,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   }
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => e.preventDefault()
   const handleDrop = (e: React.DragEvent<HTMLDivElement>, dropIndex: number) => {
+    if (isReadOnly) return
     e.preventDefault()
     if (draggedIndex === null || draggedIndex === dropIndex) {
       setDraggedIndex(null)
@@ -302,16 +317,18 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
       <header className="p-4 border-b border-border flex items-center justify-between gap-3 shrink-0">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => void toggleTask(task.id)}
+            onClick={() => { if (!isReadOnly) void toggleTask(task.id) }}
+            disabled={isReadOnly}
             aria-label={task.completed ? t('taskItem.aria.markIncomplete') : t('taskItem.aria.markComplete')}
-            className={`h-5 w-5 rounded flex items-center justify-center transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${task.completed ? 'bg-primary border-2 border-primary' : `bg-transparent border-2 ${priorityClasses.checkboxBorderColor}`}`}
+            className={`h-5 w-5 rounded flex items-center justify-center transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''} ${task.completed ? 'bg-primary border-2 border-primary' : `bg-transparent border-2 ${priorityClasses.checkboxBorderColor}`}`}
           >
             {task.completed && <CheckIcon className="h-3.5 w-3.5 text-primary-foreground" />}
           </button>
           <div>
             <button
-              onClick={() => void toggleTask(task.id)}
-              className="text-sm font-medium text-left"
+              onClick={() => { if (!isReadOnly) void toggleTask(task.id) }}
+              disabled={isReadOnly}
+              className={`text-sm font-medium text-left ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {task.completed ? t('taskDetail.completed') : t('taskDetail.markComplete')}
             </button>
@@ -323,6 +340,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {!isReadOnly && (
           <button
             type="button"
             onClick={handleDeleteTask}
@@ -330,11 +348,18 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
           >
             {t('task.delete')}
           </button>
+          )}
           <button onClick={handleClose} className="p-2 rounded-full hover:bg-secondary transition-colors" aria-label={t('common.close')}>
             <CloseIcon className="h-5 w-5 text-muted-foreground" />
           </button>
         </div>
       </header>
+
+      {isReadOnly && (
+        <div className="px-4 py-2 text-xs text-muted-foreground bg-muted/50 border-b border-border">
+          {t('taskDetail.sharedReadOnly')}
+        </div>
+      )}
 
       <div className="grow px-6 py-5 overflow-y-auto space-y-6">
         <section className="space-y-3">
@@ -342,8 +367,9 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
             <input
               type="text"
               value={task.title}
+              readOnly={isReadOnly}
               onChange={(e) => applyTaskUpdates({ title: e.target.value }, { debounce: true })}
-              className="text-2xl md:text-3xl font-semibold bg-transparent w-full focus:outline-none"
+              className={`text-2xl md:text-3xl font-semibold bg-transparent w-full focus:outline-none ${isReadOnly ? 'cursor-default' : ''}`}
             />
             <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold border ${priorityClasses.checkboxBorderColor.replace('border-', 'border')} ${priorityClasses.color}`}>
               {t(priorityClasses.label)}
@@ -397,6 +423,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
             <textarea
               id="task-description"
               value={task.description || ''}
+              readOnly={isReadOnly}
               onChange={(e) => applyTaskUpdates({ description: e.target.value }, { debounce: true })}
               rows={4}
               placeholder={t('taskDetail.descriptionPlaceholder')}
@@ -412,6 +439,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
               <div className="flex items-center gap-3">
                 <select
                   value={task.assigneeId || ''}
+                  disabled={isReadOnly}
                   onChange={(e) => handleAssignTask(e.target.value || null)}
                   className="w-full p-2 bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                 >
@@ -429,6 +457,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
               <select
                 id="task-priority"
                 value={task.priority}
+                disabled={isReadOnly}
                 onChange={(e) => applyTaskUpdates({ priority: e.target.value as Priority })}
                 className="w-full p-2 bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
               >
@@ -449,6 +478,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
               <input
                 type="date"
                 value={task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : ''}
+                readOnly={isReadOnly}
                 onChange={(e) => applyTaskUpdates({ dueDate: e.target.value ? new Date(e.target.value).toISOString() : undefined })}
                 className="w-full p-2 bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
               />
@@ -459,6 +489,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
               </span>
               <select
                 value={task.reminderMinutes || ''}
+                disabled={isReadOnly}
                 onChange={(e) => {
                   const value = e.target.value ? parseInt(e.target.value) : undefined
                   applyTaskUpdates({ reminderMinutes: value })
@@ -478,6 +509,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
               </span>
               <select
                 value={task.recurrence?.type ?? ''}
+                disabled={isReadOnly}
                 onChange={(e) => handleRecurrenceChange(e.target.value)}
                 className="w-full p-2 bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
               >
@@ -560,7 +592,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
               {task.tags.map((tag, index) => (
                 <span 
                   key={tag}
-                  draggable
+                  draggable={!isReadOnly}
                   onDragStart={(e) => handleTagDragStart(e, index)}
                   onDragOver={handleTagDragOver}
                   onDrop={(e) => handleTagDrop(e, index)}
@@ -568,11 +600,14 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                   className={`flex items-center gap-1 bg-secondary px-2 py-1 rounded-full text-xs font-medium cursor-move transition-opacity ${draggedTagIndex === index ? 'opacity-50' : 'opacity-100'}`}
                 >
                   {tag}
+                  {!isReadOnly && (
                   <button onClick={() => handleRemoveTag(tag)} className="rounded-full hover:bg-muted-foreground/20 z-10">
                     <CloseIcon className="h-3 w-3" />
                   </button>
+                  )}
                 </span>
               ))}
+              {!isReadOnly && (
               <input
                 id="tag-input"
                 type="text"
@@ -582,6 +617,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                 placeholder={t('taskDetail.tagsPlaceholder')}
                 className="grow bg-transparent text-sm focus:outline-none"
               />
+              )}
             </div>
           </div>
 
@@ -619,7 +655,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
               {task.subtasks.map((st, index) => (
                 <div 
                   key={st.id}
-                  draggable
+                  draggable={!isReadOnly}
                   onDragStart={(e) => handleDragStart(e, index)}
                   onDragOver={handleDragOver}
                   onDrop={(e) => handleDrop(e, index)}
@@ -629,12 +665,14 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                   <GripVerticalIcon className="h-5 w-5 text-muted-foreground/50 cursor-move group-hover:text-muted-foreground" />
                   <button
                     onClick={() => handleSubtaskChange(st.id, !st.completed)}
+                    disabled={isReadOnly}
                     aria-label={st.completed ? t('taskItem.aria.markIncomplete') : t('taskItem.aria.markComplete')}
                     className={`
                       h-4 w-4 rounded-sm shrink-0
                       flex items-center justify-center 
                       transition-all duration-150
                       focus:outline-none focus:ring-1 focus:ring-ring
+                      ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}
                       ${st.completed 
                         ? 'bg-primary border border-primary' 
                         : 'bg-transparent border border-muted-foreground/50'
@@ -646,7 +684,9 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                   <input 
                     type="text" 
                     value={st.title} 
+                    readOnly={isReadOnly}
                     onChange={(e) => {
+                      if (isReadOnly) return
                       const newSubtasks = task.subtasks.map(sub =>
                         sub.id === st.id ? { ...sub, title: e.target.value } : sub
                       )
@@ -654,6 +694,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                     }}
                     className={`grow bg-transparent text-sm ${st.completed ? 'line-through text-muted-foreground' : ''} focus:outline-none`} 
                   />
+                  {!isReadOnly && (
                   <button
                     type="button"
                     onClick={() => handleDeleteSubtask(st.id)}
@@ -662,8 +703,10 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                   >
                     <CloseIcon className="h-3 w-3" />
                   </button>
+                  )}
                 </div>
               ))}
+              {!isReadOnly && (
               <form onSubmit={handleAddSubtask} className="flex items-center gap-2 p-2">
                 <input 
                   type="text" 
@@ -676,6 +719,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                   {t('taskDetail.addButton')}
                 </button>
               </form>
+              )}
             </div>
           </div>
 
@@ -702,6 +746,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                 })}
               </div>
             )}
+            {!isReadOnly && (
             <form
               onSubmit={(e) => {
                 e.preventDefault()
@@ -722,6 +767,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                 {t('taskDetail.addButton')}
               </button>
             </form>
+            )}
           </div>
         </div>
       </div>

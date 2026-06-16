@@ -49,6 +49,7 @@ export interface List {
   name: string;
   color: string;
   members: string[];
+  ownerUserId?: string;
 }
 
 export interface Column {
