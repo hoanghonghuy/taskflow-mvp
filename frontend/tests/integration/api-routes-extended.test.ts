@@ -1,10 +1,25 @@
 import { describe, expect, it } from 'vitest'
 import reorderHandler from '@/pages/api/tasks/reorder'
+import searchHandler from '@/pages/api/tasks/search'
 import adminHandler from '@/pages/api/admin/[...path]'
 import subtasksHandler from '@/pages/api/ai/tasks/subtasks'
 import { runHandler } from '../helpers/api-mock'
 
 describe('API routes extended coverage', () => {
+  describe('tasks/search', () => {
+    it('GET proxies search query', async () => {
+      const res = await runHandler(searchHandler, 'GET', {
+        query: { q: 'electricity', limit: '10' },
+      })
+      expect(res.status).toHaveBeenCalledWith(200)
+    })
+
+    it('rejects non-GET methods', async () => {
+      const res = await runHandler(searchHandler, 'POST')
+      expect(res.status).toHaveBeenCalledWith(405)
+    })
+  })
+
   describe('tasks/reorder', () => {
     it('POST reorders tasks', async () => {
       const res = await runHandler(reorderHandler, 'POST', {

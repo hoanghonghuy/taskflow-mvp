@@ -349,44 +349,6 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
     }
   }, [isAuthenticated, dispatch])
 
-  // Check for task reminders
-  useEffect(() => {
-    const checkReminders = () => {
-      const now = new Date()
-      historyState.present.tasks.forEach((task: Task) => {
-        if (!task.completed && task.dueDate && task.reminderMinutes) {
-          const dueDate = new Date(task.dueDate)
-          const reminderTime = new Date(dueDate.getTime() - task.reminderMinutes * 60 * 1000)
-          
-          if (now >= reminderTime && now < dueDate) {
-            const lastShown = localStorage.getItem(`reminder-${task.id}`)
-            const shouldShow = !lastShown || (now.getTime() - parseInt(lastShown)) > 60000
-            
-            if (shouldShow && 'Notification' in window && Notification.permission === 'granted') {
-              new Notification(t('reminder.notificationTitle' as TranslationKey), {
-                body: t('reminder.notificationBody' as TranslationKey, { title: task.title }),
-                icon: '/favicon.ico'
-              })
-              localStorage.setItem(`reminder-${task.id}`, now.getTime().toString())
-            }
-          }
-        }
-      })
-    }
-
-    const interval = setInterval(checkReminders, 60000)
-    checkReminders()
-
-    return () => clearInterval(interval)
-  }, [historyState.present.tasks, t])
-
-  // Request notification permission on mount
-  useEffect(() => {
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission()
-    }
-  }, [])
-
   const canUndo = historyState.past.length > 0
   const canRedo = historyState.future.length > 0
 

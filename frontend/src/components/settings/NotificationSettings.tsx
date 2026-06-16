@@ -203,6 +203,9 @@ export const NotificationSettings: React.FC = () => {
 
           <div className={`space-y-4 ${notificationsDisabled ? 'opacity-50' : ''}`}>
             <span className="text-sm font-medium leading-none">{t('settings.notifications.types')}</span>
+            <div className="rounded-md border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+              {t('settings.notifications.taskRemindersTabHint')}
+            </div>
             <div className="grid gap-4">
               <SwitchField
                 id="notify-task-reminders"

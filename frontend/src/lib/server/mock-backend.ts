@@ -272,6 +272,24 @@ export async function mockBackendFetch(rawPath: string, init: RequestInit = {}):
     }
   }
 
+  if (path === '/api/tasks/search') {
+    if (method === 'GET') {
+      const q = (query.get('q') ?? '').trim().toLowerCase()
+      if (!q) return json([], 200)
+      const matches = s.tasks.filter((task) => {
+        const haystack = [
+          task.title,
+          task.description ?? '',
+          ...(task.tags ?? []),
+        ]
+          .join(' ')
+          .toLowerCase()
+        return haystack.includes(q)
+      })
+      return json(matches)
+    }
+  }
+
   if (path === '/api/tasks') {
     if (method === 'GET') return json(s.tasks)
     if (method === 'POST') {

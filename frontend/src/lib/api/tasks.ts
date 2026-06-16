@@ -29,6 +29,14 @@ export async function fetchTasks(): Promise<Task[]> {
   return Array.isArray(json) ? mapTasksFromApi(json) : []
 }
 
+export async function searchTasks(query: string, limit = 50): Promise<Task[]> {
+  const params = new URLSearchParams()
+  params.set('q', query.trim())
+  params.set('limit', String(limit))
+  const json = await apiFetchJson<unknown[]>(`/api/tasks/search?${params.toString()}`)
+  return Array.isArray(json) ? mapTasksFromApi(json) : []
+}
+
 export async function createTask(payload: TaskCreatePayload): Promise<Task | null> {
   const json = await apiFetchJson<unknown>('/api/tasks', {
     method: 'POST',

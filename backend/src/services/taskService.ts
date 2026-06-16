@@ -25,8 +25,7 @@ function normalizePriority(value: unknown): string {
   return VALID_PRIORITIES.has(lower) ? lower : 'none'
 }
 
-export async function listTasks(userId: string): Promise<TaskDto[]> {
-  const tasks = await taskRepository.findTasksAccessibleByUserId(userId)
+async function mapTasksWithFocus(tasks: Awaited<ReturnType<typeof taskRepository.findTasksAccessibleByUserId>>): Promise<TaskDto[]> {
   const ownerIds = [...new Set(tasks.map((task) => task.userId))]
   const focusMaps = await Promise.all(
     ownerIds.map((ownerId) => pomodoroRepository.sumFocusSecondsByTaskId(ownerId)),
@@ -38,6 +37,16 @@ export async function listTasks(userId: string): Promise<TaskDto[]> {
     }
   }
   return tasks.map((task) => mapTaskToDto(task, focusByTaskId.get(task.id) ?? 0))
+}
+
+export async function listTasks(userId: string): Promise<TaskDto[]> {
+  const tasks = await taskRepository.findTasksAccessibleByUserId(userId)
+  return mapTasksWithFocus(tasks)
+}
+
+export async function searchTasks(userId: string, query: string, limit: number): Promise<TaskDto[]> {
+  const tasks = await taskRepository.searchTasksAccessibleByUserId(userId, query, limit)
+  return mapTasksWithFocus(tasks)
 }
 
 export async function getTask(userId: string, id: string): Promise<TaskDto | null> {

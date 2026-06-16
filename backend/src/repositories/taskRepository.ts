@@ -28,6 +28,43 @@ export async function findTasksAccessibleByUserId(userId: string): Promise<TodoT
   })
 }
 
+function buildAccessibleTasksWhere(userId: string, sharedListIds: string[]): Prisma.TodoTaskWhereInput {
+  return sharedListIds.length > 0
+    ? { OR: [{ userId }, { listId: { in: sharedListIds } }] }
+    : { userId }
+}
+
+export async function searchTasksAccessibleByUserId(
+  userId: string,
+  query: string,
+  limit = 50,
+): Promise<TodoTask[]> {
+  const term = query.trim()
+  if (!term) return []
+
+  const sharedListIds = await listRepository.findSharedListIdsForMember(userId)
+  const accessWhere = buildAccessibleTasksWhere(userId, sharedListIds)
+
+  return prisma.todoTask.findMany({
+    where: {
+      AND: [
+        accessWhere,
+        {
+          OR: [
+            { title: { contains: term, mode: 'insensitive' } },
+            { description: { contains: term, mode: 'insensitive' } },
+            { tags: { contains: term, mode: 'insensitive' } },
+            { subtasks: { contains: term, mode: 'insensitive' } },
+            { comments: { contains: term, mode: 'insensitive' } },
+          ],
+        },
+      ],
+    },
+    orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
+    take: limit,
+  })
+}
+
 /** Tóm tắt task cho AI briefing: aggregate + top N due today / overdue.
  *  Tránh load hết tasks về memory khi user có nhiều task. */
 export async function findTasksBriefingSummary(

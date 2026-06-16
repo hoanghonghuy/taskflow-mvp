@@ -211,6 +211,19 @@ describe('tasks API client', () => {
 
     await expect(deleteTask('t1')).rejects.toThrow('Failed to delete task: 500')
   })
+
+  it('searchTasks calls search endpoint with encoded query', async () => {
+    const tasks = [{ Id: 't1', Title: 'Electricity', Completed: false, ListId: 'inbox' }]
+    mockFetch.mockResolvedValue(jsonResponse(tasks))
+    const { searchTasks } = await import('@/lib/api/tasks')
+
+    const result = await searchTasks('electricity', 25)
+    expect(result).toHaveLength(1)
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/api/tasks/search?q=electricity&limit=25',
+      expect.any(Object),
+    )
+  })
 })
 
 describe('AI API client', () => {

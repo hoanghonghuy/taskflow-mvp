@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/i18n/hooks'
 import type { Task } from '@/types'
@@ -8,8 +8,9 @@ import type { TranslationKey } from '@/lib/i18n/types'
 import { CloseIcon, SearchIcon } from '@/lib/icons'
 import TaskItem from '@/features/tasks/components/TaskItem'
 import { useRouter } from 'next/navigation'
-import { filterTasksBySearch, getSearchMatchMeta } from '@/lib/utils/search-helpers'
+import { getSearchMatchMeta } from '@/lib/utils/search-helpers'
 import { HighlightText } from '@/components/ui/highlight-text'
+import * as tasksApi from '@/lib/api/tasks'
 
 interface SearchModalProps {
   onClose: () => void
@@ -27,11 +28,50 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose }) => {
   const { t } = useI18n()
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState('')
+  const [searchResults, setSearchResults] = useState<Task[]>([])
+  const [isSearching, setIsSearching] = useState(false)
+  const [searchError, setSearchError] = useState<string | null>(null)
 
-  const searchResults = useMemo(
-    () => filterTasksBySearch(state.tasks, searchTerm),
-    [searchTerm, state.tasks],
-  )
+  const trimmedTerm = searchTerm.trim()
+
+  useEffect(() => {
+    if (!trimmedTerm) {
+      setSearchResults([])
+      setSearchError(null)
+      setIsSearching(false)
+      return
+    }
+
+    let cancelled = false
+    setIsSearching(true)
+    setSearchError(null)
+
+    const timer = window.setTimeout(() => {
+      void tasksApi
+        .searchTasks(trimmedTerm)
+        .then((results) => {
+          if (!cancelled) {
+            setSearchResults(results)
+          }
+        })
+        .catch((error: unknown) => {
+          if (!cancelled) {
+            setSearchResults([])
+            setSearchError(error instanceof Error ? error.message : t('search.error'))
+          }
+        })
+        .finally(() => {
+          if (!cancelled) {
+            setIsSearching(false)
+          }
+        })
+    }, 300)
+
+    return () => {
+      cancelled = true
+      window.clearTimeout(timer)
+    }
+  }, [trimmedTerm, t])
 
   const handleTaskSelect = (task: Task) => {
     dispatch({ type: 'SET_SELECTED_TASK', payload: task.id })
@@ -49,8 +89,6 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose }) => {
     const list = state.lists.find(l => l.id === listId)
     return list ? list.name : ''
   }
-
-  const trimmedTerm = searchTerm.trim()
 
   return (
     <div 
@@ -81,20 +119,31 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose }) => {
             <div className="text-center py-12 text-muted-foreground space-y-2">
               <p className="text-sm">{t('search.hintEmpty')}</p>
               <p className="text-xs">{t('search.hintScopes')}</p>
+              <p className="text-xs">{t('search.serverHint')}</p>
             </div>
           )}
-          {trimmedTerm && searchResults.length === 0 && (
+          {trimmedTerm && isSearching && (
+            <div className="text-center py-12 text-muted-foreground text-sm">
+              {t('search.loading')}
+            </div>
+          )}
+          {trimmedTerm && searchError && !isSearching && (
+            <div className="text-center py-12 text-destructive text-sm">
+              {searchError}
+            </div>
+          )}
+          {trimmedTerm && !isSearching && !searchError && searchResults.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">
               <p>{t('search.noResults', { searchTerm: trimmedTerm })}</p>
             </div>
           )}
-          {trimmedTerm && searchResults.length > 0 && (
+          {trimmedTerm && !isSearching && !searchError && searchResults.length > 0 && (
             <p className="text-xs text-muted-foreground mb-3">
               {t('search.resultCount', { count: searchResults.length })}
             </p>
           )}
           <div className="space-y-2">
-            {searchResults.map(task => {
+            {!isSearching && !searchError && searchResults.map(task => {
               const matchMeta = getSearchMatchMeta(task, trimmedTerm)
               return (
                 <div key={task.id} onClick={() => handleTaskSelect(task)} className="cursor-pointer">

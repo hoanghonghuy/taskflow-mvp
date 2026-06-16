@@ -7,6 +7,7 @@ export const tasksRouter = Router()
 
 tasksRouter.use(requireAuth)
 
+tasksRouter.get('/search', asyncHandler(taskController.search))
 tasksRouter.get('/', asyncHandler(taskController.list))
 tasksRouter.post('/reorder', asyncHandler(taskController.reorder))
 tasksRouter.get('/:id', asyncHandler(taskController.getById))

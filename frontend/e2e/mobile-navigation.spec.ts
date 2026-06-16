@@ -25,6 +25,27 @@ test.describe('Mobile Navigation', () => {
     await expect(page).toHaveURL(/\/calendar/)
   })
 
+  test('navigates to board via bottom nav', async ({ page }) => {
+    await page.goto('/list')
+    await waitForAppReady(page)
+
+    const nav = bottomNav(page)
+    await nav.getByRole('button', { name: /board view|bảng/i }).click()
+    await waitForAppReady(page)
+    await expect(page).toHaveURL(/\/board/)
+  })
+
+  test('navigates to habits via More menu', async ({ page }) => {
+    await page.goto('/list')
+    await waitForAppReady(page)
+
+    const nav = bottomNav(page)
+    await nav.getByRole('button', { name: /^more$|^thêm$/i }).click()
+    await page.getByRole('button', { name: /habit tracker|thói quen/i }).click()
+    await waitForAppReady(page)
+    await expect(page).toHaveURL(/\/habits/)
+  })
+
   test('opens More menu on mobile', async ({ page }) => {
     await page.goto('/list')
     await waitForAppReady(page)
@@ -40,8 +61,8 @@ test.describe('Mobile Navigation', () => {
     await page.goto('/list')
     await waitForAppReady(page)
 
-    const addButton = page.locator('button[aria-label*="Add"], button[aria-label*="Thêm"]').last()
-    await expect(addButton).toBeVisible()
+    const nav = bottomNav(page)
+    await expect(nav.getByText(/list view|danh sách/i)).toBeVisible()
   })
 
   test('can open sidebar on mobile', async ({ page }) => {
