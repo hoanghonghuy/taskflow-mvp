@@ -413,6 +413,10 @@
     "completed": "Completed today",
     "markComplete": "Mark complete",
     "completionRate": "{{rate}}% completion rate (last {{days}} days)",
+    "streakLabel": "{{count}} day streak",
+    "streakTooltip": "Consecutive days completed, counting today or yesterday as the latest day.",
+    "longestStreakTooltip": "Longest active streak across all habits. Complete today or yesterday to keep a streak alive.",
+    "achievementHint": "Unlock the Habit Hero badge with a 7-day streak on any habit.",
     "subtitle": "Build consistent routines with visual streak tracking.",
     "summary": {
       "total": "Tracked habits",
@@ -843,7 +847,17 @@
     "aria": {
       "shareList": "Share list {{listName}}",
       "deleteList": "Delete list {{listName}}",
-      "deleteTag": "Delete tag {{tagName}}"
+      "deleteTag": "Delete tag {{tagName}}",
+      "editList": "Edit list {{listName}}"
+    },
+    "editList": {
+      "title": "Edit list",
+      "description": "Rename the list or pick a color for the sidebar.",
+      "nameLabel": "List name",
+      "colorLabel": "Color",
+      "colorOption": "Color {{color}}",
+      "save": "Save changes",
+      "success": "List \"{{listName}}\" updated"
     }
   },
   "mainContent": {
@@ -1096,6 +1110,7 @@
   "shareList": {
     "title": "Share \"{{listName}}\"",
     "subtitle": "Manage who can access this list.",
+    "readOnlyNotice": "MVP: invited members have read-only access to tasks. Write access is planned for a future release.",
     "members": "Members",
     "owner": "Owner",
     "invite": "Invite others",

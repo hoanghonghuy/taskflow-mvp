@@ -2,10 +2,13 @@
 
 import React, { useState, useMemo } from 'react'
 import { useTaskManager, useTaskActions, useColumnActions } from '@/components/providers/task-manager-provider'
+import { useUser } from '@/components/providers/user-provider'
 import { useI18n } from '@/lib/i18n/hooks'
 import BoardColumn from '@/features/board/components/BoardColumn'
 import { PlusIcon } from '@/lib/icons'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
+import { buildBoardColumns } from '@/lib/utils/task-helpers'
+import type { Column } from '@/types'
 
 interface BoardViewProps {
   onOpenTaskForm?: (defaultValues?: { listId?: string; columnId?: string }) => void
@@ -13,6 +16,7 @@ interface BoardViewProps {
 
 const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
   const { state } = useTaskManager()
+  const { user } = useUser()
   const { t } = useI18n()
   const { moveTaskToColumn } = useTaskActions()
   const { addColumn, reorderColumns } = useColumnActions()
@@ -31,8 +35,31 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
   }
 
   const columnsForList = useMemo(() => {
-    return state.columns.filter(c => c.listId === selectedListId)
-  }, [state.columns, selectedListId])
+    const selectedList = state.lists.find((list) => list.id === selectedListId)
+    const listTasks = state.tasks.filter((task) => task.listId === selectedListId)
+    const isSharedMemberView =
+      !!selectedList?.ownerUserId &&
+      !!user?.id &&
+      selectedList.ownerUserId !== user.id
+
+    if (!isSharedMemberView) {
+      return state.columns.filter((column) => column.listId === selectedListId)
+    }
+
+    const fallbackColumns = selectedList
+      ? buildBoardColumns([selectedList], listTasks).filter((column) => column.listId === selectedListId)
+      : []
+    const merged = new Map<string, Column>()
+    for (const column of fallbackColumns) {
+      merged.set(column.id, column)
+    }
+    for (const column of state.columns) {
+      if (column.listId === selectedListId) {
+        merged.set(column.id, column)
+      }
+    }
+    return [...merged.values()]
+  }, [state.columns, state.lists, state.tasks, selectedListId, user?.id])
 
   const tasksForList = useMemo(() => {
     return state.tasks.filter(t => t.listId === selectedListId)

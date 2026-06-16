@@ -192,12 +192,16 @@ const HabitsView: React.FC = () => {
             <div
               key={card.label}
               className="rounded-2xl border border-border bg-card p-4 shadow-sm"
+              title={card.label === t('habits.summary.longestStreak') ? t('habits.longestStreakTooltip') : undefined}
             >
               <p className="text-sm text-muted-foreground">{card.label}</p>
               <p className="text-2xl font-semibold text-foreground">{card.value}</p>
             </div>
           ))}
         </div>
+        {longestStreak > 0 && (
+          <p className="text-xs text-muted-foreground">{t('habits.achievementHint')}</p>
+        )}
         {state.habits.length === 0 ? (
           <div className="text-center text-muted-foreground py-12">
             <p className="text-lg">{t('habits.noHabits')}</p>
@@ -207,12 +211,23 @@ const HabitsView: React.FC = () => {
             {state.habits.map(habit => {
               const completionRate = getCompletionRate(habit.id)
               const isCompletedToday = habit.completions.includes(today)
+              const streak = calculateStreak(habit.completions)
 
               return (
                 <div key={habit.id} className="bg-card border border-border rounded-2xl p-5 shadow-sm">
                   <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
                     <div>
-                      <h3 className="font-semibold text-lg">{habit.name}</h3>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-semibold text-lg">{habit.name}</h3>
+                        {streak > 0 && (
+                          <span
+                            className="text-xs font-medium px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-600 dark:text-orange-400"
+                            title={t('habits.streakTooltip')}
+                          >
+                            🔥 {t('habits.streakLabel', { count: streak })}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-sm text-muted-foreground">
                         {t('habits.completionRate', { rate: completionRate, days: 30 })}
                       </p>

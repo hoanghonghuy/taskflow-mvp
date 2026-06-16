@@ -95,6 +95,9 @@ const ShareListModal: React.FC<ShareListModalProps> = ({ list, onClose }) => {
             <p className="text-sm text-muted-foreground">
               {t('shareList.subtitle')}
             </p>
+            <p className="text-xs text-muted-foreground/90 mt-1">
+              {t('shareList.readOnlyNotice')}
+            </p>
           </div>
           <button type="button" onClick={onClose} className="p-1 rounded-full hover:bg-secondary">
             <CloseIcon className="h-5 w-5 text-muted-foreground" />

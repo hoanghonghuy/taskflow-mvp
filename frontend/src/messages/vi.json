@@ -413,6 +413,10 @@
     "completed": "Đã hoàn thành hôm nay",
     "markComplete": "Đánh dấu hoàn thành",
     "completionRate": "{{rate}}% hoàn thành trong {{days}} ngày qua",
+    "streakLabel": "Chuỗi {{count}} ngày",
+    "streakTooltip": "Số ngày hoàn thành liên tiếp; ngày gần nhất phải là hôm nay hoặc hôm qua.",
+    "longestStreakTooltip": "Chuỗi dài nhất trên mọi thói quen. Hoàn thành hôm nay hoặc hôm qua để giữ chuỗi.",
+    "achievementHint": "Mở huy hiệu Habit Hero khi đạt chuỗi 7 ngày với bất kỳ thói quen nào.",
     "subtitle": "Xây dựng thói quen tích cực với đồ thị streak trực quan.",
     "summary": {
       "total": "Thói quen đang theo dõi",
@@ -843,7 +847,17 @@
     "aria": {
       "shareList": "Chia sẻ danh sách {{listName}}",
       "deleteList": "Xóa danh sách {{listName}}",
-      "deleteTag": "Xóa thẻ {{tagName}}"
+      "deleteTag": "Xóa thẻ {{tagName}}",
+      "editList": "Sửa danh sách {{listName}}"
+    },
+    "editList": {
+      "title": "Sửa danh sách",
+      "description": "Đổi tên hoặc chọn màu hiển thị trên sidebar.",
+      "nameLabel": "Tên danh sách",
+      "colorLabel": "Màu",
+      "colorOption": "Màu {{color}}",
+      "save": "Lưu thay đổi",
+      "success": "Đã cập nhật danh sách \"{{listName}}\""
     }
   },
   "mainContent": {
@@ -1096,6 +1110,7 @@
   "shareList": {
     "title": "Chia sẻ \"{{listName}}\"",
     "subtitle": "Quản lý ai có thể truy cập danh sách này.",
+    "readOnlyNotice": "MVP: thành viên được mời chỉ xem task (read-only). Quyền sửa sẽ có ở bản cập nhật sau.",
     "members": "Thành viên",
     "owner": "Chủ sở hữu",
     "invite": "Mời người khác",

@@ -133,16 +133,23 @@
 
 ## Còn mở / giới hạn
 
+### Collaboration (quyết định product 2026-06-16)
+
+- **Giữ nút Share** — mời member theo email vẫn hữu ích cho read-only collaboration.
+- **PR-2b write** — **hoãn** (không làm trong đợt polish). Member chỉ xem task/list; `TaskDetail` read-only khi không phải owner.
+- **UI** — `ShareListModal` hiển thị ghi chú read-only MVP (`shareList.readOnlyNotice`).
+- **Board columns** — member xem shared list dùng fallback cột từ tasks + defaults (`BoardView` merge columns).
+
 ### Production / hạ tầng
 
-- [ ] **PR-2b** Collaboration write — member chưa sửa task/list của owner (chỉ read); board columns owner chưa sync cho member
+- [ ] **PR-2b** Collaboration write — member chưa sửa task/list của owner (chỉ read); xem ISSUES mục Collaboration ở trên
 - [ ] **P2-10** AI rate limit in-memory — không chia sẻ giữa nhiều instance backend
 - [ ] **FP-2** Forgot password thật — email + reset token (cần `PASSWORD_RESET_ENABLED = true` + mailer)
 
 ### Test
 
-- [ ] **P4-2** Contract test `real-backend-contract.test.ts` vẫn skipped mặc định  
-  Chạy: `REAL_BACKEND_TEST=true BACKEND_URL=http://localhost:8081 npm test -- real-backend-contract`
+- [x] **P4-2** Contract test `real-backend-contract.test.ts` — skipped mặc định; CI job `frontend-contract` (optional, `continue-on-error`) chạy khi `REAL_BACKEND_TEST=true`  
+  Local: `REAL_BACKEND_TEST=true BACKEND_URL=http://localhost:8081 npm test -- real-backend-contract`
 
 ### AI — tạm không mở (quyết định product)
 
