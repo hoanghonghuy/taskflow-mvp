@@ -22,7 +22,13 @@ export async function upsertByUserId(
   const defaults = defaultSettingsData(userId)
   return prisma.userSettings.upsert({
     where: { userId },
-    create: { ...defaults, userId },
+    // Nhánh create phải gồm updateData — nếu không, lần PUT pomodoro đầu tiên
+    // (user chưa có UserSettings) sẽ tạo row với pomodoroStateJson = null.
+    create: {
+      ...defaults,
+      ...(updateData as Prisma.UserSettingsUncheckedCreateInput),
+      userId,
+    },
     update: updateData,
   })
 }

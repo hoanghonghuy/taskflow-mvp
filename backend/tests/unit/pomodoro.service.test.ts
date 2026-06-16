@@ -76,6 +76,21 @@ describe('pomodoro.service', () => {
     expect(state!.isActive).toBe(false)
   })
 
+  it('updatePomodoroState persists when user has no settings row yet', async () => {
+    await updatePomodoroState(userId, {
+      isActive: true,
+      isPaused: false,
+      remainingSeconds: 1500,
+      currentSession: 'focus',
+      sessionsCompleted: 0,
+    })
+
+    const loaded = await getPomodoroState(userId)
+    expect(loaded).not.toBeNull()
+    expect(loaded!.remainingSeconds).toBe(1500)
+    expect(loaded!.isActive).toBe(true)
+  })
+
   it('updatePomodoroState normalizes negative values', async () => {
     const state = await updatePomodoroState(userId, {
       isActive: false,
