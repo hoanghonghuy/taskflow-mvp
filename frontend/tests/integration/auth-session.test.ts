@@ -106,4 +106,38 @@ describe('auth session API (real backend mode)', () => {
     )
     expect(res.status).toHaveBeenCalledWith(200)
   })
+
+  it('clears cookies when refresh succeeds but /me fails', async () => {
+    vi.mocked(fetch)
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        json: async () => ({ error: 'expired' }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ success: true, data: { token: 'new-token', refreshToken: 'new-refresh' } }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        json: async () => ({ error: 'unauthorized' }),
+      } as Response)
+    const { default: handler } = await import('@/pages/api/auth/session')
+
+    const res = await runHandler(handler, 'GET', {
+      headers: { cookie: 'taskflow_token=old; taskflow_refresh=refresh' },
+    })
+
+    expect(res.setHeader).toHaveBeenCalledWith(
+      'Set-Cookie',
+      expect.arrayContaining([
+        expect.stringContaining('taskflow_token=;'),
+        expect.stringContaining('taskflow_refresh=;'),
+      ]),
+    )
+    expect(res.status).toHaveBeenCalledWith(401)
+    expect(res.json.mock.calls[0][0]).toMatchObject({ authenticated: false })
+  })
 })

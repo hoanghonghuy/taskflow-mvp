@@ -1,11 +1,19 @@
 import type { Task } from '@/types'
 
 export const REMINDER_CHECK_INTERVAL_MS = 60_000
+/** Kept for callers that still pass an explicit cooldown; default path is once-per-due. */
 export const REMINDER_COOLDOWN_MS = 60_000
 export const REMINDER_STORAGE_PREFIX = 'reminder-'
 
-export function getReminderStorageKey(taskId: string): string {
-  return `${REMINDER_STORAGE_PREFIX}${taskId}`
+export function getReminderStorageKey(taskId: string, dueDate?: string | Date | null): string {
+  if (!dueDate) {
+    return `${REMINDER_STORAGE_PREFIX}${taskId}`
+  }
+  const dueMs = new Date(dueDate).getTime()
+  if (Number.isNaN(dueMs)) {
+    return `${REMINDER_STORAGE_PREFIX}${taskId}`
+  }
+  return `${REMINDER_STORAGE_PREFIX}${taskId}-${dueMs}`
 }
 
 export function getReminderTime(dueDate: string | Date, reminderMinutes: number): Date {
@@ -23,10 +31,13 @@ export function isWithinReminderWindow(
   return now >= reminderTime && now < due
 }
 
+/**
+ * Once a reminder has been shown for a due window (storage key), do not show again.
+ * Corrupt/missing timestamps are treated as "not shown yet".
+ */
 export function shouldShowReminder(
-  now: Date,
   lastShownTimestamp: string | null,
-  cooldownMs = REMINDER_COOLDOWN_MS,
+  _cooldownMs = REMINDER_COOLDOWN_MS,
 ): boolean {
   if (!lastShownTimestamp) {
     return true
@@ -37,7 +48,7 @@ export function shouldShowReminder(
     return true
   }
 
-  return now.getTime() - lastShown > cooldownMs
+  return false
 }
 
 export function getTasksDueForReminder(tasks: Task[], now: Date): Task[] {

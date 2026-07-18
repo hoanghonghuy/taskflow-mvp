@@ -106,8 +106,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const meResponse = await backendFetchWithToken('/api/auth/me', data.token)
+    if (!meResponse.ok) {
+      clearAuthCookies(res)
+      return res.status(401).json({ authenticated: false })
+    }
+
     const meBody = await meResponse.json().catch(() => null)
-    const user = meResponse.ok ? unwrapBackendPayload(meBody) : null
+    const user = unwrapBackendPayload(meBody)
     return res.status(200).json({ authenticated: true, user })
   } catch (error) {
     console.error('API Error (auth/session):', error)

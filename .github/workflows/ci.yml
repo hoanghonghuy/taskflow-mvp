@@ -202,4 +202,5 @@ jobs:
 
       - name: Run real-backend contract test
         working-directory: frontend
-        run: npm test -- real-backend-contract
+        # Skip coverage gates — this job runs a single optional file against a live backend.
+        run: npx vitest run --coverage.enabled=false real-backend-contract

@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 import {
-  REMINDER_COOLDOWN_MS,
   getReminderStorageKey,
   getReminderTime,
   getTasksDueForReminder,
@@ -38,15 +37,10 @@ describe('task-reminders', () => {
     expect(isWithinReminderWindow(new Date('2026-06-16T12:00:00.000Z'), dueDate, 15)).toBe(false)
   })
 
-  it('shouldShowReminder respects cooldown', () => {
-    const now = new Date('2026-06-16T12:00:00.000Z')
-    const recent = (now.getTime() - REMINDER_COOLDOWN_MS + 1000).toString()
-    const old = (now.getTime() - REMINDER_COOLDOWN_MS - 1000).toString()
-
-    expect(shouldShowReminder(now, null)).toBe(true)
-    expect(shouldShowReminder(now, 'invalid')).toBe(true)
-    expect(shouldShowReminder(now, recent)).toBe(false)
-    expect(shouldShowReminder(now, old)).toBe(true)
+  it('shouldShowReminder shows only once per due window', () => {
+    expect(shouldShowReminder(null)).toBe(true)
+    expect(shouldShowReminder('invalid')).toBe(true)
+    expect(shouldShowReminder('1718539200000')).toBe(false)
   })
 
   it('getTasksDueForReminder filters completed and out-of-window tasks', () => {
@@ -63,7 +57,8 @@ describe('task-reminders', () => {
     expect(due.map((task) => task.id)).toEqual(['due'])
   })
 
-  it('getReminderStorageKey uses stable prefix', () => {
-    expect(getReminderStorageKey('abc')).toBe('reminder-abc')
+  it('getReminderStorageKey includes due timestamp so recurrence windows reset', () => {
+    const due = '2026-06-16T12:00:00.000Z'
+    expect(getReminderStorageKey('abc', due)).toBe(`reminder-abc-${new Date(due).getTime()}`)
   })
 })

@@ -88,16 +88,18 @@ describe('List collaboration (shared access)', () => {
 
     const task = apiData<TaskDto>(createTaskRes)
 
+    // Update: task not owned → treated as not found (no ownership leak via 403 on write paths that only look up by owner).
     await request(app)
       .put(`/api/tasks/${task.id}`)
       .set(authHeader(member.token))
       .send({ title: 'Hijacked' })
       .expect(404)
 
+    // Delete: accessible shared task → explicit forbidden.
     await request(app)
       .delete(`/api/tasks/${task.id}`)
       .set(authHeader(member.token))
-      .expect(404)
+      .expect(403)
   })
 
   it('member cannot update or delete owner list', async () => {
@@ -121,6 +123,6 @@ describe('List collaboration (shared access)', () => {
     await request(app)
       .delete(`/api/lists/${list.id}`)
       .set(authHeader(member.token))
-      .expect(404)
+      .expect(403)
   })
 })

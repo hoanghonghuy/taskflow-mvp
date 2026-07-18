@@ -3,6 +3,7 @@ import { toJsonString } from '../lib/json'
 import { normalizeListId } from '../lib/inbox-list'
 import { isListOwner, parseListMembers } from '../lib/list-access'
 import { getNextOccurrence, parseRecurrence, appendCompletionDate } from '../lib/recurrence'
+import { taskMatchesUserFacingSearch } from '../lib/task-search'
 import { mapTaskToDto, type TaskDto } from '../mappers/task.mapper'
 import { AppError } from '../middleware/errorHandler'
 import { prisma } from '../lib/prisma'
@@ -58,8 +59,12 @@ export async function listTasks(userId: string): Promise<TaskDto[]> {
 }
 
 export async function searchTasks(userId: string, query: string, limit: number): Promise<TaskDto[]> {
-  const tasks = await taskRepository.searchTasksAccessibleByUserId(userId, query, limit)
-  return mapTasksWithFocus(tasks)
+  // Over-fetch then filter user-facing fields so JSON metadata keys (id, completed, …)
+  // from raw TEXT contains matches do not leak into results.
+  const fetchLimit = Math.min(Math.max(limit * 5, limit), 200)
+  const candidates = await taskRepository.searchTasksAccessibleByUserId(userId, query, fetchLimit)
+  const mapped = await mapTasksWithFocus(candidates)
+  return mapped.filter((task) => taskMatchesUserFacingSearch(task, query)).slice(0, limit)
 }
 
 export async function getTask(userId: string, id: string): Promise<TaskDto | null> {

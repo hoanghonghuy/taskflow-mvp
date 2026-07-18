@@ -78,4 +78,38 @@ describe('Task search API', () => {
   it('does not treat /search as task id route', async () => {
     await request(app).get('/api/tasks/search').query({ q: 'anything' }).set(authHeader(token)).expect(200)
   })
+
+  it('does not match JSON metadata keys like completed or id', async () => {
+    await request(app)
+      .post('/api/tasks')
+      .set(authHeader(token))
+      .send({
+        title: 'Plain task',
+        listId,
+        subtasks: [{ id: 's-uuid-1', title: 'Only real title', completed: false }],
+        comments: [{ id: 'c-uuid-1', userId: 'u1', content: 'Only real content', timestamp: '2026-06-01' }],
+      })
+      .expect(201)
+
+    const byCompleted = await request(app)
+      .get('/api/tasks/search')
+      .query({ q: 'completed' })
+      .set(authHeader(token))
+      .expect(200)
+    expect(apiData<TaskDto[]>(byCompleted)).toHaveLength(0)
+
+    const byIdFragment = await request(app)
+      .get('/api/tasks/search')
+      .query({ q: 's-uuid' })
+      .set(authHeader(token))
+      .expect(200)
+    expect(apiData<TaskDto[]>(byIdFragment)).toHaveLength(0)
+
+    const byRealSubtask = await request(app)
+      .get('/api/tasks/search')
+      .query({ q: 'Only real title' })
+      .set(authHeader(token))
+      .expect(200)
+    expect(apiData<TaskDto[]>(byRealSubtask)).toHaveLength(1)
+  })
 })

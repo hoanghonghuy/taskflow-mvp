@@ -37,10 +37,10 @@ export function useTaskReminders() {
       const dueTasks = getTasksDueForReminder(state.tasks, now)
 
       for (const task of dueTasks) {
-        const storageKey = getReminderStorageKey(task.id)
+        const storageKey = getReminderStorageKey(task.id, task.dueDate)
         const lastShown = localStorage.getItem(storageKey)
 
-        if (!shouldShowReminder(now, lastShown)) {
+        if (!shouldShowReminder(lastShown)) {
           continue
         }
 
