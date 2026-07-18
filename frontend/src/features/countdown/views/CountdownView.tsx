@@ -253,7 +253,7 @@ const CountdownView: React.FC = () => {
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="hidden md:block">
-                <h1 className="text-3xl font-bold">{t('nav.countdown')}</h1>
+                <h1 className="text-2xl md:text-3xl font-bold">{t('nav.countdown')}</h1>
                 <p className="text-muted-foreground">{t('countdown.subtitle')}</p>
               </div>
               {!isAdding && (

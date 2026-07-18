@@ -133,7 +133,7 @@ const ProfileView: React.FC = () => {
     <AppPage>
       <AppPageContainer>
         <header className="py-6 border-b border-border shrink-0 hidden md:block">
-          <h1 className="text-3xl font-bold">{t('nav.profile')}</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">{t('nav.profile')}</h1>
           <p className="text-muted-foreground">{t('profile.subtitle')}</p>
         </header>
       </AppPageContainer>
@@ -208,7 +208,7 @@ const ProfileView: React.FC = () => {
 
             <div className="bg-card border border-border rounded-lg p-6">
               <div className="flex items-center gap-3 mb-2">
-                <CalendarIcon className="h-6 w-6 text-green-500" />
+                <CalendarIcon className="h-6 w-6 text-[hsl(var(--color-habits-summary-completed))]" />
                 <h3 className="font-semibold">{t('dashboard.stat.habits')}</h3>
               </div>
               <p className="text-3xl font-bold">{stats.completedHabitsToday}/{stats.totalHabits}</p>
@@ -219,7 +219,7 @@ const ProfileView: React.FC = () => {
 
             <div className="bg-card border border-border rounded-lg p-6">
               <div className="flex items-center gap-3 mb-2">
-                <ClockIcon className="h-6 w-6 text-blue-500" />
+                <ClockIcon className="h-6 w-6 text-[hsl(var(--color-pomodoro-focus))]" />
                 <h3 className="font-semibold">{t('pomodoro.focusTime')}</h3>
               </div>
               <p className="text-3xl font-bold">{formatDuration(stats.totalFocusTime)}</p>
@@ -230,7 +230,7 @@ const ProfileView: React.FC = () => {
 
             <div className="bg-card border border-border rounded-lg p-6">
               <div className="flex items-center gap-3 mb-2">
-                <TrophyIcon className="h-6 w-6 text-yellow-500" />
+                <TrophyIcon className="h-6 w-6 text-[hsl(var(--color-habits-summary-streak))]" />
                 <h3 className="font-semibold">{t('profile.achievements')}</h3>
               </div>
               <p className="text-3xl font-bold">{stats.unlockedAchievements}</p>

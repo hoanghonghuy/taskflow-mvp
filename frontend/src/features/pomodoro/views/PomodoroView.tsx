@@ -153,9 +153,9 @@ const PomodoroView: React.FC = () => {
 
   const getSessionColor = () => {
     switch (pomodoro.currentSession) {
-      case 'focus': return 'text-red-500'
-      case 'shortBreak': return 'text-green-500'
-      case 'longBreak': return 'text-blue-500'
+      case 'focus': return 'text-[hsl(var(--color-pomodoro-focus))]'
+      case 'shortBreak': return 'text-[hsl(var(--color-pomodoro-short-break))]'
+      case 'longBreak': return 'text-[hsl(var(--color-pomodoro-long-break))]'
     }
   }
 
@@ -260,7 +260,7 @@ const PomodoroView: React.FC = () => {
     <AppPage>
       <AppPageContainer>
         <header className="py-6 border-b border-border shrink-0 hidden md:block">
-          <h1 className="text-3xl font-bold">{t('nav.pomodoro')}</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">{t('nav.pomodoro')}</h1>
           <p className="text-muted-foreground">{t('pomodoro.subtitle')}</p>
         </header>
       </AppPageContainer>
@@ -375,10 +375,10 @@ const PomodoroView: React.FC = () => {
                 onClick={handlePauseResume}
                 className={`flex items-center gap-2 px-8 ${
                   pomodoro.currentSession === 'focus' 
-                    ? 'bg-red-500 hover:bg-red-600 text-white' 
+                    ? 'bg-[hsl(var(--color-pomodoro-focus))] hover:bg-[hsl(var(--color-pomodoro-focus)/0.9)] text-white' 
                     : pomodoro.currentSession === 'shortBreak'
-                    ? 'bg-green-500 hover:bg-green-600 text-white'
-                    : 'bg-blue-500 hover:bg-blue-600 text-white'
+                    ? 'bg-[hsl(var(--color-pomodoro-short-break))] hover:bg-[hsl(var(--color-pomodoro-short-break)/0.9)] text-white'
+                    : 'bg-[hsl(var(--color-pomodoro-long-break))] hover:bg-[hsl(var(--color-pomodoro-long-break)/0.9)] text-white'
                 }`}
               >
                 {pomodoro.isPaused || !pomodoro.isActive ? (
@@ -466,27 +466,27 @@ const PomodoroView: React.FC = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex justify-between items-center p-3 bg-red-50 dark:bg-red-950/20 rounded-lg">
+                <div className="flex justify-between items-center p-3 bg-[hsl(var(--color-pomodoro-focus)/0.1)] rounded-lg">
                   <div className="flex items-center gap-2">
-                    <FlagIcon className="h-4 w-4 text-red-500" />
+                    <FlagIcon className="h-4 w-4 text-[hsl(var(--color-pomodoro-focus))]" />
                     <span className="font-medium">{t('pomodoro.focus')}</span>
                   </div>
                   <Badge variant="secondary">
                     {pomodoro.settings.focusDuration} {t('taskDetail.minutes')}
                   </Badge>
                 </div>
-                <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                <div className="flex justify-between items-center p-3 bg-[hsl(var(--color-pomodoro-short-break)/0.1)] rounded-lg">
                   <div className="flex items-center gap-2">
-                    <SunIcon className="h-4 w-4 text-green-500" />
+                    <SunIcon className="h-4 w-4 text-[hsl(var(--color-pomodoro-short-break))]" />
                     <span className="font-medium">{t('pomodoro.shortBreak')}</span>
                   </div>
                   <Badge variant="secondary">
                     {pomodoro.settings.shortBreakDuration} {t('taskDetail.minutes')}
                   </Badge>
                 </div>
-                <div className="flex justify-between items-center p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                <div className="flex justify-between items-center p-3 bg-[hsl(var(--color-pomodoro-long-break)/0.1)] rounded-lg">
                   <div className="flex items-center gap-2">
-                    <SunIcon className="h-4 w-4 text-blue-500" />
+                    <SunIcon className="h-4 w-4 text-[hsl(var(--color-pomodoro-long-break))]" />
                     <span className="font-medium">{t('pomodoro.longBreak')}</span>
                   </div>
                   <Badge variant="secondary">

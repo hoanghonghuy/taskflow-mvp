@@ -64,6 +64,11 @@
   --color-dashboard-today: var(--color-primary);
   --color-dashboard-upcoming: var(--color-habits-summary-total);
   --color-dashboard-habits: var(--color-habits-summary-completed);
+
+  /* Pomodoro session colors (semantic; focus stays urgent-like across themes) */
+  --color-pomodoro-focus: var(--color-priority-urgent);
+  --color-pomodoro-short-break: var(--color-habits-completed);
+  --color-pomodoro-long-break: var(--color-primary);
   
   /* Border & Input */
   --color-border: 215 18% 85%;

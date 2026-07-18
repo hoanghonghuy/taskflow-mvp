@@ -13,6 +13,10 @@ const AUDITED_FILES = [
   'src/features/matrix/views/MatrixView.tsx',
   'src/features/habits/views/HabitsView.tsx',
   'src/components/layout/bottom-nav-bar.tsx',
+  'src/features/pomodoro/views/PomodoroView.tsx',
+  'src/features/profile/views/ProfileView.tsx',
+  'src/features/tasks/components/TaskList.tsx',
+  'src/components/chatbot/Chatbot.tsx',
 ] as const
 
 describe('UI design tokens (audit regression)', () => {
@@ -41,7 +45,54 @@ describe('UI design tokens (audit regression)', () => {
       join(ROOT, 'src/features/habits/views/HabitsView.tsx'),
       'utf8',
     )
-    expect(habits).toMatch(/colorToken:\s*'--color-habits-summary-/)
-    expect(habits).toMatch(/card\.colorToken/)
+    expect(habits).toContain("colorToken: '--color-habits-summary-")
+    expect(habits).toContain('card.colorToken')
+  })
+
+  it('PRIORITY_MAP and PRIORITY_COLORS use design tokens', () => {
+    const constants = readFileSync(join(ROOT, 'src/lib/constants.tsx'), 'utf8')
+    const priorityColorsBlock = constants.slice(
+      constants.indexOf('export const PRIORITY_COLORS'),
+      constants.indexOf('export const PRIORITY_MAP'),
+    )
+    const priorityMapBlock = constants.slice(
+      constants.indexOf('export const PRIORITY_MAP'),
+      constants.indexOf('export const SPECIAL_LISTS_CONFIG'),
+    )
+    expect(priorityColorsBlock.match(HARDCODED_PALETTE)).toBeNull()
+    expect(priorityMapBlock.match(HARDCODED_PALETTE)).toBeNull()
+    expect(priorityMapBlock).toContain('--color-priority-low')
+    expect(priorityMapBlock).toContain('--color-priority-medium')
+    expect(priorityMapBlock).toContain('--color-priority-high')
+    expect(priorityMapBlock).toContain('--color-priority-urgent')
+  })
+
+  it('globals defines pomodoro session color tokens', () => {
+    const globals = readFileSync(join(ROOT, 'src/app/globals.css'), 'utf8')
+    expect(globals).toContain('--color-pomodoro-focus')
+    expect(globals).toContain('--color-pomodoro-short-break')
+    expect(globals).toContain('--color-pomodoro-long-break')
+  })
+
+  it('page headers use responsive text-2xl md:text-3xl', () => {
+    const views = [
+      'src/features/achievements/views/AchievementsView.tsx',
+      'src/features/pomodoro/views/PomodoroView.tsx',
+      'src/features/countdown/views/CountdownView.tsx',
+      'src/features/profile/views/ProfileView.tsx',
+      'src/features/board/views/BoardView.tsx',
+    ] as const
+
+    for (const relativePath of views) {
+      const content = readFileSync(join(ROOT, relativePath), 'utf8')
+      const h1Matches = [...content.matchAll(/<h1 className="([^"]+)"/g)]
+      expect(h1Matches.length, `${relativePath} should have h1`).toBeGreaterThan(0)
+      for (const match of h1Matches) {
+        expect(
+          match[1],
+          `${relativePath} h1 should include text-2xl md:text-3xl`,
+        ).toMatch(/text-2xl\s+md:text-3xl/)
+      }
+    }
   })
 })

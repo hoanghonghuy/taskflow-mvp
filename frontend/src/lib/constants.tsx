@@ -347,11 +347,11 @@ export const DEFAULT_POMODORO_SETTINGS: PomodoroSettings = {
 }
 
 export const PRIORITY_COLORS: Record<Priority, string> = {
-  none: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
-  low: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-  medium: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-  high: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-yellow-300',
-  urgent: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+  none: 'bg-muted text-muted-foreground',
+  low: 'bg-[hsl(var(--color-priority-low)/0.15)] text-[hsl(var(--color-priority-low))]',
+  medium: 'bg-[hsl(var(--color-priority-medium)/0.15)] text-[hsl(var(--color-priority-medium))]',
+  high: 'bg-[hsl(var(--color-priority-high)/0.15)] text-[hsl(var(--color-priority-high))]',
+  urgent: 'bg-[hsl(var(--color-priority-urgent)/0.15)] text-[hsl(var(--color-priority-urgent))]',
 }
 
 export const PRIORITY_MAP: {
@@ -373,29 +373,29 @@ export const PRIORITY_MAP: {
   low: {
     label: 'priority.low',
     icon: FlagIcon,
-    color: 'text-blue-500',
-    checkboxBorderColor: 'border-blue-500',
+    color: 'text-[hsl(var(--color-priority-low))]',
+    checkboxBorderColor: 'border-[hsl(var(--color-priority-low))]',
     checkboxBorderValue: 'hsl(var(--color-priority-low) / 0.9)',
   },
   medium: {
     label: 'priority.medium',
     icon: FlagIcon,
-    color: 'text-yellow-500',
-    checkboxBorderColor: 'border-yellow-500',
+    color: 'text-[hsl(var(--color-priority-medium))]',
+    checkboxBorderColor: 'border-[hsl(var(--color-priority-medium))]',
     checkboxBorderValue: 'hsl(var(--color-priority-medium) / 0.9)',
   },
   high: {
     label: 'priority.high',
     icon: FlagIcon,
-    color: 'text-red-500',
-    checkboxBorderColor: 'border-red-500',
+    color: 'text-[hsl(var(--color-priority-high))]',
+    checkboxBorderColor: 'border-[hsl(var(--color-priority-high))]',
     checkboxBorderValue: 'hsl(var(--color-priority-high) / 0.9)',
   },
   urgent: {
     label: 'priority.urgent',
     icon: FlagIcon,
-    color: 'text-red-600',
-    checkboxBorderColor: 'border-red-600',
+    color: 'text-[hsl(var(--color-priority-urgent))]',
+    checkboxBorderColor: 'border-[hsl(var(--color-priority-urgent))]',
     checkboxBorderValue: 'hsl(var(--color-priority-urgent))',
   },
 }
