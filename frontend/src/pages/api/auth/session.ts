@@ -15,6 +15,18 @@ function buildAuthCookie(name: string, value: string, maxAgeSeconds: number): st
   return `${name}=${encodeURIComponent(value)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAgeSeconds}${secure}`
 }
 
+function buildExpiredAuthCookie(name: string): string {
+  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : ''
+  return `${name}=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax${secure}`
+}
+
+function clearAuthCookies(res: NextApiResponse): void {
+  res.setHeader('Set-Cookie', [
+    buildExpiredAuthCookie(TOKEN_COOKIE_NAME),
+    buildExpiredAuthCookie(REFRESH_COOKIE_NAME),
+  ])
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
     res.setHeader('Allow', ['GET'])
@@ -44,11 +56,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       if (meResponse.status !== 401 || !refreshToken) {
+        clearAuthCookies(res)
         return res.status(meResponse.status).json({ authenticated: false })
       }
     }
 
     if (!refreshToken) {
+      clearAuthCookies(res)
       return res.status(401).json({ authenticated: false })
     }
 
@@ -62,6 +76,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const data = unwrapBackendPayload<{ token?: string; refreshToken?: string }>(body)
 
     if (!refreshResponse.ok) {
+      clearAuthCookies(res)
       if (refreshResponse.status === 401) {
         return res.status(401).json({ authenticated: false })
       }
@@ -70,6 +85,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (!data || typeof data.token !== 'string') {
+      clearAuthCookies(res)
       return res.status(500).json({ authenticated: false })
     }
 

@@ -52,11 +52,20 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   const [draggedTagIndex, setDraggedTagIndex] = useState<number | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
   const pendingSyncRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pendingPayloadRef = useRef<Task | null>(null)
+  const updateTaskApiRef = useRef(updateTaskApi)
+  updateTaskApiRef.current = updateTaskApi
 
   useEffect(() => {
     return () => {
       if (pendingSyncRef.current) {
         clearTimeout(pendingSyncRef.current)
+        pendingSyncRef.current = null
+      }
+      const payload = pendingPayloadRef.current
+      pendingPayloadRef.current = null
+      if (payload) {
+        void updateTaskApiRef.current(payload, { silent: true })
       }
     }
   }, [taskId])
@@ -103,6 +112,15 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   }
 
   const handleClose = () => {
+    if (pendingSyncRef.current) {
+      clearTimeout(pendingSyncRef.current)
+      pendingSyncRef.current = null
+    }
+    const payload = pendingPayloadRef.current
+    pendingPayloadRef.current = null
+    if (payload) {
+      void updateTaskApi(payload, { silent: true })
+    }
     dispatch({ type: 'SET_SELECTED_TASK', payload: null })
   }
 
@@ -118,12 +136,15 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
 
     const runSync = () => {
       pendingSyncRef.current = null
+      pendingPayloadRef.current = null
       void updateTaskApi(updatedTask, { silent: true })
     }
 
     if (options?.debounce) {
+      pendingPayloadRef.current = updatedTask
       pendingSyncRef.current = setTimeout(runSync, 500)
     } else {
+      pendingPayloadRef.current = null
       void updateTaskApi(updatedTask, { silent: true })
     }
   }
@@ -527,6 +548,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                       min="1"
                       max="99"
                       value={task.recurrence.interval || 1}
+                      disabled={isReadOnly}
                       onChange={(e) => handleRecurrenceIntervalChange(parseInt(e.target.value) || 1)}
                       className="w-16 p-1 bg-background border border-border rounded text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary/30"
                     />
@@ -555,12 +577,13 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                             <button
                               key={day}
                               type="button"
+                              disabled={isReadOnly}
                               onClick={() => handleToggleWeekday(day)}
                               className={`flex-1 px-2 py-1 text-xs rounded transition-colors ${
                                 isSelected
                                   ? 'bg-primary text-primary-foreground'
                                   : 'bg-secondary text-muted-foreground hover:bg-muted'
-                              }`}
+                              } ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
                               {t(`recurrence.weekdays.${labels[day]}` as TranslationKey)}
                             </button>
@@ -574,6 +597,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                     <input
                       type="date"
                       value={task.recurrence.endDate ? new Date(task.recurrence.endDate).toISOString().split('T')[0] : ''}
+                      disabled={isReadOnly}
                       onChange={(e) => handleRecurrenceEndDateChange(e.target.value)}
                       className="w-full p-2 bg-background border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                       placeholder={t('recurrence.noEndDate')}

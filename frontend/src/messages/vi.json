@@ -870,8 +870,8 @@
     "redo": "Làm lại",
     "clearHistory": "Xóa lịch sử",
     "historyLocalNote": "Hoàn tác/làm lại chỉ áp dụng trong phiên trình duyệt này — không hoàn nguyên dữ liệu trên server.",
-    "undoTooltip": "Hoàn tác thay đổi gần nhất (chỉ local)",
-    "redoTooltip": "Làm lại thay đổi vừa hoàn tác (chỉ local)",
+    "undoTooltip": "Hoàn tác chỉ dành cho thay đổi local chưa lưu lên server",
+    "redoTooltip": "Làm lại chỉ dành cho thay đổi local chưa lưu lên server",
     "clearHistoryTooltip": "Xóa lịch sử hoàn tác/làm lại (chỉ local)"
   },
   "recurrence": {

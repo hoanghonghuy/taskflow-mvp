@@ -870,8 +870,8 @@
     "redo": "Redo",
     "clearHistory": "Clear History",
     "historyLocalNote": "Undo/redo applies to this browser session only — changes are not reverted on the server.",
-    "undoTooltip": "Undo last change (local session only)",
-    "redoTooltip": "Redo last undone change (local session only)",
+    "undoTooltip": "Undo is only for local session changes that are not yet saved to the server",
+    "redoTooltip": "Redo is only for local session changes that are not yet saved to the server",
     "clearHistoryTooltip": "Clear undo/redo history (local session only)"
   },
   "recurrence": {

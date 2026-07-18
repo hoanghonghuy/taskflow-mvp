@@ -125,42 +125,52 @@ export const useCalendar = (): UseCalendarReturn => {
   // Group tasks by date for efficient lookup
   const tasksByDate = useMemo(() => {
     const map = new Map<string, Task[]>()
-    
-    // Compute range for recurring task expansion (current view +/- padding)
-    const minDate = new Date(days[0])
-    minDate.setDate(minDate.getDate() - 7)
-    const maxDate = new Date(days[days.length - 1])
-    maxDate.setDate(maxDate.getDate() + 7)
+
+    // Month grid range, plus agenda window so far-from-month agenda still expands
+    const monthMin = new Date(days[0])
+    monthMin.setDate(monthMin.getDate() - 7)
+    const monthMax = new Date(days[days.length - 1])
+    monthMax.setDate(monthMax.getDate() + 7)
+
+    const agendaMin = new Date(agendaStartDate)
+    agendaMin.setHours(0, 0, 0, 0)
+    agendaMin.setDate(agendaMin.getDate() - 7)
+    const agendaMax = new Date(agendaStartDate)
+    agendaMax.setHours(0, 0, 0, 0)
+    agendaMax.setDate(agendaMax.getDate() + 16)
+
+    const minDate = monthMin < agendaMin ? monthMin : agendaMin
+    const maxDate = monthMax > agendaMax ? monthMax : agendaMax
 
     tasks.forEach(task => {
-      if (task.dueDate) {
-        const date = new Date(task.dueDate)
-        const key = date.toDateString()
-        if (!map.has(key)) {
-          map.set(key, [])
-        }
-        map.get(key)!.push(task)
+      if (!task.dueDate) return
 
-        // Expand recurring instances
-        if (task.recurrence) {
-          const instances = expandRecurringTask(task, minDate, maxDate, 60)
-          instances.forEach(({ id, instanceDate }) => {
-            const instanceKey = instanceDate.toDateString()
-            if (!map.has(instanceKey)) {
-              map.set(instanceKey, [])
-            }
-            // Create virtual task for this instance
-            map.get(instanceKey)!.push({
-              ...task,
-              id,
-              dueDate: instanceDate.toISOString(),
-            })
+      if (task.recurrence) {
+        // Only expanded instances — avoids duplicate pill on the anchor day
+        const instances = expandRecurringTask(task, minDate, maxDate, 60)
+        instances.forEach(({ id, instanceDate }) => {
+          const instanceKey = instanceDate.toDateString()
+          if (!map.has(instanceKey)) {
+            map.set(instanceKey, [])
+          }
+          map.get(instanceKey)!.push({
+            ...task,
+            id,
+            dueDate: instanceDate.toISOString(),
           })
-        }
+        })
+        return
       }
+
+      const date = new Date(task.dueDate)
+      const key = date.toDateString()
+      if (!map.has(key)) {
+        map.set(key, [])
+      }
+      map.get(key)!.push(task)
     })
     return map
-  }, [tasks, days])
+  }, [tasks, days, agendaStartDate])
 
   // Agenda navigation
   const shiftAgendaRange = useCallback((days: number) => {

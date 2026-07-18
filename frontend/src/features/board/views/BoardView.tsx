@@ -8,6 +8,7 @@ import BoardColumn from '@/features/board/components/BoardColumn'
 import { PlusIcon } from '@/lib/icons'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
 import { buildBoardColumns } from '@/lib/utils/task-helpers'
+import { isSharedListMember } from '@/lib/utils/list-access'
 import type { Column } from '@/types'
 
 interface BoardViewProps {
@@ -37,10 +38,7 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
   const columnsForList = useMemo(() => {
     const selectedList = state.lists.find((list) => list.id === selectedListId)
     const listTasks = state.tasks.filter((task) => task.listId === selectedListId)
-    const isSharedMemberView =
-      !!selectedList?.ownerUserId &&
-      !!user?.id &&
-      selectedList.ownerUserId !== user.id
+    const isSharedMemberView = isSharedListMember(selectedList, user?.id)
 
     if (!isSharedMemberView) {
       return state.columns.filter((column) => column.listId === selectedListId)
@@ -61,6 +59,11 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
     return [...merged.values()]
   }, [state.columns, state.lists, state.tasks, selectedListId, user?.id])
 
+  const canManageColumns = useMemo(() => {
+    const selectedList = state.lists.find((list) => list.id === selectedListId)
+    return !isSharedListMember(selectedList, user?.id)
+  }, [state.lists, selectedListId, user?.id])
+
   const tasksForList = useMemo(() => {
     return state.tasks.filter(t => t.listId === selectedListId)
   }, [state.tasks, selectedListId])
@@ -78,10 +81,12 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
   }
 
   const handleColumnDragStart = (columnId: string) => {
+    if (!canManageColumns) return
     setDraggedColumnId(columnId)
   }
 
   const handleColumnDrop = (droppedOnId: string) => {
+    if (!canManageColumns) return
     if (draggedColumnId && draggedColumnId !== droppedOnId) {
       void reorderColumns(selectedListId, draggedColumnId, droppedOnId)
     }
@@ -90,6 +95,7 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
 
   const handleAddColumn = (e?: React.FormEvent) => {
     e?.preventDefault()
+    if (!canManageColumns) return
     if (newColumnName.trim() && selectedListId) {
       void addColumn(selectedListId, newColumnName.trim())
       setNewColumnName('')
@@ -191,10 +197,12 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
                   onDropOnColumn={handleDropOnColumn}
                   onOpenTaskForm={onOpenTaskForm}
                   onColumnDragStart={handleColumnDragStart}
+                  canManageColumns={canManageColumns}
                 />
               </div>
             )
           })}
+          {canManageColumns && (
           <div className="w-full md:w-72 md:shrink-0">
             {isAddingColumn ? (
               <form onSubmit={handleAddColumn} className="bg-card border border-border p-2 rounded-lg h-full flex flex-col">
@@ -235,6 +243,7 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
               </button>
             )}
           </div>
+          )}
         </div>
       </AppPageMain>
     </AppPage>

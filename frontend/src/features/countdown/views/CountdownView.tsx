@@ -314,7 +314,7 @@ const CountdownView: React.FC = () => {
         </header>
       </AppPageContainer>
       <AppPageMain className="py-4 md:py-6">
-        {upcomingEvents.length === 0 ? (
+        {upcomingEvents.length === 0 && completedEvents.length === 0 ? (
           <div className="py-16 text-center">
             <div className="mx-auto flex size-16 items-center justify-center rounded-full border border-dashed border-border-subtle/80 bg-card/60 text-muted-foreground">
               <CalendarDaysIcon className="h-8 w-8" />

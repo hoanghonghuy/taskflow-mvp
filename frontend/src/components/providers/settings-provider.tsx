@@ -54,6 +54,7 @@ export function SettingsProvider({ children, initialLocale }: SettingsProviderPr
   }))
   const [hydrated, setHydrated] = useState(false)
   const initialLocaleRef = useRef(initialLocale)
+  const settingsDirtyAtRef = useRef(0)
 
   const applyLanguage = useCallback(async (language: Settings['language']) => {
     setLocaleCookie(language)
@@ -106,6 +107,7 @@ export function SettingsProvider({ children, initialLocale }: SettingsProviderPr
 
   useEffect(() => {
     let isMounted = true
+    const loadStartedAt = Date.now()
 
     const loadFromBackend = async () => {
       if (typeof window === 'undefined') return
@@ -114,6 +116,8 @@ export function SettingsProvider({ children, initialLocale }: SettingsProviderPr
       try {
         const data = await settingsApi.fetchSettings()
         if (!isMounted || data == null) return
+        // Ignore stale fetch if user already changed settings locally
+        if (settingsDirtyAtRef.current > loadStartedAt) return
 
         let mergedLanguage: Settings['language'] | undefined
 
@@ -161,6 +165,7 @@ export function SettingsProvider({ children, initialLocale }: SettingsProviderPr
   }, [])
 
   const updateSettings = useCallback((updates: Partial<Settings>) => {
+    settingsDirtyAtRef.current = Date.now()
     setSettings((prev) => {
       const updated = { ...prev, ...updates }
 

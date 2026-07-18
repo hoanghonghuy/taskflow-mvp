@@ -58,4 +58,21 @@ describe('recurrence utils', () => {
     )
     expect(instances).toEqual([])
   })
+
+  it('weekly with daysOfWeek respects interval between weeks', () => {
+    // Anchor Monday 2026-06-01; interval 2 → Mon/Wed only on even week offsets
+    const seriesStart = new Date('2026-06-01T08:00:00.000Z') // Monday
+    const pattern = {
+      type: 'weekly' as const,
+      interval: 2,
+      daysOfWeek: [1, 3], // Mon, Wed
+    }
+
+    const wedSameWeek = getNextOccurrence(seriesStart, pattern, seriesStart)
+    expect(wedSameWeek?.toISOString().slice(0, 10)).toBe('2026-06-03')
+
+    const nextAfterWed = getNextOccurrence(wedSameWeek!, pattern, seriesStart)
+    // Skip week of Jun 8–14; next Mon is Jun 15
+    expect(nextAfterWed?.toISOString().slice(0, 10)).toBe('2026-06-15')
+  })
 })

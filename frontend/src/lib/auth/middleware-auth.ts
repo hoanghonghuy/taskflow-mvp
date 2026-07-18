@@ -21,7 +21,8 @@ export async function resolveMiddlewareAuth(request: NextRequest): Promise<Middl
     }
   }
 
-  // Refresh token là opaque string — không verify trên edge; session API sẽ renew JWT.
+  // Refresh token là opaque string — không verify trên edge; session API sẽ renew JWT
+  // hoặc clear cookie khi refresh thất bại (tránh vòng login↔dashboard).
   if (refreshToken) {
     return { authenticated: true }
   }
