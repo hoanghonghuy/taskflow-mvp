@@ -1,9 +1,15 @@
 import type { Page } from '@playwright/test'
 
+/** Clear auth cookies so /login is reachable (middleware redirects authenticated users). */
+export async function clearAuthSession(page: Page): Promise<void> {
+  await page.context().clearCookies()
+}
+
 export async function submitLogin(
   page: Page,
   params: { email: string; password: string },
 ): Promise<void> {
+  await clearAuthSession(page)
   await page.goto('/login')
   await page.getByLabel('Email', { exact: true }).fill(params.email)
   await page.getByLabel('Password', { exact: true }).fill(params.password)

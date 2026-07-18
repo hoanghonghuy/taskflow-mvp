@@ -31,6 +31,8 @@ interface MockTask {
   listId: string
   columnId?: string | null
   tags: string[]
+  subtasks?: Array<{ title?: string; text?: string }>
+  comments?: Array<{ text?: string; content?: string }>
   createdAt: string
 }
 
@@ -277,10 +279,18 @@ export async function mockBackendFetch(rawPath: string, init: RequestInit = {}):
       const q = (query.get('q') ?? '').trim().toLowerCase()
       if (!q) return json([], 200)
       const matches = s.tasks.filter((task) => {
+        const subtaskText = (task.subtasks ?? [])
+          .map((s) => String(s.title ?? s.text ?? ''))
+          .join(' ')
+        const commentText = (task.comments ?? [])
+          .map((c) => String(c.text ?? c.content ?? ''))
+          .join(' ')
         const haystack = [
           task.title,
           task.description ?? '',
           ...(task.tags ?? []),
+          subtaskText,
+          commentText,
         ]
           .join(' ')
           .toLowerCase()

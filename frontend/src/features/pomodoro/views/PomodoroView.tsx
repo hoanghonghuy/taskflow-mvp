@@ -222,7 +222,7 @@ const PomodoroView: React.FC = () => {
           return true
       }
     })
-  }, [state.tasks, taskFilter, selectedListId, todayDateStr, pomodoro.focusHistory, user?.id])
+  }, [state.tasks, taskFilter, selectedListId, todayDateStr, pomodoro.focusHistory, user])
 
   const filteredTasks = useMemo(() => {
     const query = searchTerm.trim().toLowerCase()

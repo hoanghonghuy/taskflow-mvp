@@ -21,14 +21,17 @@ describe.skipIf(!REAL_BACKEND)('real backend contract (REAL_BACKEND_TEST=true)',
 
     expect(registerRes.ok).toBe(true)
     const body = (await registerRes.json()) as {
+      success?: boolean
+      data?: { token?: string; user?: { id: string } }
       token?: string
       user?: { id: string }
     }
-    expect(body.token).toBeTruthy()
-    expect(body.user?.id).toBeTruthy()
+    const payload = body.data ?? body
+    expect(payload.token).toBeTruthy()
+    expect(payload.user?.id).toBeTruthy()
 
     const tasksRes = await fetch(`${BACKEND_URL}/api/tasks`, {
-      headers: { Authorization: `Bearer ${body.token}` },
+      headers: { Authorization: `Bearer ${payload.token}` },
     })
     expect(tasksRes.ok).toBe(true)
   })

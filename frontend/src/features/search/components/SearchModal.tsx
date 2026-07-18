@@ -33,20 +33,21 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose }) => {
   const [searchError, setSearchError] = useState<string | null>(null)
 
   const trimmedTerm = searchTerm.trim()
+  // Derive empty UI from the query so we never sync-clear state inside an effect.
+  const activeResults = trimmedTerm ? searchResults : []
+  const activeError = trimmedTerm ? searchError : null
+  const activeSearching = trimmedTerm ? isSearching : false
 
   useEffect(() => {
     if (!trimmedTerm) {
-      setSearchResults([])
-      setSearchError(null)
-      setIsSearching(false)
       return
     }
 
     let cancelled = false
-    setIsSearching(true)
-    setSearchError(null)
-
     const timer = window.setTimeout(() => {
+      setIsSearching(true)
+      setSearchError(null)
+
       void tasksApi
         .searchTasks(trimmedTerm)
         .then((results) => {
@@ -122,28 +123,28 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose }) => {
               <p className="text-xs">{t('search.serverHint')}</p>
             </div>
           )}
-          {trimmedTerm && isSearching && (
+          {trimmedTerm && activeSearching && (
             <div className="text-center py-12 text-muted-foreground text-sm">
               {t('search.loading')}
             </div>
           )}
-          {trimmedTerm && searchError && !isSearching && (
+          {trimmedTerm && activeError && !activeSearching && (
             <div className="text-center py-12 text-destructive text-sm">
-              {searchError}
+              {activeError}
             </div>
           )}
-          {trimmedTerm && !isSearching && !searchError && searchResults.length === 0 && (
+          {trimmedTerm && !activeSearching && !activeError && activeResults.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">
               <p>{t('search.noResults', { searchTerm: trimmedTerm })}</p>
             </div>
           )}
-          {trimmedTerm && !isSearching && !searchError && searchResults.length > 0 && (
+          {trimmedTerm && !activeSearching && !activeError && activeResults.length > 0 && (
             <p className="text-xs text-muted-foreground mb-3">
-              {t('search.resultCount', { count: searchResults.length })}
+              {t('search.resultCount', { count: activeResults.length })}
             </p>
           )}
           <div className="space-y-2">
-            {!isSearching && !searchError && searchResults.map(task => {
+            {!activeSearching && !activeError && activeResults.map(task => {
               const matchMeta = getSearchMatchMeta(task, trimmedTerm)
               return (
                 <div key={task.id} onClick={() => handleTaskSelect(task)} className="cursor-pointer">

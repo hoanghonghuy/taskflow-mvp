@@ -23,16 +23,11 @@ test.describe('AI Features', () => {
     await page.waitForTimeout(500)
   })
 
-  test('AI briefing when available', async ({ page }) => {
+  test('AI briefing entry is hidden while AI is disabled', async ({ page }) => {
     await page.goto('/dashboard')
     await waitForAppReady(page)
 
-    const briefingButton = page.getByRole('button', { name: /daily briefing/i })
-    await expect(briefingButton).toBeVisible()
-    await briefingButton.click({ force: true })
-    // AI disabled: runIfEnabled shows coming-soon toast instead of opening the modal
-    await expect(
-      page.getByText(/coming soon|this ai feature is under development/i).first(),
-    ).toBeVisible()
+    // Dashboard CTA is gated by AI_FEATURES_ENABLED — no button when AI is off.
+    await expect(page.getByRole('button', { name: /daily briefing/i })).toHaveCount(0)
   })
 })

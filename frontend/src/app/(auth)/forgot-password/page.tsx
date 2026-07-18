@@ -4,16 +4,11 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { useI18n } from '@/lib/i18n/hooks'
-import { PASSWORD_RESET_ENABLED } from '@/lib/feature-flags'
 
 export default function ForgotPasswordPage() {
   const { t } = useI18n()
 
-  if (PASSWORD_RESET_ENABLED) {
-    // Placeholder cho khi ship reset password thật (form + API email).
-    return null
-  }
-
+  // MVP: luôn hiện hướng dẫn thay thế. Khi ship reset password thật, thay bằng form + API.
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">

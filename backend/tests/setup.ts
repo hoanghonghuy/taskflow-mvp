@@ -5,8 +5,11 @@ const defaultTestDatabaseUrl =
   'postgresql://postgres:taskflow@localhost:5434/taskflow_db?sslmode=disable'
 
 process.env.NODE_ENV = 'test'
-process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || defaultTestDatabaseUrl
-process.env.JWT_KEY = 'test-jwt-key-at-least-32-characters-long'
+// Prefer CI/env DATABASE_URL (e.g. localhost:5432 on GitHub Actions) over the local Docker default (5434).
+process.env.DATABASE_URL =
+  process.env.TEST_DATABASE_URL || process.env.DATABASE_URL || defaultTestDatabaseUrl
+process.env.JWT_KEY =
+  process.env.JWT_KEY || 'test-jwt-key-at-least-32-characters-long'
 process.env.GEMINI_API_KEY = ''
 
 execSync('npx prisma migrate deploy', {

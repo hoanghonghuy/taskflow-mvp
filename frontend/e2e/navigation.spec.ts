@@ -10,7 +10,8 @@ test.describe('Navigation', () => {
 
     await page.goto('/profile')
     await waitForAppReady(page)
-    await expect(page.locator('header h1.text-3xl')).toHaveText('Profile')
+    // Profile heading uses responsive classes (text-2xl md:text-3xl), not bare text-3xl.
+    await expect(page.getByRole('heading', { name: 'Profile', level: 1 })).toBeVisible()
   })
 
   test('navigates to board view from sidebar', async ({ page }) => {

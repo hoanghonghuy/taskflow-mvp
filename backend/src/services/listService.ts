@@ -92,7 +92,7 @@ export async function updateList(
   return mapListToDto(updated)
 }
 
-/** Atomically add a member using current DB members (avoids last-write-wins races). */
+/** Add a member from the current DB members snapshot (read-modify-write; not transactional). */
 export async function addListMember(
   userId: string,
   id: string,
@@ -118,7 +118,7 @@ export async function addListMember(
   return mapListToDto(updated)
 }
 
-/** Atomically remove a member using current DB members. */
+/** Remove a member from the current DB members snapshot (read-modify-write; not transactional). */
 export async function removeListMember(
   userId: string,
   id: string,
