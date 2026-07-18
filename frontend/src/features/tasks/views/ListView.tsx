@@ -12,11 +12,12 @@ import { PlusIcon } from '@/lib/icons'
 import type { SortOrder } from '@/lib/utils/task-helpers'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
 import { AI_FEATURES_ENABLED } from '@/lib/feature-flags'
+import { isSharedListMember } from '@/lib/utils/list-access'
 
 const ListView: React.FC = () => {
   const { state, dispatch, canUndo, canRedo } = useTaskManager()
   const { t } = useI18n()
-  const { allUsers } = useUser()
+  const { allUsers, user } = useUser()
   const { openSearch, openBriefing, openTaskForm } = useModal()
 
   const activeList = useMemo(() => {
@@ -25,6 +26,8 @@ const ListView: React.FC = () => {
     }
     return state.lists.find(l => l.id === state.activeListId)
   }, [state.activeListId, state.lists, state.activeTag])
+
+  const canAddTask = !isSharedListMember(activeList, user?.id)
 
   const listMembers = useMemo(() => {
     if (!activeList || !activeList.members) return []
@@ -92,9 +95,10 @@ const ListView: React.FC = () => {
         />
       </AppPageContainer>
       <AppPageMain className="py-4 md:py-6">
-        <TaskList onAddTask={openTaskForm} />
+        <TaskList onAddTask={canAddTask ? openTaskForm : undefined} />
       </AppPageMain>
 
+      {canAddTask && (
       <button
         onClick={() => openTaskForm()}
         className="hidden md:flex fixed md:absolute bottom-20 md:bottom-8 right-4 md:right-8 bg-primary text-primary-foreground rounded-full p-4 shadow-lg hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-transform hover:scale-105 z-10"
@@ -102,6 +106,7 @@ const ListView: React.FC = () => {
       >
         <PlusIcon className="h-6 w-6" />
       </button>
+      )}
     </AppPage>
   )
 }

@@ -69,11 +69,17 @@ export function mapTasksFromApi(items: unknown[]): Task[] {
             .filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))
         : undefined
 
+      const seriesStartRaw = r.seriesStart ?? r.SeriesStart
+      const seriesStart = seriesStartRaw
+        ? String(seriesStartRaw).slice(0, 10)
+        : undefined
+
       recurrence = {
         type,
         interval: interval > 0 ? interval : 1,
         ...(daysOfWeek && daysOfWeek.length > 0 ? { daysOfWeek } : {}),
         ...(endDate ? { endDate } : {}),
+        ...(seriesStart ? { seriesStart } : {}),
         ...(completedDates && completedDates.length > 0 ? { completedDates } : {}),
       }
     }

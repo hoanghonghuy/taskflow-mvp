@@ -155,7 +155,12 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
       return
     }
     const type = value as RecurrencePattern['type']
-    const updates: Partial<Task> = { recurrence: buildRecurrencePattern(type) }
+    const seriesStart = (task.dueDate ? new Date(task.dueDate) : new Date())
+      .toISOString()
+      .slice(0, 10)
+    const updates: Partial<Task> = {
+      recurrence: buildRecurrencePattern(type, seriesStart),
+    }
     if (!task.dueDate) {
       updates.dueDate = new Date().toISOString()
     }

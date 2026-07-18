@@ -78,8 +78,18 @@ export function recurrenceTypeKey(type: RecurrencePattern['type']): TranslationK
   return `recurrence.${type}` as TranslationKey
 }
 
-export function buildRecurrencePattern(type: RecurrencePattern['type']): RecurrencePattern {
-  return { type, interval: 1 }
+export function buildRecurrencePattern(
+  type: RecurrencePattern['type'],
+  seriesStart?: string,
+): RecurrencePattern {
+  const start =
+    seriesStart?.slice(0, 10) ||
+    undefined
+  return {
+    type,
+    interval: 1,
+    ...(start ? { seriesStart: start } : {}),
+  }
 }
 
 /**
@@ -97,15 +107,16 @@ export function expandRecurringTask(
   const instances: Array<{ id: string; instanceDate: Date }> = []
   const start = startOfDay(rangeStart)
   const end = startOfDay(rangeEnd)
+  const seriesAnchor = startOfDay(new Date(task.recurrence.seriesStart ?? task.dueDate))
   const anchor = startOfDay(new Date(task.dueDate))
 
   let current = anchor < start ? start : anchor
 
-  // Find first occurrence >= rangeStart
+  // Find first occurrence >= rangeStart (walk with stable seriesAnchor for interval)
   if (anchor < start) {
     let candidate = anchor
     for (let i = 0; i < 1000; i++) {
-      const nextCandidate = getNextOccurrence(candidate, task.recurrence, anchor)
+      const nextCandidate = getNextOccurrence(candidate, task.recurrence, seriesAnchor)
       if (!nextCandidate || nextCandidate >= start) {
         current = nextCandidate || candidate
         break
@@ -114,17 +125,16 @@ export function expandRecurringTask(
     }
   }
 
-  // Generate instances in range
+  // Generate instances in range from current dueDate forward
   for (let i = 0; i < maxInstances; i++) {
     if (current > end) break
     if (current >= start) {
       const isoDate = current.toISOString().slice(0, 10)
-      // Local calendar date matching UTC Y-M-D so toDateString() buckets align
       const [year, month, day] = isoDate.split('-').map(Number)
       const localInstance = new Date(year, month - 1, day)
       instances.push({ id: `${task.id}_${isoDate}`, instanceDate: localInstance })
     }
-    const next = getNextOccurrence(current, task.recurrence, anchor)
+    const next = getNextOccurrence(current, task.recurrence, seriesAnchor)
     if (!next) break
     current = next
   }

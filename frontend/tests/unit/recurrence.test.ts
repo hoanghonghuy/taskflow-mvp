@@ -6,6 +6,14 @@ describe('recurrence utils', () => {
     expect(buildRecurrencePattern('daily')).toEqual({ type: 'daily', interval: 1 })
   })
 
+  it('buildRecurrencePattern stores seriesStart', () => {
+    expect(buildRecurrencePattern('weekly', '2026-06-01')).toEqual({
+      type: 'weekly',
+      interval: 1,
+      seriesStart: '2026-06-01',
+    })
+  })
+
   it('getNextOccurrence advances daily', () => {
     const from = new Date('2026-06-10T08:00:00.000Z')
     const next = getNextOccurrence(from, { type: 'daily', interval: 1 })

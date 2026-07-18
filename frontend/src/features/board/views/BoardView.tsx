@@ -73,6 +73,11 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
   }
 
   const handleDropOnColumn = (columnId: string) => {
+    if (!canManageColumns) {
+      setDraggedTaskId(null)
+      setDragOverColumnId(null)
+      return
+    }
     if (draggedTaskId) {
       void moveTaskToColumn(draggedTaskId, columnId, selectedListId)
     }

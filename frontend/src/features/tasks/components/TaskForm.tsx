@@ -346,11 +346,12 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
                 onChange={e => setListId(e.target.value)} 
                 className="w-full p-3 bg-secondary/50 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-colors appearance-none cursor-pointer"
               >
-                <option value="inbox">{t('specialLists.inbox')}</option>
-                {ownedLists
-                  .filter((list) => list.id !== 'inbox' && list.name !== 'Inbox')
-                  .map(list => (
-                  <option key={list.id} value={list.id}>{list.name}</option>
+                {ownedLists.map((list) => (
+                  <option key={list.id} value={list.id}>
+                    {list.name === 'Inbox' || list.id === 'inbox'
+                      ? t('specialLists.inbox')
+                      : list.name}
+                  </option>
                 ))}
               </select>
             </div>

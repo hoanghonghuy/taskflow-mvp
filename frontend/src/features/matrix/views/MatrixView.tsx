@@ -2,11 +2,13 @@
 
 import React, { useMemo, useState } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
+import { useUser } from '@/components/providers/user-provider'
 import { useTaskActions } from '@/lib/hooks/use-task-manager'
 import { useI18n } from '@/lib/i18n/hooks'
 import TaskItem from '@/features/tasks/components/TaskItem'
 import type { Task, Priority } from '@/types'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
+import { isSharedListMember } from '@/lib/utils/list-access'
 
 interface QuadrantConfig {
   id: string
@@ -129,6 +131,7 @@ const QUADRANT_CONFIG: QuadrantConfig[] = [
 const MatrixView: React.FC = () => {
   const { state } = useTaskManager()
   const { updateTask } = useTaskActions()
+  const { user } = useUser()
   const { t } = useI18n()
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null)
   const [dragOverQuadrantId, setDragOverQuadrantId] = useState<string | null>(null)
@@ -174,6 +177,12 @@ const MatrixView: React.FC = () => {
 
     const task = state.tasks.find(item => item.id === taskId)
     if (!task || task.priority === dropPriority) {
+      handleTaskDragEnd()
+      return
+    }
+
+    const parentList = state.lists.find((list) => list.id === task.listId)
+    if (isSharedListMember(parentList, user?.id)) {
       handleTaskDragEnd()
       return
     }

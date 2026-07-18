@@ -439,8 +439,6 @@ export function useTaskActions() {
           listId: task.listId,
           columnId: task.columnId ?? null,
           tags: task.tags ?? [],
-          subtasks: task.subtasks ?? [],
-          comments: task.comments ?? [],
           recurrence: task.recurrence ?? null,
           reminderMinutes: task.reminderMinutes ?? null,
           assigneeId: task.assigneeId ?? null,
@@ -510,23 +508,52 @@ export function useTaskActions() {
       // If the API fails, keep local state unchanged.
     }, [dispatch, showError, state.tasks, t]),
 
-    assignTask: useCallback((taskId: string, userId: string | null) => {
-      dispatch(taskActions.assign(taskId, userId))
-      success(
-        t('toast.taskAssignedTitle' as TranslationKey),
-        userId
-          ? t('toast.taskAssignedBody' as TranslationKey)
-          : t('toast.taskAssignmentRemovedBody' as TranslationKey),
-      )
-    }, [dispatch, success, t]),
+    assignTask: useCallback(async (taskId: string, userId: string | null) => {
+      const existing = state.tasks.find((t) => t.id === taskId)
+      if (!existing) return
 
-    addComment: useCallback((taskId: string, comment: Comment) => {
-      dispatch(taskActions.addComment(taskId, comment))
-      success(
-        t('toast.commentAddedTitle' as TranslationKey),
-        t('toast.commentAddedBody' as TranslationKey),
-      )
-    }, [dispatch, success, t]),
+      try {
+        const updatedTask = await tasksApi.updateTask(taskId, { assigneeId: userId })
+        if (updatedTask) {
+          dispatch({ type: 'UPDATE_TASK', payload: updatedTask })
+        }
+        success(
+          t('toast.taskAssignedTitle' as TranslationKey),
+          userId
+            ? t('toast.taskAssignedBody' as TranslationKey)
+            : t('toast.taskAssignmentRemovedBody' as TranslationKey),
+        )
+      } catch (err) {
+        console.error('Failed to assign task via API', err)
+        showError(
+          t('toast.api.taskUpdateFailedTitle' as TranslationKey),
+          err instanceof Error ? err.message : undefined,
+        )
+      }
+    }, [dispatch, showError, state.tasks, success, t]),
+
+    addComment: useCallback(async (taskId: string, comment: Comment) => {
+      const existing = state.tasks.find((t) => t.id === taskId)
+      if (!existing) return
+      const comments = [...(existing.comments ?? []), comment]
+      try {
+        const updatedTask = (await tasksApi.updateTask(taskId, { comments })) ?? {
+          ...existing,
+          comments,
+        }
+        dispatch({ type: 'UPDATE_TASK', payload: updatedTask })
+        success(
+          t('toast.commentAddedTitle' as TranslationKey),
+          t('toast.commentAddedBody' as TranslationKey),
+        )
+      } catch (err) {
+        console.error('Failed to add comment via API', err)
+        showError(
+          t('toast.api.taskUpdateFailedTitle' as TranslationKey),
+          err instanceof Error ? err.message : undefined,
+        )
+      }
+    }, [dispatch, showError, state.tasks, success, t]),
 
     reorderTasks: useCallback(async (draggedId: string, droppedOnId: string) => {
       const before = state.tasks
@@ -685,8 +712,47 @@ export function useTaskActions() {
   }
 }
 
-async function persistBoardColumns(columns: Column[]): Promise<void> {
-  await settingsApi.updateBoardColumns(columns)
+async function persistBoardColumns(columns: Column[], touchedListId?: string): Promise<void> {
+  // Merge by listId against remote so other tabs editing different lists are not clobbered.
+  const remotePayload = await settingsApi.fetchSettings()
+  const remoteColumns = Array.isArray(
+    (remotePayload as { boardColumns?: Column[] } | null)?.boardColumns,
+  )
+    ? ((remotePayload as { boardColumns: Column[] }).boardColumns)
+    : []
+
+  const localByList = new Map<string, Column[]>()
+  for (const column of columns) {
+    const bucket = localByList.get(column.listId) ?? []
+    bucket.push(column)
+    localByList.set(column.listId, bucket)
+  }
+
+  const touched = touchedListId
+    ? new Set([touchedListId])
+    : new Set(localByList.keys())
+
+  const merged: Column[] = []
+  const seenLists = new Set<string>()
+
+  for (const listId of touched) {
+    const localCols = localByList.get(listId) ?? []
+    merged.push(...localCols)
+    seenLists.add(listId)
+  }
+
+  for (const column of remoteColumns) {
+    if (seenLists.has(column.listId)) continue
+    merged.push(column)
+  }
+
+  // Include any other local lists not already written (first hydrate)
+  for (const [listId, cols] of localByList) {
+    if (seenLists.has(listId)) continue
+    merged.push(...cols)
+  }
+
+  await settingsApi.updateBoardColumns(merged)
 }
 
 export function useColumnActions() {
@@ -695,12 +761,12 @@ export function useColumnActions() {
   const { t } = useI18n()
 
   const applyColumnChange = useCallback(
-    async (action: Action) => {
+    async (action: Action, touchedListId?: string) => {
       const nextColumns = columnReducer(state, action).columns
       dispatch(action)
 
       try {
-        await persistBoardColumns(nextColumns)
+        await persistBoardColumns(nextColumns, touchedListId)
       } catch (err) {
         console.error('Failed to persist board columns via API', err)
         showError(
@@ -715,13 +781,18 @@ export function useColumnActions() {
   return {
     addColumn: useCallback(
       (listId: string, name: string) =>
-        applyColumnChange({ type: 'ADD_COLUMN', payload: { listId, name } }),
+        applyColumnChange({ type: 'ADD_COLUMN', payload: { listId, name } }, listId),
       [applyColumnChange],
     ),
     updateColumn: useCallback(
-      (columnId: string, name: string) =>
-        applyColumnChange({ type: 'UPDATE_COLUMN', payload: { columnId, name } }),
-      [applyColumnChange],
+      (columnId: string, name: string) => {
+        const column = state.columns.find((c) => c.id === columnId)
+        return applyColumnChange(
+          { type: 'UPDATE_COLUMN', payload: { columnId, name } },
+          column?.listId,
+        )
+      },
+      [applyColumnChange, state.columns],
     ),
     deleteColumn: useCallback(
       async (columnId: string, listId: string) => {
@@ -732,7 +803,7 @@ export function useColumnActions() {
         dispatch(action)
 
         try {
-          await persistBoardColumns(nextState.columns)
+          await persistBoardColumns(nextState.columns, listId)
           await Promise.all(
             affectedTasks.map(async (task) => {
               const updatedTask = nextState.tasks.find((t) => t.id === task.id)
@@ -757,10 +828,13 @@ export function useColumnActions() {
     ),
     reorderColumns: useCallback(
       (listId: string, draggedId: string, droppedOnId: string) =>
-        applyColumnChange({
-          type: 'REORDER_COLUMNS',
-          payload: { listId, draggedId, droppedOnId },
-        }),
+        applyColumnChange(
+          {
+            type: 'REORDER_COLUMNS',
+            payload: { listId, draggedId, droppedOnId },
+          },
+          listId,
+        ),
       [applyColumnChange],
     ),
   }

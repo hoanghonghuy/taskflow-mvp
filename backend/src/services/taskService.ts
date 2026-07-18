@@ -89,6 +89,19 @@ export async function createTask(userId: string, body: Record<string, unknown>):
     await assertValidAssignee(list, assigneeId)
   }
 
+  const dueDate = 'dueDate' in body ? parseOptionalDate(body.dueDate) : null
+  let recurrenceJson: string | null = null
+  if (body.recurrence) {
+    const raw =
+      typeof body.recurrence === 'object' && body.recurrence !== null
+        ? { ...(body.recurrence as Record<string, unknown>) }
+        : {}
+    if (!raw.seriesStart && dueDate) {
+      raw.seriesStart = dueDate.toISOString().slice(0, 10)
+    }
+    recurrenceJson = toJsonString(raw)
+  }
+
   // Bọc read max + create trong transaction serializable để tránh 2 request
   // song song của cùng user lấy cùng maxSortOrder → trùng sortOrder, phá vỡ
   // thứ tự board/list. Nếu conflict thì Prisma sẽ retry 1 lần.
@@ -102,14 +115,14 @@ export async function createTask(userId: string, body: Record<string, unknown>):
             {
               title,
               description: body.description != null ? String(body.description) : null,
-              dueDate: 'dueDate' in body ? parseOptionalDate(body.dueDate) : null,
+              dueDate,
               priority: normalizePriority(body.priority),
               listId,
               tags: toJsonString(Array.isArray(body.tags) ? body.tags : []),
               columnId: body.columnId != null ? String(body.columnId) : null,
               subtasks: toJsonString(Array.isArray(body.subtasks) ? body.subtasks : []),
               comments: toJsonString(Array.isArray(body.comments) ? body.comments : []),
-              recurrence: body.recurrence ? toJsonString(body.recurrence) : null,
+              recurrence: recurrenceJson,
               reminderMinutes:
                 typeof body.reminderMinutes === 'number' ? body.reminderMinutes : null,
               assigneeId,
@@ -186,13 +199,41 @@ export async function updateTask(
   if ('dueDate' in body) data.dueDate = parseOptionalDate(body.dueDate)
   if ('priority' in body && body.priority != null) data.priority = normalizePriority(body.priority)
   if ('listId' in body && body.listId != null) {
-    data.listId = await normalizeListId(userId, body.listId)
+    const nextListId = await normalizeListId(userId, body.listId)
+    const ownedList = await listRepository.findListByIdAndUserId(nextListId, userId)
+    if (!ownedList) {
+      const accessible = await listRepository.findListByIdAccessible(nextListId, userId)
+      if (accessible) {
+        throw new AppError(403, 'forbidden', 'You do not have permission to move tasks into this list')
+      }
+      throw new AppError(400, 'invalid_request', 'Invalid listId')
+    }
+    data.listId = nextListId
   }
   if ('tags' in body && body.tags != null) data.tags = toJsonString(body.tags)
   if ('columnId' in body) data.columnId = body.columnId != null ? String(body.columnId) : null
   if ('subtasks' in body && body.subtasks != null) data.subtasks = toJsonString(body.subtasks)
   if ('comments' in body && body.comments != null) data.comments = toJsonString(body.comments)
-  if ('recurrence' in body) data.recurrence = body.recurrence ? toJsonString(body.recurrence) : null
+  if ('recurrence' in body) {
+    if (!body.recurrence) {
+      data.recurrence = null
+    } else {
+      const raw =
+        typeof body.recurrence === 'object' && body.recurrence !== null
+          ? { ...(body.recurrence as Record<string, unknown>) }
+          : {}
+      if (!raw.seriesStart) {
+        const dueForSeries =
+          'dueDate' in body
+            ? parseOptionalDate(body.dueDate)
+            : existing.dueDate
+        if (dueForSeries) {
+          raw.seriesStart = dueForSeries.toISOString().slice(0, 10)
+        }
+      }
+      data.recurrence = toJsonString(raw)
+    }
+  }
   if ('reminderMinutes' in body) {
     data.reminderMinutes = typeof body.reminderMinutes === 'number' ? body.reminderMinutes : null
   }
