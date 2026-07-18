@@ -22,6 +22,7 @@ import { PRIORITY_MAP } from '@/lib/task-constants'
 import { Skeleton } from '@/components/ui/skeleton'
 import * as aiApi from '@/lib/api/ai'
 import { isOwnedList } from '@/lib/utils/list-access'
+import { dateOnlyInputToIso, toYYYYMMDD } from '@/lib/utils/date-helpers'
 
 interface TaskFormProps {
   onClose: () => void
@@ -110,7 +111,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
       title: title.trim(),
       description: description.trim(),
       completed: false,
-      dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
+      dueDate: dueDate ? dateOnlyInputToIso(dueDate) : undefined,
       priority,
       listId: listId || resolveInboxListId(),
       columnId: columnId,
@@ -147,7 +148,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
       if (data && data.dueDate) {
         const parsed = new Date(data.dueDate)
         if (!Number.isNaN(parsed.getTime())) {
-          setDueDate(parsed.toISOString().split('T')[0])
+          setDueDate(toYYYYMMDD(parsed))
         }
       }
 

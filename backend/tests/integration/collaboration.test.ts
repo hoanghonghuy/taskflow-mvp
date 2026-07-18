@@ -2,7 +2,7 @@ import request from 'supertest'
 import { app, authHeader, registerAndLogin, resetDatabase, apiData } from '../helpers'
 
 type ListDto = { id: string; name: string; members: string[] }
-type TaskDto = { id: string; title: string; listId: string }
+type TaskDto = { id: string; title: string; listId: string; assigneeId?: string | null }
 type UserDto = { id: string; name: string; email: string }
 
 describe('List collaboration (shared access)', () => {
@@ -124,5 +124,43 @@ describe('List collaboration (shared access)', () => {
       .delete(`/api/lists/${list.id}`)
       .set(authHeader(member.token))
       .expect(403)
+  })
+
+  it('removing a member clears their assigneeId on list tasks', async () => {
+    const owner = await registerAndLogin('owner-unshare@test.com', 'OwnerPass123!', 'Owner')
+    const member = await registerAndLogin('member-unshare@test.com', 'MemberPass123!', 'Member')
+
+    const createListRes = await request(app)
+      .post('/api/lists')
+      .set(authHeader(owner.token))
+      .send({ name: 'Assigned Board', color: '#3b82f6', members: [member.userId] })
+      .expect(201)
+
+    const list = apiData<ListDto>(createListRes)
+
+    const createTaskRes = await request(app)
+      .post('/api/tasks')
+      .set(authHeader(owner.token))
+      .send({
+        title: 'Assigned task',
+        listId: list.id,
+        assigneeId: member.userId,
+      })
+      .expect(201)
+
+    const task = apiData<TaskDto>(createTaskRes)
+    expect(task.assigneeId).toBe(member.userId)
+
+    await request(app)
+      .delete(`/api/lists/${list.id}/members/${member.userId}`)
+      .set(authHeader(owner.token))
+      .expect(200)
+
+    const getTaskRes = await request(app)
+      .get(`/api/tasks/${task.id}`)
+      .set(authHeader(owner.token))
+      .expect(200)
+
+    expect(apiData<TaskDto>(getTaskRes).assigneeId).toBeNull()
   })
 })

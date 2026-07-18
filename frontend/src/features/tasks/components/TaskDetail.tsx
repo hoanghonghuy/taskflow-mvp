@@ -9,6 +9,7 @@ import { generateId } from '@/lib/utils'
 import { useConfirmation } from '@/lib/hooks/use-confirmation'
 import type { Task, Subtask, Priority, Comment, RecurrencePattern } from '@/types'
 import { buildRecurrencePattern, recurrenceTypeKey } from '@/lib/utils/recurrence'
+import { dateOnlyInputToIso, toYYYYMMDD } from '@/lib/utils/date-helpers'
 import type { TranslationKey } from '@/lib/i18n/types'
 import { 
   CheckIcon, 
@@ -53,6 +54,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   const [isGenerating, setIsGenerating] = useState(false)
   const pendingSyncRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingPayloadRef = useRef<Task | null>(null)
+  const pendingRollbackRef = useRef<Task | null>(null)
   const updateTaskApiRef = useRef(updateTaskApi)
   updateTaskApiRef.current = updateTaskApi
 
@@ -63,9 +65,11 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
         pendingSyncRef.current = null
       }
       const payload = pendingPayloadRef.current
+      const rollback = pendingRollbackRef.current
       pendingPayloadRef.current = null
+      pendingRollbackRef.current = null
       if (payload) {
-        void updateTaskApiRef.current(payload, { silent: true })
+        void updateTaskApiRef.current(payload, { silent: true, rollback: rollback ?? undefined })
       }
     }
   }, [taskId])
@@ -117,15 +121,21 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
       pendingSyncRef.current = null
     }
     const payload = pendingPayloadRef.current
+    const rollback = pendingRollbackRef.current
     pendingPayloadRef.current = null
+    pendingRollbackRef.current = null
     if (payload) {
-      void updateTaskApi(payload, { silent: true })
+      void updateTaskApi(payload, { silent: true, rollback: rollback ?? undefined })
     }
     dispatch({ type: 'SET_SELECTED_TASK', payload: null })
   }
 
   const applyTaskUpdates = (updates: Partial<Task>, options?: { debounce?: boolean }) => {
     if (isReadOnly) return
+    if (!pendingRollbackRef.current) {
+      pendingRollbackRef.current = task
+    }
+    const rollback = pendingRollbackRef.current
     const updatedTask = { ...task, ...updates }
     dispatch({ type: 'UPDATE_TASK', payload: updatedTask })
 
@@ -137,7 +147,8 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
     const runSync = () => {
       pendingSyncRef.current = null
       pendingPayloadRef.current = null
-      void updateTaskApi(updatedTask, { silent: true })
+      pendingRollbackRef.current = null
+      void updateTaskApi(updatedTask, { silent: true, rollback })
     }
 
     if (options?.debounce) {
@@ -145,7 +156,8 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
       pendingSyncRef.current = setTimeout(runSync, 500)
     } else {
       pendingPayloadRef.current = null
-      void updateTaskApi(updatedTask, { silent: true })
+      pendingRollbackRef.current = null
+      void updateTaskApi(updatedTask, { silent: true, rollback })
     }
   }
 
@@ -155,9 +167,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
       return
     }
     const type = value as RecurrencePattern['type']
-    const seriesStart = (task.dueDate ? new Date(task.dueDate) : new Date())
-      .toISOString()
-      .slice(0, 10)
+    const seriesStart = toYYYYMMDD(task.dueDate ? new Date(task.dueDate) : new Date())
     const updates: Partial<Task> = {
       recurrence: buildRecurrencePattern(type, seriesStart),
     }
@@ -503,9 +513,9 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
               </span>
               <input
                 type="date"
-                value={task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : ''}
+                value={task.dueDate ? toYYYYMMDD(new Date(task.dueDate)) : ''}
                 readOnly={isReadOnly}
-                onChange={(e) => applyTaskUpdates({ dueDate: e.target.value ? new Date(e.target.value).toISOString() : undefined })}
+                onChange={(e) => applyTaskUpdates({ dueDate: e.target.value ? dateOnlyInputToIso(e.target.value) : undefined })}
                 className="w-full p-2 bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
               />
             </div>
@@ -601,7 +611,13 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                     <div className="text-xs text-muted-foreground mb-2">{t('recurrence.endDate')}</div>
                     <input
                       type="date"
-                      value={task.recurrence.endDate ? new Date(task.recurrence.endDate).toISOString().split('T')[0] : ''}
+                      value={
+                        task.recurrence.endDate
+                          ? /^\d{4}-\d{2}-\d{2}$/.test(task.recurrence.endDate)
+                            ? task.recurrence.endDate
+                            : toYYYYMMDD(new Date(task.recurrence.endDate))
+                          : ''
+                      }
                       disabled={isReadOnly}
                       onChange={(e) => handleRecurrenceEndDateChange(e.target.value)}
                       className="w-full p-2 bg-background border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"

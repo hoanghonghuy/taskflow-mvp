@@ -50,6 +50,8 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
   )
 
   const pomodoroRef = useRef<PomodoroState>(historyState.present.pomodoro)
+  /** Server pomodoroStateUpdatedAt for optimistic concurrency on PUT. */
+  const pomodoroServerUpdatedAtRef = useRef<string | null>(null)
 
   const syncFromBackend = useCallback(async () => {
     if (!isAuthenticated) return
@@ -101,6 +103,10 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
 
   // Save to localStorage whenever state changes (debounced)
   useEffect(() => {
+    if (!isAuthenticated) {
+      return
+    }
+
     const timeoutId = setTimeout(() => {
       try {
         localStorage.setItem('taskflowState', JSON.stringify(historyState.present))
@@ -110,11 +116,14 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
     }, 500)
 
     return () => clearTimeout(timeoutId)
-  }, [historyState.present, t])
+  }, [historyState.present, isAuthenticated, t])
 
   useEffect(() => {
     pomodoroRef.current = historyState.present.pomodoro
   }, [historyState.present.pomodoro])
+
+  const presentRef = useRef(historyState.present)
+  presentRef.current = historyState.present
 
   useLayoutEffect(() => {
     if (!isAuthenticated) {
@@ -127,8 +136,10 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
 
     hasLoadedFromBackend.current = true
     setIsHydrating(true)
+    let cancelled = false
 
     const loadFromBackend = async () => {
+      const presentSnapshot = presentRef.current
       try {
         const [tasks, lists, habits, countdownEvents] = await Promise.all([
           tasksApi.fetchTasks(),
@@ -136,6 +147,8 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
           habitsApi.fetchHabits(),
           countdownApi.fetchCountdowns(),
         ])
+
+        if (cancelled) return
 
         // Derive available tags from tasks loaded from backend so sidebar tags
         // reflect real data instead of only local state.
@@ -147,9 +160,9 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
         }
         const tags = Array.from(tagSet).sort()
 
-        let unlockedAchievements = historyState.present.unlockedAchievements ?? []
-        let focusHistory = historyState.present.pomodoro.focusHistory ?? []
-        let pomodoroState = historyState.present.pomodoro
+        let unlockedAchievements = presentSnapshot.unlockedAchievements ?? []
+        let focusHistory = presentSnapshot.pomodoro.focusHistory ?? []
+        let pomodoroState = presentSnapshot.pomodoro
 
         try {
           const ps = await settingsApi.fetchPomodoroSettings()
@@ -173,6 +186,8 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
           console.error('Failed to load settings from backend', error)
         }
 
+        if (cancelled) return
+
         try {
           unlockedAchievements = await profileApi.fetchAchievements()
         } catch (error) {
@@ -186,17 +201,20 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
         }
 
         try {
-          const statePatch = await pomodoroApi.fetchPomodoroState(pomodoroState)
-          if (statePatch) {
-            pomodoroState = { ...pomodoroState, ...statePatch }
+          const stateResult = await pomodoroApi.fetchPomodoroState(pomodoroState)
+          if (stateResult) {
+            pomodoroState = { ...pomodoroState, ...stateResult.patch }
+            pomodoroServerUpdatedAtRef.current = stateResult.updatedAt
           }
         } catch (error) {
           console.error('Failed to load pomodoro state from backend', error)
         }
 
+        if (cancelled) return
+
         const inboxList = lists.find((l) => l.name === 'Inbox' || l.id === 'inbox')
         const inboxListId = inboxList?.id ?? lists[0]?.id ?? 'inbox'
-        const previousActive = historyState.present.activeListId
+        const previousActive = presentSnapshot.activeListId
         const activeListId =
           previousActive === 'inbox'
             ? inboxListId
@@ -213,10 +231,12 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
           console.error('Failed to load board columns from settings', error)
         }
 
+        if (cancelled) return
+
         const columns = resolveBoardColumns(savedBoardColumns, lists, tasks)
 
         const nextState: AppState = {
-          ...historyState.present,
+          ...presentSnapshot,
           tasks,
           lists,
           columns,
@@ -235,12 +255,18 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
       } catch (error) {
         console.error('Failed to load data from backend', error)
       } finally {
-        setIsHydrating(false)
+        if (!cancelled) {
+          setIsHydrating(false)
+        }
       }
     }
 
-    loadFromBackend()
-  }, [historyState.present, dispatch, hasLoadedFromBackend, isAuthenticated])
+    void loadFromBackend()
+
+    return () => {
+      cancelled = true
+    }
+  }, [dispatch, isAuthenticated])
 
   // Pomodoro timer tick
   useEffect(() => {
@@ -320,9 +346,37 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
       return
     }
 
-    void pomodoroApi.updatePomodoroState(current).catch((error) => {
-      console.error('Failed to sync pomodoro state to backend', error)
-    })
+    void pomodoroApi
+      .updatePomodoroState(current, {
+        expectedUpdatedAt: pomodoroServerUpdatedAtRef.current,
+      })
+      .then((result) => {
+        if (result.conflict) {
+          void pomodoroApi.fetchPomodoroState(current).then((fresh) => {
+            if (!fresh) return
+            pomodoroServerUpdatedAtRef.current = fresh.updatedAt
+            dispatch({
+              type: 'LOAD_STATE',
+              payload: {
+                ...presentRef.current,
+                pomodoro: {
+                  ...presentRef.current.pomodoro,
+                  ...fresh.patch,
+                  focusHistory: presentRef.current.pomodoro.focusHistory,
+                  settings: presentRef.current.pomodoro.settings,
+                },
+              },
+            })
+          })
+          return
+        }
+        if (result.updatedAt) {
+          pomodoroServerUpdatedAtRef.current = result.updatedAt
+        }
+      })
+      .catch((error) => {
+        console.error('Failed to sync pomodoro state to backend', error)
+      })
   }, [historyState.present.pomodoro, isAuthenticated, userSettings.autoStartPomodoro, dispatch])
 
   // Ensure pomodoro state is saved when the user logs out
@@ -335,6 +389,7 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
       } catch (error) {
         console.error('Failed to sync pomodoro state on logout', error)
       }
+      pomodoroServerUpdatedAtRef.current = null
     }
 
     wasAuthenticatedRef.current = isAuthenticated
@@ -428,7 +483,7 @@ export function useTaskActions() {
       }
     }, [dispatch, success, showError, t]),
 
-    updateTask: useCallback(async (task: Task, options?: { silent?: boolean }) => {
+    updateTask: useCallback(async (task: Task, options?: { silent?: boolean; rollback?: Task }) => {
       try {
         const updatedTask = (await tasksApi.updateTask(task.id, {
           title: task.title,
@@ -453,6 +508,9 @@ export function useTaskActions() {
         }
       } catch (err) {
         console.error('Failed to update task via API', err)
+        if (options?.rollback) {
+          dispatch({ type: 'UPDATE_TASK', payload: options.rollback })
+        }
         showError(
           t('toast.api.taskUpdateFailedTitle' as TranslationKey),
           err instanceof Error ? err.message : undefined,
@@ -762,6 +820,7 @@ export function useColumnActions() {
 
   const applyColumnChange = useCallback(
     async (action: Action, touchedListId?: string) => {
+      const snapshot = state
       const nextColumns = columnReducer(state, action).columns
       dispatch(action)
 
@@ -769,6 +828,7 @@ export function useColumnActions() {
         await persistBoardColumns(nextColumns, touchedListId)
       } catch (err) {
         console.error('Failed to persist board columns via API', err)
+        dispatch({ type: 'LOAD_STATE', payload: snapshot })
         showError(
           t('toast.api.taskUpdateFailedTitle' as TranslationKey),
           err instanceof Error ? err.message : undefined,
@@ -796,6 +856,7 @@ export function useColumnActions() {
     ),
     deleteColumn: useCallback(
       async (columnId: string, listId: string) => {
+        const snapshot = state
         const action = { type: 'DELETE_COLUMN', payload: { columnId, listId } } as const
         const nextState = columnReducer(state, action)
         const affectedTasks = state.tasks.filter((task) => task.columnId === columnId)
@@ -818,6 +879,7 @@ export function useColumnActions() {
           )
         } catch (err) {
           console.error('Failed to delete column via API', err)
+          dispatch({ type: 'LOAD_STATE', payload: snapshot })
           showError(
             t('toast.api.taskUpdateFailedTitle' as TranslationKey),
             err instanceof Error ? err.message : undefined,

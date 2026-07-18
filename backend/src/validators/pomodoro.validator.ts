@@ -16,4 +16,6 @@ export const updatePomodoroStateSchema = z.object({
   focusedTaskId: z.string().nullable().optional(),
   focusedHabitId: z.string().nullable().optional(),
   sessionsCompleted: z.number().int().min(0).optional(),
+  /** ISO timestamp from last GET/PUT; omit to skip optimistic lock (e.g. logout keepalive). */
+  expectedUpdatedAt: z.string().datetime().nullable().optional(),
 })

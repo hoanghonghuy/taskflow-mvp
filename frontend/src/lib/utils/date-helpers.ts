@@ -71,3 +71,19 @@ export const endOfDay = (date: Date): Date => {
   return end
 }
 
+/**
+ * Convert an HTML date input value (YYYY-MM-DD) to ISO using local calendar day.
+ * Avoids `new Date('YYYY-MM-DD')` (UTC midnight) shifting the day west of UTC.
+ */
+export const dateOnlyInputToIso = (dateOnly: string): string => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateOnly.trim())
+  if (!match) {
+    return new Date(dateOnly).toISOString()
+  }
+  const year = Number(match[1])
+  const month = Number(match[2])
+  const day = Number(match[3])
+  // Noon local reduces DST edge cases while keeping the calendar day stable.
+  return new Date(year, month - 1, day, 12, 0, 0, 0).toISOString()
+}
+

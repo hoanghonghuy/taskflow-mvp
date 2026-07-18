@@ -289,8 +289,17 @@ export function mapPomodoroStateFromApi(
   }
 }
 
-export function pomodoroStateToApiPayload(state: PomodoroState) {
-  return {
+export function readPomodoroUpdatedAt(stateJson: unknown): string | null {
+  if (!stateJson || typeof stateJson !== 'object') return null
+  const raw = stateJson as { updatedAt?: unknown }
+  return typeof raw.updatedAt === 'string' && raw.updatedAt ? raw.updatedAt : null
+}
+
+export function pomodoroStateToApiPayload(
+  state: PomodoroState,
+  expectedUpdatedAt?: string | null,
+) {
+  const payload: Record<string, unknown> = {
     isActive: state.isActive,
     isPaused: state.isPaused,
     remainingSeconds: state.remainingTime,
@@ -299,4 +308,8 @@ export function pomodoroStateToApiPayload(state: PomodoroState) {
     focusedHabitId: state.focusedHabitId,
     sessionsCompleted: state.sessionsCompleted,
   }
+  if (expectedUpdatedAt !== undefined) {
+    payload.expectedUpdatedAt = expectedUpdatedAt
+  }
+  return payload
 }

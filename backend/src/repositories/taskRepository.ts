@@ -153,3 +153,10 @@ export async function updateTask(id: string, data: Prisma.TodoTaskUpdateInput): 
 export async function deleteTask(id: string): Promise<void> {
   await prisma.todoTask.delete({ where: { id } })
 }
+
+export async function clearAssigneeOnList(listId: string, assigneeId: string): Promise<void> {
+  await prisma.todoTask.updateMany({
+    where: { listId, assigneeId },
+    data: { assigneeId: null },
+  })
+}

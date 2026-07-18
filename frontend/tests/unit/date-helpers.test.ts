@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   addDays,
+  dateOnlyInputToIso,
   endOfDay,
   isFuture,
   isOverdue,
@@ -30,5 +31,13 @@ describe('date-helpers', () => {
     expect(toYYYYMMDD(today)).toMatch(/^\d{4}-\d{2}-\d{2}$/)
     expect(startOfDay(today).getHours()).toBe(0)
     expect(endOfDay(today).getHours()).toBe(23)
+  })
+
+  it('dateOnlyInputToIso keeps the local calendar day (not UTC midnight shift)', () => {
+    const iso = dateOnlyInputToIso('2026-07-18')
+    expect(toYYYYMMDD(new Date(iso))).toBe('2026-07-18')
+    // Contrast: bare Date('YYYY-MM-DD') is UTC midnight and can shift west of UTC.
+    const utcParsed = new Date('2026-07-18')
+    expect(utcParsed.toISOString().startsWith('2026-07-18')).toBe(true)
   })
 })

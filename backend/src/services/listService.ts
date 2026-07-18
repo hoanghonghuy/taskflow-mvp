@@ -4,6 +4,7 @@ import { parseListMembers } from '../lib/list-access'
 import { AppError } from '../middleware/errorHandler'
 import { mapListToDto, type ListDto } from '../mappers/list.mapper'
 import * as listRepository from '../repositories/listRepository'
+import * as taskRepository from '../repositories/taskRepository'
 import { prisma } from '../lib/prisma'
 
 const HEX_COLOR_RE = /^#[0-9A-Fa-f]{6}$/
@@ -135,6 +136,7 @@ export async function removeListMember(
   const updated = await listRepository.updateList(id, {
     members: toJsonString(current.filter((m) => m !== memberUserId)),
   })
+  await taskRepository.clearAssigneeOnList(id, memberUserId)
   return mapListToDto(updated)
 }
 

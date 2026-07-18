@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { usePomodoroActions } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/i18n/hooks'
-import { usePomodoroNotifications } from '@/lib/hooks/use-pomodoro-notifications'
 import { useUser } from '@/components/providers/user-provider'
 import { CheckCircleIcon, PlayCircleIcon, CloseIcon, StopwatchIcon, FlagIcon, SunIcon, SearchIcon, CalendarDayIcon, InboxIcon } from '@/lib/icons'
 import { toYYYYMMDD } from '@/lib/utils/date-helpers'
@@ -63,9 +62,6 @@ const PomodoroView: React.FC = () => {
   const [selectedListId, setSelectedListId] = useState<string | 'inbox'>('inbox')
   const [isStatisticsOpen, setStatisticsOpen] = useState(false)
   const [statisticsTab, setStatisticsTab] = useState<'overview' | 'task' | 'focus'>('overview')
-  
-  // Enable session completion notifications
-  usePomodoroNotifications()
 
   const focusedTask = useMemo(
     () => state.tasks.find(t => t.id === pomodoro.focusedTaskId),

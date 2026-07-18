@@ -687,7 +687,7 @@ describe('domain api modules', () => {
     expect(sessions).toHaveLength(1)
 
     const state = await pomodoroApi.fetchPomodoroState(fallback)
-    expect(state?.isActive).toBe(true)
+    expect(state?.patch.isActive).toBe(true)
 
     await pomodoroApi.updatePomodoroState({ ...fallback, isActive: true })
     expect(mockFetch).toHaveBeenLastCalledWith(

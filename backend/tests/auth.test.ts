@@ -110,6 +110,23 @@ describe('Auth', () => {
     expect(res.body.error).toBeDefined()
   })
 
+  it('allows only one concurrent refresh of the same token', async () => {
+    const { refreshToken } = await registerAndLogin('refresh-race@test.com', 'TestPassword123!')
+
+    const [first, second] = await Promise.all([
+      request(app).post('/api/auth/refresh').send({ refreshToken }),
+      request(app).post('/api/auth/refresh').send({ refreshToken }),
+    ])
+
+    const statuses = [first.status, second.status].sort((a, b) => a - b)
+    expect(statuses).toEqual([200, 401])
+
+    const winner = first.status === 200 ? first : second
+    const newRefresh = apiData<RefreshPayload>(winner).refreshToken
+    expect(newRefresh).toBeTruthy()
+    expect(newRefresh).not.toBe(refreshToken)
+  })
+
   it('looks up user by email for list sharing', async () => {
     await request(app)
       .post('/api/auth/register')
