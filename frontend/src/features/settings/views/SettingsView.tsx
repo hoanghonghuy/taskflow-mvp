@@ -6,28 +6,20 @@ import { useSettings } from '@/components/providers/settings-provider'
 import { useI18n } from '@/lib/i18n/hooks'
 import { useTaskManager } from '@/lib/hooks/use-task-manager'
 import { usePomodoroActions } from '@/components/providers/task-manager-provider'
-import { HomeIcon, ListBulletIcon, CalendarDaysIcon, GridIcon, RepeatIcon, StopwatchIcon, HourglassIcon, ViewColumnsIcon, CheckIcon } from '@/lib/icons'
+import { CheckIcon } from '@/lib/icons'
 import { THEME_PRESETS } from '@/lib/theme-presets'
 import type { ThemeOption, View } from '@/types'
 import type { TranslationKey } from '@/lib/i18n/types'
-import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
+import { AppPage, AppPageMain } from '@/components/layout/app-page'
+import { AppPageHeader } from '@/components/layout/app-page-header'
 import { NotificationSettings } from '@/components/settings/NotificationSettings'
 import { Switch } from '@/components/ui/switch'
 import { SwitchField } from '@/components/ui/switch'
-import { Button } from '@/components/ui/button'
 import { SettingsList, SettingsNumberStepper } from '@/components/ui/settings-list'
+import { SettingsSection } from '@/components/ui/settings-section'
+import { SegmentedControl } from '@/components/ui/segmented-control'
+import { APP_FEATURES } from '@/lib/navigation/features'
 import { cn } from '@/lib/utils'
-
-const ALL_FEATURES: { view: View, icon: React.FC<{className?: string}>, label: TranslationKey }[] = [
-  { view: 'dashboard', icon: HomeIcon, label: 'feature.dashboard' },
-  { view: 'list', icon: ListBulletIcon, label: 'feature.listView' },
-  { view: 'board', icon: ViewColumnsIcon, label: 'feature.boardView' },
-  { view: 'calendar', icon: CalendarDaysIcon, label: 'feature.calendarView' },
-  { view: 'matrix', icon: GridIcon, label: 'feature.matrixView' },
-  { view: 'habit', icon: RepeatIcon, label: 'feature.habitTracker' },
-  { view: 'pomodoro', icon: StopwatchIcon, label: 'feature.pomodoro' },
-  { view: 'countdown', icon: HourglassIcon, label: 'feature.countdown' },
-]
 
 const SettingsView: React.FC = () => {
   const { theme, setTheme, bottomNavActions, setBottomNavActions, settings, updateSettings } = useSettings()
@@ -123,160 +115,144 @@ const SettingsView: React.FC = () => {
 
   return (
     <AppPage>
-      <AppPageContainer>
-        <header className="py-6 border-b border-border shrink-0 hidden md:block">
-          <h1 className="text-2xl font-bold">{t('settings.title')}</h1>
-          <p className="text-muted-foreground">{t('settings.subtitle')}</p>
-        </header>
-      </AppPageContainer>
+      <AppPageHeader
+        title={t('settings.title')}
+        subtitle={t('settings.subtitle')}
+        titleSize="md"
+      />
       <AppPageMain className="py-4 md:py-6 space-y-8">
-        <section>
-          <h2 className="text-lg font-semibold mb-4">{t('settings.languageLabel')}</h2>
-          <div className="bg-card border border-border rounded-lg p-4 max-w-md">
-            <div className="flex items-center justify-between gap-4 flex-wrap">
-              <div className="min-w-0">
-                <p className="font-medium text-sm">{t('settings.languageLabel')}</p>
-                <p className="text-sm text-muted-foreground">{t('settings.languageHelper')}</p>
-              </div>
-              <LanguageToggle showIcon={false} size="md" />
+        <SettingsSection title={t('settings.languageLabel')} maxWidthClassName="max-w-md">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="min-w-0">
+              <p className="font-medium text-sm">{t('settings.languageLabel')}</p>
+              <p className="text-sm text-muted-foreground">{t('settings.languageHelper')}</p>
             </div>
+            <LanguageToggle showIcon={false} size="md" />
           </div>
-        </section>
+        </SettingsSection>
 
-        <section>
-          <h2 className="text-lg font-semibold mb-4">{t('settings.ai.title')}</h2>
-          <div className="bg-card border border-border rounded-lg p-4 max-w-xl">
-            <p className="text-sm text-muted-foreground">
-              {t('settings.ai.serverManaged')}
-            </p>
-          </div>
-        </section>
+        <SettingsSection title={t('settings.ai.title')}>
+          <p className="text-sm text-muted-foreground">
+            {t('settings.ai.serverManaged')}
+          </p>
+        </SettingsSection>
 
-        <section>
-          <h2 className="text-lg font-semibold mb-4">{t('settings.appearance')}</h2>
-          <div className="bg-card border border-border rounded-lg p-4 space-y-5">
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <div>
-                  <label className="font-medium">{t('settings.themeLabel')}</label>
-                  <p className="text-sm text-muted-foreground">{t('settings.themePresets.helper')}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  {(['all', 'light', 'dark'] as const).map((filter) => (
-                    <Button
-                      key={filter}
-                      type="button"
-                      onClick={() => setThemeFilter(filter)}
-                      variant={themeFilter === filter ? 'default' : 'outline'}
-                      size="sm"
-                      className="rounded-full px-3 py-1 text-xs font-semibold"
-                    >
-                      {filter === 'all'
-                        ? t('settings.themePresets.filterAll')
-                        : filter === 'light'
-                          ? t('settings.themePresets.filterLight')
-                          : t('settings.themePresets.filterDark')}
-                    </Button>
-                  ))}
-                </div>
+        <SettingsSection title={t('settings.appearance')} maxWidthClassName="" contentClassName="space-y-5">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <label className="font-medium">{t('settings.themeLabel')}</label>
+                <p className="text-sm text-muted-foreground">{t('settings.themePresets.helper')}</p>
               </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                {filteredThemeOptions.map((option) => {
-                  const isSelected = theme === option.id
-                  return (
-                    <button
-                      key={option.id}
-                      type="button"
-                      onClick={() => setTheme(option.id)}
-                      aria-pressed={isSelected}
-                      className={`group flex items-center gap-3 rounded-xl border p-3 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-                        isSelected
-                          ? 'border-primary bg-primary/5 shadow-sm'
-                          : 'border-border hover:border-primary/60 hover:bg-muted/20'
-                      }`}
-                    >
-                      <div className="w-20">
-                        <div className="h-10 rounded-lg border border-black/5 dark:border-white/5 overflow-hidden bg-muted/40">
-                          <div className="grid grid-cols-3 h-full">
-                            <span className="block h-full w-full" style={{ backgroundColor: option.preview.background }} />
-                            <span className="block h-full w-full" style={{ backgroundColor: option.preview.card }} />
-                            <span className="block h-full w-full" style={{ backgroundColor: option.preview.accent }} />
-                          </div>
-                        </div>
-                        <p className="mt-1 text-[10px] text-center uppercase tracking-wide text-muted-foreground">
-                          {option.modeLabel}
-                        </p>
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-semibold text-sm">{option.label}</p>
-                        <p className="text-xs text-muted-foreground leading-snug line-clamp-2">{option.description}</p>
-                      </div>
-                      {isSelected && (
-                        <span className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-primary text-primary-foreground">
-                          <CheckIcon className="h-4 w-4" />
-                        </span>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
+              <SegmentedControl
+                shape="pill"
+                size="sm"
+                aria-label={t('settings.themeLabel')}
+                value={themeFilter}
+                onValueChange={setThemeFilter}
+                options={[
+                  { value: 'all', label: t('settings.themePresets.filterAll') },
+                  { value: 'light', label: t('settings.themePresets.filterLight') },
+                  { value: 'dark', label: t('settings.themePresets.filterDark') },
+                ]}
+              />
             </div>
-          </div>
-        </section>
 
-        <section>
-          <h2 className="text-lg font-semibold mb-2">{t('settings.bottomNav.title')}</h2>
-          <p className="text-sm text-muted-foreground mb-4 max-w-xl">{t('settings.bottomNav.subtitle')}</p>
-          <div className="bg-card border border-border rounded-lg p-4 max-w-xl space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold">{t('settings.bottomNav.visible')}</h3>
-              <span className="text-xs text-muted-foreground">
-                {currentActions.length} / {maxVisibleBottomNav}
-              </span>
-            </div>
-            <div className="space-y-1">
-              {ALL_FEATURES.map((feature) => {
-                const isVisible = currentActions.includes(feature.view)
-                const Icon = feature.icon
-                const disabled = !isVisible && currentActions.length >= maxVisibleBottomNav
-
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+              {filteredThemeOptions.map((option) => {
+                const isSelected = theme === option.id
                 return (
-                  <div
-                    key={feature.view}
-                    className={cn(
-                      'flex items-center justify-between gap-3 rounded-lg px-3 py-2.5',
-                      disabled && 'opacity-50',
-                    )}
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => setTheme(option.id)}
+                    aria-pressed={isSelected}
+                    className={`group flex items-center gap-3 rounded-xl border p-3 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                      isSelected
+                        ? 'border-primary bg-primary/5 shadow-sm'
+                        : 'border-border hover:border-primary/60 hover:bg-muted/20'
+                    }`}
                   >
-                    <div className="flex min-w-0 items-center gap-3">
-                      <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-foreground">{t(feature.label)}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {isVisible
-                            ? t('settings.bottomNav.visible')
-                            : t('settings.bottomNav.hidden')}
-                        </p>
+                    <div className="w-20">
+                      <div className="h-10 rounded-lg border border-black/5 dark:border-white/5 overflow-hidden bg-muted/40">
+                        <div className="grid grid-cols-3 h-full">
+                          <span className="block h-full w-full" style={{ backgroundColor: option.preview.background }} />
+                          <span className="block h-full w-full" style={{ backgroundColor: option.preview.card }} />
+                          <span className="block h-full w-full" style={{ backgroundColor: option.preview.accent }} />
+                        </div>
                       </div>
+                      <p className="mt-1 text-[10px] text-center uppercase tracking-wide text-muted-foreground">
+                        {option.modeLabel}
+                      </p>
                     </div>
-                    <Switch
-                      size="md"
-                      checked={isVisible}
-                      onCheckedChange={() => {
-                        if (disabled) return
-                        handleBottomNavToggle(feature.view)
-                      }}
-                      disabled={disabled}
-                      aria-label={t(feature.label)}
-                      title={disabled ? t('settings.bottomNav.maxVisible' as TranslationKey) : undefined}
-                    />
-                  </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-sm">{option.label}</p>
+                      <p className="text-xs text-muted-foreground leading-snug line-clamp-2">{option.description}</p>
+                    </div>
+                    {isSelected && (
+                      <span className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-primary text-primary-foreground">
+                        <CheckIcon className="h-4 w-4" />
+                      </span>
+                    )}
+                  </button>
                 )
               })}
             </div>
           </div>
-        </section>
+        </SettingsSection>
+
+        <SettingsSection
+          title={t('settings.bottomNav.title')}
+          description={t('settings.bottomNav.subtitle')}
+          contentClassName="space-y-3"
+        >
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold">{t('settings.bottomNav.visible')}</h3>
+            <span className="text-xs text-muted-foreground">
+              {currentActions.length} / {maxVisibleBottomNav}
+            </span>
+          </div>
+          <div className="space-y-1">
+            {APP_FEATURES.map((feature) => {
+              const isVisible = currentActions.includes(feature.view)
+              const Icon = feature.icon
+              const disabled = !isVisible && currentActions.length >= maxVisibleBottomNav
+
+              return (
+                <div
+                  key={feature.view}
+                  className={cn(
+                    'flex items-center justify-between gap-3 rounded-lg px-3 py-2.5',
+                    disabled && 'opacity-50',
+                  )}
+                >
+                  <div className="flex min-w-0 items-center gap-3">
+                    <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground">{t(feature.label)}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {isVisible
+                          ? t('settings.bottomNav.visible')
+                          : t('settings.bottomNav.hidden')}
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    size="md"
+                    checked={isVisible}
+                    onCheckedChange={() => {
+                      if (disabled) return
+                      handleBottomNavToggle(feature.view)
+                    }}
+                    disabled={disabled}
+                    aria-label={t(feature.label)}
+                    title={disabled ? t('settings.bottomNav.maxVisible' as TranslationKey) : undefined}
+                  />
+                </div>
+              )
+            })}
+          </div>
+        </SettingsSection>
         
         <section>
           <h2 className="text-lg font-semibold mb-1">{t('settings.pomodoro.title')}</h2>

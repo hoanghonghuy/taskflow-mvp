@@ -7,6 +7,13 @@ import { useConfirmation } from '@/lib/hooks/use-confirmation'
 import type { TranslationKey } from '@/lib/i18n/types'
 import TaskItem from '@/features/tasks/components/TaskItem'
 import { PlusIcon, GripVerticalIcon, TrashIcon } from '@/lib/icons'
+import {
+  CountBadge,
+  TaskColumnBody,
+  TaskColumnFooter,
+  TaskColumnHeader,
+  TaskColumnShell,
+} from '@/components/layout/task-column-shell'
 import type { Column, Task } from '@/types'
 
 interface BoardColumnProps {
@@ -73,18 +80,14 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
   }
 
   return (
-    <div
-      className={`
-        w-full md:w-72 md:shrink-0 rounded-xl flex flex-col min-h-[260px] md:min-h-[calc(100vh-220px)]
-        border border-border shadow-sm
-        transition-colors duration-200
-        ${isDragOver ? 'bg-primary/10 border-primary' : 'bg-card'}
-      `}
+    <TaskColumnShell
+      variant="board"
+      isDragOver={isDragOver}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      <div className="p-3 flex items-center gap-2 shrink-0 border-b border-border/60">
+      <TaskColumnHeader>
         {canManageColumns ? (
           <div
             draggable
@@ -117,16 +120,12 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
             onClick={() => setIsRenaming(true)}
           >
             <span className="font-semibold text-sm truncate">{column.name}</span>
-            <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs bg-muted text-muted-foreground">
-              {tasks.length}
-            </span>
+            <CountBadge count={tasks.length} />
           </button>
         ) : (
           <div className="flex items-center justify-between gap-2 grow text-left">
             <span className="font-semibold text-sm truncate">{column.name}</span>
-            <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs bg-muted text-muted-foreground">
-              {tasks.length}
-            </span>
+            <CountBadge count={tasks.length} />
           </div>
         )}
         {canManageColumns && (
@@ -139,8 +138,8 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
             <TrashIcon className="h-4 w-4" />
           </button>
         )}
-      </div>
-      <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-2">
+      </TaskColumnHeader>
+      <TaskColumnBody>
         {tasks.map(task => (
           <TaskItem
             key={task.id}
@@ -150,9 +149,9 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
             onDrop={() => {}}
           />
         ))}
-      </div>
+      </TaskColumnBody>
       {onOpenTaskForm && canManageColumns && (
-        <div className="p-2 shrink-0">
+        <TaskColumnFooter>
           <button
             onClick={() => onOpenTaskForm({ listId: column.listId, columnId: column.id })}
             className="w-full flex items-center gap-2 p-2 rounded-md text-muted-foreground hover:bg-muted/60 hover:text-primary transition-colors"
@@ -160,11 +159,10 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
             <PlusIcon className="h-4 w-4" />
             <span className="text-sm">{t('board.addTask')}</span>
           </button>
-        </div>
+        </TaskColumnFooter>
       )}
-    </div>
+    </TaskColumnShell>
   )
 }
 
 export default BoardColumn
-

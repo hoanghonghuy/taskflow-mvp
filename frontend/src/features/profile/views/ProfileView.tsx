@@ -7,7 +7,9 @@ import { useI18n } from '@/lib/i18n/hooks'
 import { Avatar } from '@/components/ui/avatar'
 import { CalendarIcon, CheckCircleIcon, ClockIcon, TrophyIcon } from 'lucide-react'
 import { toYYYYMMDD } from '@/lib/utils/date-helpers'
-import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
+import { AppPage, AppPageMain } from '@/components/layout/app-page'
+import { AppPageHeader } from '@/components/layout/app-page-header'
+import { StatCard } from '@/components/ui/stat-card'
 import { useToast } from '@/lib/hooks/use-toast'
 import * as profileApi from '@/lib/api/profile'
 
@@ -131,12 +133,10 @@ const ProfileView: React.FC = () => {
 
   return (
     <AppPage>
-      <AppPageContainer>
-        <header className="py-6 border-b border-border shrink-0 hidden md:block">
-          <h1 className="text-2xl md:text-3xl font-bold">{t('nav.profile')}</h1>
-          <p className="text-muted-foreground">{t('profile.subtitle')}</p>
-        </header>
-      </AppPageContainer>
+      <AppPageHeader
+        title={t('nav.profile')}
+        subtitle={t('profile.subtitle')}
+      />
       <AppPageMain className="py-4 md:py-6">
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Profile Card */}
@@ -195,49 +195,30 @@ const ProfileView: React.FC = () => {
 
           {/* Statistics Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="bg-card border border-border rounded-lg p-6">
-              <div className="flex items-center gap-3 mb-2">
-                <CheckCircleIcon className="h-6 w-6 text-primary" />
-                <h3 className="font-semibold">{t('profile.tasksCompleted')}</h3>
-              </div>
-              <p className="text-3xl font-bold">{stats.completedTasks}/{stats.totalTasks}</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                {stats.completionRate}% {t('profile.completionRate')}
-              </p>
-            </div>
-
-            <div className="bg-card border border-border rounded-lg p-6">
-              <div className="flex items-center gap-3 mb-2">
-                <CalendarIcon className="h-6 w-6 text-[hsl(var(--color-habits-summary-completed))]" />
-                <h3 className="font-semibold">{t('dashboard.stat.habits')}</h3>
-              </div>
-              <p className="text-3xl font-bold">{stats.completedHabitsToday}/{stats.totalHabits}</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                {t('profile.completedToday')}
-              </p>
-            </div>
-
-            <div className="bg-card border border-border rounded-lg p-6">
-              <div className="flex items-center gap-3 mb-2">
-                <ClockIcon className="h-6 w-6 text-[hsl(var(--color-pomodoro-focus))]" />
-                <h3 className="font-semibold">{t('pomodoro.focusTime')}</h3>
-              </div>
-              <p className="text-3xl font-bold">{formatDuration(stats.totalFocusTime)}</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                {stats.totalPomos} {t('profile.sessions')}
-              </p>
-            </div>
-
-            <div className="bg-card border border-border rounded-lg p-6">
-              <div className="flex items-center gap-3 mb-2">
-                <TrophyIcon className="h-6 w-6 text-[hsl(var(--color-habits-summary-streak))]" />
-                <h3 className="font-semibold">{t('profile.achievements')}</h3>
-              </div>
-              <p className="text-3xl font-bold">{stats.unlockedAchievements}</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                {t('profile.unlocked')}
-              </p>
-            </div>
+            <StatCard
+              icon={<CheckCircleIcon className="h-6 w-6 text-primary" />}
+              label={t('profile.tasksCompleted')}
+              value={`${stats.completedTasks}/${stats.totalTasks}`}
+              description={`${stats.completionRate}% ${t('profile.completionRate')}`}
+            />
+            <StatCard
+              icon={<CalendarIcon className="h-6 w-6 text-[hsl(var(--color-habits-summary-completed))]" />}
+              label={t('dashboard.stat.habits')}
+              value={`${stats.completedHabitsToday}/${stats.totalHabits}`}
+              description={t('profile.completedToday')}
+            />
+            <StatCard
+              icon={<ClockIcon className="h-6 w-6 text-[hsl(var(--color-pomodoro-focus))]" />}
+              label={t('pomodoro.focusTime')}
+              value={formatDuration(stats.totalFocusTime)}
+              description={`${stats.totalPomos} ${t('profile.sessions')}`}
+            />
+            <StatCard
+              icon={<TrophyIcon className="h-6 w-6 text-[hsl(var(--color-habits-summary-streak))]" />}
+              label={t('profile.achievements')}
+              value={stats.unlockedAchievements}
+              description={t('profile.unlocked')}
+            />
           </div>
         </div>
       </AppPageMain>

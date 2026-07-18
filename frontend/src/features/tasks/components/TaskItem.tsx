@@ -21,6 +21,7 @@ import { Avatar } from '@/components/ui/avatar'
 import { useI18n } from '@/lib/i18n/hooks'
 import { useSettings } from '@/components/providers/settings-provider'
 import { HighlightText } from '@/components/ui/highlight-text'
+import { IconButton } from '@/components/ui/icon-button'
 import { isSharedListMember } from '@/lib/utils/list-access'
 
 // Helper functions to replace date-fns
@@ -36,9 +37,6 @@ const isPast = (date: Date): boolean => {
   today.setHours(0, 0, 0, 0) // Compare with start of today
   return date.getTime() < today.getTime()
 }
-
-const TASK_ACTION_CLASS =
-  'opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity'
 
 interface TaskItemProps {
   task: Task
@@ -235,29 +233,39 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
             )}
           </div>
           {task.subtasks.length > 0 && (
-            <button onClick={handleToggleSubtasksVisibility} className={`p-1 rounded-full ${TASK_ACTION_CLASS} hover:bg-secondary`}>
-              {isSubtasksOpen ? <ArrowUpIcon className="h-4 w-4 text-muted-foreground" /> : <ArrowDownIcon className="h-4 w-4 text-muted-foreground" />}
-            </button>
+            <IconButton
+              onClick={handleToggleSubtasksVisibility}
+              size="sm"
+              variant="toolbar"
+              revealOnHover
+              className="rounded-full"
+            >
+              {isSubtasksOpen ? <ArrowUpIcon className="h-4 w-4" /> : <ArrowDownIcon className="h-4 w-4" />}
+            </IconButton>
           )}
         </div>
         <div className="flex items-center gap-2 ml-auto text-sm text-muted-foreground">
           {!task.completed && (
-            <button
+            <IconButton
               onClick={handleStartFocus}
-              className={`${TASK_ACTION_CLASS} text-muted-foreground hover:text-primary`}
+              size="lg"
+              revealOnHover
+              className="hover:text-primary"
               aria-label={t('taskItem.aria.startFocus')}
             >
               <PlayCircleIcon className="h-6 w-6" />
-            </button>
+            </IconButton>
           )}
           {!isReadOnly && (
-            <button
+            <IconButton
               onClick={handleQuickDelete}
-              className={`${TASK_ACTION_CLASS} text-muted-foreground hover:text-destructive`}
+              size="md"
+              variant="destructive"
+              revealOnHover
               aria-label={t('task.delete')}
             >
               <TrashIcon className="h-5 w-5" />
-            </button>
+            </IconButton>
           )}
           <div className="flex items-center gap-1.5">
             {progressIndicator()}

@@ -7,8 +7,16 @@ import { useTaskActions } from '@/lib/hooks/use-task-manager'
 import { useI18n } from '@/lib/i18n/hooks'
 import TaskItem from '@/features/tasks/components/TaskItem'
 import type { Task, Priority } from '@/types'
-import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
+import { AppPage, AppPageMain } from '@/components/layout/app-page'
+import { AppPageHeader } from '@/components/layout/app-page-header'
+import {
+  CountBadge,
+  TaskColumnBody,
+  TaskColumnHeader,
+  TaskColumnShell,
+} from '@/components/layout/task-column-shell'
 import { isSharedListMember } from '@/lib/utils/list-access'
+import { EmptyState } from '@/components/ui/empty-state'
 import { cn } from '@/lib/utils'
 
 interface QuadrantConfig {
@@ -46,16 +54,14 @@ const Quadrant: React.FC<QuadrantProps> = ({
   const { t } = useI18n()
 
   return (
-    <div
+    <TaskColumnShell
+      variant="matrix"
+      isDragOver={isDragOver}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
-      className={cn(
-        'flex min-h-[280px] flex-col rounded-xl border border-border bg-card shadow-sm transition-colors md:min-h-[calc(100vh-240px)]',
-        isDragOver && 'border-primary bg-primary/5',
-      )}
     >
-      <div className="flex shrink-0 items-start gap-2 border-b border-border/60 p-3">
+      <TaskColumnHeader className="items-start">
         <span
           className={cn('mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full', config.accent)}
           aria-hidden
@@ -66,14 +72,12 @@ const Quadrant: React.FC<QuadrantProps> = ({
             <span className="rounded-md border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
               {t(config.priorityLabelKey)}
             </span>
-            <span className="ml-auto inline-flex items-center justify-center rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-              {tasks.length}
-            </span>
+            <CountBadge count={tasks.length} className="ml-auto" />
           </div>
           <p className="mt-0.5 text-xs text-muted-foreground">{t(config.subtitleKey)}</p>
         </div>
-      </div>
-      <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-2">
+      </TaskColumnHeader>
+      <TaskColumnBody>
         {tasks.length > 0 ? (
           tasks.map((task) => (
             <div key={task.id} onDragEnd={onTaskDragEnd}>
@@ -85,12 +89,10 @@ const Quadrant: React.FC<QuadrantProps> = ({
             </div>
           ))
         ) : (
-          <div className="flex h-full min-h-[120px] items-center justify-center px-4 text-center text-sm text-muted-foreground">
-            {t('matrix.empty')}
-          </div>
+          <EmptyState compact title={t('matrix.empty')} className="h-full" />
         )}
-      </div>
-    </div>
+      </TaskColumnBody>
+    </TaskColumnShell>
   )
 }
 
@@ -198,13 +200,12 @@ const MatrixView: React.FC = () => {
 
   return (
     <AppPage>
-      <AppPageContainer className="max-w-none">
-        <header className="hidden shrink-0 space-y-1 border-b border-border py-4 md:block md:py-6">
-          <h1 className="text-2xl font-bold md:text-3xl">{t('matrix.title')}</h1>
-          <p className="text-muted-foreground">{t('matrix.subtitle')}</p>
-          <p className="text-xs text-muted-foreground">{t('matrix.dragHint')}</p>
-        </header>
-      </AppPageContainer>
+      <AppPageHeader
+        title={t('matrix.title')}
+        subtitle={t('matrix.subtitle')}
+        hint={t('matrix.dragHint')}
+        containerClassName="max-w-none"
+      />
       <AppPageMain className="h-full py-4 md:max-w-none md:py-6">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:items-stretch">
           {QUADRANT_CONFIG.map((config) => (

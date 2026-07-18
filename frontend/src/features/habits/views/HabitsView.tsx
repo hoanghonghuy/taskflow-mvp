@@ -11,6 +11,8 @@ import { PlusIcon, TrashIcon } from '@/lib/icons'
 import { toYYYYMMDD } from '@/lib/utils/date-helpers'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
+import { StatCard } from '@/components/ui/stat-card'
 
 const calculateStreak = (completions: string[]): number => {
   if (completions.length === 0) return 0
@@ -189,35 +191,22 @@ const HabitsView: React.FC = () => {
       <AppPageMain className="py-4 md:py-6 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {summaryCards.map(card => (
-            <div
+            <StatCard
               key={card.label}
-              className="rounded-2xl border border-border bg-card p-4 shadow-sm"
+              variant="compact"
+              label={card.label}
+              value={card.value}
+              accentColor={`hsl(var(${card.colorToken}))`}
+              valueAccent
               title={card.label === t('habits.summary.longestStreak') ? t('habits.longestStreakTooltip') : undefined}
-            >
-              <div className="flex items-center gap-2">
-                <span
-                  className="h-2.5 w-2.5 rounded-full shrink-0"
-                  style={{ backgroundColor: `hsl(var(${card.colorToken}))` }}
-                  aria-hidden="true"
-                />
-                <p className="text-sm text-muted-foreground">{card.label}</p>
-              </div>
-              <p
-                className="text-2xl font-semibold"
-                style={{ color: `hsl(var(${card.colorToken}))` }}
-              >
-                {card.value}
-              </p>
-            </div>
+            />
           ))}
         </div>
         {longestStreak > 0 && (
           <p className="text-xs text-muted-foreground">{t('habits.achievementHint')}</p>
         )}
         {state.habits.length === 0 ? (
-          <div className="text-center text-muted-foreground py-12">
-            <p className="text-lg">{t('habits.noHabits')}</p>
-          </div>
+          <EmptyState title={t('habits.noHabits')} />
         ) : (
           <div className="space-y-6">
             {state.habits.map(habit => {

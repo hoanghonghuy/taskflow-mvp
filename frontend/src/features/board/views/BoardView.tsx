@@ -6,7 +6,9 @@ import { useUser } from '@/components/providers/user-provider'
 import { useI18n } from '@/lib/i18n/hooks'
 import BoardColumn from '@/features/board/components/BoardColumn'
 import { PlusIcon } from '@/lib/icons'
-import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
+import { AppPage, AppPageMain } from '@/components/layout/app-page'
+import { AppPageHeader } from '@/components/layout/app-page-header'
+import { EmptyState } from '@/components/ui/empty-state'
 import { buildBoardColumns } from '@/lib/utils/task-helpers'
 import { isSharedListMember } from '@/lib/utils/list-access'
 import type { Column } from '@/types'
@@ -111,16 +113,9 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
   if (availableLists.length === 0) {
     return (
       <AppPage>
-        <AppPageContainer>
-          <header className="py-6 border-b border-border shrink-0 hidden md:block">
-            <h1 className="text-2xl md:text-3xl font-bold">{t('nav.board')}</h1>
-            <p className="text-muted-foreground">{t('board.title')}</p>
-          </header>
-        </AppPageContainer>
+        <AppPageHeader title={t('nav.board')} subtitle={t('board.title')} />
         <AppPageMain className="py-6">
-          <div className="text-center text-muted-foreground">
-            <p>{t('board.noLists')}</p>
-          </div>
+          <EmptyState title={t('board.noLists')} />
         </AppPageMain>
       </AppPage>
     )
@@ -128,41 +123,36 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
 
   return (
     <AppPage>
-      <div className="border-b border-border shrink-0">
-        <AppPageContainer className="max-w-none">
-          <header className="py-4 md:py-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="hidden md:block">
-                <h1 className="text-2xl md:text-3xl font-bold">{t('nav.board')}</h1>
-                <p className="text-sm md:text-base text-muted-foreground">{t('board.title')}</p>
-              </div>
-              <div className="flex items-center gap-4 w-full sm:w-auto">
-                <select
-                  value={selectedListId}
-                  onChange={handleListChange}
-                  className="w-full sm:w-auto px-4 py-2 bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm md:text-base text-foreground dark:bg-card dark:text-foreground"
-                >
-                  {availableLists.map(list => {
-                    const listKey =
-                      list.id === 'inbox' ? 'specialLists.inbox' :
-                      list.id === 'list-1' ? 'lists.work' :
-                      list.id === 'list-2' ? 'lists.personal' :
-                      list.id === 'list-3' ? 'lists.shopping' :
-                      list.id === 'list-4' ? 'lists.healthFitness' :
-                      list.id === 'list-5' ? 'lists.learning' : null
+      <AppPageHeader
+        title={t('nav.board')}
+        subtitle={t('board.title')}
+        hideOnMobile={true}
+        actionsAlwaysVisible
+        containerClassName="max-w-none"
+        actions={
+          <select
+            value={selectedListId}
+            onChange={handleListChange}
+            className="w-full sm:w-auto px-4 py-2 bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm md:text-base text-foreground dark:bg-card dark:text-foreground"
+          >
+            {availableLists.map(list => {
+              const listKey =
+                list.id === 'inbox' ? 'specialLists.inbox' :
+                list.id === 'list-1' ? 'lists.work' :
+                list.id === 'list-2' ? 'lists.personal' :
+                list.id === 'list-3' ? 'lists.shopping' :
+                list.id === 'list-4' ? 'lists.healthFitness' :
+                list.id === 'list-5' ? 'lists.learning' : null
 
-                    return (
-                      <option key={list.id} value={list.id}>
-                        {listKey ? t(listKey) : list.name}
-                      </option>
-                    )
-                  })}
-                </select>
-              </div>
-            </div>
-          </header>
-        </AppPageContainer>
-      </div>
+              return (
+                <option key={list.id} value={list.id}>
+                  {listKey ? t(listKey) : list.name}
+                </option>
+              )
+            })}
+          </select>
+        }
+      />
       <AppPageMain className="py-4 md:py-6 md:max-w-none">
         <div
           className="flex flex-col md:flex-row gap-4 md:gap-6 md:overflow-x-auto px-1 md:px-2 pb-2"

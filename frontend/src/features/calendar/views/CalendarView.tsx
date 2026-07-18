@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useMemo } from 'react'
-import { useCalendar, type ViewMode } from '@/lib/hooks/use-calendar'
+import { useCalendar } from '@/lib/hooks/use-calendar'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useUser } from '@/components/providers/user-provider'
 import { useTaskActions } from '@/lib/hooks/use-task-manager'
@@ -13,6 +13,7 @@ import { PRIORITY_MAP } from '@/lib/task-constants'
 import { isSharedListMember } from '@/lib/utils/list-access'
 import type { Task } from '@/types'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
+import { SegmentedControl } from '@/components/ui/segmented-control'
 
 const CalendarView: React.FC = () => {
   const { t } = useI18n()
@@ -208,32 +209,28 @@ const CalendarView: React.FC = () => {
               >
                 <ChevronRight className="h-5 w-5" />
               </button>
-              <div className="flex items-center rounded-full border border-border bg-muted/40 p-0.5">
-                {(['month', 'agenda'] as ViewMode[]).map(mode => (
-                  <button
-                    key={mode}
-                    onClick={() => {
-                      setViewMode(mode)
-                      if (mode === 'agenda') {
-                        const base = new Date(selectedDate)
-                        base.setHours(0, 0, 0, 0)
-                        setAgendaStartDate(base)
-                      } else {
-                        const monthAnchor = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)
-                        setCurrentDate(monthAnchor)
-                        setSelectedDate(monthAnchor)
-                      }
-                    }}
-                    className={`px-3 py-1 text-xs md:text-sm font-medium rounded-full border transition-colors ${
-                      viewMode === mode
-                        ? 'bg-background text-primary border-2 border-primary shadow-sm'
-                        : 'text-muted-foreground hover:bg-background/60 border-transparent'
-                    }`}
-                  >
-                    {mode === 'month' ? t('calendar.view.month') : t('calendar.view.agenda')}
-                  </button>
-                ))}
-              </div>
+              <SegmentedControl
+                shape="pill"
+                size="sm"
+                aria-label={t('calendar.view.month')}
+                value={viewMode}
+                onValueChange={(mode) => {
+                  setViewMode(mode)
+                  if (mode === 'agenda') {
+                    const base = new Date(selectedDate)
+                    base.setHours(0, 0, 0, 0)
+                    setAgendaStartDate(base)
+                  } else {
+                    const monthAnchor = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)
+                    setCurrentDate(monthAnchor)
+                    setSelectedDate(monthAnchor)
+                  }
+                }}
+                options={[
+                  { value: 'month', label: t('calendar.view.month') },
+                  { value: 'agenda', label: t('calendar.view.agenda') },
+                ]}
+              />
             </div>
           </div>
           <h2 className="hidden md:block text-2xl font-semibold">

@@ -1,0 +1,17 @@
+# Synapse-native OpenSpec config
+schema: synapse-sdd
+profile: core
+
+project:
+  name: taskflow-mvp
+  description: Project using Synapse OpenSpec
+
+rules:
+  proposal:
+    - State problem before solution
+    - Prefer measurable acceptance criteria
+  specs:
+    - Use Given/When/Then when adding requirements
+    - Use SHALL/MUST for normative requirements
+  design:
+    - Reference concrete module paths when touching code

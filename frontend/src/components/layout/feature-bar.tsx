@@ -1,11 +1,13 @@
 'use client'
 
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
-import { MenuIcon, StopwatchIcon, ListBulletIcon, CalendarDaysIcon, GridIcon, RepeatIcon, HourglassIcon, HomeIcon, ViewColumnsIcon } from '@/lib/icons'
+import { MenuIcon } from '@/lib/icons'
 import { useUser } from '@/components/providers/user-provider'
 import Avatar from '@/components/ui/avatar'
 import ProfileDropdown from '@/components/auth/profile-dropdown'
 import { useI18n } from '@/lib/i18n/hooks'
+import { APP_FEATURES, getPathForView, getViewFromPathname } from '@/lib/navigation/features'
+import type { View } from '@/types'
 import { useRouter, usePathname } from 'next/navigation'
 
 interface NavButtonProps {
@@ -65,18 +67,10 @@ export default function FeatureBar({ onSidebarToggle }: FeatureBarProps) {
     }
   }, [handleClickOutside])
 
-  const currentView = useMemo(() => {
-    if (!pathname) {
-      return 'dashboard'
-    }
-    if (pathname === '/dashboard' || pathname === '/') {
-      return 'dashboard'
-    }
-    return pathname.slice(1)
-  }, [pathname])
+  const currentView = useMemo(() => getViewFromPathname(pathname), [pathname])
 
-  const handleViewClick = (view: string) => {
-    router.push(`/${view === 'dashboard' ? 'dashboard' : view}`)
+  const handleViewClick = (view: View) => {
+    router.push(getPathForView(view))
   }
 
   return (
@@ -88,32 +82,26 @@ export default function FeatureBar({ onSidebarToggle }: FeatureBarProps) {
 
         <div className="border-b w-8 my-2 border-border"></div>
 
-        <NavButton label={t('feature.dashboard')} onClick={() => handleViewClick('dashboard')} isActive={currentView === 'dashboard'}>
-          <HomeIcon className="h-6 w-6" />
-        </NavButton>
-        <NavButton label={t('feature.listView')} onClick={() => handleViewClick('list')} isActive={currentView === 'list'}>
-          <ListBulletIcon className="h-6 w-6" />
-        </NavButton>
-        <NavButton label={t('feature.boardView')} onClick={() => handleViewClick('board')} isActive={currentView === 'board'}>
-          <ViewColumnsIcon className="h-6 w-6" />
-        </NavButton>
-        <NavButton label={t('feature.calendarView')} onClick={() => handleViewClick('calendar')} isActive={currentView === 'calendar'}>
-          <CalendarDaysIcon className="h-6 w-6" />
-        </NavButton>
-        <NavButton label={t('feature.matrixView')} onClick={() => handleViewClick('matrix')} isActive={currentView === 'matrix'}>
-          <GridIcon className="h-6 w-6" />
-        </NavButton>
-        <NavButton label={t('feature.habitTracker')} onClick={() => handleViewClick('habits')} isActive={currentView === 'habits'}>
-          <RepeatIcon className="h-6 w-6" />
-        </NavButton>
-        <NavButton label={t('feature.pomodoro')} onClick={() => handleViewClick('pomodoro')} isActive={currentView === 'pomodoro'}>
-          <StopwatchIcon className="h-6 w-6" />
-        </NavButton>
-        <NavButton label={t('feature.countdown')} onClick={() => handleViewClick('countdown')} isActive={currentView === 'countdown'}>
-          <HourglassIcon className="h-6 w-6" />
-        </NavButton>
+        {APP_FEATURES.map((feature) => {
+          const Icon = feature.icon
+          // Feature bar uses /habits path; View id is `habit`
+          const pathActive =
+            feature.view === 'habit'
+              ? currentView === 'habit'
+              : currentView === feature.view
+          return (
+            <NavButton
+              key={feature.view}
+              label={t(feature.label)}
+              onClick={() => handleViewClick(feature.view)}
+              isActive={pathActive}
+            >
+              <Icon className="h-6 w-6" />
+            </NavButton>
+          )
+        })}
       </div>
-      
+
       <div ref={dropdownRef} className="relative flex flex-col items-center">
         <div className="border-b w-8 my-2 border-border"></div>
         <button onClick={() => setDropdownOpen(prev => !prev)} className="p-1 rounded-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background">
@@ -124,4 +112,3 @@ export default function FeatureBar({ onSidebarToggle }: FeatureBarProps) {
     </nav>
   )
 }
-

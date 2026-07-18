@@ -8,11 +8,14 @@ import { useI18n } from '@/lib/i18n/hooks'
 import { useUser } from '@/components/providers/user-provider'
 import { CheckCircleIcon, PlayCircleIcon, CloseIcon, StopwatchIcon, FlagIcon, SunIcon, SearchIcon, CalendarDayIcon, InboxIcon } from '@/lib/icons'
 import { toYYYYMMDD } from '@/lib/utils/date-helpers'
-import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
+import { AppPage, AppPageMain } from '@/components/layout/app-page'
+import { AppPageHeader } from '@/components/layout/app-page-header'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
+import { StatCard } from '@/components/ui/stat-card'
+import { SegmentedControl } from '@/components/ui/segmented-control'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import type { Task, Habit } from '@/types'
 import type { TranslationKey } from '@/lib/i18n/types'
@@ -256,12 +259,10 @@ const PomodoroView: React.FC = () => {
 
   return (
     <AppPage>
-      <AppPageContainer>
-        <header className="py-6 border-b border-border shrink-0 hidden md:block">
-          <h1 className="text-2xl md:text-3xl font-bold">{t('nav.pomodoro')}</h1>
-          <p className="text-muted-foreground">{t('pomodoro.subtitle')}</p>
-        </header>
-      </AppPageContainer>
+      <AppPageHeader
+        title={t('nav.pomodoro')}
+        subtitle={t('pomodoro.subtitle')}
+      />
       <AppPageMain className="py-4 md:py-8">
         <div className="mb-4 flex justify-end lg:hidden">
           <PomodoroOverflowMenu
@@ -407,30 +408,26 @@ const PomodoroView: React.FC = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="rounded-lg bg-secondary/50 p-4">
-                      <p className="text-xs font-medium text-muted-foreground uppercase">
-                        {t('pomodoro.todayPomos')}
-                      </p>
-                      <p className="mt-2 text-2xl font-semibold">{totalPomosToday}</p>
-                    </div>
-                    <div className="rounded-lg bg-secondary/50 p-4">
-                      <p className="text-xs font-medium text-muted-foreground uppercase">
-                        {t('pomodoro.focusTime')}
-                      </p>
-                      <p className="mt-2 text-2xl font-semibold">{formatDuration(totalFocusDurationToday)}</p>
-                    </div>
-                    <div className="rounded-lg bg-secondary/50 p-4">
-                      <p className="text-xs font-medium text-muted-foreground uppercase">
-                        {t('pomodoro.totalSessionsLabel')}
-                      </p>
-                      <p className="mt-2 text-2xl font-semibold">{totalPomosAllTime}</p>
-                    </div>
-                    <div className="rounded-lg bg-secondary/50 p-4">
-                      <p className="text-xs font-medium text-muted-foreground uppercase">
-                        {t('pomodoro.allTimeFocus')}
-                      </p>
-                      <p className="mt-2 text-2xl font-semibold">{formatDuration(totalFocusDurationAllTime)}</p>
-                    </div>
+                    <StatCard
+                      variant="muted"
+                      label={t('pomodoro.todayPomos')}
+                      value={totalPomosToday}
+                    />
+                    <StatCard
+                      variant="muted"
+                      label={t('pomodoro.focusTime')}
+                      value={formatDuration(totalFocusDurationToday)}
+                    />
+                    <StatCard
+                      variant="muted"
+                      label={t('pomodoro.totalSessionsLabel')}
+                      value={totalPomosAllTime}
+                    />
+                    <StatCard
+                      variant="muted"
+                      label={t('pomodoro.allTimeFocus')}
+                      value={formatDuration(totalFocusDurationAllTime)}
+                    />
                   </div>
 
                   {todaysFocusRecords.length > 0 && (
@@ -520,22 +517,19 @@ const PomodoroView: React.FC = () => {
                 </button>
               </header>
               <div className="grow p-4 overflow-y-auto">
-                <div className="mb-3 flex items-center gap-2 rounded-full bg-muted/60 p-0.5">
-                  {(['task', 'habit'] as const).map(tab => (
-                    <button
-                      key={tab}
-                      type="button"
-                      onClick={() => setActiveTab(tab)}
-                      className={`flex-1 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                        activeTab === tab
-                          ? 'bg-primary text-primary-foreground shadow-sm border-2 border-primary'
-                          : 'text-muted-foreground border border-transparent'
-                      }`}
-                    >
-                      {tab === 'task' ? t('focusPicker.taskTab') : t('focusPicker.habitTab')}
-                    </button>
-                  ))}
-                </div>
+                <SegmentedControl
+                  shape="pill"
+                  size="sm"
+                  fullWidth
+                  aria-label={t('focusPicker.title')}
+                  value={activeTab}
+                  onValueChange={setActiveTab}
+                  options={[
+                    { value: 'task', label: t('focusPicker.taskTab') },
+                    { value: 'habit', label: t('focusPicker.habitTab') },
+                  ]}
+                  className="mb-3"
+                />
 
                 <div className="mb-4 flex flex-col gap-3">
                   <div className="relative">
@@ -766,53 +760,41 @@ const PomodoroView: React.FC = () => {
                 </Button>
               </header>
               <div className="px-6 pt-4 pb-6 space-y-6 overflow-y-auto">
-                <div className="flex items-center gap-2">
-                  <div className="inline-flex rounded-full bg-muted/60 p-0.5 text-xs">
-                    {(['overview', 'task', 'focus'] as const).map(tab => (
-                      <button
-                        key={tab}
-                        type="button"
-                        onClick={() => setStatisticsTab(tab)}
-                        className={`px-3 py-1 rounded-full font-medium transition-colors ${
-                          statisticsTab === tab
-                            ? 'bg-primary text-primary-foreground shadow-sm'
-                            : 'text-muted-foreground hover:bg-muted/80'
-                        }`}
-                      >
-                        {tab === 'overview' && t('pomodoro.statisticsOverviewTab' as TranslationKey)}
-                        {tab === 'task' && t('pomodoro.statisticsTaskTab' as TranslationKey)}
-                        {tab === 'focus' && t('pomodoro.statisticsFocusTab' as TranslationKey)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                <SegmentedControl
+                  shape="pill"
+                  size="sm"
+                  aria-label={t('pomodoro.statisticsTitle' as TranslationKey)}
+                  value={statisticsTab}
+                  onValueChange={setStatisticsTab}
+                  options={[
+                    { value: 'overview', label: t('pomodoro.statisticsOverviewTab' as TranslationKey) },
+                    { value: 'task', label: t('pomodoro.statisticsTaskTab' as TranslationKey) },
+                    { value: 'focus', label: t('pomodoro.statisticsFocusTab' as TranslationKey) },
+                  ]}
+                />
 
                 {statisticsTab === 'overview' && (
                   <div className="grid gap-4 md:grid-cols-4">
-                    <div className="rounded-lg bg-secondary/60 p-4">
-                      <p className="text-xs font-medium text-muted-foreground uppercase">
-                        {t('pomodoro.todayPomos')}
-                      </p>
-                      <p className="mt-2 text-2xl font-semibold">{totalPomosToday}</p>
-                    </div>
-                    <div className="rounded-lg bg-secondary/60 p-4">
-                      <p className="text-xs font-medium text-muted-foreground uppercase">
-                        {t('pomodoro.focusTime')}
-                      </p>
-                      <p className="mt-2 text-2xl font-semibold">{formatDuration(totalFocusDurationToday)}</p>
-                    </div>
-                    <div className="rounded-lg bg-secondary/60 p-4">
-                      <p className="text-xs font-medium text-muted-foreground uppercase">
-                        {t('pomodoro.totalSessionsLabel')}
-                      </p>
-                      <p className="mt-2 text-2xl font-semibold">{totalPomosAllTime}</p>
-                    </div>
-                    <div className="rounded-lg bg-secondary/60 p-4">
-                      <p className="text-xs font-medium text-muted-foreground uppercase">
-                        {t('pomodoro.allTimeFocus')}
-                      </p>
-                      <p className="mt-2 text-2xl font-semibold">{formatDuration(totalFocusDurationAllTime)}</p>
-                    </div>
+                    <StatCard
+                      variant="muted"
+                      label={t('pomodoro.todayPomos')}
+                      value={totalPomosToday}
+                    />
+                    <StatCard
+                      variant="muted"
+                      label={t('pomodoro.focusTime')}
+                      value={formatDuration(totalFocusDurationToday)}
+                    />
+                    <StatCard
+                      variant="muted"
+                      label={t('pomodoro.totalSessionsLabel')}
+                      value={totalPomosAllTime}
+                    />
+                    <StatCard
+                      variant="muted"
+                      label={t('pomodoro.allTimeFocus')}
+                      value={formatDuration(totalFocusDurationAllTime)}
+                    />
                   </div>
                 )}
 

@@ -11,6 +11,8 @@ import { useI18n } from '@/lib/i18n/hooks'
 import { filterTasksByList, sortTasks, groupUpcomingTasks } from '@/lib/utils/task-helpers'
 import { isSameDay, startOfDay } from '@/lib/utils/date-helpers'
 import type { TranslationKey } from '@/lib/i18n/types'
+import { EmptyState } from '@/components/ui/empty-state'
+import { Button } from '@/components/ui/button'
 
 interface TaskListProps {
   onAddTask?: () => void
@@ -54,20 +56,19 @@ const TaskListEmptyState: React.FC<TaskListEmptyStateProps> = ({ variant, onAddT
   const copy = EMPTY_STATE_KEYS[variant]
 
   return (
-    <div className="flex flex-col items-center justify-center text-center text-muted-foreground py-12 px-4">
-      {EMPTY_STATE_ILLUSTRATIONS.noTasks}
-      <h2 className="text-xl font-semibold mt-4 text-foreground">{t(copy.title)}</h2>
-      <p className="text-sm mt-2 max-w-sm">{t(copy.body)}</p>
-      {onAddTask && (
-        <button
-          onClick={onAddTask}
-          className="mt-6 flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-        >
-          <PlusIcon className="h-5 w-5" />
-          <span>{t('taskList.addTask')}</span>
-        </button>
-      )}
-    </div>
+    <EmptyState
+      illustration={EMPTY_STATE_ILLUSTRATIONS.noTasks}
+      title={t(copy.title)}
+      description={t(copy.body)}
+      action={
+        onAddTask ? (
+          <Button type="button" onClick={onAddTask} className="gap-2">
+            <PlusIcon className="h-5 w-5" />
+            <span>{t('taskList.addTask')}</span>
+          </Button>
+        ) : undefined
+      }
+    />
   )
 }
 

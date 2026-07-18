@@ -3,27 +3,10 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { useSettings } from '@/components/providers/settings-provider'
 import { useI18n } from '@/lib/i18n/hooks'
-import { StopwatchIcon, ListBulletIcon, CalendarDaysIcon, GridIcon, RepeatIcon, HourglassIcon, HomeIcon, ViewColumnsIcon, MenuIcon } from '@/lib/icons'
+import { MenuIcon } from '@/lib/icons'
 import type { View } from '@/types'
-import type { TranslationKey } from '@/lib/i18n/types'
+import { APP_FEATURES, getPathForView, getViewFromPathname } from '@/lib/navigation/features'
 import { useRouter, usePathname } from 'next/navigation'
-
-const ALL_FEATURES: { view: View, icon: React.FC<{className?: string}>, label: TranslationKey }[] = [
-  { view: 'dashboard', icon: HomeIcon, label: 'feature.dashboard' },
-  { view: 'list', icon: ListBulletIcon, label: 'feature.listView' },
-  { view: 'board', icon: ViewColumnsIcon, label: 'feature.boardView' },
-  { view: 'calendar', icon: CalendarDaysIcon, label: 'feature.calendarView' },
-  { view: 'matrix', icon: GridIcon, label: 'feature.matrixView' },
-  { view: 'habit', icon: RepeatIcon, label: 'feature.habitTracker' },
-  { view: 'pomodoro', icon: StopwatchIcon, label: 'feature.pomodoro' },
-  { view: 'countdown', icon: HourglassIcon, label: 'feature.countdown' },
-]
-
-const getPathForView = (view: View) => {
-  if (view === 'dashboard') return '/dashboard'
-  if (view === 'habit') return '/habits'
-  return `/${view}`
-}
 
 interface MoreMenuProps {
   hiddenViews: View[]
@@ -77,7 +60,7 @@ const MoreMenu: React.FC<MoreMenuProps> = ({ hiddenViews, currentView, onClose }
     >
       <div className="p-2 space-y-1">
         {hiddenViews.map((view, index) => {
-          const feature = ALL_FEATURES.find(f => f.view === view)
+          const feature = APP_FEATURES.find(f => f.view === view)
           if (!feature) return null
           const Icon = feature.icon
           const isActive = currentView === view
@@ -104,7 +87,7 @@ const MoreMenu: React.FC<MoreMenuProps> = ({ hiddenViews, currentView, onClose }
 }
 
 interface BottomNavButtonProps {
-  feature: typeof ALL_FEATURES[number]
+  feature: (typeof APP_FEATURES)[number]
   isActive: boolean
   onSelect: (view: View) => void
   label: string
@@ -141,19 +124,12 @@ export default function BottomNavBar() {
   }, [settings.bottomNavActions])
 
   const { visibleFeatures, hiddenFeatures } = useMemo(() => {
-    const visible = ALL_FEATURES.filter(f => bottomNavActions.includes(f.view))
-    const hidden = ALL_FEATURES.filter(f => !bottomNavActions.includes(f.view)).map(f => f.view)
+    const visible = APP_FEATURES.filter(f => bottomNavActions.includes(f.view))
+    const hidden = APP_FEATURES.filter(f => !bottomNavActions.includes(f.view)).map(f => f.view)
     return { visibleFeatures: visible, hiddenFeatures: hidden }
   }, [bottomNavActions])
-  
-  const getCurrentView = useCallback(() => {
-    if (!pathname) return 'dashboard'
-    if (pathname === '/dashboard' || pathname === '/') return 'dashboard'
-    if (pathname === '/habits') return 'habit'
-    return pathname.slice(1) as View
-  }, [pathname])
 
-  const currentView = getCurrentView()
+  const currentView = getViewFromPathname(pathname)
 
   const handleFeatureSelect = useCallback((view: View) => {
     router.push(getPathForView(view))
@@ -205,4 +181,3 @@ export default function BottomNavBar() {
     </nav>
   )
 }
-

@@ -14,6 +14,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui/card'
+import { EmptyState } from '@/components/ui/empty-state'
+import { SegmentedControl } from '@/components/ui/segmented-control'
 import { cn } from '@/lib/utils'
 
 const COUNTDOWN_LABELS = {
@@ -315,17 +317,18 @@ const CountdownView: React.FC = () => {
       </AppPageContainer>
       <AppPageMain className="py-4 md:py-6">
         {upcomingEvents.length === 0 && completedEvents.length === 0 ? (
-          <div className="py-16 text-center">
-            <div className="mx-auto flex size-16 items-center justify-center rounded-full border border-dashed border-border-subtle/80 bg-card/60 text-muted-foreground">
-              <CalendarDaysIcon className="h-8 w-8" />
-            </div>
-            <h2 className="mt-6 text-2xl font-semibold tracking-tight">{t('countdown.noCountdowns')}</h2>
-            <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">{t(COUNTDOWN_LABELS.emptyDescription)}</p>
-            <Button className="mt-6 gap-2" onClick={() => setIsAdding(true)}>
-              <PlusIcon className="h-5 w-5" />
-              {t('countdown.createFirst')}
-            </Button>
-          </div>
+          <EmptyState
+            className="py-16"
+            icon={<CalendarDaysIcon className="h-8 w-8" />}
+            title={t('countdown.noCountdowns')}
+            description={t(COUNTDOWN_LABELS.emptyDescription)}
+            action={
+              <Button className="gap-2" onClick={() => setIsAdding(true)}>
+                <PlusIcon className="h-5 w-5" />
+                {t('countdown.createFirst')}
+              </Button>
+            }
+          />
         ) : (
           <div className="space-y-8">
             <section>
@@ -335,27 +338,22 @@ const CountdownView: React.FC = () => {
                 <span className="ml-auto text-sm text-muted-foreground">
                   {upcomingEvents.length} {t('countdown.events')}
                 </span>
-                <div className="ml-2 flex items-center gap-1 text-xs">
-                  <span className="hidden sm:inline text-muted-foreground">
-                    {t('countdown.viewAs')}
-                  </span>
-                  <div className="inline-flex rounded-full border border-border bg-muted/40 p-0.5">
-                    {(['detailed', 'days', 'months', 'years'] as const).map((mode) => (
-                      <button
-                        key={mode}
-                        type="button"
-                        onClick={() => setDisplayMode(mode)}
-                        className={`px-2 py-0.5 text-xs font-medium rounded-full border transition-colors ${
-                          displayMode === mode
-                            ? 'bg-background text-primary border-2 border-primary shadow-sm'
-                            : 'text-muted-foreground hover:bg-background/60 border-transparent'
-                        }`}
-                      >
-                        {t(COUNTDOWN_VIEW_MODE_LABELS[mode])}
-                      </button>
-                    ))}
+                  <div className="ml-2 flex items-center gap-1 text-xs">
+                    <span className="hidden sm:inline text-muted-foreground">
+                      {t('countdown.viewAs')}
+                    </span>
+                    <SegmentedControl
+                      shape="pill"
+                      size="sm"
+                      aria-label={t('countdown.viewAs')}
+                      value={displayMode}
+                      onValueChange={setDisplayMode}
+                      options={(['detailed', 'days', 'months', 'years'] as const).map((mode) => ({
+                        value: mode,
+                        label: t(COUNTDOWN_VIEW_MODE_LABELS[mode]),
+                      }))}
+                    />
                   </div>
-                </div>
               </div>
               {upcomingEvents.length === 0 ? (
                 <p className="text-sm text-muted-foreground">{t('countdown.noUpcoming')}</p>
