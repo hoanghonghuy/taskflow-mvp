@@ -42,10 +42,13 @@ cp frontend/.env.example frontend/.env
 cp .env.example .env
 cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env
-docker compose up -d
+docker compose up -d --build
 ```
 
-Mount source + `npm run dev` — **sửa code tự reload**, không cần `--build`. Lần đầu `up` chậm vì `npm ci`.
+- **`--build`** rebuild image `taskflow-frontend:dev` / `taskflow-backend:dev` (cài deps trong Dockerfile.dev).
+- Sửa code trên host → container mount source, Next/Express **hot reload** (không cần build lại).
+- Chỉ restart nhanh: `docker compose restart frontend`
+- Đổi `package-lock.json`: `docker compose up -d --build` (entrypoint tự `npm ci` nếu lock đổi).
 
 | Service | URL / port host |
 |---------|-----------------|
@@ -53,7 +56,7 @@ Mount source + `npm run dev` — **sửa code tự reload**, không cần `--bui
 | Backend API | http://localhost:8081 |
 | Postgres | `localhost:5434` |
 
-Production (build image): `docker compose -f docker-compose.prod.yml up -d --build`
+Production (Dockerfile standalone): build thủ công từ `frontend/Dockerfile` + `backend/Dockerfile`, hoặc thêm compose prod khi cần.
 
 Dừng: `docker compose down` — xóa volume DB: `docker compose down -v`
 

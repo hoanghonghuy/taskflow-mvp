@@ -131,7 +131,7 @@ const HabitsView: React.FC = () => {
   return (
     <AppPage>
       <AppPageContainer>
-        <header className="py-6 border-b border-border shrink-0">
+        <header className="py-4 md:py-6 md:border-b border-border shrink-0">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="hidden md:block">
               <h1 className="text-2xl md:text-3xl font-bold">{t('nav.habits')}</h1>

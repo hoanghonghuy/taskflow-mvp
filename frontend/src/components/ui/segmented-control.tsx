@@ -1,43 +1,48 @@
-"use client"
+'use client'
 
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
+import * as React from 'react'
+import { cva, type VariantProps } from 'class-variance-authority'
 
-import { cn } from "@/lib/utils"
+import { cn } from '@/lib/utils'
 
+/** Toggle group — closer to shadcn TabsList / muted pill strip. */
 const segmentedControlVariants = cva(
-  "inline-flex rounded-full border border-border bg-muted/40 p-0.5",
+  'inline-flex items-center rounded-md border border-input bg-muted p-0.5',
   {
     variants: {
       size: {
-        sm: "",
-        md: "",
+        sm: '',
+        md: '',
       },
     },
     defaultVariants: {
-      size: "sm",
+      size: 'sm',
     },
-  }
+  },
 )
 
 const segmentedItemVariants = cva(
-  "rounded-full border font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50",
+  [
+    'inline-flex items-center justify-center rounded-sm font-medium transition-colors',
+    'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+    'disabled:pointer-events-none disabled:opacity-50',
+  ].join(' '),
   {
     variants: {
       size: {
-        sm: "px-2.5 py-1 text-xs",
-        md: "px-3 py-1 text-sm",
+        sm: 'min-w-[2.5rem] px-2.5 py-1 text-xs',
+        md: 'min-w-[3rem] px-3 py-1.5 text-sm',
       },
       active: {
-        true: "border-2 border-primary bg-background font-semibold text-primary shadow-sm",
-        false: "border-transparent text-muted-foreground hover:bg-background/60",
+        true: 'bg-background text-foreground shadow-sm',
+        false: 'text-muted-foreground hover:text-foreground',
       },
     },
     defaultVariants: {
-      size: "sm",
+      size: 'sm',
       active: false,
     },
-  }
+  },
 )
 
 export interface SegmentedControlOption<T extends string> {
@@ -52,7 +57,7 @@ export interface SegmentedControlProps<T extends string>
   options: SegmentedControlOption<T>[]
   onValueChange: (value: T) => void
   className?: string
-  "aria-label"?: string
+  'aria-label'?: string
 }
 
 export function SegmentedControl<T extends string>({
@@ -61,7 +66,7 @@ export function SegmentedControl<T extends string>({
   onValueChange,
   size,
   className,
-  "aria-label": ariaLabel,
+  'aria-label': ariaLabel,
 }: SegmentedControlProps<T>) {
   return (
     <div

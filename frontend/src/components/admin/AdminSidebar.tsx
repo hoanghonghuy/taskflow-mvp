@@ -27,7 +27,6 @@ export function AdminSidebar() {
           </p>
         </div>
         <p className="text-sm text-muted-foreground mt-1">{t('admin.subtitle')}</p>
-        <p className="text-xs text-muted-foreground mt-2">{t('admin.singletonNote')}</p>
       </div>
 
       <nav className="flex flex-col gap-1">

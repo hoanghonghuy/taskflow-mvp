@@ -11,6 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { useI18n } from '@/lib/i18n/hooks'
 
 interface ConfirmationOptions {
   title: string
@@ -27,6 +28,7 @@ interface ConfirmationContextType {
 const ConfirmationContext = createContext<ConfirmationContextType | undefined>(undefined)
 
 export function ConfirmationProvider({ children }: { children: React.ReactNode }) {
+  const { t } = useI18n()
   const [isOpen, setIsOpen] = useState(false)
   const [options, setOptions] = useState<ConfirmationOptions | null>(null)
   const [resolver, setResolver] = useState<((value: boolean) => void) | null>(null)
@@ -59,7 +61,7 @@ export function ConfirmationProvider({ children }: { children: React.ReactNode }
   return (
     <ConfirmationContext.Provider value={{ confirm }}>
       {children}
-      
+
       {options && (
         <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
           <AlertDialogContent>
@@ -69,13 +71,13 @@ export function ConfirmationProvider({ children }: { children: React.ReactNode }
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel onClick={handleCancel}>
-                {options.cancelText || 'Cancel'}
+                {options.cancelText || t('common.cancel')}
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleConfirm}
                 variant={options.variant === 'destructive' ? 'destructive' : 'default'}
               >
-                {options.confirmText || 'Confirm'}
+                {options.confirmText || t('common.confirm')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

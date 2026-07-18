@@ -28,6 +28,13 @@ import { useAiFeature } from '@/lib/hooks/use-ai-feature'
 import { AI_FEATURES_ENABLED } from '@/lib/feature-flags'
 import { useRouter } from 'next/navigation'
 import { Avatar } from '@/components/ui/avatar'
+import {
+  DetailSection,
+  MetaChip,
+  PropertyList,
+  PropertyRow,
+  fieldControlClassName,
+} from '@/components/ui/property-list'
 import { useUser } from '@/components/providers/user-provider'
 
 interface TaskDetailProps {
@@ -348,56 +355,61 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   const handleDragEnd = () => setDraggedIndex(null)
 
   const priorityClasses = PRIORITY_MAP[task.priority]
+
   return (
-    <div className="h-full w-full md:max-w-xl bg-card border-l border-border shadow-2xl flex flex-col md:animate-slide-in overflow-hidden">
-      <header className="p-4 border-b border-border flex items-center justify-between gap-3 shrink-0">
-        <div className="flex items-center gap-3">
+    <div className="flex h-full w-full flex-col overflow-hidden border-l border-border bg-card shadow-[-8px_0_24px_rgba(0,0,0,0.06)] md:max-w-xl md:animate-slide-in">
+      <header className="flex shrink-0 items-center justify-between gap-3 border-b border-border bg-secondary/20 px-4 py-3">
+        <div className="flex min-w-0 items-center gap-3">
           <button
             onClick={() => { if (!isReadOnly) void toggleTask(task.id) }}
             disabled={isReadOnly}
             aria-label={task.completed ? t('taskItem.aria.markIncomplete') : t('taskItem.aria.markComplete')}
-            className={`h-5 w-5 rounded flex items-center justify-center transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''} ${task.completed ? 'bg-primary border-2 border-primary' : `bg-transparent border-2 ${priorityClasses.checkboxBorderColor}`}`}
+            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${isReadOnly ? 'cursor-not-allowed opacity-50' : ''} ${task.completed ? 'border-primary bg-primary' : `bg-background ${priorityClasses.checkboxBorderColor}`}`}
           >
             {task.completed && <CheckIcon className="h-3.5 w-3.5 text-primary-foreground" />}
           </button>
-          <div>
+          <div className="min-w-0">
             <button
               onClick={() => { if (!isReadOnly) void toggleTask(task.id) }}
               disabled={isReadOnly}
-              className={`text-sm font-medium text-left ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`text-sm font-semibold text-left ${isReadOnly ? 'cursor-not-allowed opacity-50' : 'hover:text-primary'}`}
             >
               {task.completed ? t('taskDetail.completed') : t('taskDetail.markComplete')}
             </button>
             {parentList && (
-              <p className="text-xs text-muted-foreground">
-                {t('task.list')}: {parentList.name}
+              <p className="truncate text-xs text-muted-foreground">
+                {t('task.list')}: <span className="font-medium text-foreground/80">{parentList.name}</span>
               </p>
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1.5">
           {!isReadOnly && (
-          <button
-            type="button"
-            onClick={handleDeleteTask}
-            className="text-xs text-destructive hover:underline"
-          >
-            {t('task.delete')}
-          </button>
+            <button
+              type="button"
+              onClick={handleDeleteTask}
+              className="rounded-md px-2 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10"
+            >
+              {t('task.delete')}
+            </button>
           )}
-          <button onClick={handleClose} className="p-2 rounded-full hover:bg-secondary transition-colors" aria-label={t('common.close')}>
-            <CloseIcon className="h-5 w-5 text-muted-foreground" />
+          <button
+            onClick={handleClose}
+            className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            aria-label={t('common.close')}
+          >
+            <CloseIcon className="h-5 w-5" />
           </button>
         </div>
       </header>
 
       {isReadOnly && (
-        <div className="px-4 py-2 text-xs text-muted-foreground bg-muted/50 border-b border-border">
+        <div className="border-b border-border bg-muted/40 px-4 py-2 text-xs text-muted-foreground">
           {t('taskDetail.sharedReadOnly')}
         </div>
       )}
 
-      <div className="grow px-6 py-5 overflow-y-auto space-y-6">
+      <div className="grow space-y-5 overflow-y-auto px-4 py-5 sm:px-5">
         <section className="space-y-3">
           <div className="flex items-start justify-between gap-3">
             <input
@@ -405,149 +417,129 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
               value={task.title}
               readOnly={isReadOnly}
               onChange={(e) => applyTaskUpdates({ title: e.target.value }, { debounce: true })}
-              className={`text-2xl md:text-3xl font-semibold bg-transparent w-full focus:outline-none ${isReadOnly ? 'cursor-default' : ''}`}
+              className={`w-full bg-transparent text-2xl font-semibold tracking-tight focus:outline-none md:text-[1.7rem] ${isReadOnly ? 'cursor-default' : ''}`}
             />
-            <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold border ${priorityClasses.checkboxBorderColor.replace('border-', 'border')} ${priorityClasses.color}`}>
+            <span className={`mt-1 inline-flex shrink-0 items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold ${priorityClasses.checkboxBorderColor.replace('border-', 'border')} ${priorityClasses.color}`}>
               {t(priorityClasses.label)}
             </span>
           </div>
-          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex flex-wrap gap-1.5">
             {createdAtDisplay && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1">
-                <span className="font-medium">{t('taskDetail.createdAtLabel')}</span>
+              <MetaChip>
+                <span className="font-medium text-foreground/70">{t('taskDetail.createdAtLabel')}</span>
                 <span>{createdAtDisplay}</span>
-              </span>
+              </MetaChip>
             )}
             {task.dueDate && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1">
+              <MetaChip>
                 <CalendarDayIcon className="h-3.5 w-3.5" />
                 <span>{dueDateDisplay}</span>
-              </span>
+              </MetaChip>
             )}
             {task.totalFocusTime && task.totalFocusTime > 0 && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1">
+              <MetaChip>
                 <StopwatchIcon className="h-3.5 w-3.5" />
                 <span>{formatFocusTime(task.totalFocusTime)}</span>
-              </span>
+              </MetaChip>
             )}
             {task.subtasks.length > 0 && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1">
+              <MetaChip>
                 <GripVerticalIcon className="h-3.5 w-3.5" />
                 <span>{completedSubtasks} / {task.subtasks.length} {t('taskDetail.subtasksLabel')}</span>
-              </span>
+              </MetaChip>
             )}
             {task.reminderMinutes && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1">
+              <MetaChip>
                 <GlobeAltIcon className="h-3.5 w-3.5" />
                 <span>{reminderDisplay}</span>
-              </span>
+              </MetaChip>
             )}
             {task.recurrence && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1">
+              <MetaChip>
                 <RepeatIcon className="h-3.5 w-3.5" />
                 <span>{recurrenceDisplay}</span>
-              </span>
+              </MetaChip>
             )}
           </div>
         </section>
 
-        <div className="space-y-4">
-          <div>
-            <label htmlFor="task-description" className="text-sm font-medium text-muted-foreground">
-              {t('taskDetail.descriptionLabel')}
-            </label>
-            <textarea
-              id="task-description"
-              value={task.description || ''}
-              readOnly={isReadOnly}
-              onChange={(e) => applyTaskUpdates({ description: e.target.value }, { debounce: true })}
-              rows={4}
-              placeholder={t('taskDetail.descriptionPlaceholder')}
-              className="mt-1 w-full p-2 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-            />
-          </div>
+        <DetailSection title={t('taskDetail.descriptionLabel')} flush>
+          <textarea
+            id="task-description"
+            value={task.description || ''}
+            readOnly={isReadOnly}
+            onChange={(e) => applyTaskUpdates({ description: e.target.value }, { debounce: true })}
+            rows={4}
+            placeholder={t('taskDetail.descriptionPlaceholder')}
+            className="w-full resize-none border-0 bg-transparent px-3.5 py-3 text-sm leading-relaxed focus:outline-none focus:ring-0"
+          />
+        </DetailSection>
 
-          <div className="grid gap-4 md:grid-cols-2 bg-secondary/30 border border-border rounded-xl p-4">
-            <div className="space-y-2">
-              <span className="text-xs uppercase tracking-wide text-muted-foreground">
-                {t('taskDetail.assigneeLabel')}
-              </span>
-              <div className="flex items-center gap-3">
-                <select
-                  value={task.assigneeId || ''}
-                  disabled={isReadOnly}
-                  onChange={(e) => handleAssignTask(e.target.value || null)}
-                  className="w-full p-2 bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                >
-                  <option value="">{t('taskDetail.unassigned')}</option>
-                  {allUsers?.map(user => (
-                    <option key={user.id} value={user.id}>{user.name}</option>
-                  )) || []}
-                </select>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <span className="text-xs uppercase tracking-wide text-muted-foreground">
-                {t('taskDetail.priorityLabel')}
-              </span>
-              <select
-                id="task-priority"
-                value={task.priority}
-                disabled={isReadOnly}
-                onChange={(e) => applyTaskUpdates({ priority: e.target.value as Priority })}
-                className="w-full p-2 bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-              >
-                {(Object.keys(PRIORITY_MAP) as (keyof typeof PRIORITY_MAP)[]).map(priorityKey => {
-                  const { label } = PRIORITY_MAP[priorityKey]
-                  return (
-                    <option key={priorityKey} value={priorityKey}>
-                      {t(label)}
-                    </option>
-                  )
-                })}
-              </select>
-            </div>
-            <div className="space-y-2">
-              <span className="text-xs uppercase tracking-wide text-muted-foreground">
-                {t('taskDetail.dueDateLabel')}
-              </span>
-              <input
-                type="date"
-                value={task.dueDate ? toYYYYMMDD(new Date(task.dueDate)) : ''}
-                readOnly={isReadOnly}
-                onChange={(e) => applyTaskUpdates({ dueDate: e.target.value ? dateOnlyInputToIso(e.target.value) : undefined })}
-                className="w-full p-2 bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-              />
-            </div>
-            <div className="space-y-2">
-              <span className="text-xs uppercase tracking-wide text-muted-foreground">
-                {t('taskDetail.reminderLabel')}
-              </span>
-              <select
-                value={task.reminderMinutes || ''}
-                disabled={isReadOnly}
-                onChange={(e) => {
-                  const value = e.target.value ? parseInt(e.target.value) : undefined
-                  applyTaskUpdates({ reminderMinutes: value })
-                }}
-                className="w-full p-2 bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-              >
-                <option value="">{t('taskDetail.noReminder')}</option>
-                <option value="5">5 {t('taskDetail.minutes')}</option>
-                <option value="15">15 {t('taskDetail.minutes')}</option>
-                <option value="30">30 {t('taskDetail.minutes')}</option>
-                <option value="60">1 {t('taskDetail.hour')}</option>
-              </select>
-            </div>
-            <div className="space-y-2">
-              <span className="text-xs uppercase tracking-wide text-muted-foreground">
-                {t('taskDetail.recurrenceLabel')}
-              </span>
+        <PropertyList title={t('task.viewDetails')}>
+          <PropertyRow label={t('taskDetail.assigneeLabel')}>
+            <select
+              value={task.assigneeId || ''}
+              disabled={isReadOnly}
+              onChange={(e) => handleAssignTask(e.target.value || null)}
+              className={fieldControlClassName}
+            >
+              <option value="">{t('taskDetail.unassigned')}</option>
+              {allUsers?.map(user => (
+                <option key={user.id} value={user.id}>{user.name}</option>
+              )) || []}
+            </select>
+          </PropertyRow>
+          <PropertyRow label={t('taskDetail.priorityLabel')}>
+            <select
+              id="task-priority"
+              value={task.priority}
+              disabled={isReadOnly}
+              onChange={(e) => applyTaskUpdates({ priority: e.target.value as Priority })}
+              className={fieldControlClassName}
+            >
+              {(Object.keys(PRIORITY_MAP) as (keyof typeof PRIORITY_MAP)[]).map(priorityKey => {
+                const { label } = PRIORITY_MAP[priorityKey]
+                return (
+                  <option key={priorityKey} value={priorityKey}>
+                    {t(label)}
+                  </option>
+                )
+              })}
+            </select>
+          </PropertyRow>
+          <PropertyRow label={t('taskDetail.dueDateLabel')}>
+            <input
+              type="date"
+              value={task.dueDate ? toYYYYMMDD(new Date(task.dueDate)) : ''}
+              readOnly={isReadOnly}
+              onChange={(e) => applyTaskUpdates({ dueDate: e.target.value ? dateOnlyInputToIso(e.target.value) : undefined })}
+              className={fieldControlClassName}
+            />
+          </PropertyRow>
+          <PropertyRow label={t('taskDetail.reminderLabel')}>
+            <select
+              value={task.reminderMinutes || ''}
+              disabled={isReadOnly}
+              onChange={(e) => {
+                const value = e.target.value ? parseInt(e.target.value) : undefined
+                applyTaskUpdates({ reminderMinutes: value })
+              }}
+              className={fieldControlClassName}
+            >
+              <option value="">{t('taskDetail.noReminder')}</option>
+              <option value="5">5 {t('taskDetail.minutes')}</option>
+              <option value="15">15 {t('taskDetail.minutes')}</option>
+              <option value="30">30 {t('taskDetail.minutes')}</option>
+              <option value="60">1 {t('taskDetail.hour')}</option>
+            </select>
+          </PropertyRow>
+          <PropertyRow label={t('taskDetail.recurrenceLabel')} align="start">
+            <div className="space-y-3">
               <select
                 value={task.recurrence?.type ?? ''}
                 disabled={isReadOnly}
                 onChange={(e) => handleRecurrenceChange(e.target.value)}
-                className="w-full p-2 bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                className={fieldControlClassName}
               >
                 <option value="">{t('recurrence.none')}</option>
                 <option value="daily">{t('recurrence.daily')}</option>
@@ -555,8 +547,8 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                 <option value="monthly">{t('recurrence.monthly')}</option>
               </select>
               {task.recurrence && (
-                <div className="mt-3 space-y-3">
-                  <div className="flex items-center gap-2">
+                <div className="space-y-3 rounded-lg border border-border/60 bg-background/60 p-3">
+                  <div className="flex flex-wrap items-center gap-2">
                     <span className="text-xs text-muted-foreground">{t('recurrence.interval')}</span>
                     <input
                       type="number"
@@ -565,7 +557,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                       value={task.recurrence.interval || 1}
                       disabled={isReadOnly}
                       onChange={(e) => handleRecurrenceIntervalChange(parseInt(e.target.value) || 1)}
-                      className="w-16 p-1 bg-background border border-border rounded text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary/30"
+                      className="w-16 rounded-md border border-border bg-background p-1.5 text-center text-sm focus:outline-none focus:ring-2 focus:ring-primary/25"
                     />
                     <span className="text-xs text-muted-foreground">
                       {task.recurrence.type === 'daily'
@@ -583,7 +575,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                   </div>
                   {task.recurrence.type === 'weekly' && (
                     <div>
-                      <div className="text-xs text-muted-foreground mb-2">{t('recurrence.on')}</div>
+                      <div className="mb-2 text-xs text-muted-foreground">{t('recurrence.on')}</div>
                       <div className="flex gap-1">
                         {[0, 1, 2, 3, 4, 5, 6].map((day) => {
                           const labels = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const
@@ -594,11 +586,11 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                               type="button"
                               disabled={isReadOnly}
                               onClick={() => handleToggleWeekday(day)}
-                              className={`flex-1 px-2 py-1 text-xs rounded transition-colors ${
+                              className={`flex-1 rounded-md px-1.5 py-1.5 text-[11px] font-medium transition-colors ${
                                 isSelected
-                                  ? 'bg-primary text-primary-foreground'
-                                  : 'bg-secondary text-muted-foreground hover:bg-muted'
-                              } ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                  ? 'bg-primary text-primary-foreground shadow-sm'
+                                  : 'border border-border/70 bg-secondary/50 text-muted-foreground hover:bg-muted'
+                              } ${isReadOnly ? 'cursor-not-allowed opacity-50' : ''}`}
                             >
                               {t(`recurrence.weekdays.${labels[day]}` as TranslationKey)}
                             </button>
@@ -608,7 +600,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                     </div>
                   )}
                   <div>
-                    <div className="text-xs text-muted-foreground mb-2">{t('recurrence.endDate')}</div>
+                    <div className="mb-2 text-xs text-muted-foreground">{t('recurrence.endDate')}</div>
                     <input
                       type="date"
                       value={
@@ -620,39 +612,37 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                       }
                       disabled={isReadOnly}
                       onChange={(e) => handleRecurrenceEndDateChange(e.target.value)}
-                      className="w-full p-2 bg-background border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                      className={fieldControlClassName}
                       placeholder={t('recurrence.noEndDate')}
                     />
                   </div>
                 </div>
               )}
             </div>
-          </div>
+          </PropertyRow>
+        </PropertyList>
 
-          <div>
-            <label htmlFor="tag-input" className="text-sm font-medium text-muted-foreground">
-              {t('taskDetail.tagsLabel')}
-            </label>
-            <div className="mt-2 flex flex-wrap gap-2 items-center p-2 bg-secondary/50 rounded-md">
-              {task.tags.map((tag, index) => (
-                <span 
-                  key={tag}
-                  draggable={!isReadOnly}
-                  onDragStart={(e) => handleTagDragStart(e, index)}
-                  onDragOver={handleTagDragOver}
-                  onDrop={(e) => handleTagDrop(e, index)}
-                  onDragEnd={handleTagDragEnd}
-                  className={`flex items-center gap-1 bg-secondary px-2 py-1 rounded-full text-xs font-medium cursor-move transition-opacity ${draggedTagIndex === index ? 'opacity-50' : 'opacity-100'}`}
-                >
-                  {tag}
-                  {!isReadOnly && (
-                  <button onClick={() => handleRemoveTag(tag)} className="rounded-full hover:bg-muted-foreground/20 z-10">
+        <DetailSection title={t('taskDetail.tagsLabel')}>
+          <div className="flex flex-wrap items-center gap-2">
+            {task.tags.map((tag, index) => (
+              <span
+                key={tag}
+                draggable={!isReadOnly}
+                onDragStart={(e) => handleTagDragStart(e, index)}
+                onDragOver={handleTagDragOver}
+                onDrop={(e) => handleTagDrop(e, index)}
+                onDragEnd={handleTagDragEnd}
+                className={`inline-flex items-center gap-1 rounded-full border border-border/70 bg-background px-2.5 py-1 text-xs font-medium shadow-sm transition-opacity ${draggedTagIndex === index ? 'opacity-50' : 'opacity-100'} ${isReadOnly ? '' : 'cursor-move'}`}
+              >
+                {tag}
+                {!isReadOnly && (
+                  <button onClick={() => handleRemoveTag(tag)} className="rounded-full p-0.5 hover:bg-muted z-10">
                     <CloseIcon className="h-3 w-3" />
                   </button>
-                  )}
-                </span>
-              ))}
-              {!isReadOnly && (
+                )}
+              </span>
+            ))}
+            {!isReadOnly && (
               <input
                 id="tag-input"
                 type="text"
@@ -660,75 +650,73 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                 onChange={(e) => setNewTag(e.target.value)}
                 onKeyDown={handleAddTag}
                 placeholder={t('taskDetail.tagsPlaceholder')}
-                className="grow bg-transparent text-sm focus:outline-none"
+                className="min-w-[8rem] grow bg-transparent text-sm focus:outline-none"
               />
-              )}
-            </div>
+            )}
           </div>
+        </DetailSection>
 
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <h3 className="text-sm font-medium text-muted-foreground">
-                {t('taskDetail.subtasksLabel')}
-              </h3>
-              {showAiAssist && (
-                <button 
-                  onClick={handleGenerateSubtasks} 
-                  disabled={isGenerating} 
-                  className="text-xs flex items-center gap-1 text-primary hover:text-primary/80 disabled:opacity-50"
-                >
-                  {isGenerating ? '...' : <SparklesIcon className="h-4 w-4" />}
-                  {t('taskDetail.generateButton')}
-                </button>
-              )}
-            </div>
+        <DetailSection
+          title={t('taskDetail.subtasksLabel')}
+          action={
+            showAiAssist ? (
+              <button
+                onClick={handleGenerateSubtasks}
+                disabled={isGenerating}
+                className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs text-primary hover:bg-primary/10 disabled:opacity-50"
+              >
+                {isGenerating ? '...' : <SparklesIcon className="h-3.5 w-3.5" />}
+                {t('taskDetail.generateButton')}
+              </button>
+            ) : undefined
+          }
+        >
+          <div className="space-y-2">
             {task.subtasks.length > 0 && (
-              <div className="my-3 space-y-1">
-                <div className="flex justify-between text-xs text-muted-foreground">
+              <div className="space-y-1.5 pb-1">
+                <div className="flex justify-between text-[11px] text-muted-foreground">
                   <span>{t('taskDetail.progressLabel')}</span>
-                  <span>{completedSubtasks} / {task.subtasks.length}</span>
+                  <span className="font-medium tabular-nums">{completedSubtasks} / {task.subtasks.length}</span>
                 </div>
-                <div className="w-full bg-secondary rounded-full h-2">
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                   <div
-                    className="bg-primary h-2 rounded-full transition-all"
+                    className="h-full rounded-full bg-primary transition-all"
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
               </div>
             )}
-            <div className="mt-2 space-y-2">
+            <div className="space-y-1.5">
               {task.subtasks.map((st, index) => (
-                <div 
+                <div
                   key={st.id}
                   draggable={!isReadOnly}
                   onDragStart={(e) => handleDragStart(e, index)}
                   onDragOver={handleDragOver}
                   onDrop={(e) => handleDrop(e, index)}
                   onDragEnd={handleDragEnd}
-                  className={`flex items-center gap-2 p-2 bg-secondary/50 rounded-md transition-opacity group ${draggedIndex === index ? 'opacity-50' : 'opacity-100'}`}
+                  className={`group flex items-center gap-2 rounded-lg border border-border/50 bg-background/70 px-2 py-2 transition-opacity ${draggedIndex === index ? 'opacity-50' : 'opacity-100'}`}
                 >
-                  <GripVerticalIcon className="h-5 w-5 text-muted-foreground/50 cursor-move group-hover:text-muted-foreground" />
+                  <GripVerticalIcon className="h-4 w-4 cursor-move text-muted-foreground/40 group-hover:text-muted-foreground" />
                   <button
                     onClick={() => handleSubtaskChange(st.id, !st.completed)}
                     disabled={isReadOnly}
                     aria-label={st.completed ? t('taskItem.aria.markIncomplete') : t('taskItem.aria.markComplete')}
                     className={`
-                      h-4 w-4 rounded-sm shrink-0
-                      flex items-center justify-center 
-                      transition-all duration-150
+                      flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border transition-all duration-150
                       focus:outline-none focus:ring-1 focus:ring-ring
-                      ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}
-                      ${st.completed 
-                        ? 'bg-primary border border-primary' 
-                        : 'bg-transparent border border-muted-foreground/50'
+                      ${isReadOnly ? 'cursor-not-allowed opacity-50' : ''}
+                      ${st.completed
+                        ? 'border-primary bg-primary'
+                        : 'border-muted-foreground/45 bg-transparent'
                       }
                     `}
                   >
                     {st.completed && <CheckIcon className="h-2.5 w-2.5 text-primary-foreground" />}
                   </button>
-                  <input 
-                    type="text" 
-                    value={st.title} 
+                  <input
+                    type="text"
+                    value={st.title}
                     readOnly={isReadOnly}
                     onChange={(e) => {
                       if (isReadOnly) return
@@ -737,52 +725,51 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                       )
                       void syncSubtasks(task.id, newSubtasks)
                     }}
-                    className={`grow bg-transparent text-sm ${st.completed ? 'line-through text-muted-foreground' : ''} focus:outline-none`} 
+                    className={`grow bg-transparent text-sm focus:outline-none ${st.completed ? 'text-muted-foreground line-through' : ''}`}
                   />
                   {!isReadOnly && (
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteSubtask(st.id)}
-                    aria-label={t('taskDetail.aria.deleteSubtask' as TranslationKey)}
-                    className="ml-1 rounded-full p-0.5 hover:bg-muted-foreground/10 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <CloseIcon className="h-3 w-3" />
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteSubtask(st.id)}
+                      aria-label={t('taskDetail.aria.deleteSubtask' as TranslationKey)}
+                      className="rounded-full p-0.5 text-muted-foreground opacity-0 transition-opacity hover:bg-muted group-hover:opacity-100"
+                    >
+                      <CloseIcon className="h-3 w-3" />
+                    </button>
                   )}
                 </div>
               ))}
               {!isReadOnly && (
-              <form onSubmit={handleAddSubtask} className="flex items-center gap-2 p-2">
-                <input 
-                  type="text" 
-                  value={newSubtask} 
-                  onChange={(e) => setNewSubtask(e.target.value)} 
-                  placeholder={t('taskDetail.addSubtaskPlaceholder')} 
-                  className="grow bg-transparent text-sm focus:outline-none" 
-                />
-                <button type="submit" className="text-primary text-sm font-semibold">
-                  {t('taskDetail.addButton')}
-                </button>
-              </form>
+                <form onSubmit={handleAddSubtask} className="flex items-center gap-2 rounded-lg border border-dashed border-border/70 px-2 py-2">
+                  <input
+                    type="text"
+                    value={newSubtask}
+                    onChange={(e) => setNewSubtask(e.target.value)}
+                    placeholder={t('taskDetail.addSubtaskPlaceholder')}
+                    className="grow bg-transparent text-sm focus:outline-none"
+                  />
+                  <button type="submit" className="text-sm font-semibold text-primary hover:text-primary/80">
+                    {t('taskDetail.addButton')}
+                  </button>
+                </form>
               )}
             </div>
           </div>
+        </DetailSection>
 
-          <div className="border-t border-border pt-4">
-            <h3 className="text-sm font-medium text-muted-foreground mb-2">
-              {t('taskDetail.commentsLabel')}
-            </h3>
+        <DetailSection title={t('taskDetail.commentsLabel')}>
+          <div className="space-y-3">
             {task.comments.length > 0 && (
-              <div className="space-y-2 mb-2">
+              <div className="space-y-2">
                 {task.comments.map((comment) => {
                   const commentUser = allUsers?.find(u => u.id === comment.userId) || null
                   return (
-                    <div key={comment.id} className="flex gap-2 p-2 bg-secondary/50 rounded-md">
-                      <Avatar user={commentUser || null} className="w-6 h-6" />
-                      <div className="flex-1">
-                        <p className="text-xs text-muted-foreground">{commentUser?.name || t('comments.unknownUser')}</p>
-                        <p className="text-sm">{comment.content}</p>
-                        <p className="text-xs text-muted-foreground mt-1">
+                    <div key={comment.id} className="flex gap-2.5 rounded-lg border border-border/50 bg-background/70 p-2.5">
+                      <Avatar user={commentUser || null} className="h-6 w-6" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-medium text-foreground/80">{commentUser?.name || t('comments.unknownUser')}</p>
+                        <p className="text-sm leading-relaxed">{comment.content}</p>
+                        <p className="mt-1 text-[11px] text-muted-foreground">
                           {new Date(comment.timestamp).toLocaleString()}
                         </p>
                       </div>
@@ -792,37 +779,40 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
               </div>
             )}
             {!isReadOnly && (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault()
-                const input = e.currentTarget.querySelector('input') as HTMLInputElement
-                if (input?.value.trim()) {
-                  handleAddComment(input.value.trim())
-                  input.value = ''
-                }
-              }}
-              className="flex gap-2"
-            >
-              <input
-                type="text"
-                placeholder={t('taskDetail.addCommentPlaceholder')}
-                className="flex-1 p-2 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-              />
-              <button type="submit" className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:bg-primary/90">
-                {t('taskDetail.addButton')}
-              </button>
-            </form>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  const input = e.currentTarget.querySelector('input') as HTMLInputElement
+                  if (input?.value.trim()) {
+                    handleAddComment(input.value.trim())
+                    input.value = ''
+                  }
+                }}
+                className="flex gap-2"
+              >
+                <input
+                  type="text"
+                  placeholder={t('taskDetail.addCommentPlaceholder')}
+                  className={`flex-1 ${fieldControlClassName}`}
+                />
+                <button
+                  type="submit"
+                  className="shrink-0 rounded-lg bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
+                >
+                  {t('taskDetail.addButton')}
+                </button>
+              </form>
             )}
           </div>
-        </div>
+        </DetailSection>
       </div>
 
-      <div className="p-4 border-t border-border flex gap-2 shrink-0">
-        <button 
-          onClick={handleStartFocus} 
-          className="text-sm w-full flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+      <div className="shrink-0 border-t border-border bg-secondary/20 p-4">
+        <button
+          onClick={handleStartFocus}
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
         >
-          <PlayCircleIcon className="h-5 w-5" /> 
+          <PlayCircleIcon className="h-5 w-5" />
           {t('taskDetail.startFocusButton')}
         </button>
       </div>

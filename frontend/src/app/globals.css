@@ -418,8 +418,8 @@ body {
 }
 
 .bottom-nav-button[data-active="true"] {
-  background-color: hsl(var(--color-card) / 0.15);
-  border-color: hsl(var(--color-primary));
+  background-color: hsl(var(--color-muted) / 0.7);
+  border-color: hsl(var(--color-border));
 }
 
 .bottom-nav-button:not([data-active="true"]):hover {
@@ -434,7 +434,7 @@ body {
   right: 25%;
   height: 0.2rem;
   border-radius: 9999px;
-  background-color: hsl(var(--color-primary));
+  background-color: hsl(var(--color-foreground));
   opacity: 0;
   transform: translateY(4px);
   transition: opacity 150ms ease, transform 150ms ease;
@@ -443,7 +443,7 @@ body {
 .bottom-nav-button[data-active="true"] .bottom-nav-indicator {
   opacity: 1;
   transform: translateY(0);
-  background-color: hsl(var(--color-primary));
+  background-color: hsl(var(--color-foreground));
 }
 
 body::before {
@@ -466,10 +466,64 @@ h6 {
 
 /* Custom utilities */
 @layer utilities {
-  /* Ensure bg-card works correctly */
-  .bg-card {
-    background-color: hsl(var(--color-card));
-  }
+  /*
+   * Tailwind v4 maps --color-* channel tokens (e.g. "0 84% 60%") as raw values.
+   * Without hsl(), bg-* / text-* utilities become invalid CSS (white-on-white buttons, etc.).
+   * Explicit hsl() wrappers keep design tokens working (same reason .bg-card was patched).
+   */
+  .bg-background { background-color: hsl(var(--color-background)); }
+  .bg-card { background-color: hsl(var(--color-card)); }
+  .bg-popover { background-color: hsl(var(--color-popover)); }
+  .bg-primary { background-color: hsl(var(--color-primary)); }
+  .bg-secondary { background-color: hsl(var(--color-secondary)); }
+  .bg-muted { background-color: hsl(var(--color-muted)); }
+  .bg-accent { background-color: hsl(var(--color-accent)); }
+  .bg-destructive { background-color: hsl(var(--color-destructive)); }
+  .bg-input { background-color: hsl(var(--color-input)); }
+
+  .bg-primary\/5 { background-color: hsl(var(--color-primary) / 0.05); }
+  .bg-primary\/10 { background-color: hsl(var(--color-primary) / 0.1); }
+  .bg-primary\/90 { background-color: hsl(var(--color-primary) / 0.9); }
+  .bg-primary\/92 { background-color: hsl(var(--color-primary) / 0.92); }
+  .bg-input\/30 { background-color: hsl(var(--color-input) / 0.3); }
+  .bg-input\/80 { background-color: hsl(var(--color-input) / 0.8); }
+  .bg-destructive\/10 { background-color: hsl(var(--color-destructive) / 0.1); }
+  .bg-destructive\/15 { background-color: hsl(var(--color-destructive) / 0.15); }
+  .bg-destructive\/60 { background-color: hsl(var(--color-destructive) / 0.6); }
+  .bg-destructive\/70 { background-color: hsl(var(--color-destructive) / 0.7); }
+  .bg-destructive\/90 { background-color: hsl(var(--color-destructive) / 0.9); }
+  .bg-secondary\/80 { background-color: hsl(var(--color-secondary) / 0.8); }
+  .bg-muted\/30 { background-color: hsl(var(--color-muted) / 0.3); }
+  .bg-muted\/50 { background-color: hsl(var(--color-muted) / 0.5); }
+  .bg-muted\/70 { background-color: hsl(var(--color-muted) / 0.7); }
+  .bg-muted-foreground\/35 { background-color: hsl(var(--color-muted-foreground) / 0.35); }
+  .bg-muted-foreground\/45 { background-color: hsl(var(--color-muted-foreground) / 0.45); }
+  .bg-muted-foreground\/50 { background-color: hsl(var(--color-muted-foreground) / 0.5); }
+  .bg-accent\/40 { background-color: hsl(var(--color-accent) / 0.4); }
+  .bg-accent\/60 { background-color: hsl(var(--color-accent) / 0.6); }
+  .bg-card\/15 { background-color: hsl(var(--color-card) / 0.15); }
+
+  .text-foreground { color: hsl(var(--color-foreground)); }
+  .text-card-foreground { color: hsl(var(--color-card-foreground)); }
+  .text-popover-foreground { color: hsl(var(--color-popover-foreground)); }
+  .text-primary { color: hsl(var(--color-primary)); }
+  .text-primary-foreground { color: hsl(var(--color-primary-foreground)); }
+  .text-secondary-foreground { color: hsl(var(--color-secondary-foreground)); }
+  .text-muted-foreground { color: hsl(var(--color-muted-foreground)); }
+  .text-accent-foreground { color: hsl(var(--color-accent-foreground)); }
+  .text-destructive { color: hsl(var(--color-destructive)); }
+  .text-destructive-foreground { color: hsl(var(--color-destructive-foreground)); }
+
+  .border-border { border-color: hsl(var(--color-border)); }
+  .border-input { border-color: hsl(var(--color-input)); }
+  .border-primary { border-color: hsl(var(--color-primary)); }
+  .border-destructive { border-color: hsl(var(--color-destructive)); }
+  .border-primary\/30 { border-color: hsl(var(--color-primary) / 0.3); }
+
+  .ring-primary\/50 { --tw-ring-color: hsl(var(--color-primary) / 0.5); }
+  .ring-primary\/60 { --tw-ring-color: hsl(var(--color-primary) / 0.6); }
+  .ring-destructive\/20 { --tw-ring-color: hsl(var(--color-destructive) / 0.2); }
+  .ring-destructive\/40 { --tw-ring-color: hsl(var(--color-destructive) / 0.4); }
   
   /* Global Scrollbar Styling */
   * {

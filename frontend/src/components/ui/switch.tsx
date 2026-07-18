@@ -1,42 +1,55 @@
-"use client"
+'use client'
 
-import * as React from "react"
-import * as SwitchPrimitive from "@radix-ui/react-switch"
-import { cva, type VariantProps } from "class-variance-authority"
-import { Loader2Icon } from "lucide-react"
+import * as React from 'react'
+import * as SwitchPrimitive from '@radix-ui/react-switch'
+import { cva, type VariantProps } from 'class-variance-authority'
+import { Loader2Icon } from 'lucide-react'
 
-import { cn } from "@/lib/utils"
+import { SettingsRow } from '@/components/ui/settings-list'
+import { cn } from '@/lib/utils'
 
+/** Switch with high-contrast on/off — unchecked = muted track, checked = primary. */
 const switchVariants = cva(
-  "peer inline-flex shrink-0 items-center rounded-full border shadow-xs outline-none transition-all focus-visible:ring-[3px] focus-visible:border-ring focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:border-primary data-[state=checked]:shadow-[0_0_0_1px_hsl(var(--color-primary) / 0.6)] data-[state=unchecked]:bg-muted/60 dark:data-[state=unchecked]:bg-muted/60 data-[state=unchecked]:border-border-subtle",
+  [
+    'peer inline-flex shrink-0 cursor-pointer items-center rounded-full border',
+    'transition-colors',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+    'disabled:cursor-not-allowed disabled:opacity-50',
+    'data-[state=checked]:border-primary data-[state=checked]:bg-primary',
+    'data-[state=unchecked]:border-border data-[state=unchecked]:bg-muted-foreground/35',
+    'dark:data-[state=unchecked]:bg-muted-foreground/45',
+  ].join(' '),
   {
     variants: {
       size: {
-        sm: "h-4 w-7",
-        md: "h-[1.15rem] w-8",
-        lg: "h-6 w-11",
+        sm: 'h-5 w-9',
+        md: 'h-6 w-11',
+        lg: 'h-7 w-12',
       },
     },
     defaultVariants: {
-      size: "md",
+      size: 'md',
     },
-  }
+  },
 )
 
 const switchThumbVariants = cva(
-  "pointer-events-none block rounded-full ring-0 transition-transform bg-background dark:data-[state=unchecked]:bg-foreground dark:data-[state=checked]:bg-primary-foreground data-[state=unchecked]:translate-x-0",
+  [
+    'pointer-events-none block rounded-full bg-white shadow-md ring-0 transition-transform',
+    'data-[state=unchecked]:translate-x-0.5',
+  ].join(' '),
   {
     variants: {
       size: {
-        sm: "size-3 data-[state=checked]:translate-x-[calc(100%-1px)]",
-        md: "size-4 data-[state=checked]:translate-x-[calc(100%-2px)]",
-        lg: "size-5 data-[state=checked]:translate-x-[calc(100%-2px)]",
+        sm: 'h-3.5 w-3.5 data-[state=checked]:translate-x-[1.125rem]',
+        md: 'h-5 w-5 data-[state=checked]:translate-x-5',
+        lg: 'h-6 w-6 data-[state=checked]:translate-x-5',
       },
     },
     defaultVariants: {
-      size: "md",
+      size: 'md',
     },
-  }
+  },
 )
 
 type SwitchProps = React.ComponentProps<typeof SwitchPrimitive.Root> &
@@ -56,17 +69,17 @@ function Switch({
   return (
     <SwitchPrimitive.Root
       data-slot="switch"
-      data-size={size ?? "md"}
+      data-size={size ?? 'md'}
       aria-busy={loading || undefined}
       disabled={isDisabled}
-      className={cn(switchVariants({ size }), loading && "opacity-80", className)}
+      className={cn(switchVariants({ size }), loading && 'opacity-80', className)}
       {...props}
     >
       <SwitchPrimitive.Thumb
         data-slot="switch-thumb"
         className={cn(
           switchThumbVariants({ size }),
-          loading && "flex items-center justify-center"
+          loading && 'flex items-center justify-center',
         )}
       >
         {loading ? (
@@ -86,7 +99,7 @@ interface SwitchFieldProps {
   onCheckedChange?: (checked: boolean) => void
   disabled?: boolean
   loading?: boolean
-  size?: VariantProps<typeof switchVariants>["size"]
+  size?: VariantProps<typeof switchVariants>['size']
   className?: string
   disabledReason?: string
 }
@@ -100,7 +113,7 @@ function SwitchField({
   onCheckedChange,
   disabled = false,
   loading = false,
-  size = "md",
+  size = 'md',
   className,
   disabledReason,
 }: SwitchFieldProps) {
@@ -108,23 +121,14 @@ function SwitchField({
   const switchTitle = disabled && disabledReason ? disabledReason : undefined
 
   return (
-    <div className={cn("flex items-center justify-between gap-4", className)}>
-      <div className="space-y-0.5 min-w-0">
-        <label
-          htmlFor={id}
-          className={cn(
-            "text-sm font-medium leading-none",
-            (disabled || loading) && "cursor-not-allowed opacity-70"
-          )}
-        >
-          {label}
-        </label>
-        {description ? (
-          <p id={descriptionId} className="text-sm text-muted-foreground">
-            {description}
-          </p>
-        ) : null}
-      </div>
+    <SettingsRow
+      label={label}
+      description={description}
+      descriptionId={descriptionId}
+      htmlFor={id}
+      disabled={disabled || loading}
+      className={className}
+    >
       <Switch
         id={id}
         size={size}
@@ -136,7 +140,7 @@ function SwitchField({
         title={switchTitle}
         aria-describedby={descriptionId}
       />
-    </div>
+    </SettingsRow>
   )
 }
 

@@ -15,7 +15,6 @@
     "subtitle": "Quản lý hệ thống",
     "backToApp": "Về ứng dụng",
     "signedInAs": "Đăng nhập với",
-    "singletonNote": "Chỉ có 1 tài khoản quản trị hệ thống",
     "nav": {
       "dashboard": "Tổng quan",
       "users": "Người dùng"
@@ -89,8 +88,8 @@
       "savedBody": "Thông tin người dùng đã được lưu.",
       "saveFailedTitle": "Lưu thất bại",
       "saveFailedBody": "Không thể cập nhật thông tin người dùng.",
-      "protectedTitle": "Tài khoản hệ thống",
-      "protectedBody": "Tài khoản quản trị duy nhất không thể chỉnh sửa hoặc xóa từ đây.",
+      "protectedTitle": "Tài khoản được bảo vệ",
+      "protectedBody": "Không thể sửa hoặc xóa tài khoản admin này tại đây.",
       "delete": "Xóa người dùng",
       "deleteConfirmTitle": "Xóa {{name}}?",
       "deleteConfirmBody": "Thao tác này sẽ xóa vĩnh viễn tài khoản và toàn bộ dữ liệu liên quan.",
@@ -171,12 +170,10 @@
     "registerSubtitle": "Nhập thông tin để bắt đầu sử dụng",
     "forgotPasswordTitle": "Quên mật khẩu",
     "forgotPasswordSubtitle": "Nhập email để nhận hướng dẫn đặt lại mật khẩu",
-    "forgotPasswordMvpBadge": "MVP",
-    "forgotPasswordMvpNote": "Chưa hỗ trợ gửi email đặt lại",
     "forgotPasswordAlternativesTitle": "Bạn có thể làm gì thay thế",
     "forgotPasswordAlternativeRegister": "Tạo tài khoản mới bằng email khác",
     "forgotPasswordAlternativeRetry": "Thử đăng nhập lại nếu bạn nhớ mật khẩu",
-    "forgotPasswordAlternativeAdmin": "Tự host: nhờ admin reset qua database hoặc cấu hình seed",
+    "forgotPasswordAlternativeAdmin": "Liên hệ quản trị viên nếu bạn không đăng nhập được",
     "emailPlaceholder": "Nhập email của bạn",
     "namePlaceholder": "Nhập tên của bạn",
     "passwordPlaceholder": "Nhập mật khẩu của bạn",
@@ -732,7 +729,7 @@
     "saved": "Đã lưu cài đặt thành công",
     "ai": {
       "title": "Trợ lý AI",
-      "serverManaged": "AI được cấu hình ở backend qua AI_PROVIDER. Dùng GEMINI_API_KEY cho Gemini, hoặc OPENAI_API_KEY + OPENAI_BASE_URL + OPENAI_MODEL cho API tương thích OpenAI (OpenAI, Ollama, LM Studio, v.v.). Key không lưu trong trình duyệt."
+      "serverManaged": "Tính năng AI do máy chủ quản lý và hiện chưa mở trong ứng dụng."
     },
     "gemini": {
       "title": "Gemini API",
@@ -768,8 +765,6 @@
     }
   },
   "console": {
-    "geminiKeyFound": "Tìm thấy API key Gemini nhưng tích hợp backend đang chờ xử lý. Tính năng Gemini sẽ bị tắt.",
-    "geminiKeyNotFound": "Không tìm thấy biến môi trường NEXT_PUBLIC_GEMINI_API_KEY. Tính năng Gemini sẽ bị tắt.",
     "reorderTask": "Sắp xếp lại nhiệm vụ",
     "mockRegistration": "Đăng ký mô phỏng",
     "failedParseUser": "Không thể phân tích người dùng đã lưu",
@@ -920,7 +915,7 @@
     "overdue": "Quá hạn",
     "all": "Tất cả",
     "loading": "Đang tải...",
-    "notFoundTitle": "404",
+    "notFoundTitle": "Không tìm thấy trang",
     "notFoundBody": "Không tìm thấy trang.",
     "goToDashboard": "Về bảng điều khiển",
     "errorTitle": "Đã xảy ra lỗi",
@@ -1111,7 +1106,7 @@
   "shareList": {
     "title": "Chia sẻ \"{{listName}}\"",
     "subtitle": "Quản lý ai có thể truy cập danh sách này.",
-    "readOnlyNotice": "MVP: thành viên được mời chỉ xem task (read-only). Quyền sửa sẽ có ở bản cập nhật sau.",
+    "readOnlyNotice": "Thành viên được mời chỉ xem được task.",
     "members": "Thành viên",
     "owner": "Chủ sở hữu",
     "invite": "Mời người khác",
@@ -1138,7 +1133,6 @@
     "noResults": "Không tìm thấy nhiệm vụ nào cho \"{{searchTerm}}\"",
     "loading": "Đang tìm…",
     "error": "Tìm kiếm thất bại. Vui lòng thử lại.",
-    "serverHint": "Tìm trên server — kết quả chính xác khi danh sách task lớn dần.",
     "matchInDescription": "Trong mô tả",
     "matchInTag": "Thẻ",
     "matchInSubtask": "Subtask",

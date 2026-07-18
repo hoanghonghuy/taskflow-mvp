@@ -249,7 +249,7 @@ const CountdownView: React.FC = () => {
   return (
     <AppPage>
       <AppPageContainer>
-        <header className="py-6 border-b border-border shrink-0">
+        <header className="py-4 md:py-6 md:border-b border-border shrink-0">
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="hidden md:block">
@@ -445,7 +445,7 @@ const CountdownView: React.FC = () => {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="text-muted-foreground hover:text-destructive"
+                                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                                 onClick={() => handleDeleteCountdown(event.id, event.title)}
                                 aria-label={t('countdown.aria.deleteCountdown')}
                               >
@@ -490,7 +490,7 @@ const CountdownView: React.FC = () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="gap-2 text-destructive hover:text-destructive"
+                          className="gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
                           onClick={() => handleDeleteCountdown(event.id, event.title)}
                         >
                           <TrashIcon className="h-4 w-4" />

@@ -20,6 +20,7 @@ import type { Action, TaskManagerContextType } from '@/lib/store/task-manager/ty
 import type { TranslationKey } from '@/lib/i18n/types'
 import { columnReducer } from '@/lib/store/task-manager/reducers/column-reducer'
 import { resolveBoardColumns } from '@/lib/utils/task-helpers'
+import { moveItemById } from '@/lib/utils/array-move'
 
 interface HistoryState {
   past: AppState[]
@@ -478,7 +479,7 @@ export function useTaskActions() {
         console.error('Failed to create task via API', err)
         showError(
           t('toast.api.taskCreateFailedTitle' as TranslationKey),
-          err instanceof Error ? err.message : undefined,
+          t('common.errorBody' as TranslationKey),
         )
       }
     }, [dispatch, success, showError, t]),
@@ -513,7 +514,7 @@ export function useTaskActions() {
         }
         showError(
           t('toast.api.taskUpdateFailedTitle' as TranslationKey),
-          err instanceof Error ? err.message : undefined,
+          t('common.errorBody' as TranslationKey),
         )
       }
     }, [dispatch, success, showError, t]),
@@ -525,7 +526,7 @@ export function useTaskActions() {
         console.error('Failed to delete task via API', err)
         showError(
           t('toast.api.taskDeleteFailedTitle' as TranslationKey),
-          err instanceof Error ? err.message : undefined,
+          t('common.errorBody' as TranslationKey),
         )
         return
       }
@@ -558,7 +559,7 @@ export function useTaskActions() {
         console.error('Failed to toggle task via API', err)
         showError(
           t('toast.api.taskStatusFailedTitle' as TranslationKey),
-          err instanceof Error ? err.message : undefined,
+          t('common.errorBody' as TranslationKey),
         )
         return
       }
@@ -585,7 +586,7 @@ export function useTaskActions() {
         console.error('Failed to assign task via API', err)
         showError(
           t('toast.api.taskUpdateFailedTitle' as TranslationKey),
-          err instanceof Error ? err.message : undefined,
+          t('common.errorBody' as TranslationKey),
         )
       }
     }, [dispatch, showError, state.tasks, success, t]),
@@ -608,7 +609,7 @@ export function useTaskActions() {
         console.error('Failed to add comment via API', err)
         showError(
           t('toast.api.taskUpdateFailedTitle' as TranslationKey),
-          err instanceof Error ? err.message : undefined,
+          t('common.errorBody' as TranslationKey),
         )
       }
     }, [dispatch, showError, state.tasks, success, t]),
@@ -628,19 +629,10 @@ export function useTaskActions() {
       dispatch(taskActions.reorder(draggedId, droppedOnId))
 
       const ownedBefore = before.filter(isOwnedTask)
-      const reorderedOwned = [...ownedBefore]
-      const draggedIndex = reorderedOwned.findIndex((t) => t.id === draggedId)
-      const droppedIndex = reorderedOwned.findIndex((t) => t.id === droppedOnId)
-      if (draggedIndex === -1) return
-
-      const [draggedTask] = reorderedOwned.splice(draggedIndex, 1)
-      const insertAt =
-        droppedIndex === -1
-          ? reorderedOwned.length
-          : droppedIndex > draggedIndex
-            ? droppedIndex - 1
-            : droppedIndex
-      reorderedOwned.splice(Math.max(0, insertAt), 0, draggedTask)
+      // Must match reducer / arrayMove: use original target index (no -1 on drag-down).
+      // The old `droppedIndex - 1` when dragging down undid adjacent moves after API sync.
+      const reorderedOwned = moveItemById(ownedBefore, draggedId, droppedOnId)
+      if (reorderedOwned === ownedBefore) return
 
       try {
         const tasks = await tasksApi.reorderTasks(reorderedOwned.map((t) => t.id))
@@ -653,7 +645,7 @@ export function useTaskActions() {
         dispatch({ type: 'SET_TASKS', payload: before })
         showError(
           t('toast.api.taskReorderFailedTitle' as TranslationKey),
-          err instanceof Error ? err.message : undefined,
+          t('common.errorBody' as TranslationKey),
         )
       }
     }, [dispatch, showError, state.lists, state.tasks, t, user?.id]),
@@ -673,7 +665,7 @@ export function useTaskActions() {
         console.error('Failed to update subtasks via API', err)
         showError(
           t('toast.api.subtasksUpdateFailedTitle' as TranslationKey),
-          err instanceof Error ? err.message : undefined,
+          t('common.errorBody' as TranslationKey),
         )
       }
     }, [dispatch, showError, state.tasks, t]),
@@ -693,7 +685,7 @@ export function useTaskActions() {
         console.error('Failed to update comments via API', err)
         showError(
           t('toast.api.commentsUpdateFailedTitle' as TranslationKey),
-          err instanceof Error ? err.message : undefined,
+          t('common.errorBody' as TranslationKey),
         )
       }
     }, [dispatch, showError, state.tasks, t]),
@@ -723,7 +715,7 @@ export function useTaskActions() {
         dispatch({ type: 'UPDATE_TASK', payload: before })
         showError(
           t('toast.api.taskMoveFailedTitle' as TranslationKey),
-          err instanceof Error ? err.message : undefined,
+          t('common.errorBody' as TranslationKey),
         )
       }
     }, [dispatch, showError, state.tasks, t]),
@@ -763,7 +755,7 @@ export function useTaskActions() {
         dispatch({ type: 'SET_ACTIVE_TAG', payload: beforeActiveTag })
         showError(
           t('toast.api.taskUpdateFailedTitle' as TranslationKey),
-          err instanceof Error ? err.message : undefined,
+          t('common.errorBody' as TranslationKey),
         )
       }
     }, [dispatch, showError, state.activeTag, state.tasks, t]),
@@ -831,7 +823,7 @@ export function useColumnActions() {
         dispatch({ type: 'LOAD_STATE', payload: snapshot })
         showError(
           t('toast.api.taskUpdateFailedTitle' as TranslationKey),
-          err instanceof Error ? err.message : undefined,
+          t('common.errorBody' as TranslationKey),
         )
       }
     },
@@ -882,7 +874,7 @@ export function useColumnActions() {
           dispatch({ type: 'LOAD_STATE', payload: snapshot })
           showError(
             t('toast.api.taskUpdateFailedTitle' as TranslationKey),
-            err instanceof Error ? err.message : undefined,
+            t('common.errorBody' as TranslationKey),
           )
         }
       },
@@ -920,7 +912,7 @@ export function useListActions() {
         console.error('Failed to create list via API', err)
         showError(
           t('toast.api.listCreateFailedTitle' as TranslationKey),
-          err instanceof Error ? err.message : undefined,
+          t('common.errorBody' as TranslationKey),
         )
       }
     }, [dispatch, showError, t]),
@@ -942,7 +934,7 @@ export function useListActions() {
         console.error('Failed to update list via API', err)
         showError(
           t('toast.api.listUpdateFailedTitle' as TranslationKey),
-          err instanceof Error ? err.message : undefined,
+          t('common.errorBody' as TranslationKey),
         )
       }
     }, [dispatch, showError, t]),
@@ -954,7 +946,7 @@ export function useListActions() {
         console.error('Failed to delete list via API', err)
         showError(
           t('toast.api.listDeleteFailedTitle' as TranslationKey),
-          err instanceof Error ? err.message : undefined,
+          t('common.errorBody' as TranslationKey),
         )
         return
       }
@@ -973,7 +965,7 @@ export function useListActions() {
         console.error('Failed to share list via API', err)
         showError(
           t('toast.api.listShareFailedTitle' as TranslationKey),
-          err instanceof Error ? err.message : undefined,
+          t('common.errorBody' as TranslationKey),
         )
         return false
       }
@@ -990,7 +982,7 @@ export function useListActions() {
         console.error('Failed to unshare list via API', err)
         showError(
           t('toast.api.listUnshareFailedTitle' as TranslationKey),
-          err instanceof Error ? err.message : undefined,
+          t('common.errorBody' as TranslationKey),
         )
         return false
       }
@@ -1015,7 +1007,7 @@ export function useHabitActions() {
         console.error('Failed to create habit via API', err)
         showError(
           t('toast.api.habitCreateFailedTitle' as TranslationKey),
-          err instanceof Error ? err.message : undefined,
+          t('common.errorBody' as TranslationKey),
         )
       }
     }, [dispatch, showError, t]),
@@ -1029,7 +1021,7 @@ export function useHabitActions() {
         console.error('Failed to update habit via API', err)
         showError(
           t('toast.api.habitUpdateFailedTitle' as TranslationKey),
-          err instanceof Error ? err.message : undefined,
+          t('common.errorBody' as TranslationKey),
         )
       }
     }, [dispatch, showError, t]),
@@ -1054,7 +1046,7 @@ export function useHabitActions() {
         console.error('Failed to toggle habit completion via API', err)
         showError(
           t('toast.api.habitCompletionFailedTitle' as TranslationKey),
-          err instanceof Error ? err.message : undefined,
+          t('common.errorBody' as TranslationKey),
         )
         return
       } finally {
@@ -1072,7 +1064,7 @@ export function useHabitActions() {
         console.error('Failed to delete habit via API', err)
         showError(
           t('toast.api.habitDeleteFailedTitle' as TranslationKey),
-          err instanceof Error ? err.message : undefined,
+          t('common.errorBody' as TranslationKey),
         )
         return
       }

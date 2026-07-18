@@ -1,9 +1,14 @@
 'use client'
 
-import { useMemo } from 'react'
 import { Globe } from 'lucide-react'
 
-import { SegmentedControl } from '@/components/ui/segmented-control'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { useSettings } from '@/components/providers/settings-provider'
 import { useI18n } from '@/lib/i18n/hooks'
 import { cn } from '@/lib/utils'
@@ -18,7 +23,7 @@ type LanguageToggleProps = {
 
 const LANGUAGES: Settings['language'][] = ['en', 'vi']
 
-/** Segmented EN/VI — không dùng Switch vì cần hiện cả hai lựa chọn rõ ràng. */
+/** Dropdown chọn ngôn ngữ (Select) — rõ ràng hơn segmented pill. */
 export function LanguageToggle({
   variant = 'inline',
   showIcon = true,
@@ -28,34 +33,37 @@ export function LanguageToggle({
   const { language, setLanguage } = useSettings()
   const { t } = useI18n()
 
-  const options = useMemo(
-    () =>
-      LANGUAGES.map((lang) => ({
-        value: lang,
-        label: t(`settings.language.${lang}`),
-      })),
-    [t],
-  )
-
   return (
     <div
       className={cn(
         'inline-flex items-center gap-2',
         variant === 'fixed' &&
-          'fixed top-4 right-4 z-50 rounded-full border border-border/60 bg-background/80 px-2 py-1.5 shadow-sm backdrop-blur-sm',
+          'fixed top-4 right-4 z-50 rounded-lg border border-border bg-background/95 px-2 py-1.5 shadow-sm backdrop-blur-sm',
         className,
       )}
     >
       {showIcon && (
-        <Globe className="size-[18px] shrink-0 text-foreground" strokeWidth={1.75} aria-hidden />
+        <Globe className="size-4 shrink-0 text-muted-foreground" strokeWidth={1.75} aria-hidden />
       )}
-      <SegmentedControl
+      <Select
         value={language}
-        options={options}
-        onValueChange={setLanguage}
-        size={size}
-        aria-label={t('settings.languageLabel')}
-      />
+        onValueChange={(value) => setLanguage(value as Settings['language'])}
+      >
+        <SelectTrigger
+          size={size === 'sm' ? 'sm' : 'default'}
+          className="min-w-[7.5rem]"
+          aria-label={t('settings.languageLabel')}
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent align="end">
+          {LANGUAGES.map((lang) => (
+            <SelectItem key={lang} value={lang}>
+              {t(`settings.language.${lang}`)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   )
 }

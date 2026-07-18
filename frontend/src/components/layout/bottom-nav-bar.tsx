@@ -87,13 +87,13 @@ const MoreMenu: React.FC<MoreMenuProps> = ({ hiddenViews, currentView, onClose }
               ref={index === 0 ? firstItemRef : undefined}
               onClick={() => handleSelect(view)}
               aria-current={isActive ? 'page' : undefined}
-              className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-xl border transition-colors ${
+              className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg border transition-colors ${
                 isActive
-                  ? 'border-primary/80 text-primary bg-primary/5 shadow-[0_0_25px_hsl(var(--color-primary) / 0.15)]'
-                  : 'border-transparent text-foreground hover:bg-muted/40'
+                  ? 'border-border bg-muted text-foreground'
+                  : 'border-transparent text-foreground hover:bg-muted/50'
               }`}
             >
-              <Icon className={`h-5 w-5 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
+              <Icon className="h-5 w-5 text-muted-foreground" />
               <span>{t(feature.label)}</span>
             </button>
           )
@@ -118,7 +118,7 @@ function BottomNavButton({ feature, isActive, onSelect, label }: BottomNavButton
       onClick={() => onSelect(feature.view)}
       aria-current={isActive ? 'page' : undefined}
       className={`bottom-nav-button relative flex flex-col items-center justify-center gap-1 flex-1 mx-1 text-[10px] ${
-        isActive ? 'text-primary font-semibold' : 'text-muted-foreground'
+        isActive ? 'text-foreground font-semibold' : 'text-muted-foreground'
       }`}
       data-active={isActive ? 'true' : undefined}
     >
@@ -183,7 +183,7 @@ export default function BottomNavBar() {
             aria-haspopup="menu"
             aria-expanded={isMoreActive}
             className={`bottom-nav-button relative flex flex-col items-center justify-center gap-1 w-full mx-1 text-[10px] ${
-              isMoreActive ? 'text-primary font-semibold' : 'text-muted-foreground'
+              isMoreActive ? 'text-foreground font-semibold' : 'text-muted-foreground'
             }`}
             data-active={isMoreActive ? 'true' : undefined}
           >

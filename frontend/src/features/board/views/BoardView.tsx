@@ -128,39 +128,41 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
 
   return (
     <AppPage>
-      <AppPageContainer>
-        <header className="py-4 md:py-6 border-b border-border shrink-0">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
-            <div className="hidden md:block">
-              <h1 className="text-2xl md:text-3xl font-bold">{t('nav.board')}</h1>
-              <p className="text-sm md:text-base text-muted-foreground">{t('board.title')}</p>
-            </div>
-            <div className="flex items-center gap-4 w-full sm:w-auto">
-              <select
-                value={selectedListId}
-                onChange={handleListChange}
-                className="w-full sm:w-auto px-4 py-2 bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm md:text-base text-foreground dark:bg-card dark:text-foreground"
-              >
-                {availableLists.map(list => {
-                  const listKey =
-                    list.id === 'inbox' ? 'specialLists.inbox' :
-                    list.id === 'list-1' ? 'lists.work' :
-                    list.id === 'list-2' ? 'lists.personal' :
-                    list.id === 'list-3' ? 'lists.shopping' :
-                    list.id === 'list-4' ? 'lists.healthFitness' :
-                    list.id === 'list-5' ? 'lists.learning' : null
+      <div className="border-b border-border shrink-0">
+        <AppPageContainer className="max-w-none">
+          <header className="py-4 md:py-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="hidden md:block">
+                <h1 className="text-2xl md:text-3xl font-bold">{t('nav.board')}</h1>
+                <p className="text-sm md:text-base text-muted-foreground">{t('board.title')}</p>
+              </div>
+              <div className="flex items-center gap-4 w-full sm:w-auto">
+                <select
+                  value={selectedListId}
+                  onChange={handleListChange}
+                  className="w-full sm:w-auto px-4 py-2 bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm md:text-base text-foreground dark:bg-card dark:text-foreground"
+                >
+                  {availableLists.map(list => {
+                    const listKey =
+                      list.id === 'inbox' ? 'specialLists.inbox' :
+                      list.id === 'list-1' ? 'lists.work' :
+                      list.id === 'list-2' ? 'lists.personal' :
+                      list.id === 'list-3' ? 'lists.shopping' :
+                      list.id === 'list-4' ? 'lists.healthFitness' :
+                      list.id === 'list-5' ? 'lists.learning' : null
 
-                  return (
-                    <option key={list.id} value={list.id}>
-                      {listKey ? t(listKey) : list.name}
-                    </option>
-                  )
-                })}
-              </select>
+                    return (
+                      <option key={list.id} value={list.id}>
+                        {listKey ? t(listKey) : list.name}
+                      </option>
+                    )
+                  })}
+                </select>
+              </div>
             </div>
-          </div>
-        </header>
-      </AppPageContainer>
+          </header>
+        </AppPageContainer>
+      </div>
       <AppPageMain className="py-4 md:py-6 md:max-w-none">
         <div
           className="flex flex-col md:flex-row gap-4 md:gap-6 md:overflow-x-auto px-1 md:px-2 pb-2"
@@ -208,9 +210,9 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
             )
           })}
           {canManageColumns && (
-          <div className="w-full md:w-72 md:shrink-0">
+          <div className="w-full md:w-72 md:shrink-0 flex flex-col min-h-[260px] md:min-h-[calc(100vh-220px)] p-1">
             {isAddingColumn ? (
-              <form onSubmit={handleAddColumn} className="bg-card border border-border p-2 rounded-lg h-full flex flex-col">
+              <form onSubmit={handleAddColumn} className="bg-card border border-border p-3 rounded-xl flex-1 flex flex-col shadow-sm">
                 <input
                   autoFocus
                   type="text"
@@ -241,7 +243,7 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
             ) : (
               <button
                 onClick={() => setIsAddingColumn(true)}
-                className="w-full h-full min-h-[200px] border-2 border-dashed border-border rounded-lg text-muted-foreground hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2"
+                className="w-full flex-1 min-h-[200px] border-2 border-dashed border-border rounded-xl bg-muted/30 text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors flex items-center justify-center gap-2"
               >
                 <PlusIcon className="h-5 w-5" />
                 <span>{t('board.addColumn')}</span>

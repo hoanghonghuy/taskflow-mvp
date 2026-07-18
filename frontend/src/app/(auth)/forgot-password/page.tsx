@@ -13,11 +13,6 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-2">
-          <p className="text-center">
-            <span className="inline-flex items-center rounded-full border border-border bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
-              {t('auth.forgotPasswordMvpBadge')}
-            </span>
-          </p>
           <CardTitle className="text-2xl font-bold text-center">{t('auth.forgotPasswordTitle')}</CardTitle>
           <CardDescription className="text-center">
             {t('auth.toast.forgotUnavailableTitle')}

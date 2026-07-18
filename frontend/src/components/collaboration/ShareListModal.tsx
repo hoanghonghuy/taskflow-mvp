@@ -61,11 +61,11 @@ const ShareListModal: React.FC<ShareListModalProps> = ({ list, onClose }) => {
         setInviteEmail('')
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : t('shareList.inviteFailed')
-      if (message.toLowerCase().includes('yourself') || message.toLowerCase().includes('invite yourself')) {
+      const raw = err instanceof Error ? err.message.toLowerCase() : ''
+      if (raw.includes('yourself') || raw.includes('invite yourself')) {
         setInviteError(t('shareList.cannotInviteSelf'))
       } else {
-        setInviteError(message)
+        setInviteError(t('shareList.inviteFailed'))
       }
     } finally {
       setIsInviting(false)

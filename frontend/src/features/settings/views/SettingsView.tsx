@@ -15,6 +15,8 @@ import { NotificationSettings } from '@/components/settings/NotificationSettings
 import { Switch } from '@/components/ui/switch'
 import { SwitchField } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
+import { SettingsList, SettingsNumberStepper } from '@/components/ui/settings-list'
+import { cn } from '@/lib/utils'
 
 const ALL_FEATURES: { view: View, icon: React.FC<{className?: string}>, label: TranslationKey }[] = [
   { view: 'dashboard', icon: HomeIcon, label: 'feature.dashboard' },
@@ -147,9 +149,6 @@ const SettingsView: React.FC = () => {
             <p className="text-sm text-muted-foreground">
               {t('settings.ai.serverManaged')}
             </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              {t('ai.comingSoon.message')}
-            </p>
           </div>
         </section>
 
@@ -236,7 +235,7 @@ const SettingsView: React.FC = () => {
                 {currentActions.length} / {maxVisibleBottomNav}
               </span>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1">
               {ALL_FEATURES.map((feature) => {
                 const isVisible = currentActions.includes(feature.view)
                 const Icon = feature.icon
@@ -245,44 +244,33 @@ const SettingsView: React.FC = () => {
                 return (
                   <div
                     key={feature.view}
-                    role="button"
-                    tabIndex={disabled ? -1 : 0}
-                    aria-disabled={disabled || undefined}
-                    onClick={() => {
-                      if (disabled) return
-                      handleBottomNavToggle(feature.view)
-                    }}
-                    onKeyDown={(e) => {
-                      if (disabled) return
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault()
-                        handleBottomNavToggle(feature.view)
-                      }
-                    }}
-                    className={`flex items-center justify-between w-full rounded-lg border px-3 py-2 text-left transition-all ${
-                      isVisible
-                        ? 'bg-primary/10 border-primary/80 text-primary shadow-[0_0_0_1px_hsl(var(--color-primary) / 0.45)]'
-                        : 'bg-secondary/40 border-border hover:bg-secondary/70 hover:border-primary/40'
-                    } ${disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
+                    className={cn(
+                      'flex items-center justify-between gap-3 rounded-lg px-3 py-2.5',
+                      disabled && 'opacity-50',
+                    )}
                   >
-                    <div className="flex items-center gap-3">
-                      <Icon className={`h-5 w-5 ${isVisible ? 'text-primary' : 'text-muted-foreground'}`} />
-                      <span className={`text-sm font-medium ${!isVisible ? 'text-foreground' : ''}`}>{t(feature.label)}</span>
+                    <div className="flex min-w-0 items-center gap-3">
+                      <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-foreground">{t(feature.label)}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {isVisible
+                            ? t('settings.bottomNav.visible')
+                            : t('settings.bottomNav.hidden')}
+                        </p>
+                      </div>
                     </div>
-                    <div
-                      className="flex items-center"
-                      onClick={(e) => {
-                        e.stopPropagation()
+                    <Switch
+                      size="md"
+                      checked={isVisible}
+                      onCheckedChange={() => {
+                        if (disabled) return
+                        handleBottomNavToggle(feature.view)
                       }}
-                    >
-                      <Switch
-                        size="sm"
-                        checked={isVisible}
-                        onCheckedChange={() => handleBottomNavToggle(feature.view)}
-                        disabled={disabled}
-                        title={disabled ? t('settings.bottomNav.maxVisible' as TranslationKey) : undefined}
-                      />
-                    </div>
+                      disabled={disabled}
+                      aria-label={t(feature.label)}
+                      title={disabled ? t('settings.bottomNav.maxVisible' as TranslationKey) : undefined}
+                    />
                   </div>
                 )
               })}
@@ -295,7 +283,7 @@ const SettingsView: React.FC = () => {
           <p className="text-xs text-muted-foreground mb-3">
             {t('settings.pomodoro.note' as TranslationKey)}
           </p>
-          <div className="bg-card border border-border rounded-lg p-4 max-w-md space-y-4">
+          <SettingsList className="max-w-md">
             <SwitchField
               id="auto-start-pomodoro"
               label={t('settings.autoStartPomodoro')}
@@ -303,131 +291,43 @@ const SettingsView: React.FC = () => {
               checked={settings.autoStartPomodoro}
               onCheckedChange={(checked) => updateSettings({ autoStartPomodoro: checked })}
             />
-            <div className="flex items-center justify-between gap-3">
-              <label htmlFor="focus-duration" className="font-medium text-sm">{t('settings.pomodoro.focusDuration')}</label>
-              <div className="flex items-center gap-1">
-                <Button
-                  type="button"
-                  size="icon-sm"
-                  variant="outline"
-                  onClick={() => stepPomodoroSetting('focusDuration', -1)}
-                  aria-label="Decrease focus duration"
-                >
-                  –
-                </Button>
-                <input
-                  id="focus-duration"
-                  type="number"
-                  min="1"
-                  value={pomodoroSettings.focusDuration}
-                  onChange={(e) => handlePomodoroSettingChange('focusDuration', e.target.value)}
-                  className="w-16 px-2 py-1 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-center"
-                />
-                <Button
-                  type="button"
-                  size="icon-sm"
-                  variant="outline"
-                  onClick={() => stepPomodoroSetting('focusDuration', 1)}
-                  aria-label="Increase focus duration"
-                >
-                  +
-                </Button>
-              </div>
-            </div>
-            <div className="flex items-center justify-between gap-3">
-              <label htmlFor="short-break" className="font-medium text-sm">{t('settings.pomodoro.shortBreak')}</label>
-              <div className="flex items-center gap-1">
-                <Button
-                  type="button"
-                  size="icon-sm"
-                  variant="outline"
-                  onClick={() => stepPomodoroSetting('shortBreakDuration', -1)}
-                  aria-label="Decrease short break duration"
-                >
-                  –
-                </Button>
-                <input
-                  id="short-break"
-                  type="number"
-                  min="1"
-                  value={pomodoroSettings.shortBreakDuration}
-                  onChange={(e) => handlePomodoroSettingChange('shortBreakDuration', e.target.value)}
-                  className="w-16 px-2 py-1 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-center"
-                />
-                <Button
-                  type="button"
-                  size="icon-sm"
-                  variant="outline"
-                  onClick={() => stepPomodoroSetting('shortBreakDuration', 1)}
-                  aria-label="Increase short break duration"
-                >
-                  +
-                </Button>
-              </div>
-            </div>
-            <div className="flex items-center justify-between gap-3">
-              <label htmlFor="long-break" className="font-medium text-sm">{t('settings.pomodoro.longBreak')}</label>
-              <div className="flex items-center gap-1">
-                <Button
-                  type="button"
-                  size="icon-sm"
-                  variant="outline"
-                  onClick={() => stepPomodoroSetting('longBreakDuration', -1)}
-                  aria-label="Decrease long break duration"
-                >
-                  –
-                </Button>
-                <input
-                  id="long-break"
-                  type="number"
-                  min="1"
-                  value={pomodoroSettings.longBreakDuration}
-                  onChange={(e) => handlePomodoroSettingChange('longBreakDuration', e.target.value)}
-                  className="w-16 px-2 py-1 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-center"
-                />
-                <Button
-                  type="button"
-                  size="icon-sm"
-                  variant="outline"
-                  onClick={() => stepPomodoroSetting('longBreakDuration', 1)}
-                  aria-label="Increase long break duration"
-                >
-                  +
-                </Button>
-              </div>
-            </div>
-            <div className="flex items-center justify-between gap-3">
-              <label htmlFor="long-break-interval" className="font-medium text-sm">{t('settings.pomodoro.longBreakInterval')}</label>
-              <div className="flex items-center gap-1">
-                <Button
-                  type="button"
-                  size="icon-sm"
-                  variant="outline"
-                  onClick={() => stepInterval(-1)}
-                  aria-label="Decrease sessions until long break"
-                >
-                  –
-                </Button>
-                <input
-                  id="long-break-interval"
-                  type="number"
-                  min="1"
-                  value={pomodoroSettings.sessionsUntilLongBreak}
-                  onChange={(e) => handleIntervalChange(e.target.value)}
-                  className="w-16 px-2 py-1 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-center"
-                />
-                <Button
-                  type="button"
-                  size="icon-sm"
-                  variant="outline"
-                  onClick={() => stepInterval(1)}
-                  aria-label="Increase sessions until long break"
-                >
-                  +
-                </Button>
-              </div>
-            </div>
-          </div>
+            <SettingsNumberStepper
+              id="focus-duration"
+              label={t('settings.pomodoro.focusDuration')}
+              value={pomodoroSettings.focusDuration}
+              onChange={(raw) => handlePomodoroSettingChange('focusDuration', raw)}
+              onStep={(delta) => stepPomodoroSetting('focusDuration', delta)}
+              decreaseAriaLabel="Decrease focus duration"
+              increaseAriaLabel="Increase focus duration"
+            />
+            <SettingsNumberStepper
+              id="short-break"
+              label={t('settings.pomodoro.shortBreak')}
+              value={pomodoroSettings.shortBreakDuration}
+              onChange={(raw) => handlePomodoroSettingChange('shortBreakDuration', raw)}
+              onStep={(delta) => stepPomodoroSetting('shortBreakDuration', delta)}
+              decreaseAriaLabel="Decrease short break duration"
+              increaseAriaLabel="Increase short break duration"
+            />
+            <SettingsNumberStepper
+              id="long-break"
+              label={t('settings.pomodoro.longBreak')}
+              value={pomodoroSettings.longBreakDuration}
+              onChange={(raw) => handlePomodoroSettingChange('longBreakDuration', raw)}
+              onStep={(delta) => stepPomodoroSetting('longBreakDuration', delta)}
+              decreaseAriaLabel="Decrease long break duration"
+              increaseAriaLabel="Increase long break duration"
+            />
+            <SettingsNumberStepper
+              id="long-break-interval"
+              label={t('settings.pomodoro.longBreakInterval')}
+              value={pomodoroSettings.sessionsUntilLongBreak}
+              onChange={handleIntervalChange}
+              onStep={stepInterval}
+              decreaseAriaLabel="Decrease sessions until long break"
+              increaseAriaLabel="Increase sessions until long break"
+            />
+          </SettingsList>
         </section>
         
         <NotificationSettings />

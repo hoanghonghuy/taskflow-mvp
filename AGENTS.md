@@ -41,3 +41,37 @@ This project is indexed by GitNexus as **taskflow-mvp** (2395 symbols, 5670 rela
 | Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
 
 <!-- gitnexus:end -->
+
+<!-- synapse:init -->
+
+## Synapse (local MCP engine)
+
+This workspace uses **Synapse**. Start stack: `syn up` · check: `syn status` · dashboard: http://127.0.0.1:47280
+
+### Session start
+
+1. `syn up` (use `syn up` without `--bundled` for FastEmbed — no Ollama required).
+2. Reload Cursor MCP after `.cursor/mcp.json` changes.
+3. Call MCP **`memory_context`** (memory-bank, handoff, recent bugs).
+
+### MCP server `synapse` (stdio → `~/.synapse/bin/mcp-gateway`)
+
+| Tool | Purpose |
+|------|---------|
+| `memory_context` | Load session context |
+| `memory_handoff` | End-of-session handoff |
+| `code_context` / `code_impact` / `code_query` / `code_overview` | Native code graph (tree-sitter) |
+| `diff_impact` | Impact from git diff |
+| `search_docs` | Semantic search over indexed docs/specs |
+| `search_registry` | Skills / registry lookup |
+| `openspec_router` / `openspec_propose` / `openspec_apply` | OpenSpec workflow (when `openspec/` present) |
+
+**Embed:** FastEmbed in-process (`SYNAPSE_ENGINE__EMBED_PROVIDER=fastembed`) — no external Ollama.  
+**Code intel:** native `pkg/codegraph` — not GitNexus unless explicitly configured.
+
+### Do not commit
+
+`.synapse/`, `memory-bank/`, `.env` secrets. After provider change: `syn migrate`.
+
+<!-- /synapse:init -->
+

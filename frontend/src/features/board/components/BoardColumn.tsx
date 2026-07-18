@@ -140,7 +140,7 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
           </button>
         )}
       </div>
-      <div className="p-2 space-y-2">
+      <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-2">
         {tasks.map(task => (
           <TaskItem
             key={task.id}

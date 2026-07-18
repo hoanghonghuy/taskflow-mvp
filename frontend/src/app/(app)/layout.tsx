@@ -18,6 +18,7 @@ import ShareListModal from '@/components/collaboration/ShareListModal'
 import Chatbot from '@/components/chatbot/Chatbot'
 import { useModal } from '@/components/providers/modal-provider'
 import { AI_FEATURES_ENABLED } from '@/lib/feature-flags'
+import { AppLoadingSkeleton } from '@/components/layout/app-loading-skeleton'
 
 export default function AppLayout({
   children,
@@ -106,14 +107,7 @@ export default function AppLayout({
   // Theme is handled by SettingsProvider
 
   if (!authReady || !isAuthenticated || isHydrating) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">{t('common.loading')}</p>
-        </div>
-      </div>
-    )
+    return <AppLoadingSkeleton />
   }
 
   return (

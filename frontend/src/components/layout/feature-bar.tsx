@@ -23,16 +23,16 @@ function NavButton({ label, onClick, isActive, children, className }: NavButtonP
       title={label}
       aria-label={label}
       aria-current={isActive ? 'page' : undefined}
-      className={`relative w-12 h-12 flex items-center justify-center rounded-2xl transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+      className={`relative w-12 h-12 flex items-center justify-center rounded-xl transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
         isActive
-          ? 'bg-primary/25 text-primary font-semibold ring-2 ring-primary/60 border border-primary/50 shadow-[0_5px_15px_rgba(0,0,0,0.35)]'
-          : 'text-muted-foreground hover:bg-muted/80 hover:text-foreground'
+          ? 'bg-muted text-foreground'
+          : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
       } ${className || ''}`}
     >
       <span
         aria-hidden="true"
-        className={`absolute left-1 top-2 bottom-2 w-1 rounded-full transition-all ${
-          isActive ? 'bg-primary opacity-100 scale-y-100' : 'opacity-0 scale-y-50'
+        className={`absolute left-1.5 top-3 bottom-3 w-0.5 rounded-full bg-foreground transition-opacity ${
+          isActive ? 'opacity-100' : 'opacity-0'
         }`}
       />
       {children}

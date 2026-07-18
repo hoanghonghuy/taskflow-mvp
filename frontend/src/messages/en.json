@@ -15,7 +15,6 @@
     "subtitle": "System management",
     "backToApp": "Back to app",
     "signedInAs": "Signed in as",
-    "singletonNote": "Only one system admin account exists",
     "nav": {
       "dashboard": "Dashboard",
       "users": "Users"
@@ -89,8 +88,8 @@
       "savedBody": "User information has been saved.",
       "saveFailedTitle": "Save failed",
       "saveFailedBody": "Could not update user information.",
-      "protectedTitle": "System account",
-      "protectedBody": "The single admin account cannot be edited or deleted from here.",
+    "protectedTitle": "Protected account",
+    "protectedBody": "This admin account can’t be edited or deleted here.",
       "delete": "Delete user",
       "deleteConfirmTitle": "Delete {{name}}?",
       "deleteConfirmBody": "This will permanently remove the user and all related data.",
@@ -171,12 +170,10 @@
     "registerSubtitle": "Enter your information to get started",
     "forgotPasswordTitle": "Forgot password",
     "forgotPasswordSubtitle": "Enter your email and we’ll send you instructions to reset your password.",
-    "forgotPasswordMvpBadge": "MVP",
-    "forgotPasswordMvpNote": "Email reset not available yet",
     "forgotPasswordAlternativesTitle": "What you can do instead",
     "forgotPasswordAlternativeRegister": "Create a new account with a different email",
     "forgotPasswordAlternativeRetry": "Try signing in again if you remember your password",
-    "forgotPasswordAlternativeAdmin": "Self-hosted: ask your admin to reset access via the database or seed env",
+    "forgotPasswordAlternativeAdmin": "Contact your administrator if you cannot sign in",
     "emailPlaceholder": "Enter your email",
     "namePlaceholder": "Your name",
     "passwordPlaceholder": "Enter your password",
@@ -732,7 +729,7 @@
     "saved": "Settings saved successfully",
     "ai": {
       "title": "AI Assistant",
-      "serverManaged": "AI is configured on the backend via AI_PROVIDER. Use GEMINI_API_KEY for Gemini, or OPENAI_API_KEY + OPENAI_BASE_URL + OPENAI_MODEL for OpenAI-compatible APIs (OpenAI, Ollama, LM Studio, etc.). Keys are not stored in the browser."
+      "serverManaged": "AI features are managed by the server and are not available in the app yet."
     },
     "gemini": {
       "title": "Gemini API",
@@ -768,8 +765,6 @@
     }
   },
   "console": {
-    "geminiKeyFound": "Gemini API key found but backend integration is pending. Gemini features will be disabled.",
-    "geminiKeyNotFound": "NEXT_PUBLIC_GEMINI_API_KEY environment variable not found. Gemini features will be disabled.",
     "reorderTask": "Reorder task",
     "mockRegistration": "Mock registration",
     "failedParseUser": "Failed to parse saved user",
@@ -920,7 +915,7 @@
     "overdue": "Overdue",
     "all": "All",
     "loading": "Loading...",
-    "notFoundTitle": "404",
+    "notFoundTitle": "Page not found",
     "notFoundBody": "Page not found.",
     "goToDashboard": "Go to dashboard",
     "errorTitle": "Something went wrong",
@@ -1111,7 +1106,7 @@
   "shareList": {
     "title": "Share \"{{listName}}\"",
     "subtitle": "Manage who can access this list.",
-    "readOnlyNotice": "MVP: invited members have read-only access to tasks. Write access is planned for a future release.",
+    "readOnlyNotice": "Invited members can view tasks only.",
     "members": "Members",
     "owner": "Owner",
     "invite": "Invite others",
@@ -1138,7 +1133,6 @@
     "noResults": "No tasks found for \"{{searchTerm}}\"",
     "loading": "Searching…",
     "error": "Search failed. Please try again.",
-    "serverHint": "Search runs on the server — results stay accurate as your task list grows.",
     "matchInDescription": "In description",
     "matchInTag": "Tag",
     "matchInSubtask": "Subtask",

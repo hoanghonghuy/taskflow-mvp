@@ -18,7 +18,7 @@ import type { List } from '@/types'
 import { isOwnedList } from '@/lib/utils/list-access'
 
 const LIST_ACTION_BUTTON_CLASS =
-  'opacity-100 md:opacity-0 md:group-hover:opacity-100 text-muted-foreground p-0.5 rounded'
+  'text-muted-foreground p-0.5 rounded hover:bg-muted/80'
 
 function isInboxList(list: Pick<List, 'id' | 'name'>): boolean {
   return list.id === 'inbox' || list.name === 'Inbox'
@@ -137,7 +137,9 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
         onClick={handleClick}
         onKeyDown={handleKeyDown}
         className={`w-full flex items-center justify-between text-sm px-3 py-2 rounded-md transition-colors group cursor-pointer ${
-          isActive ? 'bg-primary/10 text-primary font-semibold' : 'hover:bg-muted/50'
+          isActive
+            ? 'bg-muted text-foreground font-medium'
+            : 'text-foreground/90 hover:bg-muted/50'
         }`}
       >
         {children}
@@ -233,6 +235,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                   {state.lists.map(list => {
                     const taskCount = state.tasks.filter(t => t.listId === list.id && !t.completed).length
                     const canManageList = isOwnedList(list, user?.id)
+                    const showActions = canManageList && !isInboxList(list)
                     return (
                       <NavItem
                         key={list.id}
@@ -242,44 +245,54 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                           router.push('/list')
                         }}
                       >
-                        <div className="flex items-center gap-3 min-w-0">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
                           <span
                             className="h-2.5 w-2.5 rounded-full shrink-0"
                             style={{ backgroundColor: list.color || '#6b7280' }}
                             aria-hidden="true"
                           />
                           <ListBulletIcon className="h-5 w-5 shrink-0" />
-                          <span className="truncate flex-1 text-left">{list.name}</span>
+                          <span className="truncate text-left">{list.name}</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-medium text-muted-foreground">{taskCount}</span>
-                          {canManageList && !isInboxList(list) && (
-                            <button
-                              onClick={(e) => { e.stopPropagation(); setEditingList(list) }}
-                              className={`${LIST_ACTION_BUTTON_CLASS} hover:text-primary`}
-                              aria-label={t('sidebar.aria.editList', { listName: list.name })}
-                            >
-                              <span className="text-xs font-semibold">✎</span>
-                            </button>
-                          )}
-                          {canManageList && onShareList && !isInboxList(list) && (
-                            <button 
-                              onClick={(e) => { e.stopPropagation(); onShareList(list.id); }} 
-                              className={`${LIST_ACTION_BUTTON_CLASS} hover:text-primary`}
-                              aria-label={t('sidebar.aria.shareList', { listName: list.name })}
-                            >
-                              <UserPlusIcon className="h-4 w-4" />
-                            </button>
-                          )}
-                          {canManageList && !isInboxList(list) && (
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); handleDeleteList(list.id, list.name); }} 
-                            className={`${LIST_ACTION_BUTTON_CLASS} hover:text-destructive`}
-                            aria-label={t('sidebar.aria.deleteList', { listName: list.name })}
+                        <div className="ml-2 flex shrink-0 items-center">
+                          <div
+                            className={`flex w-16 items-center justify-end gap-0.5 ${
+                              showActions
+                                ? 'opacity-100 md:opacity-0 md:group-hover:opacity-100'
+                                : 'pointer-events-none opacity-0'
+                            }`}
                           >
-                            <TrashIcon className="h-4 w-4" />
-                          </button>
-                          )}
+                            {showActions && (
+                              <>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); setEditingList(list) }}
+                                  className={`${LIST_ACTION_BUTTON_CLASS} hover:text-primary`}
+                                  aria-label={t('sidebar.aria.editList', { listName: list.name })}
+                                >
+                                  <span className="text-xs font-semibold">✎</span>
+                                </button>
+                                {onShareList && (
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); onShareList(list.id); }}
+                                    className={`${LIST_ACTION_BUTTON_CLASS} hover:text-primary`}
+                                    aria-label={t('sidebar.aria.shareList', { listName: list.name })}
+                                  >
+                                    <UserPlusIcon className="h-4 w-4" />
+                                  </button>
+                                )}
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handleDeleteList(list.id, list.name); }}
+                                  className={`${LIST_ACTION_BUTTON_CLASS} hover:text-destructive`}
+                                  aria-label={t('sidebar.aria.deleteList', { listName: list.name })}
+                                >
+                                  <TrashIcon className="h-4 w-4" />
+                                </button>
+                              </>
+                            )}
+                          </div>
+                          <span className="w-5 text-right text-xs font-medium tabular-nums text-muted-foreground">
+                            {taskCount}
+                          </span>
                         </div>
                       </NavItem>
                     )
@@ -315,7 +328,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                       <div
                         key={tag}
                         className={`group w-full flex items-center justify-between text-sm px-3 py-2 rounded-md transition-colors ${
-                          state.activeTag === tag ? 'bg-primary/10' : 'hover:bg-muted/50'
+                          state.activeTag === tag ? 'bg-muted' : 'hover:bg-muted/50'
                         }`}
                       >
                         <button
@@ -326,7 +339,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                               onClose()
                             }
                           }}
-                          className={`grow flex items-center gap-3 text-left ${state.activeTag === tag ? 'text-primary font-semibold' : ''}`}
+                          className={`grow flex items-center gap-3 text-left ${state.activeTag === tag ? 'font-medium text-foreground' : ''}`}
                         >
                           <TagIcon className="h-5 w-5" />
                           <span className="truncate flex-1">{tag}</span>

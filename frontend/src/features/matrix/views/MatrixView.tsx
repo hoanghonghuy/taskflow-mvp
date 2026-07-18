@@ -9,13 +9,13 @@ import TaskItem from '@/features/tasks/components/TaskItem'
 import type { Task, Priority } from '@/types'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
 import { isSharedListMember } from '@/lib/utils/list-access'
+import { cn } from '@/lib/utils'
 
 interface QuadrantConfig {
   id: string
   priorities: Priority[]
   dropPriority: Priority
-  border: string
-  background: string
+  accent: string
   titleKey: 'matrix.q1.title' | 'matrix.q2.title' | 'matrix.q3.title' | 'matrix.q4.title'
   subtitleKey: 'matrix.q1.subtitle' | 'matrix.q2.subtitle' | 'matrix.q3.subtitle' | 'matrix.q4.subtitle'
   priorityLabelKey: 'matrix.priorities.high' | 'matrix.priorities.low' | 'matrix.priorities.medium' | 'matrix.priorities.none'
@@ -32,6 +32,7 @@ interface QuadrantProps {
   onTaskDragEnd: () => void
 }
 
+/** Board-style column: equal-height card, header strip, scroll body. */
 const Quadrant: React.FC<QuadrantProps> = ({
   config,
   tasks,
@@ -49,24 +50,32 @@ const Quadrant: React.FC<QuadrantProps> = ({
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
-      className={`
-        p-4 rounded-xl flex flex-col border transition-all
-        ${config.border} ${config.background}
-        ${isDragOver ? 'ring-2 ring-primary/60 shadow-lg' : ''}
-      `}
+      className={cn(
+        'flex min-h-[280px] flex-col rounded-xl border border-border bg-card shadow-sm transition-colors md:min-h-[calc(100vh-240px)]',
+        isDragOver && 'border-primary bg-primary/5',
+      )}
     >
-      <div className="mb-4">
-        <div className="flex items-center gap-2">
-          <h3 className="font-bold">{t(config.titleKey)}</h3>
-          <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-background/80 text-muted-foreground border border-border">
-            {t(config.priorityLabelKey)}
-          </span>
+      <div className="flex shrink-0 items-start gap-2 border-b border-border/60 p-3">
+        <span
+          className={cn('mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full', config.accent)}
+          aria-hidden
+        />
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="text-sm font-semibold text-foreground">{t(config.titleKey)}</h3>
+            <span className="rounded-md border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+              {t(config.priorityLabelKey)}
+            </span>
+            <span className="ml-auto inline-flex items-center justify-center rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+              {tasks.length}
+            </span>
+          </div>
+          <p className="mt-0.5 text-xs text-muted-foreground">{t(config.subtitleKey)}</p>
         </div>
-        <p className="text-xs text-muted-foreground">{t(config.subtitleKey)}</p>
       </div>
-      <div className="flex-1 overflow-y-auto pr-2 space-y-2 min-h-[120px]">
+      <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-2">
         {tasks.length > 0 ? (
-          tasks.map(task => (
+          tasks.map((task) => (
             <div key={task.id} onDragEnd={onTaskDragEnd}>
               <TaskItem
                 task={task}
@@ -76,7 +85,7 @@ const Quadrant: React.FC<QuadrantProps> = ({
             </div>
           ))
         ) : (
-          <div className="text-center text-sm text-muted-foreground pt-8">
+          <div className="flex h-full min-h-[120px] items-center justify-center px-4 text-center text-sm text-muted-foreground">
             {t('matrix.empty')}
           </div>
         )}
@@ -90,8 +99,7 @@ const QUADRANT_CONFIG: QuadrantConfig[] = [
     id: 'urgentImportant',
     priorities: ['urgent', 'high'],
     dropPriority: 'urgent',
-    border: 'border-[hsl(var(--color-priority-high) / 0.6)]',
-    background: 'bg-[hsl(var(--color-priority-high) / 0.05)]',
+    accent: 'bg-[hsl(var(--color-priority-high))]',
     titleKey: 'matrix.q1.title',
     subtitleKey: 'matrix.q1.subtitle',
     priorityLabelKey: 'matrix.priorities.high',
@@ -100,8 +108,7 @@ const QUADRANT_CONFIG: QuadrantConfig[] = [
     id: 'notUrgentImportant',
     priorities: ['low'],
     dropPriority: 'low',
-    border: 'border-[hsl(var(--color-priority-low) / 0.5)]',
-    background: 'bg-[hsl(var(--color-priority-low) / 0.05)]',
+    accent: 'bg-[hsl(var(--color-priority-low))]',
     titleKey: 'matrix.q2.title',
     subtitleKey: 'matrix.q2.subtitle',
     priorityLabelKey: 'matrix.priorities.low',
@@ -110,8 +117,7 @@ const QUADRANT_CONFIG: QuadrantConfig[] = [
     id: 'urgentNotImportant',
     priorities: ['medium'],
     dropPriority: 'medium',
-    border: 'border-[hsl(var(--color-priority-medium) / 0.6)]',
-    background: 'bg-[hsl(var(--color-priority-medium) / 0.05)]',
+    accent: 'bg-[hsl(var(--color-priority-medium))]',
     titleKey: 'matrix.q3.title',
     subtitleKey: 'matrix.q3.subtitle',
     priorityLabelKey: 'matrix.priorities.medium',
@@ -120,8 +126,7 @@ const QUADRANT_CONFIG: QuadrantConfig[] = [
     id: 'notUrgentNotImportant',
     priorities: ['none'],
     dropPriority: 'none',
-    border: 'border-[hsl(var(--color-muted-foreground) / 0.3)]',
-    background: 'bg-[hsl(var(--color-muted) / 0.5)]',
+    accent: 'bg-muted-foreground/50',
     titleKey: 'matrix.q4.title',
     subtitleKey: 'matrix.q4.subtitle',
     priorityLabelKey: 'matrix.priorities.none',
@@ -136,16 +141,16 @@ const MatrixView: React.FC = () => {
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null)
   const [dragOverQuadrantId, setDragOverQuadrantId] = useState<string | null>(null)
 
-  const tasks = state.tasks.filter(task => !task.completed)
+  const tasks = state.tasks.filter((task) => !task.completed)
 
   const tasksByQuadrant = useMemo(() => {
     const map: Record<string, Task[]> = {}
-    QUADRANT_CONFIG.forEach(config => {
+    QUADRANT_CONFIG.forEach((config) => {
       map[config.id] = []
     })
 
-    tasks.forEach(task => {
-      const quadrant = QUADRANT_CONFIG.find(config =>
+    tasks.forEach((task) => {
+      const quadrant = QUADRANT_CONFIG.find((config) =>
         config.priorities.includes((task.priority || 'none') as Priority),
       )
       const targetId = quadrant?.id ?? 'notUrgentNotImportant'
@@ -175,7 +180,7 @@ const MatrixView: React.FC = () => {
     const taskId = e.dataTransfer.getData('taskId') || draggedTaskId
     if (!taskId) return
 
-    const task = state.tasks.find(item => item.id === taskId)
+    const task = state.tasks.find((item) => item.id === taskId)
     if (!task || task.priority === dropPriority) {
       handleTaskDragEnd()
       return
@@ -193,33 +198,28 @@ const MatrixView: React.FC = () => {
 
   return (
     <AppPage>
-      <AppPageContainer>
-        <header className="py-6 border-b border-border shrink-0 hidden md:block space-y-2">
-          <h1 className="text-2xl md:text-3xl font-bold">{t('matrix.title')}</h1>
+      <AppPageContainer className="max-w-none">
+        <header className="hidden shrink-0 space-y-1 border-b border-border py-4 md:block md:py-6">
+          <h1 className="text-2xl font-bold md:text-3xl">{t('matrix.title')}</h1>
           <p className="text-muted-foreground">{t('matrix.subtitle')}</p>
-          <p className="text-sm text-muted-foreground">{t('matrix.description')}</p>
-          <p className="text-xs text-muted-foreground/80">{t('matrix.dragHint')}</p>
+          <p className="text-xs text-muted-foreground">{t('matrix.dragHint')}</p>
         </header>
       </AppPageContainer>
-      <AppPageMain className="h-full py-4 md:py-6 md:max-w-none">
-        <div className="h-full flex items-stretch">
-          <div className="w-full h-full">
-            <div className="grid grid-cols-1 md:grid-cols-2 md:grid-rows-2 gap-4 h-full">
-              {QUADRANT_CONFIG.map(config => (
-                <Quadrant
-                  key={config.id}
-                  config={config}
-                  tasks={tasksByQuadrant[config.id] || []}
-                  isDragOver={dragOverQuadrantId === config.id}
-                  onDragOver={e => handleQuadrantDragOver(e, config.id)}
-                  onDragLeave={() => setDragOverQuadrantId(prev => (prev === config.id ? null : prev))}
-                  onDrop={e => handleQuadrantDrop(e, config.dropPriority)}
-                  onTaskDragStart={handleTaskDragStart}
-                  onTaskDragEnd={handleTaskDragEnd}
-                />
-              ))}
-            </div>
-          </div>
+      <AppPageMain className="h-full py-4 md:max-w-none md:py-6">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:items-stretch">
+          {QUADRANT_CONFIG.map((config) => (
+            <Quadrant
+              key={config.id}
+              config={config}
+              tasks={tasksByQuadrant[config.id] || []}
+              isDragOver={dragOverQuadrantId === config.id}
+              onDragOver={(e) => handleQuadrantDragOver(e, config.id)}
+              onDragLeave={() => setDragOverQuadrantId((prev) => (prev === config.id ? null : prev))}
+              onDrop={(e) => handleQuadrantDrop(e, config.dropPriority)}
+              onTaskDragStart={handleTaskDragStart}
+              onTaskDragEnd={handleTaskDragEnd}
+            />
+          ))}
         </div>
       </AppPageMain>
     </AppPage>

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useI18n } from '@/lib/i18n/hooks'
 import { useConfirmation } from '@/components/providers/confirmation-provider'
 import { useToast } from '@/lib/hooks/use-toast'
@@ -105,7 +106,16 @@ export default function AdminUserDetailPage() {
   }
 
   if (loading) {
-    return <p className="text-muted-foreground">{t('admin.userDetail.loading')}</p>
+    return (
+      <div className="space-y-6 max-w-3xl">
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-4 w-64" />
+        </div>
+        <Skeleton className="h-32 w-full rounded-lg" />
+        <Skeleton className="h-40 w-full rounded-lg" />
+      </div>
+    )
   }
 
   if (!user) {

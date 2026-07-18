@@ -1,5 +1,7 @@
-# Dev stack — mount source + npm run dev (giống iris-app/web). Sửa code không cần --build.
-# Production: docker compose -f docker-compose.prod.yml up -d --build
+# Dev stack — mount source + hot reload.
+# `docker compose up -d --build` → rebuild image (deps).
+# `docker compose restart frontend` → restart Next nhanh, không npm ci lại (trừ khi lockfile đổi).
+# Production: dùng frontend/Dockerfile + backend/Dockerfile (standalone).
 
 services:
   postgres:
@@ -23,7 +25,10 @@ services:
       - taskflow-net
 
   backend:
-    image: node:22-alpine
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    image: taskflow-backend:dev
     container_name: taskflow-backend
     restart: unless-stopped
     working_dir: /app
@@ -40,16 +45,14 @@ services:
       - backend_node_modules:/app/node_modules
     ports:
       - "${BACKEND_PORT:-8081}:8080"
-    command: >
-      sh -c "npm ci
-      && npx prisma generate
-      && npx prisma migrate deploy
-      && npm run dev"
     networks:
       - taskflow-net
 
   frontend:
-    image: node:22-alpine
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    image: taskflow-frontend:dev
     container_name: taskflow-frontend
     restart: unless-stopped
     working_dir: /app
@@ -69,7 +72,6 @@ services:
       - frontend_node_modules:/app/node_modules
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
-    command: sh -c "npm ci && npm run dev -- --hostname 0.0.0.0 --port 3000"
     networks:
       - taskflow-net
 

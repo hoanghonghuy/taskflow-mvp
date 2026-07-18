@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation'
 import { getSearchMatchMeta } from '@/lib/utils/search-helpers'
 import { HighlightText } from '@/components/ui/highlight-text'
 import * as tasksApi from '@/lib/api/tasks'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface SearchModalProps {
   onClose: () => void
@@ -55,10 +56,10 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose }) => {
             setSearchResults(results)
           }
         })
-        .catch((error: unknown) => {
+        .catch(() => {
           if (!cancelled) {
             setSearchResults([])
-            setSearchError(error instanceof Error ? error.message : t('search.error'))
+            setSearchError(t('search.error'))
           }
         })
         .finally(() => {
@@ -120,12 +121,13 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose }) => {
             <div className="text-center py-12 text-muted-foreground space-y-2">
               <p className="text-sm">{t('search.hintEmpty')}</p>
               <p className="text-xs">{t('search.hintScopes')}</p>
-              <p className="text-xs">{t('search.serverHint')}</p>
             </div>
           )}
           {trimmedTerm && activeSearching && (
-            <div className="text-center py-12 text-muted-foreground text-sm">
-              {t('search.loading')}
+            <div className="space-y-2 py-4" aria-busy="true" aria-label={t('search.loading')}>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-12 w-full rounded-lg" />
+              ))}
             </div>
           )}
           {trimmedTerm && activeError && !activeSearching && (
