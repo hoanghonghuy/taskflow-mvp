@@ -1,6 +1,6 @@
 # Taskflow MVP — Độ hoàn thiện tính năng so với nghiệp vụ
 
-> Cập nhật: **2026-06-13** (sau production hardening Phase 1–4).  
+> Cập nhật: **2026-06-16** (sau PR-1/PR-2 read access, forgot-password MVP, pomodoro fix).  
 > Đối chiếu README, luồng UI, API backend, E2E Playwright.  
 > Mức % là **ước lượng** theo tiêu chí: *user story cốt lõi hoàn thành được end-to-end với backend thật*.
 
@@ -14,13 +14,13 @@ Liên quan: [ISSUES.md](./ISSUES.md) (backlog kỹ thuật), [README.md](../READ
 |------|----------------|---------------|
 | **Tasks (cốt lõi)** | ~90% | CRUD + 4 view + persist DB; debounce edit, undo ổn hơn; focus time có trên task |
 | **Habits / Countdown / Pomodoro** | ~85% | MVP cá nhân đủ; habits grid + timezone VN |
-| **Auth / Admin** | ~82% | Login/register/logout/middleware; forgot password vẫn placeholder |
+| **Auth / Admin** | ~86% | JWT edge verify; forgot password MVP (không email) |
 | **Profile / Achievements** | ~80% | Sửa tên + toast; achievements i18n en/vi |
-| **Settings / i18n / Mobile** | ~88% | Theme, ngôn ngữ, bottom nav, mobile actions; AI key UI chưa có |
-| **Lists / Collaboration** | ~58% | Share list UI OK; member **không** thấy data owner |
+| **Settings / i18n / Mobile** | ~88% | Theme, ngôn ngữ, bottom nav; AI key UI chưa có |
+| **Lists / Collaboration** | ~72% | Share UI + member **đọc** list/task; chưa write; board columns owner-only |
 | **AI** | ~15% UI / ~55% BE | Backend sẵn; UI tắt cờ `AI_FEATURES_ENABLED` |
 
-**Kết luận:** MVP **đủ dùng ổn cho 1 người** sau hardening 2026-06-13. Chưa đủ nếu kỳ vọng **cộng tác thật (multi-tenant)**, **AI trên UI**, hoặc **forgot password / email**.
+**Kết luận:** MVP **đủ dùng ổn cho 1 người** và **xem** list được share. Chưa đủ nếu kỳ vọng **cộng tác chỉnh sửa chung**, **AI trên UI**, hoặc **reset password qua email**.
 
 ---
 
@@ -86,17 +86,17 @@ File tham chiếu: `TaskForm.tsx`, `TaskDetail.tsx`, `task-manager-provider.tsx`
 
 ---
 
-## 5. Auth — ~82%
+## 5. Auth — ~86%
 
 | User story | Thực tế | Gap |
 |------------|---------|-----|
 | Đăng ký / đăng nhập | ✅ JWT + refresh | — |
 | Session ổn định | ✅ `/api/auth/me` rebuild user | — |
-| Route guard | ✅ `middleware.ts` cookie presence | Không validate JWT trên edge |
+| Route guard | ✅ `middleware.ts` verify JWT (`jose`) + refresh fallback | — |
 | Session hết hạn | ✅ 401 → `emitSessionExpired` đồng bộ providers | — |
 | Đăng xuất | ✅ Revoke + redirect `/login` | E2E logout ✅ (`auth.spec.ts`) |
 | Đổi tên | ✅ API + UI profile + toast | — |
-| Quên mật khẩu | ❌ | Trang tĩnh "chưa hỗ trợ" — không gửi email |
+| Quên mật khẩu | ⚠️ | `PASSWORD_RESET_ENABLED = false` — trang hướng dẫn MVP, **không** email |
 | OAuth / verify email | ❌ | Ngoài scope MVP |
 
 ---
@@ -138,14 +138,16 @@ Backend achievements: `first-task`, `complete-10`, `complete-50`, `habit-7-day-s
 
 ---
 
-## 9. Lists & Collaboration — ~58%
+## 9. Lists & Collaboration — ~72%
 
 | User story | Thực tế | Gap |
 |------------|---------|-----|
 | Tạo/xóa list (trừ Inbox) | ✅ Sidebar; share/delete visible mobile | Không rename/đổi màu từ UI |
 | Share list / members | ✅ Mời email; xóa member; Inbox không share | — |
 | Assignee task | ⚠️ | Cần share list trước |
-| Member thấy list của owner | ❌ | **PR-2** — chưa multi-tenant list view |
+| Member thấy list/task owner | ✅ | Read-only TaskDetail; integration `collaboration.test.ts` |
+| Member sửa task/list owner | ❌ | API trả 404 — **PR-2b** write access |
+| Board columns shared list | ⚠️ | Columns lưu trên settings owner — member chưa thấy layout Kanban custom |
 
 ---
 
@@ -194,10 +196,10 @@ Backend achievements: `first-task`, `complete-10`, `complete-50`, `habit-7-day-s
 
 - Landing `/` → `/login`
 - AI UI tắt — toast "đang phát triển"
-- Forgot password — trang placeholder, không email
-- Share list UI ✅ — nhưng member không thấy data owner
+- Forgot password — `PASSWORD_RESET_ENABLED = false`, trang hướng dẫn
+- Share list — member **đọc** được; **không** sửa task/list owner
 - Undo không phải server-side undo stack
-- Middleware cookie-only guard
+- Middleware JWT verify + refresh cookie fallback
 
 ---
 
@@ -206,10 +208,10 @@ Backend achievements: `first-task`, `complete-10`, `complete-50`, `habit-7-day-s
 | Ưu tiên | Hạng mục | Lý do |
 |---------|----------|-------|
 | ~~P0–PH4~~ | Production hardening + BC-1..4 | ✅ Done (2026-06-13) |
-| **P1** | Multi-tenant collaboration (PR-2) | Member mời vào list nhưng không thấy task |
-| **P2** | Forgot password thật hoặc gỡ route | Tránh dead-end UX |
-| **P3** | JWT validation trên middleware (PR-1) | Cookie có thể stale |
-| **P4** | Server search, rename list, admin E2E edit/delete | Nice-to-have |
+| ~~PR-1, PR-2 read, FP-1~~ | JWT edge, collaboration read, forgot MVP | ✅ Done (2026-06-16) |
+| **P1** | Collaboration write (PR-2b) | Member chưa chỉnh task/list owner |
+| **P2** | Forgot password email (FP-2) | Cần mailer + backend reset flow |
+| **P3** | Server search, rename list, admin E2E edit/delete | Nice-to-have |
 | ~~AI UI~~ | Bật khi sẵn sàng | **Hoãn** — xem ISSUES.md |
 
 ---
@@ -218,16 +220,16 @@ Backend achievements: `first-task`, `complete-10`, `complete-50`, `habit-7-day-s
 
 | Tính năng | Unit | E2E | Ghi chú |
 |-----------|------|-----|---------|
-| Backend API | 173 pass | — | ~94% coverage |
-| Frontend logic | 235 pass (2 skipped contract) | — | +`session-events`, `achievements-i18n` |
+| Backend API | 205 pass | — | ~93% coverage |
+| Frontend logic | 238 pass (2 skipped contract) | — | +`verify-access-token`, collaboration BE |
 | Tasks, Board, Habits, Countdown, Settings | — | ✅ 6–8 spec | Happy path |
-| Auth | — | 4 test | +logout redirect |
+| Auth | — | 5 test | +logout, forgot-password MVP |
 | Admin | — | 3 test | Thiếu edit/delete user |
-| Lists | — | **0 spec** | Gián tiếp qua sidebar/board |
+| Lists / Collaboration | — | **0 E2E** | BE integration `collaboration.test.ts` |
 | Profile/Achievements | — | 9 test | — |
 | AI | — | 2–3 test | Path "disabled" |
 
-Test pass 100% **không đồng nghĩa** nghiệp vụ đủ — gap multi-tenant và forgot-password nằm ngoài E2E.
+Test pass 100% **không đồng nghĩa** nghiệp vụ đủ — gap collaboration write và email reset nằm ngoài E2E.
 
 ---
 

@@ -8,6 +8,8 @@ import { UserProvider } from './user-provider'
 import { SettingsProvider } from './settings-provider'
 import { ConfirmationProvider } from './confirmation-provider'
 import { TaskManagerProvider } from './task-manager-provider'
+import { TaskReminderWatcher } from './task-reminder-watcher'
+import { PomodoroSessionWatcher } from './pomodoro-session-watcher'
 import { ModalProvider } from './modal-provider'
 import { GeminiProvider } from '@/lib/hooks/use-gemini'
 
@@ -25,6 +27,8 @@ export function Providers({ children, initialLocale }: ProvidersProps) {
             <UserProvider>
               <TaskManagerProvider>
                 <ToastProvider>
+                  <TaskReminderWatcher />
+                  <PomodoroSessionWatcher />
                   <ModalProvider>
                     <ConfirmationProvider>
                       {children}

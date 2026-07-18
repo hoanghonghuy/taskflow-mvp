@@ -7,10 +7,12 @@ export async function findByUserId(userId: string): Promise<UserSettings | null>
 }
 
 export async function getOrCreate(userId: string): Promise<UserSettings> {
-  const existing = await findByUserId(userId)
-  if (existing) return existing
-
-  return prisma.userSettings.create({ data: defaultSettingsData(userId) })
+  // upsert tránh race khi 2 request lần đầu cùng tạo settings (unique userId).
+  return prisma.userSettings.upsert({
+    where: { userId },
+    create: defaultSettingsData(userId),
+    update: {},
+  })
 }
 
 export async function upsertByUserId(

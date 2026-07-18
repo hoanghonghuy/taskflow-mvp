@@ -1,10 +1,19 @@
 import type { Request, Response } from 'express'
 import { sendCreated, sendError, sendNoContent, sendSuccess } from '../lib/response'
 import * as taskService from '../services/taskService'
-import { createTaskSchema, reorderTasksSchema, updateTaskSchema } from '../validators/task.validator'
+import { createTaskSchema, reorderTasksSchema, searchTasksQuerySchema, updateTaskSchema } from '../validators/task.validator'
 
 export async function list(req: Request, res: Response): Promise<void> {
   const tasks = await taskService.listTasks(req.userId!)
+  sendSuccess(res, tasks)
+}
+
+export async function search(req: Request, res: Response): Promise<void> {
+  const query = searchTasksQuerySchema.parse({
+    q: req.query.q,
+    limit: req.query.limit,
+  })
+  const tasks = await taskService.searchTasks(req.userId!, query.q, query.limit)
   sendSuccess(res, tasks)
 }
 

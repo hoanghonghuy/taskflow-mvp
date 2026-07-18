@@ -1,13 +1,15 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useTaskManager, useTaskActions } from '@/components/providers/task-manager-provider'
+import { useUser } from '@/components/providers/user-provider'
 import { useI18n } from '@/lib/i18n/hooks'
 import { useGemini } from '@/lib/hooks/use-gemini'
 import { useAiFeature } from '@/lib/hooks/use-ai-feature'
 import { AI_FEATURES_ENABLED } from '@/lib/feature-flags'
 import { useToast } from '@/components/providers/toast-provider'
 import type { Task, Priority } from '@/types'
+import type { TranslationKey } from '@/lib/i18n/types'
 import {
   CloseIcon,
   SparklesIcon,
@@ -19,6 +21,8 @@ import {
 import { PRIORITY_MAP } from '@/lib/task-constants'
 import { Skeleton } from '@/components/ui/skeleton'
 import * as aiApi from '@/lib/api/ai'
+import { isOwnedList } from '@/lib/utils/list-access'
+import { dateOnlyInputToIso, toYYYYMMDD } from '@/lib/utils/date-helpers'
 
 interface TaskFormProps {
   onClose: () => void
@@ -30,6 +34,7 @@ interface TaskFormProps {
 
 const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
   const { state } = useTaskManager()
+  const { user } = useUser()
   const { addTask } = useTaskActions()
   const { t, currentLanguage } = useI18n()
   const { isAvailable: isGeminiAvailable } = useGemini()
@@ -37,8 +42,14 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
   const showAiAssist = AI_FEATURES_ENABLED && isGeminiAvailable
   const addToast = useToast()
 
+  const ownedLists = useMemo(
+    () => state.lists.filter((list) => isOwnedList(list, user?.id)),
+    [state.lists, user?.id],
+  )
+
   const resolveInboxListId = () => {
-    const inbox = state.lists.find((l) => l.name === 'Inbox' || l.id === 'inbox')
+    const inbox = ownedLists.find((l) => l.name === 'Inbox' || l.id === 'inbox')
+      ?? state.lists.find((l) => l.name === 'Inbox' || l.id === 'inbox')
     return inbox?.id ?? 'inbox'
   }
 
@@ -48,7 +59,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
     if (initial === 'today' || initial === 'upcoming' || initial === 'inbox') {
       return inboxListId
     }
-    const listExists = state.lists.some((l) => l.id === initial)
+    const listExists = ownedLists.some((l) => l.id === initial)
     if (!listExists) {
       return inboxListId
     }
@@ -61,6 +72,10 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
   const [priority, setPriority] = useState<Priority>('none')
   const [listId, setListId] = useState(getInitialListId())
   const [columnId, setColumnId] = useState<string | undefined>(defaultValues?.columnId)
+  const [tags, setTags] = useState<string[]>([])
+  const [newTag, setNewTag] = useState('')
+  const [reminderMinutes, setReminderMinutes] = useState<number | ''>('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [textToAnalyze, setTextToAnalyze] = useState('')
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   
@@ -74,25 +89,44 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
     }
   }, [listId, columnId, state.columns])
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') return
     e.preventDefault()
-    if (title.trim()) {
-      const newTask: Omit<Task, 'id'> = {
-        title: title.trim(),
-        description: description.trim(),
-        completed: false,
-        dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
-        priority,
-        listId: listId || resolveInboxListId(),
-        columnId: columnId,
-        tags: [],
-        subtasks: [],
-        createdAt: new Date().toISOString(),
-        totalFocusTime: 0,
-        comments: [],
-      }
-      addTask(newTask)
+    const value = newTag.trim()
+    if (!value || tags.includes(value)) return
+    setTags((prev) => [...prev, value])
+    setNewTag('')
+  }
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setTags((prev) => prev.filter((tag) => tag !== tagToRemove))
+  }
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (!title.trim() || isSubmitting) return
+
+    setIsSubmitting(true)
+    const newTask: Omit<Task, 'id'> = {
+      title: title.trim(),
+      description: description.trim(),
+      completed: false,
+      dueDate: dueDate ? dateOnlyInputToIso(dueDate) : undefined,
+      priority,
+      listId: listId || resolveInboxListId(),
+      columnId: columnId,
+      tags,
+      subtasks: [],
+      reminderMinutes: reminderMinutes === '' ? undefined : reminderMinutes,
+      createdAt: new Date().toISOString(),
+      totalFocusTime: 0,
+      comments: [],
+    }
+    try {
+      await addTask(newTask)
       onClose()
+    } finally {
+      setIsSubmitting(false)
     }
   }
   
@@ -114,7 +148,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
       if (data && data.dueDate) {
         const parsed = new Date(data.dueDate)
         if (!Number.isNaN(parsed.getTime())) {
-          setDueDate(parsed.toISOString().split('T')[0])
+          setDueDate(toYYYYMMDD(parsed))
         }
       }
 
@@ -246,6 +280,60 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
                 </select>
               </div>
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-foreground">
+                  {t('taskForm.tagsLabel')}
+                </label>
+                <div className="flex flex-wrap items-center gap-2 p-2 min-h-[44px] bg-secondary/50 border border-border rounded-md">
+                  {tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-xs font-medium"
+                    >
+                      #{tag}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTag(tag)}
+                        className="rounded-full hover:bg-muted-foreground/20"
+                        aria-label={t('taskForm.removeTagAria', { tag })}
+                      >
+                        <CloseIcon className="h-3 w-3" />
+                      </button>
+                    </span>
+                  ))}
+                  <input
+                    type="text"
+                    value={newTag}
+                    onChange={(e) => setNewTag(e.target.value)}
+                    onKeyDown={handleAddTag}
+                    placeholder={t('taskForm.tagsPlaceholder')}
+                    className="grow min-w-[120px] bg-transparent text-sm focus:outline-none"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">{t('taskForm.tagsHelper')}</p>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-foreground">
+                  {t('taskForm.reminderLabel')}
+                </label>
+                <select
+                  value={reminderMinutes}
+                  onChange={(e) => {
+                    const raw = e.target.value
+                    setReminderMinutes(raw === '' ? '' : parseInt(raw, 10))
+                  }}
+                  className="w-full p-3 bg-secondary/50 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-colors appearance-none cursor-pointer"
+                >
+                  <option value="">{t('taskDetail.noReminder')}</option>
+                  <option value="5">{t('reminder.5min')}</option>
+                  <option value="15">{t('reminder.15min')}</option>
+                  <option value="30">{t('reminder.30min')}</option>
+                  <option value="60">{t('reminder.1hour')}</option>
+                </select>
+              </div>
+            </div>
             
             <div className="border-t border-border pt-4"></div>
             
@@ -259,9 +347,12 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
                 onChange={e => setListId(e.target.value)} 
                 className="w-full p-3 bg-secondary/50 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-colors appearance-none cursor-pointer"
               >
-                <option value="inbox">{t('specialLists.inbox')}</option>
-                {state.lists.map(list => (
-                  <option key={list.id} value={list.id}>{list.name}</option>
+                {ownedLists.map((list) => (
+                  <option key={list.id} value={list.id}>
+                    {list.name === 'Inbox' || list.id === 'inbox'
+                      ? t('specialLists.inbox')
+                      : list.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -292,8 +383,9 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
                 {t('common.cancel')}
               </button>
               <button 
-                type="submit" 
-                className="px-5 py-2.5 bg-primary text-primary-foreground rounded-md text-sm font-semibold hover:bg-primary/90 transition-all shadow-sm hover:shadow-md order-1 sm:order-2"
+                type="submit"
+                disabled={isSubmitting}
+                className="px-5 py-2.5 bg-primary text-primary-foreground rounded-md text-sm font-semibold hover:bg-primary/90 transition-all shadow-sm hover:shadow-md order-1 sm:order-2 disabled:opacity-60 disabled:pointer-events-none"
               >
                 {t('taskForm.createTask')}
               </button>

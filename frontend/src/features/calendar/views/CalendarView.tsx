@@ -3,12 +3,14 @@
 import React, { useMemo } from 'react'
 import { useCalendar, type ViewMode } from '@/lib/hooks/use-calendar'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
+import { useUser } from '@/components/providers/user-provider'
 import { useTaskActions } from '@/lib/hooks/use-task-manager'
 import { useI18n } from '@/lib/i18n/hooks'
 import type { TranslationKey } from '@/lib/i18n/types'
 import { useSettings } from '@/components/providers/settings-provider'
 import { CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react'
 import { PRIORITY_MAP } from '@/lib/task-constants'
+import { isSharedListMember } from '@/lib/utils/list-access'
 import type { Task } from '@/types'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
 
@@ -42,6 +44,7 @@ const CalendarView: React.FC = () => {
   const { updateTask } = useTaskActions()
   const { tasks } = state
   const { settings } = useSettings()
+  const { user } = useUser()
 
   const locale = settings.language || undefined
 
@@ -66,11 +69,34 @@ const CalendarView: React.FC = () => {
     return getTasksForDate(selectedDate)
   }, [getTasksForDate, selectedDate])
 
+  const parseCalendarTaskId = (taskId: string) => {
+    const separatorIndex = taskId.lastIndexOf('_')
+    const isInstance =
+      separatorIndex > 0 && /^\d{4}-\d{2}-\d{2}$/.test(taskId.slice(separatorIndex + 1))
+    return {
+      isInstance,
+      originalId: isInstance ? taskId.slice(0, separatorIndex) : taskId,
+      instanceDateStr: isInstance ? taskId.slice(separatorIndex + 1) : null,
+    }
+  }
+
   const moveTaskToDate = (taskId: string, targetDate: Date) => {
-    // Extract original ID if this is a recurring instance
-    const originalId = taskId.includes('_') ? taskId.split('_')[0] : taskId
+    const { isInstance, originalId, instanceDateStr } = parseCalendarTaskId(taskId)
     const task = tasks.find(t => t.id === originalId)
     if (!task) return
+
+    const parentList = state.lists.find((list) => list.id === task.listId)
+    if (isSharedListMember(parentList, user?.id)) return
+
+    // Non-anchor recurring instances: do not move the whole series
+    if (task.recurrence && isInstance && instanceDateStr) {
+      const anchorDateStr = task.dueDate
+        ? new Date(task.dueDate).toISOString().slice(0, 10)
+        : ''
+      if (instanceDateStr !== anchorDateStr) {
+        return
+      }
+    }
 
     const originalDate = task.dueDate ? new Date(task.dueDate) : new Date()
     const newDueDate = new Date(targetDate)
@@ -94,8 +120,21 @@ const CalendarView: React.FC = () => {
   }
 
   const handleTaskClick = (task: Task) => {
-    const originalId = task.id.split('_')[0]
+    const { originalId } = parseCalendarTaskId(task.id)
     dispatch({ type: 'SET_SELECTED_TASK', payload: originalId })
+  }
+
+  const canDragTask = (task: Task) => {
+    const { isInstance, originalId, instanceDateStr } = parseCalendarTaskId(task.id)
+    const master = tasks.find(t => t.id === originalId) ?? task
+    const parentList = state.lists.find((list) => list.id === master.listId)
+    if (isSharedListMember(parentList, user?.id)) return false
+    if (!isInstance || !instanceDateStr) return true
+    if (!master.recurrence) return true
+    const anchorDateStr = master.dueDate
+      ? new Date(master.dueDate).toISOString().slice(0, 10)
+      : ''
+    return instanceDateStr === anchorDateStr
   }
 
   const renderTaskPill = (task: Task) => {
@@ -103,6 +142,7 @@ const CalendarView: React.FC = () => {
     const bg = priority.checkboxBorderValue
 
     const isDraggingThis = draggedTaskId === task.id
+    const draggable = canDragTask(task)
 
     const timeLabel = task.dueDate
       ? new Date(task.dueDate).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
@@ -111,12 +151,12 @@ const CalendarView: React.FC = () => {
     return (
       <div
         key={task.id}
-        draggable
-        onDragStart={(e) => handleTaskDragStart(e, task.id)}
-        onDragEnd={handleTaskDragEnd}
-        className={`w-full text-[10px] px-2 py-0.5 rounded-md text-background flex items-center gap-1 cursor-grab active:cursor-grabbing transition-opacity shadow-sm ${
-          isDraggingThis ? 'opacity-60' : ''
-        }`}
+        draggable={draggable}
+        onDragStart={draggable ? (e) => handleTaskDragStart(e, task.id) : undefined}
+        onDragEnd={draggable ? handleTaskDragEnd : undefined}
+        className={`w-full text-[10px] px-2 py-0.5 rounded-md text-background flex items-center gap-1 shadow-sm transition-opacity ${
+          draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
+        } ${isDraggingThis ? 'opacity-60' : ''}`}
         style={{ backgroundColor: bg }}
         title={task.title}
         onClick={() => handleTaskClick(task)}

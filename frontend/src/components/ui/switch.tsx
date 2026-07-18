@@ -8,7 +8,7 @@ import { Loader2Icon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const switchVariants = cva(
-  "peer inline-flex shrink-0 items-center rounded-full border shadow-xs outline-none transition-all focus-visible:ring-[3px] focus-visible:border-ring focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:border-primary data-[state=checked]:shadow-[0_0_0_1px_hsl(var(--color-primary)/0.6)] data-[state=unchecked]:bg-muted/60 dark:data-[state=unchecked]:bg-muted/60 data-[state=unchecked]:border-border-subtle",
+  "peer inline-flex shrink-0 items-center rounded-full border shadow-xs outline-none transition-all focus-visible:ring-[3px] focus-visible:border-ring focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:border-primary data-[state=checked]:shadow-[0_0_0_1px_hsl(var(--color-primary) / 0.6)] data-[state=unchecked]:bg-muted/60 dark:data-[state=unchecked]:bg-muted/60 data-[state=unchecked]:border-border-subtle",
   {
     variants: {
       size: {

@@ -205,11 +205,31 @@ describe('tasks API client', () => {
     await expect(deleteTask('missing')).resolves.toBeUndefined()
   })
 
+  it('deleteTask throws on 403 forbidden', async () => {
+    mockFetch.mockResolvedValue({ ok: false, status: 403, json: async () => ({ error: 'forbidden' }) } as Response)
+    const { deleteTask } = await import('@/lib/api/tasks')
+
+    await expect(deleteTask('shared-task')).rejects.toThrow('Failed to delete task: 403')
+  })
+
   it('deleteTask throws on other errors', async () => {
     mockFetch.mockResolvedValue({ ok: false, status: 500, json: async () => ({ error: 'server error' }) } as Response)
     const { deleteTask } = await import('@/lib/api/tasks')
 
     await expect(deleteTask('t1')).rejects.toThrow('Failed to delete task: 500')
+  })
+
+  it('searchTasks calls search endpoint with encoded query', async () => {
+    const tasks = [{ Id: 't1', Title: 'Electricity', Completed: false, ListId: 'inbox' }]
+    mockFetch.mockResolvedValue(jsonResponse(tasks))
+    const { searchTasks } = await import('@/lib/api/tasks')
+
+    const result = await searchTasks('electricity', 25)
+    expect(result).toHaveLength(1)
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/api/tasks/search?q=electricity&limit=25',
+      expect.any(Object),
+    )
   })
 })
 
@@ -667,7 +687,7 @@ describe('domain api modules', () => {
     expect(sessions).toHaveLength(1)
 
     const state = await pomodoroApi.fetchPomodoroState(fallback)
-    expect(state?.isActive).toBe(true)
+    expect(state?.patch.isActive).toBe(true)
 
     await pomodoroApi.updatePomodoroState({ ...fallback, isActive: true })
     expect(mockFetch).toHaveBeenLastCalledWith(

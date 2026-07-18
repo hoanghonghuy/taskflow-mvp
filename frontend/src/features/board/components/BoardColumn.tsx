@@ -16,6 +16,7 @@ interface BoardColumnProps {
   onDropOnColumn: (columnId: string) => void
   onOpenTaskForm?: (defaultValues?: { listId?: string; columnId?: string }) => void
   onColumnDragStart: (columnId: string) => void
+  canManageColumns?: boolean
 }
 
 const BoardColumn: React.FC<BoardColumnProps> = ({
@@ -25,6 +26,7 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
   onDropOnColumn,
   onOpenTaskForm,
   onColumnDragStart,
+  canManageColumns = true,
 }) => {
   const { updateColumn, deleteColumn } = useColumnActions()
   const { t } = useI18n()
@@ -83,15 +85,21 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
       onDrop={handleDrop}
     >
       <div className="p-3 flex items-center gap-2 shrink-0 border-b border-border/60">
-        <div
-          draggable
-          onDragStart={() => onColumnDragStart(column.id)}
-          className="cursor-grab active:cursor-grabbing text-muted-foreground/50 hover:text-muted-foreground p-1 -ml-1"
-          aria-label={t('board.column.dragHandle')}
-        >
-          <GripVerticalIcon className="h-5 w-5" />
-        </div>
-        {isRenaming ? (
+        {canManageColumns ? (
+          <div
+            draggable
+            onDragStart={() => onColumnDragStart(column.id)}
+            className="cursor-grab active:cursor-grabbing text-muted-foreground/50 hover:text-muted-foreground p-1 -ml-1"
+            aria-label={t('board.column.dragHandle')}
+          >
+            <GripVerticalIcon className="h-5 w-5" />
+          </div>
+        ) : (
+          <div className="p-1 -ml-1 text-muted-foreground/30" aria-hidden>
+            <GripVerticalIcon className="h-5 w-5" />
+          </div>
+        )}
+        {canManageColumns && isRenaming ? (
           <form onSubmit={handleRenameSubmit} className="grow">
             <input
               type="text"
@@ -102,7 +110,7 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
               className="font-semibold text-sm p-1 -m-1 bg-secondary rounded-md focus:outline-none focus:ring-2 focus:ring-primary w-full"
             />
           </form>
-        ) : (
+        ) : canManageColumns ? (
           <button
             type="button"
             className="flex items-center justify-between gap-2 grow text-left cursor-pointer"
@@ -113,15 +121,24 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
               {tasks.length}
             </span>
           </button>
+        ) : (
+          <div className="flex items-center justify-between gap-2 grow text-left">
+            <span className="font-semibold text-sm truncate">{column.name}</span>
+            <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs bg-muted text-muted-foreground">
+              {tasks.length}
+            </span>
+          </div>
         )}
-        <button
-          type="button"
-          onClick={handleDeleteColumn}
-          className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-muted/60 transition-colors"
-          aria-label={t('board.column.delete')}
-        >
-          <TrashIcon className="h-4 w-4" />
-        </button>
+        {canManageColumns && (
+          <button
+            type="button"
+            onClick={handleDeleteColumn}
+            className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-muted/60 transition-colors"
+            aria-label={t('board.column.delete')}
+          >
+            <TrashIcon className="h-4 w-4" />
+          </button>
+        )}
       </div>
       <div className="p-2 space-y-2">
         {tasks.map(task => (
@@ -134,7 +151,7 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
           />
         ))}
       </div>
-      {onOpenTaskForm && (
+      {onOpenTaskForm && canManageColumns && (
         <div className="p-2 shrink-0">
           <button
             onClick={() => onOpenTaskForm({ listId: column.listId, columnId: column.id })}

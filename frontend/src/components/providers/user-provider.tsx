@@ -69,18 +69,21 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
               setAllUsers([])
               localStorage.removeItem('user')
               localStorage.removeItem('isAuthenticated')
+              void authApi.logout().catch(() => {})
             }
           } else {
             setUser(null)
             setAllUsers([])
             localStorage.removeItem('user')
             localStorage.removeItem('isAuthenticated')
+            void authApi.logout().catch(() => {})
           }
         } else {
           setUser(null)
           setAllUsers([])
           localStorage.removeItem('user')
           localStorage.removeItem('isAuthenticated')
+          void authApi.logout().catch(() => {})
         }
       } catch {
         if (!cancelled) {

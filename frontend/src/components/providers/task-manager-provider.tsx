@@ -7,6 +7,7 @@ import { historyReducer } from '@/lib/store/task-manager/history-reducer'
 import { INITIAL_STATE } from '@/lib/store/task-manager/initial-state'
 import { useToast } from '@/lib/hooks/use-toast'
 import { useUser } from './user-provider'
+import { useSettings } from './settings-provider'
 import * as countdownApi from '@/lib/api/countdown'
 import * as habitsApi from '@/lib/api/habits'
 import * as listsApi from '@/lib/api/lists'
@@ -31,6 +32,7 @@ const TaskManagerContext = createContext<TaskManagerContextType | undefined>(und
 export function TaskManagerProvider({ children }: { children: React.ReactNode }) {
   const { t } = useI18n()
   const { isAuthenticated } = useUser()
+  const { settings: userSettings } = useSettings()
   const hasLoadedFromBackend = useRef(false)
   const wasAuthenticatedRef = useRef(isAuthenticated)
   const [isHydrating, setIsHydrating] = useState(false)
@@ -48,6 +50,8 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
   )
 
   const pomodoroRef = useRef<PomodoroState>(historyState.present.pomodoro)
+  /** Server pomodoroStateUpdatedAt for optimistic concurrency on PUT. */
+  const pomodoroServerUpdatedAtRef = useRef<string | null>(null)
 
   const syncFromBackend = useCallback(async () => {
     if (!isAuthenticated) return
@@ -99,6 +103,10 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
 
   // Save to localStorage whenever state changes (debounced)
   useEffect(() => {
+    if (!isAuthenticated) {
+      return
+    }
+
     const timeoutId = setTimeout(() => {
       try {
         localStorage.setItem('taskflowState', JSON.stringify(historyState.present))
@@ -108,11 +116,14 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
     }, 500)
 
     return () => clearTimeout(timeoutId)
-  }, [historyState.present, t])
+  }, [historyState.present, isAuthenticated, t])
 
   useEffect(() => {
     pomodoroRef.current = historyState.present.pomodoro
   }, [historyState.present.pomodoro])
+
+  const presentRef = useRef(historyState.present)
+  presentRef.current = historyState.present
 
   useLayoutEffect(() => {
     if (!isAuthenticated) {
@@ -125,8 +136,10 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
 
     hasLoadedFromBackend.current = true
     setIsHydrating(true)
+    let cancelled = false
 
     const loadFromBackend = async () => {
+      const presentSnapshot = presentRef.current
       try {
         const [tasks, lists, habits, countdownEvents] = await Promise.all([
           tasksApi.fetchTasks(),
@@ -134,6 +147,8 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
           habitsApi.fetchHabits(),
           countdownApi.fetchCountdowns(),
         ])
+
+        if (cancelled) return
 
         // Derive available tags from tasks loaded from backend so sidebar tags
         // reflect real data instead of only local state.
@@ -145,9 +160,9 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
         }
         const tags = Array.from(tagSet).sort()
 
-        let unlockedAchievements = historyState.present.unlockedAchievements ?? []
-        let focusHistory = historyState.present.pomodoro.focusHistory ?? []
-        let pomodoroState = historyState.present.pomodoro
+        let unlockedAchievements = presentSnapshot.unlockedAchievements ?? []
+        let focusHistory = presentSnapshot.pomodoro.focusHistory ?? []
+        let pomodoroState = presentSnapshot.pomodoro
 
         try {
           const ps = await settingsApi.fetchPomodoroSettings()
@@ -171,6 +186,8 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
           console.error('Failed to load settings from backend', error)
         }
 
+        if (cancelled) return
+
         try {
           unlockedAchievements = await profileApi.fetchAchievements()
         } catch (error) {
@@ -184,17 +201,20 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
         }
 
         try {
-          const statePatch = await pomodoroApi.fetchPomodoroState(pomodoroState)
-          if (statePatch) {
-            pomodoroState = { ...pomodoroState, ...statePatch }
+          const stateResult = await pomodoroApi.fetchPomodoroState(pomodoroState)
+          if (stateResult) {
+            pomodoroState = { ...pomodoroState, ...stateResult.patch }
+            pomodoroServerUpdatedAtRef.current = stateResult.updatedAt
           }
         } catch (error) {
           console.error('Failed to load pomodoro state from backend', error)
         }
 
+        if (cancelled) return
+
         const inboxList = lists.find((l) => l.name === 'Inbox' || l.id === 'inbox')
         const inboxListId = inboxList?.id ?? lists[0]?.id ?? 'inbox'
-        const previousActive = historyState.present.activeListId
+        const previousActive = presentSnapshot.activeListId
         const activeListId =
           previousActive === 'inbox'
             ? inboxListId
@@ -211,10 +231,12 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
           console.error('Failed to load board columns from settings', error)
         }
 
+        if (cancelled) return
+
         const columns = resolveBoardColumns(savedBoardColumns, lists, tasks)
 
         const nextState: AppState = {
-          ...historyState.present,
+          ...presentSnapshot,
           tasks,
           lists,
           columns,
@@ -233,12 +255,18 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
       } catch (error) {
         console.error('Failed to load data from backend', error)
       } finally {
-        setIsHydrating(false)
+        if (!cancelled) {
+          setIsHydrating(false)
+        }
       }
     }
 
-    loadFromBackend()
-  }, [historyState.present, dispatch, hasLoadedFromBackend, isAuthenticated])
+    void loadFromBackend()
+
+    return () => {
+      cancelled = true
+    }
+  }, [dispatch, isAuthenticated])
 
   // Pomodoro timer tick
   useEffect(() => {
@@ -304,15 +332,52 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
       previous.focusedTaskId !== current.focusedTaskId ||
       previous.focusedHabitId !== current.focusedHabitId
 
+    const sessionCompleted =
+      previous.isActive &&
+      !current.isActive &&
+      previous.currentSession !== current.currentSession
+
+    if (sessionCompleted && userSettings.autoStartPomodoro) {
+      dispatch({ type: 'START_TIMER' })
+    }
+
     if (!structuralChanged) {
       // Ignore changes that only affect remainingTime (TICK_TIMER) to avoid spamming backend.
       return
     }
 
-    void pomodoroApi.updatePomodoroState(current).catch((error) => {
-      console.error('Failed to sync pomodoro state to backend', error)
-    })
-  }, [historyState.present.pomodoro, isAuthenticated])
+    void pomodoroApi
+      .updatePomodoroState(current, {
+        expectedUpdatedAt: pomodoroServerUpdatedAtRef.current,
+      })
+      .then((result) => {
+        if (result.conflict) {
+          void pomodoroApi.fetchPomodoroState(current).then((fresh) => {
+            if (!fresh) return
+            pomodoroServerUpdatedAtRef.current = fresh.updatedAt
+            dispatch({
+              type: 'LOAD_STATE',
+              payload: {
+                ...presentRef.current,
+                pomodoro: {
+                  ...presentRef.current.pomodoro,
+                  ...fresh.patch,
+                  focusHistory: presentRef.current.pomodoro.focusHistory,
+                  settings: presentRef.current.pomodoro.settings,
+                },
+              },
+            })
+          })
+          return
+        }
+        if (result.updatedAt) {
+          pomodoroServerUpdatedAtRef.current = result.updatedAt
+        }
+      })
+      .catch((error) => {
+        console.error('Failed to sync pomodoro state to backend', error)
+      })
+  }, [historyState.present.pomodoro, isAuthenticated, userSettings.autoStartPomodoro, dispatch])
 
   // Ensure pomodoro state is saved when the user logs out
   useEffect(() => {
@@ -324,6 +389,7 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
       } catch (error) {
         console.error('Failed to sync pomodoro state on logout', error)
       }
+      pomodoroServerUpdatedAtRef.current = null
     }
 
     wasAuthenticatedRef.current = isAuthenticated
@@ -337,44 +403,6 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
       dispatch({ type: 'LOAD_STATE', payload: INITIAL_STATE })
     }
   }, [isAuthenticated, dispatch])
-
-  // Check for task reminders
-  useEffect(() => {
-    const checkReminders = () => {
-      const now = new Date()
-      historyState.present.tasks.forEach((task: Task) => {
-        if (!task.completed && task.dueDate && task.reminderMinutes) {
-          const dueDate = new Date(task.dueDate)
-          const reminderTime = new Date(dueDate.getTime() - task.reminderMinutes * 60 * 1000)
-          
-          if (now >= reminderTime && now < dueDate) {
-            const lastShown = localStorage.getItem(`reminder-${task.id}`)
-            const shouldShow = !lastShown || (now.getTime() - parseInt(lastShown)) > 60000
-            
-            if (shouldShow && 'Notification' in window && Notification.permission === 'granted') {
-              new Notification(t('reminder.notificationTitle' as TranslationKey), {
-                body: t('reminder.notificationBody' as TranslationKey, { title: task.title }),
-                icon: '/favicon.ico'
-              })
-              localStorage.setItem(`reminder-${task.id}`, now.getTime().toString())
-            }
-          }
-        }
-      })
-    }
-
-    const interval = setInterval(checkReminders, 60000)
-    checkReminders()
-
-    return () => clearInterval(interval)
-  }, [historyState.present.tasks, t])
-
-  // Request notification permission on mount
-  useEffect(() => {
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission()
-    }
-  }, [])
 
   const canUndo = historyState.past.length > 0
   const canRedo = historyState.future.length > 0
@@ -414,10 +442,13 @@ async function refreshUnlockedAchievements(dispatch: (action: import('@/lib/stor
   }
 }
 
+const habitToggleInFlight = new Set<string>()
+
 export function useTaskActions() {
   const { state, dispatch } = useTaskManager()
   const { success, error: showError } = useToast()
   const { t } = useI18n()
+  const { user } = useUser()
 
   return {
     addTask: useCallback(async (task: Omit<Task, 'id'>) => {
@@ -452,7 +483,7 @@ export function useTaskActions() {
       }
     }, [dispatch, success, showError, t]),
 
-    updateTask: useCallback(async (task: Task, options?: { silent?: boolean }) => {
+    updateTask: useCallback(async (task: Task, options?: { silent?: boolean; rollback?: Task }) => {
       try {
         const updatedTask = (await tasksApi.updateTask(task.id, {
           title: task.title,
@@ -463,8 +494,6 @@ export function useTaskActions() {
           listId: task.listId,
           columnId: task.columnId ?? null,
           tags: task.tags ?? [],
-          subtasks: task.subtasks ?? [],
-          comments: task.comments ?? [],
           recurrence: task.recurrence ?? null,
           reminderMinutes: task.reminderMinutes ?? null,
           assigneeId: task.assigneeId ?? null,
@@ -479,6 +508,9 @@ export function useTaskActions() {
         }
       } catch (err) {
         console.error('Failed to update task via API', err)
+        if (options?.rollback) {
+          dispatch({ type: 'UPDATE_TASK', payload: options.rollback })
+        }
         showError(
           t('toast.api.taskUpdateFailedTitle' as TranslationKey),
           err instanceof Error ? err.message : undefined,
@@ -534,40 +566,87 @@ export function useTaskActions() {
       // If the API fails, keep local state unchanged.
     }, [dispatch, showError, state.tasks, t]),
 
-    assignTask: useCallback((taskId: string, userId: string | null) => {
-      dispatch(taskActions.assign(taskId, userId))
-      success(
-        t('toast.taskAssignedTitle' as TranslationKey),
-        userId
-          ? t('toast.taskAssignedBody' as TranslationKey)
-          : t('toast.taskAssignmentRemovedBody' as TranslationKey),
-      )
-    }, [dispatch, success, t]),
+    assignTask: useCallback(async (taskId: string, userId: string | null) => {
+      const existing = state.tasks.find((t) => t.id === taskId)
+      if (!existing) return
 
-    addComment: useCallback((taskId: string, comment: Comment) => {
-      dispatch(taskActions.addComment(taskId, comment))
-      success(
-        t('toast.commentAddedTitle' as TranslationKey),
-        t('toast.commentAddedBody' as TranslationKey),
-      )
-    }, [dispatch, success, t]),
+      try {
+        const updatedTask = await tasksApi.updateTask(taskId, { assigneeId: userId })
+        if (updatedTask) {
+          dispatch({ type: 'UPDATE_TASK', payload: updatedTask })
+        }
+        success(
+          t('toast.taskAssignedTitle' as TranslationKey),
+          userId
+            ? t('toast.taskAssignedBody' as TranslationKey)
+            : t('toast.taskAssignmentRemovedBody' as TranslationKey),
+        )
+      } catch (err) {
+        console.error('Failed to assign task via API', err)
+        showError(
+          t('toast.api.taskUpdateFailedTitle' as TranslationKey),
+          err instanceof Error ? err.message : undefined,
+        )
+      }
+    }, [dispatch, showError, state.tasks, success, t]),
+
+    addComment: useCallback(async (taskId: string, comment: Comment) => {
+      const existing = state.tasks.find((t) => t.id === taskId)
+      if (!existing) return
+      const comments = [...(existing.comments ?? []), comment]
+      try {
+        const updatedTask = (await tasksApi.updateTask(taskId, { comments })) ?? {
+          ...existing,
+          comments,
+        }
+        dispatch({ type: 'UPDATE_TASK', payload: updatedTask })
+        success(
+          t('toast.commentAddedTitle' as TranslationKey),
+          t('toast.commentAddedBody' as TranslationKey),
+        )
+      } catch (err) {
+        console.error('Failed to add comment via API', err)
+        showError(
+          t('toast.api.taskUpdateFailedTitle' as TranslationKey),
+          err instanceof Error ? err.message : undefined,
+        )
+      }
+    }, [dispatch, showError, state.tasks, success, t]),
 
     reorderTasks: useCallback(async (draggedId: string, droppedOnId: string) => {
       const before = state.tasks
+      const userId = user?.id
+      const isOwnedTask = (task: Task) => {
+        const list = state.lists.find((l) => l.id === task.listId)
+        if (!list?.ownerUserId || !userId) return true
+        return list.ownerUserId === userId
+      }
+
+      const dragged = before.find((t) => t.id === draggedId)
+      if (!dragged || !isOwnedTask(dragged)) return
+
       dispatch(taskActions.reorder(draggedId, droppedOnId))
 
-      const reordered = [...before]
-      const draggedIndex = reordered.findIndex((t) => t.id === draggedId)
-      const droppedIndex = reordered.findIndex((t) => t.id === droppedOnId)
-      if (draggedIndex === -1 || droppedIndex === -1) return
+      const ownedBefore = before.filter(isOwnedTask)
+      const reorderedOwned = [...ownedBefore]
+      const draggedIndex = reorderedOwned.findIndex((t) => t.id === draggedId)
+      const droppedIndex = reorderedOwned.findIndex((t) => t.id === droppedOnId)
+      if (draggedIndex === -1) return
 
-      const [draggedTask] = reordered.splice(draggedIndex, 1)
-      reordered.splice(droppedIndex, 0, draggedTask)
+      const [draggedTask] = reorderedOwned.splice(draggedIndex, 1)
+      const insertAt =
+        droppedIndex === -1
+          ? reorderedOwned.length
+          : droppedIndex > draggedIndex
+            ? droppedIndex - 1
+            : droppedIndex
+      reorderedOwned.splice(Math.max(0, insertAt), 0, draggedTask)
 
       try {
-        const tasks = await tasksApi.reorderTasks(reordered.map((t) => t.id))
+        const tasks = await tasksApi.reorderTasks(reorderedOwned.map((t) => t.id))
         if (tasks.length > 0) {
-          dispatch({ type: 'SET_TASKS', payload: tasks })
+          const sharedTasks = before.filter((t) => !isOwnedTask(t))
+          dispatch({ type: 'SET_TASKS', payload: [...tasks, ...sharedTasks] })
         }
       } catch (err) {
         console.error('Failed to reorder tasks via API', err)
@@ -577,7 +656,7 @@ export function useTaskActions() {
           err instanceof Error ? err.message : undefined,
         )
       }
-    }, [dispatch, showError, state.tasks, t]),
+    }, [dispatch, showError, state.lists, state.tasks, t, user?.id]),
 
     syncSubtasks: useCallback(async (taskId: string, subtasks: import('@/types').Subtask[]) => {
       const existing = state.tasks.find((t) => t.id === taskId)
@@ -691,8 +770,47 @@ export function useTaskActions() {
   }
 }
 
-async function persistBoardColumns(columns: Column[]): Promise<void> {
-  await settingsApi.updateBoardColumns(columns)
+async function persistBoardColumns(columns: Column[], touchedListId?: string): Promise<void> {
+  // Merge by listId against remote so other tabs editing different lists are not clobbered.
+  const remotePayload = await settingsApi.fetchSettings()
+  const remoteColumns = Array.isArray(
+    (remotePayload as { boardColumns?: Column[] } | null)?.boardColumns,
+  )
+    ? ((remotePayload as { boardColumns: Column[] }).boardColumns)
+    : []
+
+  const localByList = new Map<string, Column[]>()
+  for (const column of columns) {
+    const bucket = localByList.get(column.listId) ?? []
+    bucket.push(column)
+    localByList.set(column.listId, bucket)
+  }
+
+  const touched = touchedListId
+    ? new Set([touchedListId])
+    : new Set(localByList.keys())
+
+  const merged: Column[] = []
+  const seenLists = new Set<string>()
+
+  for (const listId of touched) {
+    const localCols = localByList.get(listId) ?? []
+    merged.push(...localCols)
+    seenLists.add(listId)
+  }
+
+  for (const column of remoteColumns) {
+    if (seenLists.has(column.listId)) continue
+    merged.push(column)
+  }
+
+  // Include any other local lists not already written (first hydrate)
+  for (const [listId, cols] of localByList) {
+    if (seenLists.has(listId)) continue
+    merged.push(...cols)
+  }
+
+  await settingsApi.updateBoardColumns(merged)
 }
 
 export function useColumnActions() {
@@ -701,14 +819,16 @@ export function useColumnActions() {
   const { t } = useI18n()
 
   const applyColumnChange = useCallback(
-    async (action: Action) => {
+    async (action: Action, touchedListId?: string) => {
+      const snapshot = state
       const nextColumns = columnReducer(state, action).columns
       dispatch(action)
 
       try {
-        await persistBoardColumns(nextColumns)
+        await persistBoardColumns(nextColumns, touchedListId)
       } catch (err) {
         console.error('Failed to persist board columns via API', err)
+        dispatch({ type: 'LOAD_STATE', payload: snapshot })
         showError(
           t('toast.api.taskUpdateFailedTitle' as TranslationKey),
           err instanceof Error ? err.message : undefined,
@@ -721,16 +841,22 @@ export function useColumnActions() {
   return {
     addColumn: useCallback(
       (listId: string, name: string) =>
-        applyColumnChange({ type: 'ADD_COLUMN', payload: { listId, name } }),
+        applyColumnChange({ type: 'ADD_COLUMN', payload: { listId, name } }, listId),
       [applyColumnChange],
     ),
     updateColumn: useCallback(
-      (columnId: string, name: string) =>
-        applyColumnChange({ type: 'UPDATE_COLUMN', payload: { columnId, name } }),
-      [applyColumnChange],
+      (columnId: string, name: string) => {
+        const column = state.columns.find((c) => c.id === columnId)
+        return applyColumnChange(
+          { type: 'UPDATE_COLUMN', payload: { columnId, name } },
+          column?.listId,
+        )
+      },
+      [applyColumnChange, state.columns],
     ),
     deleteColumn: useCallback(
       async (columnId: string, listId: string) => {
+        const snapshot = state
         const action = { type: 'DELETE_COLUMN', payload: { columnId, listId } } as const
         const nextState = columnReducer(state, action)
         const affectedTasks = state.tasks.filter((task) => task.columnId === columnId)
@@ -738,7 +864,7 @@ export function useColumnActions() {
         dispatch(action)
 
         try {
-          await persistBoardColumns(nextState.columns)
+          await persistBoardColumns(nextState.columns, listId)
           await Promise.all(
             affectedTasks.map(async (task) => {
               const updatedTask = nextState.tasks.find((t) => t.id === task.id)
@@ -753,6 +879,7 @@ export function useColumnActions() {
           )
         } catch (err) {
           console.error('Failed to delete column via API', err)
+          dispatch({ type: 'LOAD_STATE', payload: snapshot })
           showError(
             t('toast.api.taskUpdateFailedTitle' as TranslationKey),
             err instanceof Error ? err.message : undefined,
@@ -763,10 +890,13 @@ export function useColumnActions() {
     ),
     reorderColumns: useCallback(
       (listId: string, draggedId: string, droppedOnId: string) =>
-        applyColumnChange({
-          type: 'REORDER_COLUMNS',
-          payload: { listId, draggedId, droppedOnId },
-        }),
+        applyColumnChange(
+          {
+            type: 'REORDER_COLUMNS',
+            payload: { listId, draggedId, droppedOnId },
+          },
+          listId,
+        ),
       [applyColumnChange],
     ),
   }
@@ -795,11 +925,19 @@ export function useListActions() {
       }
     }, [dispatch, showError, t]),
 
-    updateList: useCallback(async (list: List) => {
+    updateList: useCallback(async (list: Pick<List, 'id'> & Partial<Pick<List, 'name' | 'color'>>) => {
       try {
-        const updatedList = (await listsApi.updateList(list)) ?? list
+        // Do not send members here — rename must not clobber concurrent share changes.
+        const updatedList =
+          (await listsApi.updateList({
+            id: list.id,
+            name: list.name,
+            color: list.color,
+          })) ?? null
 
-        dispatch({ type: 'UPDATE_LIST', payload: updatedList })
+        if (updatedList) {
+          dispatch({ type: 'UPDATE_LIST', payload: updatedList })
+        }
       } catch (err) {
         console.error('Failed to update list via API', err)
         showError(
@@ -825,19 +963,9 @@ export function useListActions() {
     }, [dispatch, showError, t]),
 
     shareList: useCallback(async (listId: string, userId: string): Promise<boolean> => {
-      const existing = state.lists.find((l) => l.id === listId)
-      if (!existing) return false
-
-      const nextMembers = existing.members.includes(userId)
-        ? existing.members
-        : [...existing.members, userId]
-
       try {
-        const updatedList =
-          (await listsApi.updateList({ ...existing, members: nextMembers })) ?? {
-            ...existing,
-            members: nextMembers,
-          }
+        const updatedList = await listsApi.addListMember(listId, userId)
+        if (!updatedList) return false
 
         dispatch({ type: 'UPDATE_LIST', payload: updatedList })
         return true
@@ -849,20 +977,12 @@ export function useListActions() {
         )
         return false
       }
-    }, [dispatch, showError, state.lists, t]),
+    }, [dispatch, showError, t]),
 
     unshareList: useCallback(async (listId: string, userId: string): Promise<boolean> => {
-      const existing = state.lists.find((l) => l.id === listId)
-      if (!existing) return false
-
-      const nextMembers = existing.members.filter((id) => id !== userId)
-
       try {
-        const updatedList =
-          (await listsApi.updateList({ ...existing, members: nextMembers })) ?? {
-            ...existing,
-            members: nextMembers,
-          }
+        const updatedList = await listsApi.removeListMember(listId, userId)
+        if (!updatedList) return false
 
         dispatch({ type: 'UPDATE_LIST', payload: updatedList })
         return true
@@ -874,7 +994,7 @@ export function useListActions() {
         )
         return false
       }
-    }, [dispatch, showError, state.lists, t]),
+    }, [dispatch, showError, t]),
   }
 }
 
@@ -918,6 +1038,10 @@ export function useHabitActions() {
       const existing = state.habits.find((h) => h.id === habitId)
       if (!existing) return
 
+      const lockKey = `${habitId}:${date}`
+      if (habitToggleInFlight.has(lockKey)) return
+      habitToggleInFlight.add(lockKey)
+
       const isCompleted = existing.completions.includes(date)
 
       try {
@@ -933,6 +1057,8 @@ export function useHabitActions() {
           err instanceof Error ? err.message : undefined,
         )
         return
+      } finally {
+        habitToggleInFlight.delete(lockKey)
       }
 
       dispatch(habitActions.toggleCompletion(habitId, date))

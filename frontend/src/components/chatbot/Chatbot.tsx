@@ -124,7 +124,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ onClose }) => {
                           href={source.uri} 
                           target="_blank" 
                           rel="noopener noreferrer" 
-                          className="hover:underline text-blue-500"
+                          className="hover:underline text-primary"
                         >
                           {source.title}
                         </a>

@@ -171,6 +171,12 @@
     "registerSubtitle": "Enter your information to get started",
     "forgotPasswordTitle": "Forgot password",
     "forgotPasswordSubtitle": "Enter your email and we’ll send you instructions to reset your password.",
+    "forgotPasswordMvpBadge": "MVP",
+    "forgotPasswordMvpNote": "Email reset not available yet",
+    "forgotPasswordAlternativesTitle": "What you can do instead",
+    "forgotPasswordAlternativeRegister": "Create a new account with a different email",
+    "forgotPasswordAlternativeRetry": "Try signing in again if you remember your password",
+    "forgotPasswordAlternativeAdmin": "Self-hosted: ask your admin to reset access via the database or seed env",
     "emailPlaceholder": "Enter your email",
     "namePlaceholder": "Your name",
     "passwordPlaceholder": "Enter your password",
@@ -254,6 +260,7 @@
   "taskDetail": {
     "completed": "Completed",
     "markComplete": "Mark Complete",
+    "sharedReadOnly": "Shared list — view only. Only the list owner can edit this task.",
     "descriptionLabel": "Description",
     "descriptionPlaceholder": "Add description...",
     "assigneeLabel": "Assignee",
@@ -296,6 +303,32 @@
     "addTask": "Add Task",
     "completed": "Completed",
     "loadMore": "Load more",
+    "empty": {
+      "today": {
+        "title": "Nothing due today",
+        "body": "You're clear for today. Add a task with today's due date or check Upcoming."
+      },
+      "upcoming": {
+        "title": "No upcoming tasks",
+        "body": "Tasks with a future due date will show up here."
+      },
+      "inbox": {
+        "title": "Inbox is empty",
+        "body": "Capture new tasks here before sorting them into lists."
+      },
+      "tag": {
+        "title": "No tasks with this tag",
+        "body": "Add this tag to a task to see it here."
+      },
+      "default": {
+        "title": "All done!",
+        "body": "You have no open tasks here. Add one to get started."
+      },
+      "allCompleted": {
+        "title": "All tasks completed",
+        "body": "Every task in this view is done. Expand Completed below or add a new task."
+      }
+    },
     "summary": {
       "today": "Due today",
       "upcoming": "Upcoming (7 days)",
@@ -380,6 +413,10 @@
     "completed": "Completed today",
     "markComplete": "Mark complete",
     "completionRate": "{{rate}}% completion rate (last {{days}} days)",
+    "streakLabel": "{{count}} day streak",
+    "streakTooltip": "Consecutive days completed, counting today or yesterday as the latest day.",
+    "longestStreakTooltip": "Longest active streak across all habits. Complete today or yesterday to keep a streak alive.",
+    "achievementHint": "Unlock the Habit Hero badge with a 7-day streak on any habit.",
     "subtitle": "Build consistent routines with visual streak tracking.",
     "summary": {
       "total": "Tracked habits",
@@ -610,7 +647,8 @@
       "soundDescription": "Play sound effects for notifications",
       "types": "Notification Types",
       "taskReminders": "Task Reminders",
-      "taskRemindersDescription": "Get notified before tasks are due",
+      "taskRemindersDescription": "In-app toast when a task is due soon (requires this tab to stay open)",
+      "taskRemindersTabHint": "Task reminders run in the browser while TaskFlow is open. Keep this tab active for reliable alerts. Optional browser notifications can appear when the tab is in the background.",
       "countdownCompletions": "Countdown Completions",
       "countdownCompletionsDescription": "Alert when countdowns reach zero",
       "taskActions": "Task Actions",
@@ -721,7 +759,8 @@
       "shortBreak": "Short Break (minutes)",
       "longBreak": "Long Break (minutes)",
       "longBreakInterval": "Sessions until long break",
-      "note": "Changes to durations apply to future Pomodoro sessions."
+      "note": "Changes to durations apply to future Pomodoro sessions.",
+      "autoStartDescription": "Automatically start the next focus or break session when the current one ends."
     },
     "language": {
       "en": "English",
@@ -809,7 +848,17 @@
     "aria": {
       "shareList": "Share list {{listName}}",
       "deleteList": "Delete list {{listName}}",
-      "deleteTag": "Delete tag {{tagName}}"
+      "deleteTag": "Delete tag {{tagName}}",
+      "editList": "Edit list {{listName}}"
+    },
+    "editList": {
+      "title": "Edit list",
+      "description": "Rename the list or pick a color for the sidebar.",
+      "nameLabel": "List name",
+      "colorLabel": "Color",
+      "colorOption": "Color {{color}}",
+      "save": "Save changes",
+      "success": "List \"{{listName}}\" updated"
     }
   },
   "mainContent": {
@@ -819,7 +868,11 @@
     "sortTasks": "Sort tasks",
     "undo": "Undo",
     "redo": "Redo",
-    "clearHistory": "Clear History"
+    "clearHistory": "Clear History",
+    "historyLocalNote": "Undo/redo applies to this browser session only — changes are not reverted on the server.",
+    "undoTooltip": "Undo is only for local session changes that are not yet saved to the server",
+    "redoTooltip": "Redo is only for local session changes that are not yet saved to the server",
+    "clearHistoryTooltip": "Clear undo/redo history (local session only)"
   },
   "recurrence": {
     "title": "Recurrence",
@@ -926,7 +979,15 @@
   },
   "matrix": {
     "title": "Priority Matrix",
-    "subtitle": "Incomplete tasks grouped by priority level.",
+    "subtitle": "Open tasks grouped by priority level.",
+    "description": "Each quadrant represents a priority bucket (High/Urgent, Medium, Low, None). Use this view to see what needs attention first.",
+    "dragHint": "Tip: drag a task to another quadrant to change its priority.",
+    "priorities": {
+      "high": "High / Urgent",
+      "medium": "Medium",
+      "low": "Low",
+      "none": "None"
+    },
     "axis": {
       "urgent": "Urgent",
       "notUrgent": "Not Urgent",
@@ -986,6 +1047,11 @@
     "dueDateLabel": "Due Date",
     "priorityLabel": "Priority",
     "listLabel": "List",
+    "tagsLabel": "Tags",
+    "tagsPlaceholder": "Add tag...",
+    "tagsHelper": "Press Enter to add a tag",
+    "reminderLabel": "Reminder",
+    "removeTagAria": "Remove tag {{tag}}",
     "createTask": "Create Task"
   },
   "briefing": {
@@ -1045,6 +1111,7 @@
   "shareList": {
     "title": "Share \"{{listName}}\"",
     "subtitle": "Manage who can access this list.",
+    "readOnlyNotice": "MVP: invited members have read-only access to tasks. Write access is planned for a future release.",
     "members": "Members",
     "owner": "Owner",
     "invite": "Invite others",
@@ -1064,8 +1131,18 @@
     }
   },
   "search": {
-    "placeholder": "Search tasks by title, description, or tag...",
-    "noResults": "No tasks found for \"{{searchTerm}}\""
+    "placeholder": "Search tasks by title, description, tag, subtask, or comment...",
+    "hintEmpty": "Type to search your tasks",
+    "hintScopes": "Matches title, description, tags, subtasks, and comments",
+    "resultCount": "{{count}} result(s)",
+    "noResults": "No tasks found for \"{{searchTerm}}\"",
+    "loading": "Searching…",
+    "error": "Search failed. Please try again.",
+    "serverHint": "Search runs on the server — results stay accurate as your task list grows.",
+    "matchInDescription": "In description",
+    "matchInTag": "Tag",
+    "matchInSubtask": "Subtask",
+    "matchInComment": "Comment"
   },
   "datePicker": {
     "placeholder": "Select a date",

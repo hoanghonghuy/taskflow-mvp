@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from '@/lib/hooks/use-toast'
 import { useI18n } from '@/lib/i18n/hooks'
 import { EyeIcon, EyeSlashIcon } from '@/lib/icons'
+import { PASSWORD_RESET_ENABLED } from '@/lib/feature-flags'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -124,10 +125,13 @@ export default function LoginPage() {
               </div>
               {passwordError && <p className="text-xs text-destructive mt-1">{passwordError}</p>}
             </div>
-            <div className="flex items-center justify-end">
+            <div className="flex flex-col items-end gap-0.5">
               <Link href="/forgot-password" className="text-xs font-medium text-primary hover:underline">
                 {t('auth.forgotPassword')}
               </Link>
+              {!PASSWORD_RESET_ENABLED && (
+                <span className="text-[11px] text-muted-foreground">{t('auth.forgotPasswordMvpNote')}</span>
+              )}
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? t('auth.loggingIn') : t('auth.login')}

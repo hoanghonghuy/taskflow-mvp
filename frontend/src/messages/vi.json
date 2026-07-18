@@ -171,6 +171,12 @@
     "registerSubtitle": "Nhập thông tin để bắt đầu sử dụng",
     "forgotPasswordTitle": "Quên mật khẩu",
     "forgotPasswordSubtitle": "Nhập email để nhận hướng dẫn đặt lại mật khẩu",
+    "forgotPasswordMvpBadge": "MVP",
+    "forgotPasswordMvpNote": "Chưa hỗ trợ gửi email đặt lại",
+    "forgotPasswordAlternativesTitle": "Bạn có thể làm gì thay thế",
+    "forgotPasswordAlternativeRegister": "Tạo tài khoản mới bằng email khác",
+    "forgotPasswordAlternativeRetry": "Thử đăng nhập lại nếu bạn nhớ mật khẩu",
+    "forgotPasswordAlternativeAdmin": "Tự host: nhờ admin reset qua database hoặc cấu hình seed",
     "emailPlaceholder": "Nhập email của bạn",
     "namePlaceholder": "Nhập tên của bạn",
     "passwordPlaceholder": "Nhập mật khẩu của bạn",
@@ -245,11 +251,46 @@
     "noTasks": "Bạn chưa có nhiệm vụ nào ở đây. Thêm một cái để bắt đầu.",
     "addTask": "Thêm Nhiệm vụ",
     "completed": "Đã hoàn thành",
-    "loadMore": "Tải thêm"
+    "loadMore": "Tải thêm",
+    "empty": {
+      "today": {
+        "title": "Hôm nay không có việc",
+        "body": "Bạn đã xong việc hôm nay. Thêm task có hạn hôm nay hoặc xem mục Sắp tới."
+      },
+      "upcoming": {
+        "title": "Không có việc sắp tới",
+        "body": "Task có hạn trong tương lai sẽ hiện ở đây."
+      },
+      "inbox": {
+        "title": "Hộp thư đến trống",
+        "body": "Ghi nhanh task mới vào đây trước khi sắp xếp vào danh sách."
+      },
+      "tag": {
+        "title": "Không có task với thẻ này",
+        "body": "Gắn thẻ này vào task để thấy ở đây."
+      },
+      "default": {
+        "title": "Tất cả đã xong!",
+        "body": "Không còn task mở ở đây. Thêm task mới để bắt đầu."
+      },
+      "allCompleted": {
+        "title": "Đã hoàn thành hết",
+        "body": "Mọi task trong view này đã xong. Mở mục Đã hoàn thành bên dưới hoặc thêm task mới."
+      }
+    },
+    "summary": {
+      "today": "Hạn hôm nay",
+      "upcoming": "Sắp tới (7 ngày)",
+      "overdue": "Quá hạn",
+      "total": "Tất cả task",
+      "tasks": "{{count}} task",
+      "tasks_plural": "{{count}} task"
+    }
   },
   "taskDetail": {
     "completed": "Đã hoàn thành",
     "markComplete": "Đánh dấu hoàn thành",
+    "sharedReadOnly": "Danh sách được chia sẻ — chỉ xem. Chỉ chủ danh sách mới được sửa task này.",
     "descriptionLabel": "Mô tả",
     "descriptionPlaceholder": "Thêm mô tả...",
     "assigneeLabel": "Người được giao",
@@ -372,6 +413,10 @@
     "completed": "Đã hoàn thành hôm nay",
     "markComplete": "Đánh dấu hoàn thành",
     "completionRate": "{{rate}}% hoàn thành trong {{days}} ngày qua",
+    "streakLabel": "Chuỗi {{count}} ngày",
+    "streakTooltip": "Số ngày hoàn thành liên tiếp; ngày gần nhất phải là hôm nay hoặc hôm qua.",
+    "longestStreakTooltip": "Chuỗi dài nhất trên mọi thói quen. Hoàn thành hôm nay hoặc hôm qua để giữ chuỗi.",
+    "achievementHint": "Mở huy hiệu Habit Hero khi đạt chuỗi 7 ngày với bất kỳ thói quen nào.",
     "subtitle": "Xây dựng thói quen tích cực với đồ thị streak trực quan.",
     "summary": {
       "total": "Thói quen đang theo dõi",
@@ -602,7 +647,8 @@
       "soundDescription": "Phát âm thanh khi có thông báo",
       "types": "Loại thông báo",
       "taskReminders": "Nhắc nhở nhiệm vụ",
-      "taskRemindersDescription": "Nhận thông báo trước khi nhiệm vụ đến hạn",
+      "taskRemindersDescription": "Toast trong app khi nhiệm vụ sắp đến hạn (cần giữ tab này mở)",
+      "taskRemindersTabHint": "Nhắc nhở chạy trong trình duyệt khi TaskFlow đang mở. Giữ tab này hoạt động để nhận báo đúng giờ. Thông báo trình duyệt (tùy chọn) có thể hiện khi tab ở nền.",
       "countdownCompletions": "Hoàn thành đếm ngược",
       "countdownCompletionsDescription": "Báo khi các đếm ngược về 0",
       "taskActions": "Hành động với nhiệm vụ",
@@ -713,7 +759,8 @@
       "shortBreak": "Nghỉ ngắn (phút)",
       "longBreak": "Nghỉ dài (phút)",
       "longBreakInterval": "Số phiên trước khi nghỉ dài",
-      "note": "Thay đổi thời lượng sẽ áp dụng cho các phiên Pomodoro tiếp theo."
+      "note": "Thay đổi thời lượng sẽ áp dụng cho các phiên Pomodoro tiếp theo.",
+      "autoStartDescription": "Tự động bắt đầu phiên tập trung hoặc nghỉ tiếp theo khi phiên hiện tại kết thúc."
     },
     "language": {
       "en": "English",
@@ -801,7 +848,17 @@
     "aria": {
       "shareList": "Chia sẻ danh sách {{listName}}",
       "deleteList": "Xóa danh sách {{listName}}",
-      "deleteTag": "Xóa thẻ {{tagName}}"
+      "deleteTag": "Xóa thẻ {{tagName}}",
+      "editList": "Sửa danh sách {{listName}}"
+    },
+    "editList": {
+      "title": "Sửa danh sách",
+      "description": "Đổi tên hoặc chọn màu hiển thị trên sidebar.",
+      "nameLabel": "Tên danh sách",
+      "colorLabel": "Màu",
+      "colorOption": "Màu {{color}}",
+      "save": "Lưu thay đổi",
+      "success": "Đã cập nhật danh sách \"{{listName}}\""
     }
   },
   "mainContent": {
@@ -811,7 +868,11 @@
     "sortTasks": "Sắp xếp nhiệm vụ",
     "undo": "Hoàn tác",
     "redo": "Làm lại",
-    "clearHistory": "Xóa lịch sử"
+    "clearHistory": "Xóa lịch sử",
+    "historyLocalNote": "Hoàn tác/làm lại chỉ áp dụng trong phiên trình duyệt này — không hoàn nguyên dữ liệu trên server.",
+    "undoTooltip": "Hoàn tác chỉ dành cho thay đổi local chưa lưu lên server",
+    "redoTooltip": "Làm lại chỉ dành cho thay đổi local chưa lưu lên server",
+    "clearHistoryTooltip": "Xóa lịch sử hoàn tác/làm lại (chỉ local)"
   },
   "recurrence": {
     "title": "Lặp lại",
@@ -919,6 +980,14 @@
   "matrix": {
     "title": "Ma trận Ưu tiên",
     "subtitle": "Nhiệm vụ chưa hoàn thành được nhóm theo mức ưu tiên.",
+    "description": "Mỗi góc phần tư tương ứng một mức ưu tiên (Cao/Khẩn cấp, Trung bình, Thấp, Không có). Dùng view này để biết việc nào cần làm trước.",
+    "dragHint": "Mẹo: kéo nhiệm vụ sang góc phần tư khác để đổi mức ưu tiên.",
+    "priorities": {
+      "high": "Cao / Khẩn cấp",
+      "medium": "Trung bình",
+      "low": "Thấp",
+      "none": "Không có"
+    },
     "axis": {
       "urgent": "Khẩn cấp",
       "notUrgent": "Không khẩn cấp",
@@ -978,6 +1047,11 @@
     "dueDateLabel": "Hạn chót",
     "priorityLabel": "Độ ưu tiên",
     "listLabel": "Danh sách",
+    "tagsLabel": "Thẻ",
+    "tagsPlaceholder": "Thêm thẻ...",
+    "tagsHelper": "Nhấn Enter để thêm thẻ",
+    "reminderLabel": "Nhắc nhở",
+    "removeTagAria": "Xóa thẻ {{tag}}",
     "createTask": "Tạo Nhiệm vụ"
   },
   "briefing": {
@@ -1037,6 +1111,7 @@
   "shareList": {
     "title": "Chia sẻ \"{{listName}}\"",
     "subtitle": "Quản lý ai có thể truy cập danh sách này.",
+    "readOnlyNotice": "MVP: thành viên được mời chỉ xem task (read-only). Quyền sửa sẽ có ở bản cập nhật sau.",
     "members": "Thành viên",
     "owner": "Chủ sở hữu",
     "invite": "Mời người khác",
@@ -1056,8 +1131,18 @@
     }
   },
   "search": {
-    "placeholder": "Tìm kiếm nhiệm vụ theo tiêu đề, mô tả hoặc thẻ...",
-    "noResults": "Không tìm thấy nhiệm vụ nào cho \"{{searchTerm}}\""
+    "placeholder": "Tìm kiếm theo tiêu đề, mô tả, thẻ, subtask hoặc bình luận...",
+    "hintEmpty": "Nhập từ khóa để tìm nhiệm vụ",
+    "hintScopes": "Tìm trong tiêu đề, mô tả, thẻ, subtask và bình luận",
+    "resultCount": "{{count}} kết quả",
+    "noResults": "Không tìm thấy nhiệm vụ nào cho \"{{searchTerm}}\"",
+    "loading": "Đang tìm…",
+    "error": "Tìm kiếm thất bại. Vui lòng thử lại.",
+    "serverHint": "Tìm trên server — kết quả chính xác khi danh sách task lớn dần.",
+    "matchInDescription": "Trong mô tả",
+    "matchInTag": "Thẻ",
+    "matchInSubtask": "Subtask",
+    "matchInComment": "Bình luận"
   },
   "datePicker": {
     "placeholder": "Chọn ngày",

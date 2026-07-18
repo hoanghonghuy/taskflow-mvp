@@ -31,6 +31,10 @@ interface MockTask {
   listId: string
   columnId?: string | null
   tags: string[]
+  subtasks?: Array<{ id?: string; title?: string; text?: string; completed?: boolean }>
+  comments?: Array<{ id?: string; text?: string; content?: string }>
+  recurrence?: Record<string, unknown> | null
+  reminderMinutes?: number | null
   createdAt: string
 }
 
@@ -272,6 +276,34 @@ export async function mockBackendFetch(rawPath: string, init: RequestInit = {}):
     }
   }
 
+  if (path === '/api/tasks/search') {
+    if (method === 'GET') {
+      const q = (query.get('q') ?? '').trim().toLowerCase()
+      if (!q) return json([], 200)
+      const limitRaw = Number(query.get('limit') ?? 50)
+      const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? Math.min(limitRaw, 100) : 50
+      const matches = s.tasks.filter((task) => {
+        const subtaskText = (task.subtasks ?? [])
+          .map((item) => String(item.title ?? item.text ?? ''))
+          .join(' ')
+        const commentText = (task.comments ?? [])
+          .map((item) => String(item.text ?? item.content ?? ''))
+          .join(' ')
+        const haystack = [
+          task.title,
+          task.description ?? '',
+          ...(task.tags ?? []),
+          subtaskText,
+          commentText,
+        ]
+          .join(' ')
+          .toLowerCase()
+        return haystack.includes(q)
+      })
+      return json(matches.slice(0, limit))
+    }
+  }
+
   if (path === '/api/tasks') {
     if (method === 'GET') return json(s.tasks)
     if (method === 'POST') {
@@ -285,6 +317,18 @@ export async function mockBackendFetch(rawPath: string, init: RequestInit = {}):
         listId: String(body.listId ?? 'inbox'),
         columnId: (body.columnId as string) ?? null,
         tags: Array.isArray(body.tags) ? (body.tags as string[]) : [],
+        subtasks: Array.isArray(body.subtasks)
+          ? (body.subtasks as MockTask['subtasks'])
+          : [],
+        comments: Array.isArray(body.comments)
+          ? (body.comments as MockTask['comments'])
+          : [],
+        recurrence:
+          body.recurrence && typeof body.recurrence === 'object'
+            ? (body.recurrence as Record<string, unknown>)
+            : null,
+        reminderMinutes:
+          body.reminderMinutes == null ? null : Number(body.reminderMinutes),
         createdAt: nowIso(),
       }
       s.tasks.push(created)
@@ -308,6 +352,22 @@ export async function mockBackendFetch(rawPath: string, init: RequestInit = {}):
         ...(body.listId != null ? { listId: String(body.listId) } : {}),
         ...('columnId' in body ? { columnId: (body.columnId as string) ?? null } : {}),
         ...(Array.isArray(body.tags) ? { tags: body.tags as string[] } : {}),
+        ...(Array.isArray(body.subtasks) ? { subtasks: body.subtasks as MockTask['subtasks'] } : {}),
+        ...(Array.isArray(body.comments) ? { comments: body.comments as MockTask['comments'] } : {}),
+        ...('recurrence' in body
+          ? {
+              recurrence:
+                body.recurrence && typeof body.recurrence === 'object'
+                  ? (body.recurrence as Record<string, unknown>)
+                  : null,
+            }
+          : {}),
+        ...('reminderMinutes' in body
+          ? {
+              reminderMinutes:
+                body.reminderMinutes == null ? null : Number(body.reminderMinutes),
+            }
+          : {}),
       }
       return json(s.tasks[idx])
     }

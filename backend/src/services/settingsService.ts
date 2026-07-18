@@ -4,6 +4,7 @@ import { toJsonString } from '../lib/json'
 import { normalizeListId } from '../lib/inbox-list'
 import { mergePomodoroSettings, parsePomodoroSettings } from '../lib/pomodoro-settings'
 import { mapSettingsToDto, type SettingsDto } from '../mappers/settings.mapper'
+import * as listRepository from '../repositories/listRepository'
 import * as settingsRepository from '../repositories/settingsRepository'
 
 export async function getOrCreateSettings(userId: string): Promise<SettingsDto> {
@@ -42,7 +43,17 @@ export async function updateSettings(
     data.pomodoroSettingsJson = toJsonString(merged)
   }
   if ('boardColumns' in body && Array.isArray(body.boardColumns)) {
-    data.boardColumnsJson = toJsonString(body.boardColumns)
+    const ownedLists = await listRepository.findListsByUserId(userId)
+    const ownedIds = new Set(ownedLists.map((list) => list.id))
+    const filtered = body.boardColumns
+      .filter((column): column is Record<string, unknown> => !!column && typeof column === 'object')
+      .map((column) => ({
+        id: String(column.id ?? '').trim(),
+        name: String(column.name ?? '').trim(),
+        listId: String(column.listId ?? '').trim(),
+      }))
+      .filter((column) => column.id && column.name && column.listId && ownedIds.has(column.listId))
+    data.boardColumnsJson = toJsonString(filtered)
   }
 
   const updated = await settingsRepository.updateByUserId(userId, data)

@@ -1,8 +1,10 @@
 import type { Prisma } from '@prisma/client'
 import { toJsonString } from '../lib/json'
+import { parseListMembers } from '../lib/list-access'
 import { AppError } from '../middleware/errorHandler'
 import { mapListToDto, type ListDto } from '../mappers/list.mapper'
 import * as listRepository from '../repositories/listRepository'
+import * as taskRepository from '../repositories/taskRepository'
 import { prisma } from '../lib/prisma'
 
 const HEX_COLOR_RE = /^#[0-9A-Fa-f]{6}$/
@@ -32,12 +34,12 @@ function normalizeColor(input: unknown, fallback: string): string {
 }
 
 export async function listLists(userId: string): Promise<ListDto[]> {
-  const lists = await listRepository.findListsByUserId(userId)
+  const lists = await listRepository.findListsAccessibleByUserId(userId)
   return lists.map(mapListToDto)
 }
 
 export async function getList(userId: string, id: string): Promise<ListDto | null> {
-  const list = await listRepository.findListByIdAndUserId(id, userId)
+  const list = await listRepository.findListByIdAccessible(id, userId)
   return list ? mapListToDto(list) : null
 }
 
@@ -91,15 +93,69 @@ export async function updateList(
   return mapListToDto(updated)
 }
 
-export async function deleteList(userId: string, id: string): Promise<boolean> {
+/** Add a member from the current DB members snapshot (read-modify-write; not transactional). */
+export async function addListMember(
+  userId: string,
+  id: string,
+  memberUserId: string,
+): Promise<ListDto | null> {
   const existing = await listRepository.findListByIdAndUserId(id, userId)
-  if (!existing) return false
+  if (!existing) return null
 
-  if (existing.name === 'Inbox') {
-    throw new AppError(400, 'invalid_request', 'Cannot delete the Inbox list')
+  if (memberUserId === userId) {
+    throw new AppError(400, 'invalid_request', 'Cannot invite yourself')
   }
 
-  await listRepository.deleteTasksByListId(userId, id)
-  await listRepository.deleteList(id)
-  return true
+  await validateMembers([memberUserId])
+
+  const current = parseListMembers(existing.members)
+  if (current.includes(memberUserId)) {
+    return mapListToDto(existing)
+  }
+
+  const updated = await listRepository.updateList(id, {
+    members: toJsonString([...current, memberUserId]),
+  })
+  return mapListToDto(updated)
+}
+
+/** Remove a member from the current DB members snapshot (read-modify-write; not transactional). */
+export async function removeListMember(
+  userId: string,
+  id: string,
+  memberUserId: string,
+): Promise<ListDto | null> {
+  const existing = await listRepository.findListByIdAndUserId(id, userId)
+  if (!existing) return null
+
+  const current = parseListMembers(existing.members)
+  if (!current.includes(memberUserId)) {
+    return mapListToDto(existing)
+  }
+
+  const updated = await listRepository.updateList(id, {
+    members: toJsonString(current.filter((m) => m !== memberUserId)),
+  })
+  await taskRepository.clearAssigneeOnList(id, memberUserId)
+  return mapListToDto(updated)
+}
+
+export async function deleteList(userId: string, id: string): Promise<boolean> {
+  const existing = await listRepository.findListByIdAndUserId(id, userId)
+  if (existing) {
+    if (existing.name === 'Inbox') {
+      throw new AppError(400, 'invalid_request', 'Cannot delete the Inbox list')
+    }
+
+    await listRepository.deleteTasksByListId(userId, id)
+    await listRepository.deleteList(id)
+    return true
+  }
+
+  const accessible = await listRepository.findListByIdAccessible(id, userId)
+  if (accessible) {
+    throw new AppError(403, 'forbidden', 'You do not have permission to delete this list')
+  }
+
+  return false
 }

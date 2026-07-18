@@ -115,6 +115,21 @@ test.describe('Countdown', () => {
     await expect(page.getByText(eventTitle, { exact: true })).toBeVisible()
   })
 
+  test('persists countdown event after reload', async ({ page }) => {
+    const eventTitle = `Persist Test ${Date.now()}`
+
+    await page.goto('/countdown')
+    await waitForAppReady(page)
+    await createCountdown(page, eventTitle)
+
+    await page.reload()
+    await waitForAppReady(page)
+    await page.goto('/countdown')
+    await waitForAppReady(page)
+
+    await expect(page.getByText(eventTitle, { exact: true })).toBeVisible()
+  })
+
   test('deletes countdown event', async ({ page }) => {
     const eventTitle = `Delete Test ${Date.now()}`
 

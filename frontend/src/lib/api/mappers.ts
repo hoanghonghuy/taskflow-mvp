@@ -69,11 +69,17 @@ export function mapTasksFromApi(items: unknown[]): Task[] {
             .filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))
         : undefined
 
+      const seriesStartRaw = r.seriesStart ?? r.SeriesStart
+      const seriesStart = seriesStartRaw
+        ? String(seriesStartRaw).slice(0, 10)
+        : undefined
+
       recurrence = {
         type,
         interval: interval > 0 ? interval : 1,
         ...(daysOfWeek && daysOfWeek.length > 0 ? { daysOfWeek } : {}),
         ...(endDate ? { endDate } : {}),
+        ...(seriesStart ? { seriesStart } : {}),
         ...(completedDates && completedDates.length > 0 ? { completedDates } : {}),
       }
     }
@@ -164,6 +170,16 @@ export function mapListsFromApi(items: unknown[]): List[] {
       name: String(l.name ?? l.Name ?? ''),
       color: String(l.color ?? l.Color ?? '#3b82f6'),
       members: Array.isArray(l.members ?? l.Members) ? ((l.members ?? l.Members) as string[]) : [],
+      ownerUserId:
+        l.ownerUserId != null
+          ? String(l.ownerUserId)
+          : l.OwnerUserId != null
+            ? String(l.OwnerUserId)
+            : l.userId != null
+              ? String(l.userId)
+              : l.UserId != null
+                ? String(l.UserId)
+                : undefined,
     }
   })
 }
@@ -273,8 +289,17 @@ export function mapPomodoroStateFromApi(
   }
 }
 
-export function pomodoroStateToApiPayload(state: PomodoroState) {
-  return {
+export function readPomodoroUpdatedAt(stateJson: unknown): string | null {
+  if (!stateJson || typeof stateJson !== 'object') return null
+  const raw = stateJson as { updatedAt?: unknown }
+  return typeof raw.updatedAt === 'string' && raw.updatedAt ? raw.updatedAt : null
+}
+
+export function pomodoroStateToApiPayload(
+  state: PomodoroState,
+  expectedUpdatedAt?: string | null,
+) {
+  const payload: Record<string, unknown> = {
     isActive: state.isActive,
     isPaused: state.isPaused,
     remainingSeconds: state.remainingTime,
@@ -283,4 +308,8 @@ export function pomodoroStateToApiPayload(state: PomodoroState) {
     focusedHabitId: state.focusedHabitId,
     sessionsCompleted: state.sessionsCompleted,
   }
+  if (expectedUpdatedAt !== undefined) {
+    payload.expectedUpdatedAt = expectedUpdatedAt
+  }
+  return payload
 }

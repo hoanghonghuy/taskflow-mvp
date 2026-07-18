@@ -124,10 +124,13 @@ export async function lookupUserByEmail(requesterId: string, email: string): Pro
 }
 
 export async function getCollaborators(userId: string): Promise<UserDto[]> {
-  const lists = await listRepository.findListsByUserId(userId)
+  const lists = await listRepository.findListsAccessibleByUserId(userId)
   const memberIds = new Set<string>()
 
   for (const list of lists) {
+    if (list.userId !== userId) {
+      memberIds.add(list.userId)
+    }
     for (const memberId of parseJsonArray<string>(list.members)) {
       if (memberId && memberId !== userId) {
         memberIds.add(memberId)
@@ -144,13 +147,11 @@ export async function refresh(refreshTokenValue: string): Promise<AuthResponse> 
     throw new AppError(400, 'invalid_request', 'Refresh token is required')
   }
 
-  const existing = await authRepository.findRefreshTokenWithUser(refreshTokenValue)
+  const existing = await authRepository.consumeRefreshToken(refreshTokenValue.trim())
 
-  if (!existing || existing.revoked || existing.expiresAt <= new Date()) {
+  if (!existing) {
     throw new AppError(401, 'unauthorized', 'Invalid or expired refresh token')
   }
-
-  await authRepository.revokeRefreshToken(existing.id)
 
   return issueTokens(existing.user)
 }

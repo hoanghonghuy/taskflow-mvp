@@ -6,6 +6,7 @@ export interface ListDto {
   name: string
   color: string
   members: string[]
+  ownerUserId: string
 }
 
 export function mapListToDto(list: TodoList): ListDto {
@@ -14,5 +15,6 @@ export function mapListToDto(list: TodoList): ListDto {
     name: list.name,
     color: list.color,
     members: parseJsonArray<string>(list.members),
+    ownerUserId: list.userId,
   }
 }

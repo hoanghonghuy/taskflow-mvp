@@ -105,4 +105,41 @@ describe('pomodoro.service', () => {
     expect(state.currentSession).toBe('focus')
     expect(state.sessionsCompleted).toBe(0)
   })
+
+  it('updatePomodoroState rejects a concurrent stale write', async () => {
+    const first = await updatePomodoroState(userId, {
+      isActive: true,
+      isPaused: false,
+      remainingSeconds: 1500,
+      currentSession: 'focus',
+      sessionsCompleted: 0,
+      expectedUpdatedAt: null,
+    })
+    expect(first.updatedAt).toBeTruthy()
+
+    const results = await Promise.allSettled([
+      updatePomodoroState(userId, {
+        isActive: true,
+        isPaused: false,
+        remainingSeconds: 100,
+        currentSession: 'focus',
+        sessionsCompleted: 1,
+        expectedUpdatedAt: first.updatedAt,
+      }),
+      updatePomodoroState(userId, {
+        isActive: true,
+        isPaused: false,
+        remainingSeconds: 50,
+        currentSession: 'focus',
+        sessionsCompleted: 2,
+        expectedUpdatedAt: first.updatedAt,
+      }),
+    ])
+
+    const fulfilled = results.filter((r) => r.status === 'fulfilled')
+    const rejected = results.filter((r) => r.status === 'rejected')
+    expect(fulfilled).toHaveLength(1)
+    expect(rejected).toHaveLength(1)
+    expect((rejected[0] as PromiseRejectedResult).reason.name).toBe('ConcurrentUpdateError')
+  })
 })

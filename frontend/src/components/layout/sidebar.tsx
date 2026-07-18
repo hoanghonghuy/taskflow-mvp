@@ -9,11 +9,13 @@ import { SPECIAL_LISTS_CONFIG, TAG_COLORS } from '@/lib/task-constants'
 import { ListBulletIcon, PlusIcon, TagIcon, TrashIcon, ArrowDownIcon, UserPlusIcon, ChatBubbleLeftRightIcon } from '@/lib/icons'
 import Avatar from '@/components/ui/avatar'
 import ProfileDropdown from '@/components/auth/profile-dropdown'
+import { ListEditDialog } from '@/components/layout/list-edit-dialog'
 import { useRouter } from 'next/navigation'
 import { useConfirmation } from '@/components/providers/confirmation-provider'
 import { useToast } from '@/components/providers/toast-provider'
 import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import type { List } from '@/types'
+import { isOwnedList } from '@/lib/utils/list-access'
 
 const LIST_ACTION_BUTTON_CLASS =
   'opacity-100 md:opacity-0 md:group-hover:opacity-100 text-muted-foreground p-0.5 rounded'
@@ -43,6 +45,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
   const [isListsExpanded, setIsListsExpanded] = useState(true)
   const [isTagsExpanded, setIsTagsExpanded] = useState(true)
   const [isProfileDialogOpen, setProfileDialogOpen] = useState(false)
+  const [editingList, setEditingList] = useState<List | null>(null)
 
   const handleAddList = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -229,6 +232,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                 <div className="space-y-1">
                   {state.lists.map(list => {
                     const taskCount = state.tasks.filter(t => t.listId === list.id && !t.completed).length
+                    const canManageList = isOwnedList(list, user?.id)
                     return (
                       <NavItem
                         key={list.id}
@@ -238,13 +242,27 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                           router.push('/list')
                         }}
                       >
-                        <div className="flex items-center gap-3">
-                          <ListBulletIcon className="h-5 w-5" />
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span
+                            className="h-2.5 w-2.5 rounded-full shrink-0"
+                            style={{ backgroundColor: list.color || '#6b7280' }}
+                            aria-hidden="true"
+                          />
+                          <ListBulletIcon className="h-5 w-5 shrink-0" />
                           <span className="truncate flex-1 text-left">{list.name}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-medium text-muted-foreground">{taskCount}</span>
-                          {onShareList && !isInboxList(list) && (
+                          {canManageList && !isInboxList(list) && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setEditingList(list) }}
+                              className={`${LIST_ACTION_BUTTON_CLASS} hover:text-primary`}
+                              aria-label={t('sidebar.aria.editList', { listName: list.name })}
+                            >
+                              <span className="text-xs font-semibold">✎</span>
+                            </button>
+                          )}
+                          {canManageList && onShareList && !isInboxList(list) && (
                             <button 
                               onClick={(e) => { e.stopPropagation(); onShareList(list.id); }} 
                               className={`${LIST_ACTION_BUTTON_CLASS} hover:text-primary`}
@@ -253,6 +271,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                               <UserPlusIcon className="h-4 w-4" />
                             </button>
                           )}
+                          {canManageList && !isInboxList(list) && (
                           <button 
                             onClick={(e) => { e.stopPropagation(); handleDeleteList(list.id, list.name); }} 
                             className={`${LIST_ACTION_BUTTON_CLASS} hover:text-destructive`}
@@ -260,6 +279,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                           >
                             <TrashIcon className="h-4 w-4" />
                           </button>
+                          )}
                         </div>
                       </NavItem>
                     )
@@ -353,6 +373,11 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
           </div>
         )}
       </aside>
+      <ListEditDialog
+        list={editingList}
+        open={editingList !== null}
+        onOpenChange={(open) => { if (!open) setEditingList(null) }}
+      />
     </>
   )
 }

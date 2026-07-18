@@ -4,9 +4,10 @@ import { defineConfig, devices } from '@playwright/test'
 const useMock = process.env.E2E_MOCK_MODE === 'true'
 const frontendPort = process.env.PLAYWRIGHT_PORT ?? '3099'
 const backendPort = process.env.E2E_BACKEND_PORT ?? '8099'
-const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${frontendPort}`
+const e2eHost = process.env.PLAYWRIGHT_HOST ?? 'localhost'
+const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://${e2eHost}:${frontendPort}`
 const backendUrl =
-  (process.env.BACKEND_URL ?? `http://127.0.0.1:${backendPort}`).replace(/\/$/, '')
+  (process.env.BACKEND_URL ?? `http://${e2eHost}:${backendPort}`).replace(/\/$/, '')
 
 const databaseUrl =
   process.env.DATABASE_URL ||
@@ -20,7 +21,7 @@ const adminAuthFile = 'playwright/.auth/admin.json'
 const backendDir = path.join(__dirname, '..', 'backend')
 
 const frontendServer = {
-  command: `npm run dev -- --port ${frontendPort} --hostname 127.0.0.1`,
+  command: `npm run dev -- --port ${frontendPort} --hostname ${e2eHost}`,
   url: baseURL,
   name: useMock ? 'Frontend (mock)' : 'Frontend',
   timeout: 180_000,
@@ -31,6 +32,9 @@ const frontendServer = {
     MOCK_MODE: useMock ? 'true' : 'false',
     BACKEND_URL: backendUrl,
     NEXT_DIST_DIR: '.next-e2e',
+    JWT_KEY: process.env.JWT_KEY || 'e2e-jwt-key-must-be-at-least-32-chars-long',
+    JWT_ISSUER: 'Taskflow',
+    JWT_AUDIENCE: 'TaskflowClient',
   },
 }
 
@@ -106,7 +110,7 @@ export default defineConfig({
         storageState: userAuthFile,
       },
       dependencies: ['setup'],
-      testMatch: /\/(tasks|navigation|habits|countdown|pomodoro|settings|profile|achievements|ai)\.spec\.ts$/,
+      testMatch: /\/(tasks|navigation|habits|countdown|pomodoro|settings|profile|achievements|ai|core-regression)\.spec\.ts$/,
     },
     {
       name: 'mobile',

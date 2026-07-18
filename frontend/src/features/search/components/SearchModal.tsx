@@ -1,15 +1,26 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/i18n/hooks'
 import type { Task } from '@/types'
+import type { TranslationKey } from '@/lib/i18n/types'
 import { CloseIcon, SearchIcon } from '@/lib/icons'
 import TaskItem from '@/features/tasks/components/TaskItem'
 import { useRouter } from 'next/navigation'
+import { getSearchMatchMeta } from '@/lib/utils/search-helpers'
+import { HighlightText } from '@/components/ui/highlight-text'
+import * as tasksApi from '@/lib/api/tasks'
 
 interface SearchModalProps {
   onClose: () => void
+}
+
+const matchFieldLabels: Record<string, TranslationKey> = {
+  description: 'search.matchInDescription',
+  tag: 'search.matchInTag',
+  subtask: 'search.matchInSubtask',
+  comment: 'search.matchInComment',
 }
 
 const SearchModal: React.FC<SearchModalProps> = ({ onClose }) => {
@@ -17,18 +28,51 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose }) => {
   const { t } = useI18n()
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState('')
+  const [searchResults, setSearchResults] = useState<Task[]>([])
+  const [isSearching, setIsSearching] = useState(false)
+  const [searchError, setSearchError] = useState<string | null>(null)
 
-  const searchResults = useMemo(() => {
-    if (!searchTerm.trim()) {
-      return []
+  const trimmedTerm = searchTerm.trim()
+  // Derive empty UI from the query so we never sync-clear state inside an effect.
+  const activeResults = trimmedTerm ? searchResults : []
+  const activeError = trimmedTerm ? searchError : null
+  const activeSearching = trimmedTerm ? isSearching : false
+
+  useEffect(() => {
+    if (!trimmedTerm) {
+      return
     }
-    const lowercasedTerm = searchTerm.toLowerCase()
-    return state.tasks.filter(task => 
-      task.title.toLowerCase().includes(lowercasedTerm) ||
-      task.description?.toLowerCase().includes(lowercasedTerm) ||
-      task.tags.some(tag => tag.toLowerCase().includes(lowercasedTerm))
-    )
-  }, [searchTerm, state.tasks])
+
+    let cancelled = false
+    const timer = window.setTimeout(() => {
+      setIsSearching(true)
+      setSearchError(null)
+
+      void tasksApi
+        .searchTasks(trimmedTerm)
+        .then((results) => {
+          if (!cancelled) {
+            setSearchResults(results)
+          }
+        })
+        .catch((error: unknown) => {
+          if (!cancelled) {
+            setSearchResults([])
+            setSearchError(error instanceof Error ? error.message : t('search.error'))
+          }
+        })
+        .finally(() => {
+          if (!cancelled) {
+            setIsSearching(false)
+          }
+        })
+    }, 300)
+
+    return () => {
+      cancelled = true
+      window.clearTimeout(timer)
+    }
+  }, [trimmedTerm, t])
 
   const handleTaskSelect = (task: Task) => {
     dispatch({ type: 'SET_SELECTED_TASK', payload: task.id })
@@ -72,21 +116,53 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose }) => {
         </header>
         
         <div className="grow p-4 overflow-y-auto">
-          {searchTerm.trim() && searchResults.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">
-              <p>{t('search.noResults', { searchTerm })}</p>
+          {!trimmedTerm && (
+            <div className="text-center py-12 text-muted-foreground space-y-2">
+              <p className="text-sm">{t('search.hintEmpty')}</p>
+              <p className="text-xs">{t('search.hintScopes')}</p>
+              <p className="text-xs">{t('search.serverHint')}</p>
             </div>
           )}
+          {trimmedTerm && activeSearching && (
+            <div className="text-center py-12 text-muted-foreground text-sm">
+              {t('search.loading')}
+            </div>
+          )}
+          {trimmedTerm && activeError && !activeSearching && (
+            <div className="text-center py-12 text-destructive text-sm">
+              {activeError}
+            </div>
+          )}
+          {trimmedTerm && !activeSearching && !activeError && activeResults.length === 0 && (
+            <div className="text-center py-12 text-muted-foreground">
+              <p>{t('search.noResults', { searchTerm: trimmedTerm })}</p>
+            </div>
+          )}
+          {trimmedTerm && !activeSearching && !activeError && activeResults.length > 0 && (
+            <p className="text-xs text-muted-foreground mb-3">
+              {t('search.resultCount', { count: activeResults.length })}
+            </p>
+          )}
           <div className="space-y-2">
-            {searchResults.map(task => (
-              <div key={task.id} onClick={() => handleTaskSelect(task)}>
-                <TaskItem 
-                  task={task} 
-                  isDraggable={false} 
-                  listName={getListName(task.listId)}
-                />
-              </div>
-            ))}
+            {!activeSearching && !activeError && activeResults.map(task => {
+              const matchMeta = getSearchMatchMeta(task, trimmedTerm)
+              return (
+                <div key={task.id} onClick={() => handleTaskSelect(task)} className="cursor-pointer">
+                  <TaskItem 
+                    task={task} 
+                    isDraggable={false} 
+                    listName={getListName(task.listId)}
+                    highlightTerm={trimmedTerm}
+                  />
+                  {matchMeta && (
+                    <p className="text-xs text-muted-foreground px-3 -mt-1 mb-1">
+                      {t(matchFieldLabels[matchMeta.field])}:{' '}
+                      <HighlightText text={matchMeta.snippet} term={trimmedTerm} />
+                    </p>
+                  )}
+                </div>
+              )
+            })}
           </div>
         </div>
       </div>
@@ -95,4 +171,3 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose }) => {
 }
 
 export default SearchModal
-

@@ -134,7 +134,7 @@ const HabitsView: React.FC = () => {
         <header className="py-6 border-b border-border shrink-0">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="hidden md:block">
-              <h1 className="text-3xl font-bold">{t('nav.habits')}</h1>
+              <h1 className="text-2xl md:text-3xl font-bold">{t('nav.habits')}</h1>
               <p className="text-muted-foreground">{t('habits.subtitle')}</p>
             </div>
             {!isAdding && (
@@ -192,12 +192,28 @@ const HabitsView: React.FC = () => {
             <div
               key={card.label}
               className="rounded-2xl border border-border bg-card p-4 shadow-sm"
+              title={card.label === t('habits.summary.longestStreak') ? t('habits.longestStreakTooltip') : undefined}
             >
-              <p className="text-sm text-muted-foreground">{card.label}</p>
-              <p className="text-2xl font-semibold text-foreground">{card.value}</p>
+              <div className="flex items-center gap-2">
+                <span
+                  className="h-2.5 w-2.5 rounded-full shrink-0"
+                  style={{ backgroundColor: `hsl(var(${card.colorToken}))` }}
+                  aria-hidden="true"
+                />
+                <p className="text-sm text-muted-foreground">{card.label}</p>
+              </div>
+              <p
+                className="text-2xl font-semibold"
+                style={{ color: `hsl(var(${card.colorToken}))` }}
+              >
+                {card.value}
+              </p>
             </div>
           ))}
         </div>
+        {longestStreak > 0 && (
+          <p className="text-xs text-muted-foreground">{t('habits.achievementHint')}</p>
+        )}
         {state.habits.length === 0 ? (
           <div className="text-center text-muted-foreground py-12">
             <p className="text-lg">{t('habits.noHabits')}</p>
@@ -207,12 +223,23 @@ const HabitsView: React.FC = () => {
             {state.habits.map(habit => {
               const completionRate = getCompletionRate(habit.id)
               const isCompletedToday = habit.completions.includes(today)
+              const streak = calculateStreak(habit.completions)
 
               return (
                 <div key={habit.id} className="bg-card border border-border rounded-2xl p-5 shadow-sm">
                   <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
                     <div>
-                      <h3 className="font-semibold text-lg">{habit.name}</h3>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-semibold text-lg">{habit.name}</h3>
+                        {streak > 0 && (
+                          <span
+                            className="text-xs font-medium px-2 py-0.5 rounded-full bg-[hsl(var(--color-habits-summary-streak) / 0.1)] text-[hsl(var(--color-habits-summary-streak))]"
+                            title={t('habits.streakTooltip')}
+                          >
+                            🔥 {t('habits.streakLabel', { count: streak })}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-sm text-muted-foreground">
                         {t('habits.completionRate', { rate: completionRate, days: 30 })}
                       </p>
@@ -251,7 +278,7 @@ const HabitsView: React.FC = () => {
                               onClick={() => toggleHabitCompletion(habit.id, dateKey)}
                               className={`w-10 h-10 rounded-xl border flex flex-col items-center justify-center text-xs font-semibold transition
                                 ${isCompleted
-                                  ? 'text-white shadow-sm border-[hsl(var(--color-habits-completed))] bg-[hsl(var(--color-habits-completed)/0.95)] hover:bg-[hsl(var(--color-habits-completed)/0.9)]'
+                                  ? 'text-white shadow-sm border-[hsl(var(--color-habits-completed))] bg-[hsl(var(--color-habits-completed) / 0.95)] hover:bg-[hsl(var(--color-habits-completed) / 0.9)]'
                                   : 'border-border bg-card text-muted-foreground hover:border-[hsl(var(--color-habits-completed-weak))] hover:text-foreground'}
                               `}
                             >

@@ -27,6 +27,35 @@ export async function revokeRefreshToken(id: string): Promise<void> {
   })
 }
 
+/**
+ * Atomically consume a refresh token: only one caller wins when the same
+ * token is presented concurrently. Returns the token+user row when consumed,
+ * or null when invalid / already revoked / expired / lost the race.
+ */
+export async function consumeRefreshToken(token: string) {
+  return prisma.$transaction(async (tx) => {
+    const existing = await tx.refreshToken.findUnique({
+      where: { token },
+      include: { user: true },
+    })
+
+    if (!existing || existing.revoked || existing.expiresAt <= new Date()) {
+      return null
+    }
+
+    const result = await tx.refreshToken.updateMany({
+      where: { id: existing.id, revoked: false },
+      data: { revoked: true },
+    })
+
+    if (result.count !== 1) {
+      return null
+    }
+
+    return existing
+  })
+}
+
 export async function findUserById(id: string): Promise<User | null> {
   return prisma.user.findUnique({ where: { id } })
 }

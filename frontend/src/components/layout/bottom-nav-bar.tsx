@@ -89,7 +89,7 @@ const MoreMenu: React.FC<MoreMenuProps> = ({ hiddenViews, currentView, onClose }
               aria-current={isActive ? 'page' : undefined}
               className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-xl border transition-colors ${
                 isActive
-                  ? 'border-primary/80 text-primary bg-primary/5 shadow-[0_0_25px_rgba(59,130,246,0.15)]'
+                  ? 'border-primary/80 text-primary bg-primary/5 shadow-[0_0_25px_hsl(var(--color-primary) / 0.15)]'
                   : 'border-transparent text-foreground hover:bg-muted/40'
               }`}
             >

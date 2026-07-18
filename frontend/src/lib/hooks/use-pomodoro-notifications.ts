@@ -2,13 +2,14 @@
 
 import { useEffect, useRef } from 'react'
 import * as pomodoroApi from '@/lib/api/pomodoro'
+import * as profileApi from '@/lib/api/profile'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useToast } from '@/lib/hooks/use-toast'
 import { useSettings } from '@/components/providers/settings-provider'
 import { useI18n } from '@/lib/i18n/hooks'
 
 export const usePomodoroNotifications = () => {
-  const { state } = useTaskManager()
+  const { state, dispatch } = useTaskManager()
   const { pomodoro } = state
   const { success } = useToast()
   const { settings } = useSettings()
@@ -73,6 +74,14 @@ export const usePomodoroNotifications = () => {
           taskId: latestFocus.taskId ?? null,
           habitId: latestFocus.habitId ?? null,
         })
+        .then(async () => {
+          try {
+            const ids = await profileApi.fetchAchievements()
+            dispatch({ type: 'SET_UNLOCKED_ACHIEVEMENTS', payload: ids })
+          } catch {
+            // achievements refresh is best-effort
+          }
+        })
         .catch((error) => {
           console.error('Failed to sync pomodoro session to backend', error)
         })
@@ -80,5 +89,5 @@ export const usePomodoroNotifications = () => {
 
     previousSessionRef.current = currentSession
     previousFocusCountRef.current = currentFocusCount
-  }, [pomodoro, state.tasks, state.habits, settings, success, t])
+  }, [pomodoro, state.tasks, state.habits, settings, success, t, dispatch])
 }

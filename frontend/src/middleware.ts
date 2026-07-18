@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-
-const TOKEN_COOKIE = 'taskflow_token'
-const REFRESH_COOKIE = 'taskflow_refresh'
+import { resolveMiddlewareAuth } from '@/lib/auth/middleware-auth'
 
 const AUTH_PAGES = new Set(['/login', '/register', '/forgot-password'])
 
@@ -21,35 +19,39 @@ const APP_ROUTE_PREFIXES = [
   '/admin',
 ]
 
-function hasAuthCookie(request: NextRequest): boolean {
-  return Boolean(
-    request.cookies.get(TOKEN_COOKIE)?.value ||
-      request.cookies.get(REFRESH_COOKIE)?.value,
-  )
-}
-
 function isAppRoute(pathname: string): boolean {
   return APP_ROUTE_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   )
 }
 
-export function middleware(request: NextRequest) {
+function isAdminRoute(pathname: string): boolean {
+  return pathname === '/admin' || pathname.startsWith('/admin/')
+}
+
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const hasAuth = hasAuthCookie(request)
+  const auth = await resolveMiddlewareAuth(request)
 
   if (pathname === '/') {
-    const target = hasAuth ? '/dashboard' : '/login'
+    const target = auth.authenticated ? '/dashboard' : '/login'
     return NextResponse.redirect(new URL(target, request.url))
   }
 
-  if (isAppRoute(pathname) && !hasAuth) {
+  if (isAppRoute(pathname) && !auth.authenticated) {
     const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('callbackUrl', pathname)
     return NextResponse.redirect(loginUrl)
   }
 
-  if (AUTH_PAGES.has(pathname) && hasAuth) {
+  if (isAdminRoute(pathname)) {
+    if (!auth.authenticated || auth.role !== 'ADMIN') {
+      const target = auth.authenticated ? '/dashboard' : '/login'
+      return NextResponse.redirect(new URL(target, request.url))
+    }
+  }
+
+  if (AUTH_PAGES.has(pathname) && auth.authenticated) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 

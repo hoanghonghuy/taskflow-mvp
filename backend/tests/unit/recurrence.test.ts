@@ -42,6 +42,21 @@ describe('getNextOccurrence', () => {
     expect(next?.toISOString().slice(0, 10)).toBe('2026-06-03')
   })
 
+  it('weekly with daysOfWeek respects interval between weeks', () => {
+    const seriesStart = new Date('2026-06-01T08:00:00.000Z') // Monday
+    const pattern = {
+      type: 'weekly' as const,
+      interval: 2,
+      daysOfWeek: [1, 3],
+    }
+
+    const wedSameWeek = getNextOccurrence(seriesStart, pattern, seriesStart)
+    expect(wedSameWeek?.toISOString().slice(0, 10)).toBe('2026-06-03')
+
+    const nextAfterWed = getNextOccurrence(wedSameWeek!, pattern, seriesStart)
+    expect(nextAfterWed?.toISOString().slice(0, 10)).toBe('2026-06-15')
+  })
+
   it('advances monthly preserving day of month', () => {
     const from = new Date('2026-06-15T12:00:00.000Z')
     const next = getNextOccurrence(from, { type: 'monthly', interval: 1 })

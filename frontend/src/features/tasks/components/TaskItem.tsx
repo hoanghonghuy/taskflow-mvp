@@ -20,6 +20,8 @@ import { useUser } from '@/components/providers/user-provider'
 import { Avatar } from '@/components/ui/avatar'
 import { useI18n } from '@/lib/i18n/hooks'
 import { useSettings } from '@/components/providers/settings-provider'
+import { HighlightText } from '@/components/ui/highlight-text'
+import { isSharedListMember } from '@/lib/utils/list-access'
 
 // Helper functions to replace date-fns
 const isToday = (date: Date): boolean => {
@@ -44,13 +46,14 @@ interface TaskItemProps {
   onDragStart?: (taskId: string) => void
   onDrop?: (droppedOnId: string) => void
   listName?: string
+  highlightTerm?: string
 }
 
-const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onDrop, listName }) => {
-  const { dispatch } = useTaskManager()
+const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onDrop, listName, highlightTerm }) => {
+  const { state, dispatch } = useTaskManager()
   const { t } = useI18n()
   const { settings } = useSettings()
-  const { allUsers } = useUser()
+  const { user, allUsers } = useUser()
   const { deleteTask, syncSubtasks, toggleTask } = useTaskActions()
   const { confirm } = useConfirmation()
   const [isDragOver, setIsDragOver] = useState(false)
@@ -61,10 +64,15 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
     return stored === 'true'
   })
 
+  const parentList = state.lists.find((list) => list.id === task.listId) ?? null
+  const isReadOnly = isSharedListMember(parentList, user?.id)
+  const canDrag = isDraggable && !task.completed && !isReadOnly
+
   const assignee = allUsers?.find(u => u.id === task.assigneeId) || null
 
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation()
+    if (isReadOnly) return
     void toggleTask(task.id)
   }
 
@@ -82,6 +90,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
 
   const handleSubtaskToggle = (e: React.MouseEvent, subtaskId: string) => {
     e.stopPropagation()
+    if (isReadOnly) return
     const newSubtasks = task.subtasks.map(st =>
       st.id === subtaskId ? { ...st, completed: !st.completed } : st
     )
@@ -102,6 +111,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
 
   const handleQuickDelete = async (e: React.MouseEvent) => {
     e.stopPropagation()
+    if (isReadOnly) return
     const ok = await confirm({
       title: t('taskDetail.deleteConfirm.title', { title: task.title }),
       description: t('taskDetail.deleteConfirm.description', { title: task.title }),
@@ -109,20 +119,21 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
       variant: 'destructive',
     })
     if (!ok) return
-    deleteTask(task.id)
+    void deleteTask(task.id)
   }
   
   const handleDragStart = (e: React.DragEvent) => {
     e.stopPropagation()
-    if (isDraggable && onDragStart) {
+    if (canDrag && onDragStart) {
       e.dataTransfer.effectAllowed = 'move'
+      e.dataTransfer.setData('taskId', task.id.split('_')[0])
       onDragStart(task.id)
     }
   }
   
   const handleDrop = (e: React.DragEvent) => {
     e.stopPropagation()
-    if (isDraggable && onDrop) {
+    if (canDrag && onDrop) {
       onDrop(task.id)
     }
     setIsDragOver(false)
@@ -180,7 +191,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
     <div>
       <div 
         onClick={handleSelect}
-        draggable={isDraggable && !task.completed}
+        draggable={canDrag}
         onDragStart={handleDragStart}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
@@ -189,7 +200,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
         className={`
           group flex items-center p-3 bg-card shadow-sm relative
           transition-all duration-200 ease-in-out
-          ${isDraggable && !task.completed ? 'cursor-grab' : 'cursor-pointer'}
+          ${canDrag ? 'cursor-grab' : 'cursor-pointer'}
           ${task.completed ? 'opacity-50' : 'opacity-100'}
           ${isDragOver ? 'bg-primary/10 shadow-lg' : 'hover:shadow-md'}
           ${task.subtasks.length > 0 && isSubtasksOpen ? 'rounded-t-lg' : 'rounded-lg'}
@@ -197,12 +208,14 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
       >
         <button
           onClick={handleToggle}
+          disabled={isReadOnly}
           aria-label={task.completed ? t('taskItem.aria.markIncomplete') : t('taskItem.aria.markComplete')}
           className={`
             h-5 w-5 rounded shrink-0
             flex items-center justify-center 
             transition-all duration-150 transform hover:scale-110
             focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
+            ${isReadOnly ? 'cursor-not-allowed opacity-60' : ''}
             ${task.completed 
               ? 'bg-primary border-2 border-primary' 
               : `bg-transparent border-2 ${priorityClasses.checkboxBorderColor}`
@@ -215,7 +228,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
         <div className="ml-4 grow flex items-center gap-2 min-w-0">
           <div className="flex flex-col min-w-0">
             <p className={`text-sm truncate ${task.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
-              {task.title}
+              <HighlightText text={task.title} term={highlightTerm} />
             </p>
             {listName && (
               <span className="text-[11px] text-muted-foreground truncate">{listName}</span>
@@ -237,13 +250,15 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
               <PlayCircleIcon className="h-6 w-6" />
             </button>
           )}
-          <button
-            onClick={handleQuickDelete}
-            className={`${TASK_ACTION_CLASS} text-muted-foreground hover:text-destructive`}
-            aria-label={t('task.delete')}
-          >
-            <TrashIcon className="h-5 w-5" />
-          </button>
+          {!isReadOnly && (
+            <button
+              onClick={handleQuickDelete}
+              className={`${TASK_ACTION_CLASS} text-muted-foreground hover:text-destructive`}
+              aria-label={t('task.delete')}
+            >
+              <TrashIcon className="h-5 w-5" />
+            </button>
+          )}
           <div className="flex items-center gap-1.5">
             {progressIndicator()}
             {dueDateLabel()}

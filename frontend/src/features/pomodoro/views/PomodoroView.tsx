@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { usePomodoroActions } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/i18n/hooks'
-import { usePomodoroNotifications } from '@/lib/hooks/use-pomodoro-notifications'
+import { useUser } from '@/components/providers/user-provider'
 import { CheckCircleIcon, PlayCircleIcon, CloseIcon, StopwatchIcon, FlagIcon, SunIcon, SearchIcon, CalendarDayIcon, InboxIcon } from '@/lib/icons'
 import { toYYYYMMDD } from '@/lib/utils/date-helpers'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
@@ -51,6 +51,7 @@ function PomodoroOverflowMenu({
 const PomodoroView: React.FC = () => {
   const router = useRouter()
   const { state } = useTaskManager()
+  const { user } = useUser()
   const { startTimer, pauseTimer, resetTimer, skipBreak, setFocusedTask, setFocusedHabit } = usePomodoroActions()
   const { t } = useI18n()
   const { pomodoro } = state
@@ -61,9 +62,6 @@ const PomodoroView: React.FC = () => {
   const [selectedListId, setSelectedListId] = useState<string | 'inbox'>('inbox')
   const [isStatisticsOpen, setStatisticsOpen] = useState(false)
   const [statisticsTab, setStatisticsTab] = useState<'overview' | 'task' | 'focus'>('overview')
-  
-  // Enable session completion notifications
-  usePomodoroNotifications()
 
   const focusedTask = useMemo(
     () => state.tasks.find(t => t.id === pomodoro.focusedTaskId),
@@ -153,9 +151,9 @@ const PomodoroView: React.FC = () => {
 
   const getSessionColor = () => {
     switch (pomodoro.currentSession) {
-      case 'focus': return 'text-red-500'
-      case 'shortBreak': return 'text-green-500'
-      case 'longBreak': return 'text-blue-500'
+      case 'focus': return 'text-[hsl(var(--color-pomodoro-focus))]'
+      case 'shortBreak': return 'text-[hsl(var(--color-pomodoro-short-break))]'
+      case 'longBreak': return 'text-[hsl(var(--color-pomodoro-long-break))]'
     }
   }
 
@@ -204,23 +202,23 @@ const PomodoroView: React.FC = () => {
         }
         case 'next7Days': {
           if (!dueDateStr) return false
-          const today = new Date()
+          const todayStart = todayDateStr
           const in7 = new Date()
-          in7.setDate(today.getDate() + 7)
-          const dueDate = new Date(task.dueDate as string)
-          return dueDate >= today && dueDate <= in7
+          in7.setDate(in7.getDate() + 7)
+          const in7Str = toYYYYMMDD(in7)
+          return dueDateStr >= todayStart && dueDateStr <= in7Str
         }
         case 'recent':
           return recentTaskIds.has(task.id)
         case 'assignedToMe':
-          return !!task.assigneeId
+          return !!user?.id && task.assigneeId === user.id
         case 'list':
           return task.listId === selectedListId
         default:
           return true
       }
     })
-  }, [state.tasks, taskFilter, selectedListId, todayDateStr, pomodoro.focusHistory])
+  }, [state.tasks, taskFilter, selectedListId, todayDateStr, pomodoro.focusHistory, user])
 
   const filteredTasks = useMemo(() => {
     const query = searchTerm.trim().toLowerCase()
@@ -260,7 +258,7 @@ const PomodoroView: React.FC = () => {
     <AppPage>
       <AppPageContainer>
         <header className="py-6 border-b border-border shrink-0 hidden md:block">
-          <h1 className="text-3xl font-bold">{t('nav.pomodoro')}</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">{t('nav.pomodoro')}</h1>
           <p className="text-muted-foreground">{t('pomodoro.subtitle')}</p>
         </header>
       </AppPageContainer>
@@ -375,10 +373,10 @@ const PomodoroView: React.FC = () => {
                 onClick={handlePauseResume}
                 className={`flex items-center gap-2 px-8 ${
                   pomodoro.currentSession === 'focus' 
-                    ? 'bg-red-500 hover:bg-red-600 text-white' 
+                    ? 'bg-[hsl(var(--color-pomodoro-focus))] hover:bg-[hsl(var(--color-pomodoro-focus) / 0.9)] text-white' 
                     : pomodoro.currentSession === 'shortBreak'
-                    ? 'bg-green-500 hover:bg-green-600 text-white'
-                    : 'bg-blue-500 hover:bg-blue-600 text-white'
+                    ? 'bg-[hsl(var(--color-pomodoro-short-break))] hover:bg-[hsl(var(--color-pomodoro-short-break) / 0.9)] text-white'
+                    : 'bg-[hsl(var(--color-pomodoro-long-break))] hover:bg-[hsl(var(--color-pomodoro-long-break) / 0.9)] text-white'
                 }`}
               >
                 {pomodoro.isPaused || !pomodoro.isActive ? (
@@ -466,27 +464,27 @@ const PomodoroView: React.FC = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex justify-between items-center p-3 bg-red-50 dark:bg-red-950/20 rounded-lg">
+                <div className="flex justify-between items-center p-3 bg-[hsl(var(--color-pomodoro-focus) / 0.1)] rounded-lg">
                   <div className="flex items-center gap-2">
-                    <FlagIcon className="h-4 w-4 text-red-500" />
+                    <FlagIcon className="h-4 w-4 text-[hsl(var(--color-pomodoro-focus))]" />
                     <span className="font-medium">{t('pomodoro.focus')}</span>
                   </div>
                   <Badge variant="secondary">
                     {pomodoro.settings.focusDuration} {t('taskDetail.minutes')}
                   </Badge>
                 </div>
-                <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                <div className="flex justify-between items-center p-3 bg-[hsl(var(--color-pomodoro-short-break) / 0.1)] rounded-lg">
                   <div className="flex items-center gap-2">
-                    <SunIcon className="h-4 w-4 text-green-500" />
+                    <SunIcon className="h-4 w-4 text-[hsl(var(--color-pomodoro-short-break))]" />
                     <span className="font-medium">{t('pomodoro.shortBreak')}</span>
                   </div>
                   <Badge variant="secondary">
                     {pomodoro.settings.shortBreakDuration} {t('taskDetail.minutes')}
                   </Badge>
                 </div>
-                <div className="flex justify-between items-center p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                <div className="flex justify-between items-center p-3 bg-[hsl(var(--color-pomodoro-long-break) / 0.1)] rounded-lg">
                   <div className="flex items-center gap-2">
-                    <SunIcon className="h-4 w-4 text-blue-500" />
+                    <SunIcon className="h-4 w-4 text-[hsl(var(--color-pomodoro-long-break))]" />
                     <span className="font-medium">{t('pomodoro.longBreak')}</span>
                   </div>
                   <Badge variant="secondary">

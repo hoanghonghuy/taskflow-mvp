@@ -25,7 +25,7 @@ Ba file `.env` (gitignore — clone repo cần copy từ `.env.example`):
 |------|---------|
 | [`.env.example`](.env.example) | Docker Compose: port, Postgres, `DATABASE_URL_DOCKER`, `BACKEND_INTERNAL_URL` |
 | [`backend/.env.example`](backend/.env.example) | JWT, `DATABASE_URL`, AI provider (`gemini` / `openai-compatible`) |
-| [`frontend/.env.example`](frontend/.env.example) | `BACKEND_URL`, `MOCK_MODE`, dev user |
+| [`frontend/.env.example`](frontend/.env.example) | `BACKEND_URL`, `MOCK_MODE`, dev user, **JWT** (khớp backend — middleware verify token) |
 
 ```bash
 cp .env.example .env
@@ -91,6 +91,8 @@ npm run dev          # http://localhost:3000
 
 - `/` redirect sang `/login` (landing page giữ trong code, chưa xóa)
 - **AI trên UI tạm không mở** — `AI_FEATURES_ENABLED = false` (`frontend/src/lib/feature-flags.ts`); user thấy toast “đang phát triển”. Backend vẫn có API Gemini/OpenAI cho dev/test; chưa lên lịch bật UI (chi tiết: [docs/ISSUES.md](docs/ISSUES.md))
+- **Quên mật khẩu** — `PASSWORD_RESET_ENABLED = false`; `/forgot-password` hiển thị hướng dẫn thay thế (không gửi email). Chi tiết: [docs/ISSUES.md](docs/ISSUES.md)
+- **Collaboration** — member được mời vào list **đọc** list/task của owner; chưa sửa chung (read-only TaskDetail)
 
 ## Tài khoản admin (dev)
 
@@ -126,8 +128,8 @@ cd backend && DEMO_SEED_FORCE=true npm run seed:demo
 ## Test
 
 ```bash
-cd backend && npm test    # 112 tests
-cd frontend && npm test   # 127 tests (+ 2 skipped contract E2E)
+cd backend && npm test    # 205 tests
+cd frontend && npm test   # 238 tests (+ 2 skipped contract E2E)
 ```
 
 Contract E2E với backend Docker đang chạy:
@@ -168,7 +170,7 @@ $env:E2E_MOCK_MODE="true"; npm run test:e2e:mock
 
 Lệnh khác: `npm run test:e2e:ui`, `npm run test:e2e:report`
 
-**Coverage e2e:** auth, i18n (vi/en), tasks, navigation, admin (DB thật).
+**Coverage e2e:** auth (kèm forgot-password MVP), i18n (vi/en), tasks, navigation, admin (DB thật).
 
 ### CI (GitHub Actions)
 
@@ -187,4 +189,5 @@ Khi e2e fail trên CI, artifact `playwright-report` được upload để debug.
 - [backend/README.md](backend/README.md) — API endpoints, biến env chi tiết
 - [REFACTOR-LAYERING.md](REFACTOR-LAYERING.md) — kiến trúc layer frontend/backend
 - [docs/ISSUES.md](docs/ISSUES.md) — trạng thái code & backlog kỹ thuật
+- [docs/POLISH-CHECKLIST.md](docs/POLISH-CHECKLIST.md) — checklist hoàn thiện tính năng đã có (polish)
 - [docs/FEATURE-COMPLETENESS.md](docs/FEATURE-COMPLETENESS.md) — độ hoàn thiện tính năng so với nghiệp vụ MVP

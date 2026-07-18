@@ -29,6 +29,14 @@ export async function fetchTasks(): Promise<Task[]> {
   return Array.isArray(json) ? mapTasksFromApi(json) : []
 }
 
+export async function searchTasks(query: string, limit = 50): Promise<Task[]> {
+  const params = new URLSearchParams()
+  params.set('q', query.trim())
+  params.set('limit', String(limit))
+  const json = await apiFetchJson<unknown[]>(`/api/tasks/search?${params.toString()}`)
+  return Array.isArray(json) ? mapTasksFromApi(json) : []
+}
+
 export async function createTask(payload: TaskCreatePayload): Promise<Task | null> {
   const json = await apiFetchJson<unknown>('/api/tasks', {
     method: 'POST',
@@ -55,7 +63,9 @@ export async function reorderTasks(taskIds: string[]): Promise<Task[]> {
 
 export async function deleteTask(id: string): Promise<void> {
   const response = await apiFetch(`/api/tasks/${encodeURIComponent(id)}`, { method: 'DELETE' })
-  if (!response.ok && response.status !== 404) {
+  // 404 = already gone (idempotent). 403 = forbidden — must not look like success.
+  if (response.status === 404) return
+  if (!response.ok) {
     throw new Error(`Failed to delete task: ${response.status}`)
   }
 }

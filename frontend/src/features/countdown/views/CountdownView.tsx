@@ -253,7 +253,7 @@ const CountdownView: React.FC = () => {
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="hidden md:block">
-                <h1 className="text-3xl font-bold">{t('nav.countdown')}</h1>
+                <h1 className="text-2xl md:text-3xl font-bold">{t('nav.countdown')}</h1>
                 <p className="text-muted-foreground">{t('countdown.subtitle')}</p>
               </div>
               {!isAdding && (
@@ -314,7 +314,7 @@ const CountdownView: React.FC = () => {
         </header>
       </AppPageContainer>
       <AppPageMain className="py-4 md:py-6">
-        {upcomingEvents.length === 0 ? (
+        {upcomingEvents.length === 0 && completedEvents.length === 0 ? (
           <div className="py-16 text-center">
             <div className="mx-auto flex size-16 items-center justify-center rounded-full border border-dashed border-border-subtle/80 bg-card/60 text-muted-foreground">
               <CalendarDaysIcon className="h-8 w-8" />

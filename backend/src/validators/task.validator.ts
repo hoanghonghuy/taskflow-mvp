@@ -36,3 +36,8 @@ export const updateTaskSchema = createTaskSchema
 export const reorderTasksSchema = z.object({
   taskIds: z.array(z.string().min(1)).min(1),
 })
+
+export const searchTasksQuerySchema = z.object({
+  q: z.string().trim().min(1, 'Search query must not be empty').max(200),
+  limit: z.coerce.number().int().min(1).max(100).optional().default(50),
+})

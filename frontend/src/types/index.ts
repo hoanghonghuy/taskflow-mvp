@@ -34,6 +34,8 @@ export interface RecurrencePattern {
   interval: number;
   daysOfWeek?: number[];
   endDate?: string;
+  /** Stable series anchor (YYYY-MM-DD); used for weekly interval + daysOfWeek. */
+  seriesStart?: string;
   completedDates?: string[];
 }
 
@@ -49,6 +51,7 @@ export interface List {
   name: string;
   color: string;
   members: string[];
+  ownerUserId?: string;
 }
 
 export interface Column {

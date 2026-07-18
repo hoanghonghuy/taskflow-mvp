@@ -60,7 +60,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: backend/package-lock.json
 
@@ -143,3 +143,64 @@ jobs:
             frontend/playwright-report/
             frontend/test-results/
           retention-days: 7
+
+  frontend-contract:
+    name: Frontend (real-backend contract, optional)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: taskflow_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: taskflow
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d taskflow_db"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://postgres:taskflow@localhost:5432/taskflow_db?sslmode=disable
+      JWT_KEY: ci-jwt-key-must-be-at-least-32-chars-long
+      JWT_ISSUER: Taskflow
+      JWT_AUDIENCE: TaskflowClient
+      NODE_ENV: test
+      REAL_BACKEND_TEST: 'true'
+      BACKEND_URL: http://127.0.0.1:8081
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Start backend for contract test
+        working-directory: backend
+        run: |
+          npm ci
+          npx prisma generate
+          npx prisma migrate deploy
+          PORT=8081 npm run dev &
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:8081/health > /dev/null; then
+              echo "Backend ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Backend failed to start"
+          exit 1
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run real-backend contract test
+        working-directory: frontend
+        # Skip coverage gates — this job runs a single optional file against a live backend.
+        run: npx vitest run --coverage.enabled=false real-backend-contract

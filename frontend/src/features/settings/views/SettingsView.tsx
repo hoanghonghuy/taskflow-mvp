@@ -13,6 +13,7 @@ import type { TranslationKey } from '@/lib/i18n/types'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
 import { NotificationSettings } from '@/components/settings/NotificationSettings'
 import { Switch } from '@/components/ui/switch'
+import { SwitchField } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
 
 const ALL_FEATURES: { view: View, icon: React.FC<{className?: string}>, label: TranslationKey }[] = [
@@ -27,7 +28,7 @@ const ALL_FEATURES: { view: View, icon: React.FC<{className?: string}>, label: T
 ]
 
 const SettingsView: React.FC = () => {
-  const { theme, setTheme, bottomNavActions, setBottomNavActions } = useSettings()
+  const { theme, setTheme, bottomNavActions, setBottomNavActions, settings, updateSettings } = useSettings()
   const { state: taskState } = useTaskManager()
   const { updateSettings: updatePomodoroSettings } = usePomodoroActions()
   const { t } = useI18n()
@@ -260,7 +261,7 @@ const SettingsView: React.FC = () => {
                     }}
                     className={`flex items-center justify-between w-full rounded-lg border px-3 py-2 text-left transition-all ${
                       isVisible
-                        ? 'bg-primary/10 border-primary/80 text-primary shadow-[0_0_0_1px_hsl(var(--color-primary)/0.45)]'
+                        ? 'bg-primary/10 border-primary/80 text-primary shadow-[0_0_0_1px_hsl(var(--color-primary) / 0.45)]'
                         : 'bg-secondary/40 border-border hover:bg-secondary/70 hover:border-primary/40'
                     } ${disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
                   >
@@ -295,6 +296,13 @@ const SettingsView: React.FC = () => {
             {t('settings.pomodoro.note' as TranslationKey)}
           </p>
           <div className="bg-card border border-border rounded-lg p-4 max-w-md space-y-4">
+            <SwitchField
+              id="auto-start-pomodoro"
+              label={t('settings.autoStartPomodoro')}
+              description={t('settings.pomodoro.autoStartDescription')}
+              checked={settings.autoStartPomodoro}
+              onCheckedChange={(checked) => updateSettings({ autoStartPomodoro: checked })}
+            />
             <div className="flex items-center justify-between gap-3">
               <label htmlFor="focus-duration" className="font-medium text-sm">{t('settings.pomodoro.focusDuration')}</label>
               <div className="flex items-center gap-1">

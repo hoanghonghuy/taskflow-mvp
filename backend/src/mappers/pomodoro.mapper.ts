@@ -17,6 +17,8 @@ export interface PomodoroStateDto {
   focusedTaskId: string | null
   focusedHabitId: string | null
   sessionsCompleted: number
+  /** Server version for optimistic concurrency on PUT. */
+  updatedAt?: string | null
 }
 
 export function mapSessionToDto(session: PomodoroSession): PomodoroSessionDto {
