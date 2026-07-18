@@ -387,10 +387,13 @@ async function refreshUnlockedAchievements(dispatch: (action: import('@/lib/stor
   }
 }
 
+const habitToggleInFlight = new Set<string>()
+
 export function useTaskActions() {
   const { state, dispatch } = useTaskManager()
   const { success, error: showError } = useToast()
   const { t } = useI18n()
+  const { user } = useUser()
 
   return {
     addTask: useCallback(async (task: Omit<Task, 'id'>) => {
@@ -527,20 +530,38 @@ export function useTaskActions() {
 
     reorderTasks: useCallback(async (draggedId: string, droppedOnId: string) => {
       const before = state.tasks
+      const userId = user?.id
+      const isOwnedTask = (task: Task) => {
+        const list = state.lists.find((l) => l.id === task.listId)
+        if (!list?.ownerUserId || !userId) return true
+        return list.ownerUserId === userId
+      }
+
+      const dragged = before.find((t) => t.id === draggedId)
+      if (!dragged || !isOwnedTask(dragged)) return
+
       dispatch(taskActions.reorder(draggedId, droppedOnId))
 
-      const reordered = [...before]
-      const draggedIndex = reordered.findIndex((t) => t.id === draggedId)
-      const droppedIndex = reordered.findIndex((t) => t.id === droppedOnId)
-      if (draggedIndex === -1 || droppedIndex === -1) return
+      const ownedBefore = before.filter(isOwnedTask)
+      const reorderedOwned = [...ownedBefore]
+      const draggedIndex = reorderedOwned.findIndex((t) => t.id === draggedId)
+      const droppedIndex = reorderedOwned.findIndex((t) => t.id === droppedOnId)
+      if (draggedIndex === -1) return
 
-      const [draggedTask] = reordered.splice(draggedIndex, 1)
-      reordered.splice(droppedIndex, 0, draggedTask)
+      const [draggedTask] = reorderedOwned.splice(draggedIndex, 1)
+      const insertAt =
+        droppedIndex === -1
+          ? reorderedOwned.length
+          : droppedIndex > draggedIndex
+            ? droppedIndex - 1
+            : droppedIndex
+      reorderedOwned.splice(Math.max(0, insertAt), 0, draggedTask)
 
       try {
-        const tasks = await tasksApi.reorderTasks(reordered.map((t) => t.id))
+        const tasks = await tasksApi.reorderTasks(reorderedOwned.map((t) => t.id))
         if (tasks.length > 0) {
-          dispatch({ type: 'SET_TASKS', payload: tasks })
+          const sharedTasks = before.filter((t) => !isOwnedTask(t))
+          dispatch({ type: 'SET_TASKS', payload: [...tasks, ...sharedTasks] })
         }
       } catch (err) {
         console.error('Failed to reorder tasks via API', err)
@@ -550,7 +571,7 @@ export function useTaskActions() {
           err instanceof Error ? err.message : undefined,
         )
       }
-    }, [dispatch, showError, state.tasks, t]),
+    }, [dispatch, showError, state.lists, state.tasks, t, user?.id]),
 
     syncSubtasks: useCallback(async (taskId: string, subtasks: import('@/types').Subtask[]) => {
       const existing = state.tasks.find((t) => t.id === taskId)
@@ -891,6 +912,10 @@ export function useHabitActions() {
       const existing = state.habits.find((h) => h.id === habitId)
       if (!existing) return
 
+      const lockKey = `${habitId}:${date}`
+      if (habitToggleInFlight.has(lockKey)) return
+      habitToggleInFlight.add(lockKey)
+
       const isCompleted = existing.completions.includes(date)
 
       try {
@@ -906,6 +931,8 @@ export function useHabitActions() {
           err instanceof Error ? err.message : undefined,
         )
         return
+      } finally {
+        habitToggleInFlight.delete(lockKey)
       }
 
       dispatch(habitActions.toggleCompletion(habitId, date))

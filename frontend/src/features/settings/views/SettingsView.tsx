@@ -261,7 +261,7 @@ const SettingsView: React.FC = () => {
                     }}
                     className={`flex items-center justify-between w-full rounded-lg border px-3 py-2 text-left transition-all ${
                       isVisible
-                        ? 'bg-primary/10 border-primary/80 text-primary shadow-[0_0_0_1px_hsl(var(--color-primary)/0.45)]'
+                        ? 'bg-primary/10 border-primary/80 text-primary shadow-[0_0_0_1px_hsl(var(--color-primary) / 0.45)]'
                         : 'bg-secondary/40 border-border hover:bg-secondary/70 hover:border-primary/40'
                     } ${disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
                   >

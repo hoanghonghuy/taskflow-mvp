@@ -174,10 +174,18 @@ export async function updateTask(
 }
 
 export async function deleteTask(userId: string, id: string): Promise<boolean> {
-  const existing = await taskRepository.findTaskByIdAndUserId(id, userId)
-  if (!existing) return false
-  await taskRepository.deleteTask(id)
-  return true
+  const owned = await taskRepository.findTaskByIdAndUserId(id, userId)
+  if (owned) {
+    await taskRepository.deleteTask(id)
+    return true
+  }
+
+  const accessible = await taskRepository.findTaskByIdAccessible(id, userId)
+  if (accessible) {
+    throw new AppError(403, 'forbidden', 'You do not have permission to delete this task')
+  }
+
+  return false
 }
 
 export async function reorderTasks(userId: string, taskIds: string[]): Promise<TaskDto[]> {

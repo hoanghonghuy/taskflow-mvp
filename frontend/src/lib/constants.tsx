@@ -348,10 +348,10 @@ export const DEFAULT_POMODORO_SETTINGS: PomodoroSettings = {
 
 export const PRIORITY_COLORS: Record<Priority, string> = {
   none: 'bg-muted text-muted-foreground',
-  low: 'bg-[hsl(var(--color-priority-low)/0.15)] text-[hsl(var(--color-priority-low))]',
-  medium: 'bg-[hsl(var(--color-priority-medium)/0.15)] text-[hsl(var(--color-priority-medium))]',
-  high: 'bg-[hsl(var(--color-priority-high)/0.15)] text-[hsl(var(--color-priority-high))]',
-  urgent: 'bg-[hsl(var(--color-priority-urgent)/0.15)] text-[hsl(var(--color-priority-urgent))]',
+  low: 'bg-[hsl(var(--color-priority-low) / 0.15)] text-[hsl(var(--color-priority-low))]',
+  medium: 'bg-[hsl(var(--color-priority-medium) / 0.15)] text-[hsl(var(--color-priority-medium))]',
+  high: 'bg-[hsl(var(--color-priority-high) / 0.15)] text-[hsl(var(--color-priority-high))]',
+  urgent: 'bg-[hsl(var(--color-priority-urgent) / 0.15)] text-[hsl(var(--color-priority-urgent))]',
 }
 
 export const PRIORITY_MAP: {

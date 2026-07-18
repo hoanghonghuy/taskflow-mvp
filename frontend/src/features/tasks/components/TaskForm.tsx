@@ -65,6 +65,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
   const [tags, setTags] = useState<string[]>([])
   const [newTag, setNewTag] = useState('')
   const [reminderMinutes, setReminderMinutes] = useState<number | ''>('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [textToAnalyze, setTextToAnalyze] = useState('')
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   
@@ -91,26 +92,31 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
     setTags((prev) => prev.filter((tag) => tag !== tagToRemove))
   }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (title.trim()) {
-      const newTask: Omit<Task, 'id'> = {
-        title: title.trim(),
-        description: description.trim(),
-        completed: false,
-        dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
-        priority,
-        listId: listId || resolveInboxListId(),
-        columnId: columnId,
-        tags,
-        subtasks: [],
-        reminderMinutes: reminderMinutes === '' ? undefined : reminderMinutes,
-        createdAt: new Date().toISOString(),
-        totalFocusTime: 0,
-        comments: [],
-      }
-      addTask(newTask)
+    if (!title.trim() || isSubmitting) return
+
+    setIsSubmitting(true)
+    const newTask: Omit<Task, 'id'> = {
+      title: title.trim(),
+      description: description.trim(),
+      completed: false,
+      dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
+      priority,
+      listId: listId || resolveInboxListId(),
+      columnId: columnId,
+      tags,
+      subtasks: [],
+      reminderMinutes: reminderMinutes === '' ? undefined : reminderMinutes,
+      createdAt: new Date().toISOString(),
+      totalFocusTime: 0,
+      comments: [],
+    }
+    try {
+      await addTask(newTask)
       onClose()
+    } finally {
+      setIsSubmitting(false)
     }
   }
   
@@ -364,8 +370,9 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
                 {t('common.cancel')}
               </button>
               <button 
-                type="submit" 
-                className="px-5 py-2.5 bg-primary text-primary-foreground rounded-md text-sm font-semibold hover:bg-primary/90 transition-all shadow-sm hover:shadow-md order-1 sm:order-2"
+                type="submit"
+                disabled={isSubmitting}
+                className="px-5 py-2.5 bg-primary text-primary-foreground rounded-md text-sm font-semibold hover:bg-primary/90 transition-all shadow-sm hover:shadow-md order-1 sm:order-2 disabled:opacity-60 disabled:pointer-events-none"
               >
                 {t('taskForm.createTask')}
               </button>

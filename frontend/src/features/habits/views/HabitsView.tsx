@@ -233,7 +233,7 @@ const HabitsView: React.FC = () => {
                         <h3 className="font-semibold text-lg">{habit.name}</h3>
                         {streak > 0 && (
                           <span
-                            className="text-xs font-medium px-2 py-0.5 rounded-full bg-[hsl(var(--color-habits-summary-streak)/0.1)] text-[hsl(var(--color-habits-summary-streak))]"
+                            className="text-xs font-medium px-2 py-0.5 rounded-full bg-[hsl(var(--color-habits-summary-streak) / 0.1)] text-[hsl(var(--color-habits-summary-streak))]"
                             title={t('habits.streakTooltip')}
                           >
                             🔥 {t('habits.streakLabel', { count: streak })}
@@ -278,7 +278,7 @@ const HabitsView: React.FC = () => {
                               onClick={() => toggleHabitCompletion(habit.id, dateKey)}
                               className={`w-10 h-10 rounded-xl border flex flex-col items-center justify-center text-xs font-semibold transition
                                 ${isCompleted
-                                  ? 'text-white shadow-sm border-[hsl(var(--color-habits-completed))] bg-[hsl(var(--color-habits-completed)/0.95)] hover:bg-[hsl(var(--color-habits-completed)/0.9)]'
+                                  ? 'text-white shadow-sm border-[hsl(var(--color-habits-completed))] bg-[hsl(var(--color-habits-completed) / 0.95)] hover:bg-[hsl(var(--color-habits-completed) / 0.9)]'
                                   : 'border-border bg-card text-muted-foreground hover:border-[hsl(var(--color-habits-completed-weak))] hover:text-foreground'}
                               `}
                             >

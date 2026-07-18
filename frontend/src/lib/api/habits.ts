@@ -3,7 +3,7 @@ import { apiFetch, apiFetchJson } from './client'
 import { mapHabitsFromApi } from './mappers'
 
 export async function fetchHabits(): Promise<Habit[]> {
-  const json = await apiFetchJson<unknown[]>('/api/habits').catch(() => null)
+  const json = await apiFetchJson<unknown[]>('/api/habits')
   return Array.isArray(json) ? mapHabitsFromApi(json) : []
 }
 

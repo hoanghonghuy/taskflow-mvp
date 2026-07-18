@@ -93,13 +93,20 @@ export async function updateList(
 
 export async function deleteList(userId: string, id: string): Promise<boolean> {
   const existing = await listRepository.findListByIdAndUserId(id, userId)
-  if (!existing) return false
+  if (existing) {
+    if (existing.name === 'Inbox') {
+      throw new AppError(400, 'invalid_request', 'Cannot delete the Inbox list')
+    }
 
-  if (existing.name === 'Inbox') {
-    throw new AppError(400, 'invalid_request', 'Cannot delete the Inbox list')
+    await listRepository.deleteTasksByListId(userId, id)
+    await listRepository.deleteList(id)
+    return true
   }
 
-  await listRepository.deleteTasksByListId(userId, id)
-  await listRepository.deleteList(id)
-  return true
+  const accessible = await listRepository.findListByIdAccessible(id, userId)
+  if (accessible) {
+    throw new AppError(403, 'forbidden', 'You do not have permission to delete this list')
+  }
+
+  return false
 }

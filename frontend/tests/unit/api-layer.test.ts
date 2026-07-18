@@ -205,6 +205,13 @@ describe('tasks API client', () => {
     await expect(deleteTask('missing')).resolves.toBeUndefined()
   })
 
+  it('deleteTask throws on 403 forbidden', async () => {
+    mockFetch.mockResolvedValue({ ok: false, status: 403, json: async () => ({ error: 'forbidden' }) } as Response)
+    const { deleteTask } = await import('@/lib/api/tasks')
+
+    await expect(deleteTask('shared-task')).rejects.toThrow('Failed to delete task: 403')
+  })
+
   it('deleteTask throws on other errors', async () => {
     mockFetch.mockResolvedValue({ ok: false, status: 500, json: async () => ({ error: 'server error' }) } as Response)
     const { deleteTask } = await import('@/lib/api/tasks')

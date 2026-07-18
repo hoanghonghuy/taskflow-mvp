@@ -3,7 +3,7 @@ import { apiFetch, apiFetchJson } from './client'
 import { mapListsFromApi } from './mappers'
 
 export async function fetchLists(): Promise<List[]> {
-  const json = await apiFetchJson<unknown[]>('/api/lists').catch(() => null)
+  const json = await apiFetchJson<unknown[]>('/api/lists')
   return Array.isArray(json) ? mapListsFromApi(json) : []
 }
 
@@ -33,7 +33,8 @@ export async function updateList(list: List): Promise<List | null> {
 
 export async function deleteList(id: string): Promise<void> {
   const response = await apiFetch(`/api/lists/${encodeURIComponent(id)}`, { method: 'DELETE' })
-  if (!response.ok && response.status !== 404) {
+  if (response.status === 404) return
+  if (!response.ok) {
     throw new Error(`Failed to delete list: ${response.status}`)
   }
 }

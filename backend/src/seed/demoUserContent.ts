@@ -59,7 +59,7 @@ export async function seedDemoUserContent(userId: string, listIds: DemoListIds):
       autoStartPomodoro: false,
       defaultPriority: 'medium',
       defaultListId: inboxId,
-      bottomNavActions: toJsonString(['dashboard', 'list', 'board', 'calendar', 'habits']),
+      bottomNavActions: toJsonString(['dashboard', 'list', 'board', 'calendar', 'habit']),
       pomodoroSettingsJson: toJsonString(DEFAULT_POMODORO_SETTINGS),
       boardColumnsJson: toJsonString(boardColumns),
     },

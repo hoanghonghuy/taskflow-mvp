@@ -63,7 +63,9 @@ export async function reorderTasks(taskIds: string[]): Promise<Task[]> {
 
 export async function deleteTask(id: string): Promise<void> {
   const response = await apiFetch(`/api/tasks/${encodeURIComponent(id)}`, { method: 'DELETE' })
-  if (!response.ok && response.status !== 404) {
+  // 404 = already gone (idempotent). 403 = forbidden — must not look like success.
+  if (response.status === 404) return
+  if (!response.ok) {
     throw new Error(`Failed to delete task: ${response.status}`)
   }
 }

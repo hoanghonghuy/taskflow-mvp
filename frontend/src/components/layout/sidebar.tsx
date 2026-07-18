@@ -15,6 +15,7 @@ import { useConfirmation } from '@/components/providers/confirmation-provider'
 import { useToast } from '@/components/providers/toast-provider'
 import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import type { List } from '@/types'
+import { isOwnedList } from '@/lib/utils/list-access'
 
 const LIST_ACTION_BUTTON_CLASS =
   'opacity-100 md:opacity-0 md:group-hover:opacity-100 text-muted-foreground p-0.5 rounded'
@@ -231,6 +232,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                 <div className="space-y-1">
                   {state.lists.map(list => {
                     const taskCount = state.tasks.filter(t => t.listId === list.id && !t.completed).length
+                    const canManageList = isOwnedList(list, user?.id)
                     return (
                       <NavItem
                         key={list.id}
@@ -251,7 +253,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-medium text-muted-foreground">{taskCount}</span>
-                          {!isInboxList(list) && (
+                          {canManageList && !isInboxList(list) && (
                             <button
                               onClick={(e) => { e.stopPropagation(); setEditingList(list) }}
                               className={`${LIST_ACTION_BUTTON_CLASS} hover:text-primary`}
@@ -260,7 +262,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                               <span className="text-xs font-semibold">✎</span>
                             </button>
                           )}
-                          {onShareList && !isInboxList(list) && (
+                          {canManageList && onShareList && !isInboxList(list) && (
                             <button 
                               onClick={(e) => { e.stopPropagation(); onShareList(list.id); }} 
                               className={`${LIST_ACTION_BUTTON_CLASS} hover:text-primary`}
@@ -269,6 +271,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                               <UserPlusIcon className="h-4 w-4" />
                             </button>
                           )}
+                          {canManageList && !isInboxList(list) && (
                           <button 
                             onClick={(e) => { e.stopPropagation(); handleDeleteList(list.id, list.name); }} 
                             className={`${LIST_ACTION_BUTTON_CLASS} hover:text-destructive`}
@@ -276,6 +279,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                           >
                             <TrashIcon className="h-4 w-4" />
                           </button>
+                          )}
                         </div>
                       </NavItem>
                     )

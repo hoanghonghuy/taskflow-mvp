@@ -6,6 +6,7 @@ import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { usePomodoroActions } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/i18n/hooks'
 import { usePomodoroNotifications } from '@/lib/hooks/use-pomodoro-notifications'
+import { useUser } from '@/components/providers/user-provider'
 import { CheckCircleIcon, PlayCircleIcon, CloseIcon, StopwatchIcon, FlagIcon, SunIcon, SearchIcon, CalendarDayIcon, InboxIcon } from '@/lib/icons'
 import { toYYYYMMDD } from '@/lib/utils/date-helpers'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
@@ -51,6 +52,7 @@ function PomodoroOverflowMenu({
 const PomodoroView: React.FC = () => {
   const router = useRouter()
   const { state } = useTaskManager()
+  const { user } = useUser()
   const { startTimer, pauseTimer, resetTimer, skipBreak, setFocusedTask, setFocusedHabit } = usePomodoroActions()
   const { t } = useI18n()
   const { pomodoro } = state
@@ -204,23 +206,23 @@ const PomodoroView: React.FC = () => {
         }
         case 'next7Days': {
           if (!dueDateStr) return false
-          const today = new Date()
+          const todayStart = todayDateStr
           const in7 = new Date()
-          in7.setDate(today.getDate() + 7)
-          const dueDate = new Date(task.dueDate as string)
-          return dueDate >= today && dueDate <= in7
+          in7.setDate(in7.getDate() + 7)
+          const in7Str = toYYYYMMDD(in7)
+          return dueDateStr >= todayStart && dueDateStr <= in7Str
         }
         case 'recent':
           return recentTaskIds.has(task.id)
         case 'assignedToMe':
-          return !!task.assigneeId
+          return !!user?.id && task.assigneeId === user.id
         case 'list':
           return task.listId === selectedListId
         default:
           return true
       }
     })
-  }, [state.tasks, taskFilter, selectedListId, todayDateStr, pomodoro.focusHistory])
+  }, [state.tasks, taskFilter, selectedListId, todayDateStr, pomodoro.focusHistory, user?.id])
 
   const filteredTasks = useMemo(() => {
     const query = searchTerm.trim().toLowerCase()
@@ -375,10 +377,10 @@ const PomodoroView: React.FC = () => {
                 onClick={handlePauseResume}
                 className={`flex items-center gap-2 px-8 ${
                   pomodoro.currentSession === 'focus' 
-                    ? 'bg-[hsl(var(--color-pomodoro-focus))] hover:bg-[hsl(var(--color-pomodoro-focus)/0.9)] text-white' 
+                    ? 'bg-[hsl(var(--color-pomodoro-focus))] hover:bg-[hsl(var(--color-pomodoro-focus) / 0.9)] text-white' 
                     : pomodoro.currentSession === 'shortBreak'
-                    ? 'bg-[hsl(var(--color-pomodoro-short-break))] hover:bg-[hsl(var(--color-pomodoro-short-break)/0.9)] text-white'
-                    : 'bg-[hsl(var(--color-pomodoro-long-break))] hover:bg-[hsl(var(--color-pomodoro-long-break)/0.9)] text-white'
+                    ? 'bg-[hsl(var(--color-pomodoro-short-break))] hover:bg-[hsl(var(--color-pomodoro-short-break) / 0.9)] text-white'
+                    : 'bg-[hsl(var(--color-pomodoro-long-break))] hover:bg-[hsl(var(--color-pomodoro-long-break) / 0.9)] text-white'
                 }`}
               >
                 {pomodoro.isPaused || !pomodoro.isActive ? (
@@ -466,7 +468,7 @@ const PomodoroView: React.FC = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex justify-between items-center p-3 bg-[hsl(var(--color-pomodoro-focus)/0.1)] rounded-lg">
+                <div className="flex justify-between items-center p-3 bg-[hsl(var(--color-pomodoro-focus) / 0.1)] rounded-lg">
                   <div className="flex items-center gap-2">
                     <FlagIcon className="h-4 w-4 text-[hsl(var(--color-pomodoro-focus))]" />
                     <span className="font-medium">{t('pomodoro.focus')}</span>
@@ -475,7 +477,7 @@ const PomodoroView: React.FC = () => {
                     {pomodoro.settings.focusDuration} {t('taskDetail.minutes')}
                   </Badge>
                 </div>
-                <div className="flex justify-between items-center p-3 bg-[hsl(var(--color-pomodoro-short-break)/0.1)] rounded-lg">
+                <div className="flex justify-between items-center p-3 bg-[hsl(var(--color-pomodoro-short-break) / 0.1)] rounded-lg">
                   <div className="flex items-center gap-2">
                     <SunIcon className="h-4 w-4 text-[hsl(var(--color-pomodoro-short-break))]" />
                     <span className="font-medium">{t('pomodoro.shortBreak')}</span>
@@ -484,7 +486,7 @@ const PomodoroView: React.FC = () => {
                     {pomodoro.settings.shortBreakDuration} {t('taskDetail.minutes')}
                   </Badge>
                 </div>
-                <div className="flex justify-between items-center p-3 bg-[hsl(var(--color-pomodoro-long-break)/0.1)] rounded-lg">
+                <div className="flex justify-between items-center p-3 bg-[hsl(var(--color-pomodoro-long-break) / 0.1)] rounded-lg">
                   <div className="flex items-center gap-2">
                     <SunIcon className="h-4 w-4 text-[hsl(var(--color-pomodoro-long-break))]" />
                     <span className="font-medium">{t('pomodoro.longBreak')}</span>

@@ -128,7 +128,7 @@ const TaskList: React.FC<TaskListProps> = ({ onAddTask }) => {
         key: 'upcoming',
         label: t('taskList.summary.upcoming'),
         value: summary.upcoming,
-        accent: 'bg-[hsl(var(--color-dashboard-upcoming)/0.1)] text-[hsl(var(--color-dashboard-upcoming))]'
+        accent: 'bg-[hsl(var(--color-dashboard-upcoming) / 0.1)] text-[hsl(var(--color-dashboard-upcoming))]'
       },
       {
         key: 'overdue',
