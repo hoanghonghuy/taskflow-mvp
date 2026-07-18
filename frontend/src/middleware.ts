@@ -44,8 +44,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  if (isAdminRoute(pathname) && auth.authenticated && auth.role && auth.role !== 'ADMIN') {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+  if (isAdminRoute(pathname)) {
+    if (!auth.authenticated || auth.role !== 'ADMIN') {
+      const target = auth.authenticated ? '/dashboard' : '/login'
+      return NextResponse.redirect(new URL(target, request.url))
+    }
   }
 
   if (AUTH_PAGES.has(pathname) && auth.authenticated) {

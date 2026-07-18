@@ -119,7 +119,10 @@ export function expandRecurringTask(
     if (current > end) break
     if (current >= start) {
       const isoDate = current.toISOString().slice(0, 10)
-      instances.push({ id: `${task.id}_${isoDate}`, instanceDate: new Date(current) })
+      // Local calendar date matching UTC Y-M-D so toDateString() buckets align
+      const [year, month, day] = isoDate.split('-').map(Number)
+      const localInstance = new Date(year, month - 1, day)
+      instances.push({ id: `${task.id}_${isoDate}`, instanceDate: localInstance })
     }
     const next = getNextOccurrence(current, task.recurrence, anchor)
     if (!next) break

@@ -789,11 +789,19 @@ export function useListActions() {
       }
     }, [dispatch, showError, t]),
 
-    updateList: useCallback(async (list: List) => {
+    updateList: useCallback(async (list: Pick<List, 'id'> & Partial<Pick<List, 'name' | 'color'>>) => {
       try {
-        const updatedList = (await listsApi.updateList(list)) ?? list
+        // Do not send members here — rename must not clobber concurrent share changes.
+        const updatedList =
+          (await listsApi.updateList({
+            id: list.id,
+            name: list.name,
+            color: list.color,
+          })) ?? null
 
-        dispatch({ type: 'UPDATE_LIST', payload: updatedList })
+        if (updatedList) {
+          dispatch({ type: 'UPDATE_LIST', payload: updatedList })
+        }
       } catch (err) {
         console.error('Failed to update list via API', err)
         showError(
@@ -819,19 +827,9 @@ export function useListActions() {
     }, [dispatch, showError, t]),
 
     shareList: useCallback(async (listId: string, userId: string): Promise<boolean> => {
-      const existing = state.lists.find((l) => l.id === listId)
-      if (!existing) return false
-
-      const nextMembers = existing.members.includes(userId)
-        ? existing.members
-        : [...existing.members, userId]
-
       try {
-        const updatedList =
-          (await listsApi.updateList({ ...existing, members: nextMembers })) ?? {
-            ...existing,
-            members: nextMembers,
-          }
+        const updatedList = await listsApi.addListMember(listId, userId)
+        if (!updatedList) return false
 
         dispatch({ type: 'UPDATE_LIST', payload: updatedList })
         return true
@@ -843,20 +841,12 @@ export function useListActions() {
         )
         return false
       }
-    }, [dispatch, showError, state.lists, t]),
+    }, [dispatch, showError, t]),
 
     unshareList: useCallback(async (listId: string, userId: string): Promise<boolean> => {
-      const existing = state.lists.find((l) => l.id === listId)
-      if (!existing) return false
-
-      const nextMembers = existing.members.filter((id) => id !== userId)
-
       try {
-        const updatedList =
-          (await listsApi.updateList({ ...existing, members: nextMembers })) ?? {
-            ...existing,
-            members: nextMembers,
-          }
+        const updatedList = await listsApi.removeListMember(listId, userId)
+        if (!updatedList) return false
 
         dispatch({ type: 'UPDATE_LIST', payload: updatedList })
         return true
@@ -868,7 +858,7 @@ export function useListActions() {
         )
         return false
       }
-    }, [dispatch, showError, state.lists, t]),
+    }, [dispatch, showError, t]),
   }
 }
 

@@ -3,12 +3,14 @@
 import React, { useMemo } from 'react'
 import { useCalendar, type ViewMode } from '@/lib/hooks/use-calendar'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
+import { useUser } from '@/components/providers/user-provider'
 import { useTaskActions } from '@/lib/hooks/use-task-manager'
 import { useI18n } from '@/lib/i18n/hooks'
 import type { TranslationKey } from '@/lib/i18n/types'
 import { useSettings } from '@/components/providers/settings-provider'
 import { CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react'
 import { PRIORITY_MAP } from '@/lib/task-constants'
+import { isSharedListMember } from '@/lib/utils/list-access'
 import type { Task } from '@/types'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
 
@@ -42,6 +44,7 @@ const CalendarView: React.FC = () => {
   const { updateTask } = useTaskActions()
   const { tasks } = state
   const { settings } = useSettings()
+  const { user } = useUser()
 
   const locale = settings.language || undefined
 
@@ -82,6 +85,9 @@ const CalendarView: React.FC = () => {
     const task = tasks.find(t => t.id === originalId)
     if (!task) return
 
+    const parentList = state.lists.find((list) => list.id === task.listId)
+    if (isSharedListMember(parentList, user?.id)) return
+
     // Non-anchor recurring instances: do not move the whole series
     if (task.recurrence && isInstance && instanceDateStr) {
       const anchorDateStr = task.dueDate
@@ -120,9 +126,11 @@ const CalendarView: React.FC = () => {
 
   const canDragTask = (task: Task) => {
     const { isInstance, originalId, instanceDateStr } = parseCalendarTaskId(task.id)
+    const master = tasks.find(t => t.id === originalId) ?? task
+    const parentList = state.lists.find((list) => list.id === master.listId)
+    if (isSharedListMember(parentList, user?.id)) return false
     if (!isInstance || !instanceDateStr) return true
-    const master = tasks.find(t => t.id === originalId)
-    if (!master?.recurrence) return true
+    if (!master.recurrence) return true
     const anchorDateStr = master.dueDate
       ? new Date(master.dueDate).toISOString().slice(0, 10)
       : ''

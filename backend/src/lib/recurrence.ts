@@ -8,6 +8,8 @@ export interface RecurrenceInput {
   interval: number
   daysOfWeek?: number[]
   endDate?: string
+  /** Stable series anchor (YYYY-MM-DD or ISO); used for weekly interval + daysOfWeek. */
+  seriesStart?: string
 }
 
 /** Calendar day in UTC — matches API ISO date strings. */
@@ -22,12 +24,25 @@ function isPastEnd(date: Date, endDate?: string): boolean {
   return startOfDay(date) > startOfDay(new Date(endDate))
 }
 
+/** Week offset from series start (Sunday-based UTC weeks). */
+function weekIndexFromSeries(date: Date, seriesAnchor: Date): number {
+  const dayMs = 24 * 60 * 60 * 1000
+  const anchorWeekStart = new Date(seriesAnchor)
+  anchorWeekStart.setUTCDate(anchorWeekStart.getUTCDate() - anchorWeekStart.getUTCDay())
+  anchorWeekStart.setUTCHours(0, 0, 0, 0)
+  const dateWeekStart = new Date(date)
+  dateWeekStart.setUTCDate(dateWeekStart.getUTCDate() - dateWeekStart.getUTCDay())
+  dateWeekStart.setUTCHours(0, 0, 0, 0)
+  return Math.round((dateWeekStart.getTime() - anchorWeekStart.getTime()) / (7 * dayMs))
+}
+
 export function parseRecurrence(raw: string | null | undefined): RecurrenceInput | null {
   const obj = parseJsonObject<{
     type?: string
     interval?: number
     daysOfWeek?: number[]
     endDate?: string
+    seriesStart?: string
   }>(raw)
 
   if (!obj?.type) return null
@@ -45,12 +60,21 @@ export function parseRecurrence(raw: string | null | undefined): RecurrenceInput
     interval: typeof obj.interval === 'number' && obj.interval > 0 ? obj.interval : 1,
     ...(daysOfWeek && daysOfWeek.length > 0 ? { daysOfWeek } : {}),
     ...(obj.endDate ? { endDate: String(obj.endDate) } : {}),
+    ...(obj.seriesStart ? { seriesStart: String(obj.seriesStart) } : {}),
   }
 }
 
 /** Next occurrence strictly after `fromDate` (calendar day of `fromDate`). */
-export function getNextOccurrence(fromDate: Date, pattern: RecurrenceInput): Date | null {
+export function getNextOccurrence(
+  fromDate: Date,
+  pattern: RecurrenceInput,
+  seriesStart?: Date,
+): Date | null {
   const anchor = startOfDay(fromDate)
+  const seriesAnchor = startOfDay(
+    seriesStart ??
+      (pattern.seriesStart ? new Date(pattern.seriesStart) : fromDate),
+  )
   const interval = Math.max(1, pattern.interval || 1)
 
   if (isPastEnd(anchor, pattern.endDate)) return null
@@ -66,9 +90,11 @@ export function getNextOccurrence(fromDate: Date, pattern: RecurrenceInput): Dat
       if (pattern.daysOfWeek && pattern.daysOfWeek.length > 0) {
         const allowed = new Set(pattern.daysOfWeek)
         next = new Date(anchor)
-        for (let i = 0; i < 366; i++) {
+        for (let i = 0; i < 366 * interval; i++) {
           next.setUTCDate(next.getUTCDate() + 1)
-          if (allowed.has(next.getUTCDay())) break
+          if (!allowed.has(next.getUTCDay())) continue
+          const weekIndex = weekIndexFromSeries(startOfDay(next), seriesAnchor)
+          if (weekIndex % interval === 0) break
         }
       } else {
         next = new Date(anchor)

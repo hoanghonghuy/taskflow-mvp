@@ -151,7 +151,7 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
           />
         ))}
       </div>
-      {onOpenTaskForm && (
+      {onOpenTaskForm && canManageColumns && (
         <div className="p-2 shrink-0">
           <button
             onClick={() => onOpenTaskForm({ listId: column.listId, columnId: column.id })}

@@ -1,5 +1,6 @@
 import type { Prisma } from '@prisma/client'
 import { toJsonString } from '../lib/json'
+import { parseListMembers } from '../lib/list-access'
 import { AppError } from '../middleware/errorHandler'
 import { mapListToDto, type ListDto } from '../mappers/list.mapper'
 import * as listRepository from '../repositories/listRepository'
@@ -88,6 +89,52 @@ export async function updateList(
   }
 
   const updated = await listRepository.updateList(id, data)
+  return mapListToDto(updated)
+}
+
+/** Atomically add a member using current DB members (avoids last-write-wins races). */
+export async function addListMember(
+  userId: string,
+  id: string,
+  memberUserId: string,
+): Promise<ListDto | null> {
+  const existing = await listRepository.findListByIdAndUserId(id, userId)
+  if (!existing) return null
+
+  if (memberUserId === userId) {
+    throw new AppError(400, 'invalid_request', 'Cannot invite yourself')
+  }
+
+  await validateMembers([memberUserId])
+
+  const current = parseListMembers(existing.members)
+  if (current.includes(memberUserId)) {
+    return mapListToDto(existing)
+  }
+
+  const updated = await listRepository.updateList(id, {
+    members: toJsonString([...current, memberUserId]),
+  })
+  return mapListToDto(updated)
+}
+
+/** Atomically remove a member using current DB members. */
+export async function removeListMember(
+  userId: string,
+  id: string,
+  memberUserId: string,
+): Promise<ListDto | null> {
+  const existing = await listRepository.findListByIdAndUserId(id, userId)
+  if (!existing) return null
+
+  const current = parseListMembers(existing.members)
+  if (!current.includes(memberUserId)) {
+    return mapListToDto(existing)
+  }
+
+  const updated = await listRepository.updateList(id, {
+    members: toJsonString(current.filter((m) => m !== memberUserId)),
+  })
   return mapListToDto(updated)
 }
 

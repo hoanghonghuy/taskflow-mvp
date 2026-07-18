@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useTaskManager, useTaskActions } from '@/components/providers/task-manager-provider'
+import { useUser } from '@/components/providers/user-provider'
 import { useI18n } from '@/lib/i18n/hooks'
 import { useGemini } from '@/lib/hooks/use-gemini'
 import { useAiFeature } from '@/lib/hooks/use-ai-feature'
@@ -20,6 +21,7 @@ import {
 import { PRIORITY_MAP } from '@/lib/task-constants'
 import { Skeleton } from '@/components/ui/skeleton'
 import * as aiApi from '@/lib/api/ai'
+import { isOwnedList } from '@/lib/utils/list-access'
 
 interface TaskFormProps {
   onClose: () => void
@@ -31,6 +33,7 @@ interface TaskFormProps {
 
 const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
   const { state } = useTaskManager()
+  const { user } = useUser()
   const { addTask } = useTaskActions()
   const { t, currentLanguage } = useI18n()
   const { isAvailable: isGeminiAvailable } = useGemini()
@@ -38,8 +41,14 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
   const showAiAssist = AI_FEATURES_ENABLED && isGeminiAvailable
   const addToast = useToast()
 
+  const ownedLists = useMemo(
+    () => state.lists.filter((list) => isOwnedList(list, user?.id)),
+    [state.lists, user?.id],
+  )
+
   const resolveInboxListId = () => {
-    const inbox = state.lists.find((l) => l.name === 'Inbox' || l.id === 'inbox')
+    const inbox = ownedLists.find((l) => l.name === 'Inbox' || l.id === 'inbox')
+      ?? state.lists.find((l) => l.name === 'Inbox' || l.id === 'inbox')
     return inbox?.id ?? 'inbox'
   }
 
@@ -49,7 +58,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
     if (initial === 'today' || initial === 'upcoming' || initial === 'inbox') {
       return inboxListId
     }
-    const listExists = state.lists.some((l) => l.id === initial)
+    const listExists = ownedLists.some((l) => l.id === initial)
     if (!listExists) {
       return inboxListId
     }
@@ -338,7 +347,9 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
                 className="w-full p-3 bg-secondary/50 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-colors appearance-none cursor-pointer"
               >
                 <option value="inbox">{t('specialLists.inbox')}</option>
-                {state.lists.map(list => (
+                {ownedLists
+                  .filter((list) => list.id !== 'inbox' && list.name !== 'Inbox')
+                  .map(list => (
                   <option key={list.id} value={list.id}>{list.name}</option>
                 ))}
               </select>

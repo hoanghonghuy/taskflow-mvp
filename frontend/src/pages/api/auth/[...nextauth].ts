@@ -152,9 +152,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(response.status).json(safeData)
       }
 
+      res.setHeader('Set-Cookie', [
+        buildExpiredAuthCookie(TOKEN_COOKIE_NAME),
+        buildExpiredAuthCookie(REFRESH_COOKIE_NAME),
+      ])
       return res.status(response.status).json(data ?? payload)
     } catch (error) {
       console.error('API Error (proxy to backend /api/auth/refresh):', error)
+      res.setHeader('Set-Cookie', [
+        buildExpiredAuthCookie(TOKEN_COOKIE_NAME),
+        buildExpiredAuthCookie(REFRESH_COOKIE_NAME),
+      ])
       return res.status(500).json({ error: 'Internal server error' })
     }
   }

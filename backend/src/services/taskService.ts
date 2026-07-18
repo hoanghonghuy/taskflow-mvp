@@ -1,11 +1,13 @@
-import type { Prisma } from '@prisma/client'
+import type { Prisma, TodoList } from '@prisma/client'
 import { toJsonString } from '../lib/json'
 import { normalizeListId } from '../lib/inbox-list'
+import { isListOwner, parseListMembers } from '../lib/list-access'
 import { getNextOccurrence, parseRecurrence, appendCompletionDate } from '../lib/recurrence'
 import { mapTaskToDto, type TaskDto } from '../mappers/task.mapper'
 import { AppError } from '../middleware/errorHandler'
 import { prisma } from '../lib/prisma'
 import * as pomodoroRepository from '../repositories/pomodoroRepository'
+import * as listRepository from '../repositories/listRepository'
 import * as taskRepository from '../repositories/taskRepository'
 
 const VALID_PRIORITIES = new Set(['none', 'low', 'medium', 'high', 'urgent'])
@@ -23,6 +25,17 @@ function normalizePriority(value: unknown): string {
   if (typeof value !== 'string') return 'none'
   const lower = value.trim().toLowerCase()
   return VALID_PRIORITIES.has(lower) ? lower : 'none'
+}
+
+async function assertValidAssignee(list: TodoList, assigneeId: string): Promise<void> {
+  if (isListOwner(list, assigneeId)) return
+  if (parseListMembers(list.members).includes(assigneeId)) return
+
+  const user = await prisma.user.findUnique({ where: { id: assigneeId }, select: { id: true } })
+  if (!user) {
+    throw new AppError(400, 'invalid_request', 'Invalid assigneeId')
+  }
+  throw new AppError(400, 'invalid_request', 'Assignee must be the list owner or a member')
 }
 
 async function mapTasksWithFocus(tasks: Awaited<ReturnType<typeof taskRepository.findTasksAccessibleByUserId>>): Promise<TaskDto[]> {
@@ -62,6 +75,20 @@ export async function createTask(userId: string, body: Record<string, unknown>):
 
   const listId = await normalizeListId(userId, body.listId)
 
+  const list = await listRepository.findListByIdAccessible(listId, userId)
+  if (!list) {
+    throw new AppError(400, 'invalid_request', 'Invalid listId')
+  }
+  if (list.userId !== userId) {
+    throw new AppError(403, 'forbidden', 'You do not have permission to create tasks in this list')
+  }
+
+  const assigneeId =
+    body.assigneeId != null ? String(body.assigneeId) : null
+  if (assigneeId) {
+    await assertValidAssignee(list, assigneeId)
+  }
+
   // Bọc read max + create trong transaction serializable để tránh 2 request
   // song song của cùng user lấy cùng maxSortOrder → trùng sortOrder, phá vỡ
   // thứ tự board/list. Nếu conflict thì Prisma sẽ retry 1 lần.
@@ -85,7 +112,7 @@ export async function createTask(userId: string, body: Record<string, unknown>):
               recurrence: body.recurrence ? toJsonString(body.recurrence) : null,
               reminderMinutes:
                 typeof body.reminderMinutes === 'number' ? body.reminderMinutes : null,
-              assigneeId: body.assigneeId != null ? String(body.assigneeId) : null,
+              assigneeId,
               sortOrder: maxSortOrder + 1,
               user: { connect: { id: userId } },
             },
@@ -127,7 +154,10 @@ export async function updateTask(
     if (completed) {
       const recurrence = parseRecurrence(existing.recurrence)
       if (recurrence && existing.dueDate) {
-        const nextDue = getNextOccurrence(existing.dueDate, recurrence)
+        const seriesStart = recurrence.seriesStart
+          ? new Date(recurrence.seriesStart)
+          : existing.dueDate
+        const nextDue = getNextOccurrence(existing.dueDate, recurrence, seriesStart)
         if (nextDue) {
           const preserved = new Date(nextDue)
           preserved.setUTCHours(
@@ -166,7 +196,21 @@ export async function updateTask(
   if ('reminderMinutes' in body) {
     data.reminderMinutes = typeof body.reminderMinutes === 'number' ? body.reminderMinutes : null
   }
-  if ('assigneeId' in body) data.assigneeId = body.assigneeId != null ? String(body.assigneeId) : null
+  if ('assigneeId' in body) {
+    const nextAssignee = body.assigneeId != null ? String(body.assigneeId) : null
+    if (nextAssignee) {
+      const listIdForAssignee =
+        'listId' in body && body.listId != null
+          ? await normalizeListId(userId, body.listId)
+          : existing.listId
+      const list = await listRepository.findListByIdAndUserId(listIdForAssignee, userId)
+      if (!list) {
+        throw new AppError(400, 'invalid_request', 'Invalid listId for assignee')
+      }
+      await assertValidAssignee(list, nextAssignee)
+    }
+    data.assigneeId = nextAssignee
+  }
 
   const updated = await taskRepository.updateTask(id, data)
   const totalFocusTime = await pomodoroRepository.sumFocusSecondsForTask(userId, id)
