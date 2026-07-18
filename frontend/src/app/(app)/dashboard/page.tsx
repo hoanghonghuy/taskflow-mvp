@@ -198,7 +198,7 @@ export default function DashboardPage() {
                 }}
                 className="bg-card border border-border rounded-lg p-5 flex items-start gap-4 text-left hover:shadow-md hover:border-primary/50 transition-all"
               >
-                <div className="bg-blue-500/10 text-blue-500 p-3 rounded-lg">
+                <div className="bg-[hsl(var(--color-dashboard-today)/0.1)] text-[hsl(var(--color-dashboard-today))] p-3 rounded-lg">
                   <CalendarDayIcon className="h-6 w-6" />
                 </div>
                 <div>
@@ -215,7 +215,7 @@ export default function DashboardPage() {
                 }}
                 className="bg-card border border-border rounded-lg p-5 flex items-start gap-4 text-left hover:shadow-md hover:border-primary/50 transition-all"
               >
-                <div className="bg-purple-500/10 text-purple-500 p-3 rounded-lg">
+                <div className="bg-[hsl(var(--color-dashboard-upcoming)/0.1)] text-[hsl(var(--color-dashboard-upcoming))] p-3 rounded-lg">
                   <CalendarIcon className="h-6 w-6" />
                 </div>
                 <div>
@@ -232,7 +232,7 @@ export default function DashboardPage() {
                 }}
                 className="bg-card border border-border rounded-lg p-5 flex items-start gap-4 text-left hover:shadow-md hover:border-primary/50 transition-all"
               >
-                <div className="bg-green-500/10 text-green-500 p-3 rounded-lg">
+                <div className="bg-[hsl(var(--color-dashboard-habits)/0.1)] text-[hsl(var(--color-dashboard-habits))] p-3 rounded-lg">
                   <RepeatIcon className="h-6 w-6" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -240,7 +240,7 @@ export default function DashboardPage() {
                   <p className="text-3xl font-bold leading-tight">{animatedHabits}/{stats.habitsTotal}</p>
                   <div className="mt-2 h-1.5 rounded-full bg-muted overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-green-500 transition-all"
+                      className="h-full rounded-full bg-[hsl(var(--color-dashboard-habits))] transition-all"
                       style={{ width: `${habitsCompletionPercent}%` }}
                     />
                   </div>

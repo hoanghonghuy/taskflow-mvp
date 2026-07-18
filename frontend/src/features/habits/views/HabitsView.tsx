@@ -134,7 +134,7 @@ const HabitsView: React.FC = () => {
         <header className="py-6 border-b border-border shrink-0">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="hidden md:block">
-              <h1 className="text-3xl font-bold">{t('nav.habits')}</h1>
+              <h1 className="text-2xl md:text-3xl font-bold">{t('nav.habits')}</h1>
               <p className="text-muted-foreground">{t('habits.subtitle')}</p>
             </div>
             {!isAdding && (
@@ -194,8 +194,20 @@ const HabitsView: React.FC = () => {
               className="rounded-2xl border border-border bg-card p-4 shadow-sm"
               title={card.label === t('habits.summary.longestStreak') ? t('habits.longestStreakTooltip') : undefined}
             >
-              <p className="text-sm text-muted-foreground">{card.label}</p>
-              <p className="text-2xl font-semibold text-foreground">{card.value}</p>
+              <div className="flex items-center gap-2">
+                <span
+                  className="h-2.5 w-2.5 rounded-full shrink-0"
+                  style={{ backgroundColor: `hsl(var(${card.colorToken}))` }}
+                  aria-hidden="true"
+                />
+                <p className="text-sm text-muted-foreground">{card.label}</p>
+              </div>
+              <p
+                className="text-2xl font-semibold"
+                style={{ color: `hsl(var(${card.colorToken}))` }}
+              >
+                {card.value}
+              </p>
             </div>
           ))}
         </div>
@@ -221,7 +233,7 @@ const HabitsView: React.FC = () => {
                         <h3 className="font-semibold text-lg">{habit.name}</h3>
                         {streak > 0 && (
                           <span
-                            className="text-xs font-medium px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-600 dark:text-orange-400"
+                            className="text-xs font-medium px-2 py-0.5 rounded-full bg-[hsl(var(--color-habits-summary-streak)/0.1)] text-[hsl(var(--color-habits-summary-streak))]"
                             title={t('habits.streakTooltip')}
                           >
                             🔥 {t('habits.streakLabel', { count: streak })}

@@ -32,7 +32,7 @@
   --color-destructive: 0 84.2% 60.2%;
   --color-destructive-foreground: 210 40% 98%;
   
-  /* Priority colors (match original blue/yellow/red/red palette) */
+  /* Priority colors: fixed hues so urgency meaning stays consistent across themes */
   --color-priority-low: 217 91% 60%;      /* blue (was blue-500) */
   --color-priority-medium: 47 95% 58%;    /* yellow (was yellow-500) */
   --color-priority-high: 0 91% 69%;       /* red-400 */
@@ -59,6 +59,11 @@
 
   --color-habits-completed: 160 84% 39%;         /* emerald-like */
   --color-habits-completed-weak: 160 84% 48%;    /* lighter emerald */
+
+  /* Dashboard stats: follow theme primary / shared habit tokens */
+  --color-dashboard-today: var(--color-primary);
+  --color-dashboard-upcoming: var(--color-habits-summary-total);
+  --color-dashboard-habits: var(--color-habits-summary-completed);
   
   /* Border & Input */
   --color-border: 215 18% 85%;
@@ -654,6 +659,17 @@ h6 {
   .animate-accordion-up {
     animation: accordion-up 0.2s ease-out;
   }
+}
+
+/* Text selection styles — follow theme primary (not hardcoded blue) */
+::selection {
+  background-color: hsl(var(--color-primary) / 0.3);
+  color: inherit;
+}
+
+::-moz-selection {
+  background-color: hsl(var(--color-primary) / 0.3);
+  color: inherit;
 }
 
 /* Print styles */
