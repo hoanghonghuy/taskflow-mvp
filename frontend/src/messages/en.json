@@ -745,7 +745,7 @@
     },
     "bottomNav": {
       "title": "Bottom Navigation",
-      "subtitle": "Choose which features appear in the bottom navigation bar (up to 4 visible)",
+      "subtitle": "Choose which features appear in the mobile bottom navigation bar (up to 4 visible). This bar is hidden on tablet and desktop.",
       "visible": "Visible",
       "hidden": "Hidden",
       "maxVisible": "Maximum items shown — hide another feature first"

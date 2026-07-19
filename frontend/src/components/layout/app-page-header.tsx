@@ -34,6 +34,7 @@ export function AppPageHeader({
     <header
       className={cn(
         'shrink-0 border-b border-border py-4 md:py-6',
+        hideOnMobile && actionsAlwaysVisible && 'py-2 md:py-6',
         hideOnMobile && !actionsAlwaysVisible && 'hidden md:block',
         className,
       )}

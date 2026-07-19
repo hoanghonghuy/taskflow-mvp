@@ -501,7 +501,7 @@ const PomodoroView: React.FC = () => {
         </div>
 
         {isTaskPickerOpen && (
-          <div className="fixed inset-0 bg-black/50 z-30 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
             <div className="bg-card border border-border rounded-lg shadow-xl w-full max-w-lg flex flex-col max-h-[70vh]">
               <header className="p-4 border-b border-border flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -747,7 +747,7 @@ const PomodoroView: React.FC = () => {
         )}
 
         {isStatisticsOpen && (
-          <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
             <div className="w-full max-w-5xl max-h-[90vh] bg-card text-card-foreground border border-border rounded-2xl shadow-xl flex flex-col">
               <header className="flex items-center justify-between px-6 py-4 border-b border-border">
                 <h2 className="text-lg font-semibold">{t('pomodoro.statisticsTitle' as TranslationKey)}</h2>

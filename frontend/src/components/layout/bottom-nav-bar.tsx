@@ -138,7 +138,7 @@ export default function BottomNavBar() {
   const hasHiddenActive = hiddenFeatures.includes(currentView)
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-card border-t border-border flex items-stretch justify-around z-30 shadow-lg">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[calc(4rem+env(safe-area-inset-bottom,0px))] pb-[env(safe-area-inset-bottom,0px)] bg-card border-t border-border flex items-stretch justify-around z-30 shadow-lg">
       {visibleFeatures.map(feature => (
         <BottomNavButton
           key={feature.view}

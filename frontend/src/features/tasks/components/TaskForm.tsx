@@ -175,7 +175,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
   const columnsForList = state.columns.filter(c => c.listId === listId)
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-30 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-card rounded-lg shadow-xl w-full max-w-lg flex flex-col max-h-[90vh]">
         <header className="p-4 border-b border-border flex items-center justify-between">
           <h2 className="text-lg font-semibold">{t('taskForm.newTask')}</h2>

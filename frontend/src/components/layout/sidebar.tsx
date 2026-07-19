@@ -116,7 +116,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
   }> = ({ children, isActive, onClick }) => {
     const handleClick = () => {
       onClick()
-      if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      if (typeof window !== 'undefined' && window.innerWidth < 1024) {
         onClose()
       }
     }
@@ -160,10 +160,10 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
             onClose()
           }
         }}
-        className={`fixed inset-0 bg-black/50 z-20 md:hidden transition-opacity ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       ></div>
       <aside className={`
-        fixed md:relative inset-y-0 left-0 bg-card flex flex-col shrink-0 z-30 
+        fixed md:relative inset-y-0 left-0 bg-card flex flex-col shrink-0 z-50
         w-64 transition-transform md:transition-all duration-300 ease-in-out overflow-hidden border-border
         ${isOpen 
           ? 'p-4 border-r translate-x-0 md:w-64'
@@ -223,7 +223,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
           <div className="pt-4">
             <div className="flex items-center justify-between px-3 mb-2">
                     <h2 className="text-xs font-semibold text-muted-foreground">{t('sidebar.myLists')}</h2>
-              <button onClick={() => setIsListsExpanded(!isListsExpanded)} className="p-1 rounded-md hover:bg-muted/50">
+              <button onClick={() => setIsListsExpanded(!isListsExpanded)} className="rounded-md p-2 hover:bg-muted/50 md:p-1">
                 <ArrowDownIcon className={`h-4 w-4 text-muted-foreground transition-transform ${!isListsExpanded && '-rotate-90'}`} />
               </button>
             </div>
@@ -254,7 +254,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                         </div>
                         <div className="ml-2 flex shrink-0 items-center">
                           <div
-                            className={`flex w-16 items-center justify-end gap-0.5 ${
+                            className={`flex min-w-16 items-center justify-end gap-0.5 md:w-16 ${
                               showActions
                                 ? 'opacity-100 md:opacity-0 md:group-hover:opacity-100'
                                 : 'pointer-events-none opacity-0'
@@ -264,7 +264,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                               <>
                                 <IconButton
                                   size="sm"
-                                  className="size-auto p-0.5 hover:text-primary"
+                                  className="size-9 p-2 hover:text-primary md:size-auto md:p-0.5"
                                   onClick={(e) => { e.stopPropagation(); setEditingList(list) }}
                                   aria-label={t('sidebar.aria.editList', { listName: list.name })}
                                 >
@@ -273,7 +273,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                                 {onShareList && (
                                   <IconButton
                                     size="sm"
-                                    className="size-auto p-0.5 hover:text-primary"
+                                    className="size-9 p-2 hover:text-primary md:size-auto md:p-0.5"
                                     onClick={(e) => { e.stopPropagation(); onShareList(list.id); }}
                                     aria-label={t('sidebar.aria.shareList', { listName: list.name })}
                                   >
@@ -283,7 +283,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                                 <IconButton
                                   size="sm"
                                   variant="destructive"
-                                  className="size-auto p-0.5"
+                                  className="size-9 p-2 md:size-auto md:p-0.5"
                                   onClick={(e) => { e.stopPropagation(); handleDeleteList(list.id, list.name); }}
                                   aria-label={t('sidebar.aria.deleteList', { listName: list.name })}
                                 >
@@ -317,7 +317,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
           <div className="pt-4">
             <div className="flex items-center justify-between px-3 mb-2">
                     <h2 className="text-xs font-semibold text-muted-foreground">{t('sidebar.tags')}</h2>
-              <button onClick={() => setIsTagsExpanded(!isTagsExpanded)} className="p-1 rounded-md hover:bg-muted/50">
+              <button onClick={() => setIsTagsExpanded(!isTagsExpanded)} className="rounded-md p-2 hover:bg-muted/50 md:p-1">
                 <ArrowDownIcon className={`h-4 w-4 text-muted-foreground transition-transform ${!isTagsExpanded && '-rotate-90'}`} />
               </button>
             </div>
@@ -337,7 +337,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                           onClick={() => {
                             dispatch({ type: 'SET_ACTIVE_TAG', payload: tag })
                             router.push('/list')
-                            if (window.innerWidth < 768) {
+                            if (window.innerWidth < 1024) {
                               onClose()
                             }
                           }}
@@ -352,7 +352,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                           <IconButton
                             size="sm"
                             variant="destructive"
-                            className="size-auto p-0.5 opacity-0 group-hover:opacity-100"
+                            className="size-9 p-2 opacity-100 md:size-auto md:p-0.5 md:opacity-0 md:group-hover:opacity-100"
                             onClick={() => handleDeleteTag(tag)}
                             aria-label={t('sidebar.aria.deleteTag', { tagName: tag })}
                           >
@@ -379,7 +379,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
         </div>
 
         {onChatbotToggle && (
-          <div className="mt-auto pt-4 pb-24 md:pb-4">
+          <div className="mt-auto pt-4 pb-4">
             <button
               onClick={onChatbotToggle}
               className="w-full flex items-center justify-center gap-2 text-sm px-3 py-2 rounded-md bg-secondary hover:bg-muted transition-colors"

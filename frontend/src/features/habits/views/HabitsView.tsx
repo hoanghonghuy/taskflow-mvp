@@ -281,15 +281,16 @@ const HabitsView: React.FC = () => {
 
                     <div>
                       <p className="text-xs font-medium text-muted-foreground uppercase mb-2">{t('habits.last30Days')}</p>
-                      <div className="grid grid-cols-30 gap-1.5">
+                      <div className="flex gap-1.5 overflow-x-auto pb-1 md:grid md:grid-cols-30 md:overflow-visible md:pb-0">
                         {last30Days.map(date => {
                           const isCompleted = habit.completions.includes(date)
                           const isTodayDate = date === today
                           return (
-                            <div
+                            <button
                               key={date}
+                              type="button"
                               className={`
-                                aspect-square rounded-md border transition-all cursor-pointer
+                                size-8 shrink-0 rounded-md border transition-all md:size-auto md:aspect-square md:min-w-0
                                 ${isCompleted
                                   ? 'bg-[hsl(var(--color-habits-completed))] border-[hsl(var(--color-habits-completed))] hover:bg-[hsl(var(--color-habits-completed-weak))]'
                                   : 'bg-muted border-border hover:border-[hsl(var(--color-habits-completed-weak))]'}
@@ -297,6 +298,8 @@ const HabitsView: React.FC = () => {
                               `}
                               onClick={() => handleToggleCompletion(habit.id, date)}
                               title={new Date(date).toLocaleDateString(settings.language || undefined)}
+                              aria-label={new Date(date).toLocaleDateString(settings.language || undefined)}
+                              aria-pressed={isCompleted}
                             />
                           )
                         })}

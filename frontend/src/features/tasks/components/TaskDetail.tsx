@@ -409,7 +409,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
         </div>
       )}
 
-      <div className="grow space-y-5 overflow-y-auto px-4 py-5 sm:px-5">
+      <div className="grow space-y-5 overflow-y-auto px-4 py-5 sm:px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))]">
         <section className="space-y-3">
           <div className="flex items-start justify-between gap-3">
             <input

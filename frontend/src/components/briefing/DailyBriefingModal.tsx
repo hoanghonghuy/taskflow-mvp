@@ -60,7 +60,7 @@ const DailyBriefingModal: React.FC<DailyBriefingModalProps> = ({ onClose }) => {
   }, [isAvailable, addToast, t, currentLanguage])
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-40 flex items-center justify-center p-4 animate-fade-in">
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-fade-in">
       <div className="bg-card rounded-lg shadow-xl w-full max-w-2xl flex flex-col h-full max-h-[85vh]">
         <header className="p-4 border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-3">

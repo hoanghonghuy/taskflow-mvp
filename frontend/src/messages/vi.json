@@ -745,7 +745,7 @@
     },
     "bottomNav": {
       "title": "Thanh điều hướng dưới",
-      "subtitle": "Chọn tính năng hiển thị trên thanh điều hướng dưới (tối đa 4 mục)",
+      "subtitle": "Chọn tính năng hiển thị trên thanh điều hướng dưới của điện thoại (tối đa 4 mục). Thanh này ẩn trên tablet và desktop.",
       "visible": "Hiển thị",
       "hidden": "Ẩn",
       "maxVisible": "Đã đủ số mục — hãy ẩn một tính năng khác trước"

@@ -25,7 +25,7 @@ const AchievementsView: React.FC = () => {
         <h1 className="text-2xl md:text-3xl font-bold">{t('nav.achievements')}</h1>
         <p className="text-muted-foreground">{t('achievements.subtitle')}</p>
       </header>
-      <main className="flex-1 p-4 md:p-6 overflow-y-auto pb-20 md:pb-6">
+      <main className="flex-1 p-4 md:p-6 overflow-y-auto pb-[calc(5rem+env(safe-area-inset-bottom,0px))] md:pb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {sortedAchievements.map(achievement => {
             const isUnlocked = unlockedSet.has(achievement.id)

@@ -85,7 +85,7 @@ const ShareListModal: React.FC<ShareListModalProps> = ({ list, onClose }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-40 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-card rounded-lg shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
         <header className="p-4 border-b border-border flex items-center justify-between shrink-0">
           <div>

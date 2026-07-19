@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { useCalendar } from '@/lib/hooks/use-calendar'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useUser } from '@/components/providers/user-provider'
@@ -48,6 +48,16 @@ const CalendarView: React.FC = () => {
   const { user } = useUser()
 
   const locale = settings.language || undefined
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)')
+    if (!mq.matches) return
+    setViewMode('agenda')
+    const base = new Date()
+    base.setHours(0, 0, 0, 0)
+    setAgendaStartDate(base)
+    setSelectedDate(base)
+  }, [setViewMode, setAgendaStartDate, setSelectedDate])
 
   const agendaRangeEnd = useMemo(() => {
     const end = new Date(agendaStartDate)
@@ -246,7 +256,7 @@ const CalendarView: React.FC = () => {
             <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
               <div className="grid grid-cols-7 border-b border-border bg-muted/30">
                 {DAY_LABELS.map(label => (
-                  <div key={label} className="p-3 text-center font-semibold text-xs uppercase tracking-wide text-muted-foreground">
+                  <div key={label} className="p-1.5 text-center text-[10px] font-semibold uppercase tracking-wide text-muted-foreground md:p-3 md:text-xs">
                     {label}
                   </div>
                 ))}
@@ -283,27 +293,27 @@ const CalendarView: React.FC = () => {
                         setDraggedTaskId(null)
                         setDragOverDateKey(null)
                       }}
-                      className={`min-h-[130px] p-1.5 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring
+                      className={`min-h-[52px] p-1 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring md:min-h-[130px] md:p-1.5
                         ${isSelectedDate ? 'border-2 border-primary bg-primary/10 z-10 relative' : 'border-r border-b border-border'}
                         ${isCurrentMonthDate ? 'bg-card' : 'bg-muted/30'}
                         ${isTodayDate && !isSelectedDate ? 'bg-primary/10 border-primary' : ''}
                         ${isDragOverDay ? 'outline-2 outline-primary/60 bg-primary/5 relative z-10' : ''}
                       `}
                     >
-                      <div className="flex flex-col h-full">
+                      <div className="flex h-full flex-col">
                         <div
-                          className={`text-xs font-semibold mb-1 flex items-center gap-1
+                          className={`mb-0.5 flex items-center gap-1 text-xs font-semibold md:mb-1
                             ${isTodayDate ? 'text-primary' : isCurrentMonthDate ? 'text-foreground' : 'text-muted-foreground'}
                           `}
                         >
                           <span>{date.getDate()}</span>
                           {tasks.length > 0 && (
-                            <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">
+                            <span className="ml-auto rounded-full bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
                               {tasks.length}
                             </span>
                           )}
                         </div>
-                        <div className="mt-0.5 flex flex-col gap-1">
+                        <div className="mt-0.5 hidden flex-col gap-1 md:flex">
                           {tasks.slice(0, 2).map(task => renderTaskPill(task))}
                           {tasks.length > 2 && (
                             <div className="text-[11px] text-muted-foreground">
@@ -311,6 +321,16 @@ const CalendarView: React.FC = () => {
                             </div>
                           )}
                         </div>
+                        {tasks.length > 0 && (
+                          <div className="mt-auto flex justify-center gap-0.5 md:hidden" aria-hidden>
+                            {tasks.slice(0, 3).map((task) => (
+                              <span
+                                key={task.id}
+                                className="size-1.5 rounded-full bg-primary/70"
+                              />
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </button>
                   )

@@ -36,7 +36,7 @@ interface AppPageMainProps {
 
 export const AppPageMain: React.FC<AppPageMainProps> = ({ children, className }) => {
   return (
-    <main className="flex-1 overflow-y-auto pb-20 md:pb-6">
+    <main className="flex-1 overflow-y-auto pb-[calc(5rem+env(safe-area-inset-bottom,0px))] md:pb-6">
       <AppPageContainer className={className}>{children}</AppPageContainer>
     </main>
   )

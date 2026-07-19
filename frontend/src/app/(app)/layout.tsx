@@ -32,12 +32,16 @@ export default function AppLayout({
   const { isHydrating, state } = useTaskManager()
   const { t } = useI18n()
   const modal = useModal()
-  const [isSidebarOpen, setSidebarOpen] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      return window.innerWidth > 768
-    }
-    return false
-  })
+  // Closed by default; open only on large desktop (≥1024) after mount to avoid tablet dual-chrome + hydration flash.
+  const [isSidebarOpen, setSidebarOpen] = useState(false)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)')
+    const sync = () => setSidebarOpen(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
 
   const mobileTitle = (() => {
     const path = pathname || '/'

@@ -94,7 +94,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose }) => {
 
   return (
     <div 
-      className="fixed inset-0 bg-background/90 z-40 flex justify-center p-4 sm:p-6 md:p-12 animate-fade-in" 
+      className="fixed inset-0 bg-background/90 z-50 flex justify-center p-4 sm:p-6 md:p-12 animate-fade-in" 
       onClick={onClose}
     >
       <div 
