@@ -1,14 +1,11 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getAuthTokenFromRequest } from '@/lib/server/auth-token';
-import { backendFetch, backendFetchWithToken } from '@/lib/server/backend-client';
+import { backendFetchAuthed } from '@/lib/server/backend-authed-fetch';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { method } = req;
   const { id } = req.query;
 
   const idValue = Array.isArray(id) ? id[0] : id;
-
-  const token = getAuthTokenFromRequest(req);
 
   try {
     switch (method) {
@@ -17,9 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           ? `/api/lists/${encodeURIComponent(idValue)}`
           : '/api/lists'
 
-        const response = token
-          ? await backendFetchWithToken(targetPath, token)
-          : await backendFetch(targetPath);
+        const response = await backendFetchAuthed(req, res, targetPath);
 
         if (response.status === 204) {
           return res.status(204).end()
@@ -34,17 +29,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       case 'POST': {
-        const response = token
-          ? await backendFetchWithToken('/api/lists', token, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(req.body),
-            })
-          : await backendFetch('/api/lists', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(req.body),
-            });
+        const response = await backendFetchAuthed(req, res, '/api/lists', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(req.body),
+        });
         const data = await response.json()
         return res.status(response.status).json(data)
       }
@@ -54,17 +43,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           return res.status(400).json({ error: 'List ID is required' })
         }
 
-        const response = token
-          ? await backendFetchWithToken(`/api/lists/${encodeURIComponent(idValue)}`, token, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(req.body),
-            })
-          : await backendFetch(`/api/lists/${encodeURIComponent(idValue)}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(req.body),
-            });
+        const response = await backendFetchAuthed(
+          req,
+          res,
+          `/api/lists/${encodeURIComponent(idValue)}`,
+          {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(req.body),
+          },
+        );
         const data = await response.json()
         return res.status(response.status).json(data)
       }
@@ -74,13 +62,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           return res.status(400).json({ error: 'List ID is required' })
         }
 
-        const response = token
-          ? await backendFetchWithToken(`/api/lists/${encodeURIComponent(idValue)}`, token, {
-              method: 'DELETE',
-            })
-          : await backendFetch(`/api/lists/${encodeURIComponent(idValue)}`, {
-              method: 'DELETE',
-            });
+        const response = await backendFetchAuthed(
+          req,
+          res,
+          `/api/lists/${encodeURIComponent(idValue)}`,
+          {
+            method: 'DELETE',
+          },
+        );
         if (response.status === 204) {
           return res.status(204).end()
         }

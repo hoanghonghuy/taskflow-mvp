@@ -16,7 +16,8 @@ export function emitSessionExpired(): void {
 }
 
 export function shouldEmitSessionExpired(path: string, status: number): boolean {
-  if (status !== 401 && status !== 403) return false
+  // 403 is authorization (permissions), not authentication expiry
+  if (status !== 401) return false
   if (path.includes('/api/auth/session')) return false
   if (path.includes('/api/auth/[...nextauth]')) return false
   if (typeof window !== 'undefined' && window.localStorage.getItem('isAuthenticated') !== 'true') {

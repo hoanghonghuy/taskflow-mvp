@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { getAuthTokenFromRequest } from '@/lib/server/auth-token'
+import { getAuthTokenFromRequest, getRefreshTokenFromRequest } from '@/lib/server/auth-token'
 import { unwrapBackendPayload } from '@/lib/server/backend-response'
-import { backendFetchWithToken } from '@/lib/server/backend-client'
+import { backendFetchAuthed } from '@/lib/server/backend-authed-fetch'
 import { isMockMode } from '@/lib/server/mock-backend'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -19,15 +19,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(404).json({ success: false, error: 'not_found', message: 'User not found' })
   }
 
-  const token = getAuthTokenFromRequest(req)
-  if (!token) {
+  const accessToken = getAuthTokenFromRequest(req)
+  const refreshToken = getRefreshTokenFromRequest(req)
+  if (!accessToken && !refreshToken) {
     return res.status(401).json({ success: false, error: 'unauthorized' })
   }
 
   try {
-    const response = await backendFetchWithToken(
+    const response = await backendFetchAuthed(
+      req,
+      res,
       `/api/auth/users/lookup?email=${encodeURIComponent(email)}`,
-      token,
       { method: 'GET' },
     )
     const body = await response.json().catch(() => null)

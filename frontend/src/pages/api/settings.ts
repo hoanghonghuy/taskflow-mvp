@@ -1,15 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { getAuthTokenFromRequest } from '@/lib/server/auth-token';
-import { backendFetch, backendFetchWithToken } from '@/lib/server/backend-client'
+import { backendFetchAuthed } from '@/lib/server/backend-authed-fetch'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const token = getAuthTokenFromRequest(req)
-
   try {
     if (req.method === 'GET') {
-      const response = token
-        ? await backendFetchWithToken('/api/settings', token)
-        : await backendFetch('/api/settings')
+      const response = await backendFetchAuthed(req, res, '/api/settings')
 
       if (!response.ok) {
         const payload = await response.json().catch(() => null)
@@ -23,17 +18,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === 'PUT') {
       const body = JSON.stringify(req.body ?? {})
 
-      const response = token
-        ? await backendFetchWithToken('/api/settings', token, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body,
-          })
-        : await backendFetch('/api/settings', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body,
-          })
+      const response = await backendFetchAuthed(req, res, '/api/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+      })
 
       if (!response.ok) {
         const payload = await response.json().catch(() => null)

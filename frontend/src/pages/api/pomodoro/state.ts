@@ -1,20 +1,20 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { getAuthTokenFromRequest } from '@/lib/server/auth-token';
-import { backendFetchWithToken } from '@/lib/server/backend-client'
+import { getAuthTokenFromRequest, getRefreshTokenFromRequest } from '@/lib/server/auth-token'
+import { backendFetchAuthed } from '@/lib/server/backend-authed-fetch'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { method } = req
 
-  const token = getAuthTokenFromRequest(req)
+  const accessToken = getAuthTokenFromRequest(req)
+  const refreshToken = getRefreshTokenFromRequest(req)
+  if (!accessToken && !refreshToken) {
+    return res.status(401).json({ error: 'Unauthorized' })
+  }
 
   try {
     switch (method) {
       case 'GET': {
-        if (!token) {
-          return res.status(401).json({ error: 'Unauthorized' })
-        }
-
-        const response = await backendFetchWithToken('/api/pomodoro/state', token)
+        const response = await backendFetchAuthed(req, res, '/api/pomodoro/state')
 
         const data = await response.json().catch(() => null)
         if (data === null || data === undefined) {
@@ -25,11 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       case 'PUT': {
-        if (!token) {
-          return res.status(401).json({ error: 'Unauthorized' })
-        }
-
-        const response = await backendFetchWithToken('/api/pomodoro/state', token, {
+        const response = await backendFetchAuthed(req, res, '/api/pomodoro/state', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(req.body),

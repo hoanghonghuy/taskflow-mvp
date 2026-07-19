@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { getAuthTokenFromRequest } from '@/lib/server/auth-token'
-import { backendFetch, backendFetchWithToken } from '@/lib/server/backend-client'
+import { backendFetchAuthed } from '@/lib/server/backend-authed-fetch'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -8,7 +7,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: `Method ${req.method} Not Allowed` })
   }
 
-  const token = getAuthTokenFromRequest(req)
   const q = typeof req.query.q === 'string' ? req.query.q : ''
   const limit = typeof req.query.limit === 'string' ? req.query.limit : undefined
   const params = new URLSearchParams()
@@ -18,9 +16,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const targetPath = `/api/tasks/search${query ? `?${query}` : ''}`
 
   try {
-    const response = token
-      ? await backendFetchWithToken(targetPath, token)
-      : await backendFetch(targetPath)
+    const response = await backendFetchAuthed(req, res, targetPath)
 
     const data = await response.json().catch(() => null)
     if (data === null || data === undefined) {

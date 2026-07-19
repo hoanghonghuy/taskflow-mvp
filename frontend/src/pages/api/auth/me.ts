@@ -1,26 +1,28 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { getAuthTokenFromRequest } from '@/lib/server/auth-token'
+import { getAuthTokenFromRequest, getRefreshTokenFromRequest } from '@/lib/server/auth-token'
 import { unwrapBackendPayload } from '@/lib/server/backend-response'
-import { backendFetchWithToken } from '@/lib/server/backend-client'
+import { backendFetchAuthed } from '@/lib/server/backend-authed-fetch'
 import { buildMockAuthUser, isMockMode } from '@/lib/server/mock-backend'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
     if (isMockMode()) {
-      const token = getAuthTokenFromRequest(req)
-      if (!token) {
+      const accessToken = getAuthTokenFromRequest(req)
+      const refreshToken = getRefreshTokenFromRequest(req)
+      if (!accessToken && !refreshToken) {
         return res.status(401).json({ success: false, error: 'unauthorized' })
       }
       return res.status(200).json({ success: true, data: buildMockAuthUser({}) })
     }
 
-    const token = getAuthTokenFromRequest(req)
-    if (!token) {
+    const accessToken = getAuthTokenFromRequest(req)
+    const refreshToken = getRefreshTokenFromRequest(req)
+    if (!accessToken && !refreshToken) {
       return res.status(401).json({ success: false, error: 'unauthorized' })
     }
 
     try {
-      const response = await backendFetchWithToken('/api/auth/me', token, { method: 'GET' })
+      const response = await backendFetchAuthed(req, res, '/api/auth/me', { method: 'GET' })
       const body = await response.json().catch(() => null)
       if (!response.ok) {
         return res.status(response.status).json(body ?? { success: false })
@@ -35,8 +37,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'PATCH') {
     if (isMockMode()) {
-      const token = getAuthTokenFromRequest(req)
-      if (!token) {
+      const accessToken = getAuthTokenFromRequest(req)
+      const refreshToken = getRefreshTokenFromRequest(req)
+      if (!accessToken && !refreshToken) {
         return res.status(401).json({ success: false, error: 'unauthorized' })
       }
       const { name } = req.body ?? {}
@@ -46,13 +49,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       })
     }
 
-    const token = getAuthTokenFromRequest(req)
-    if (!token) {
+    const accessToken = getAuthTokenFromRequest(req)
+    const refreshToken = getRefreshTokenFromRequest(req)
+    if (!accessToken && !refreshToken) {
       return res.status(401).json({ success: false, error: 'unauthorized' })
     }
 
     try {
-      const response = await backendFetchWithToken('/api/auth/me', token, {
+      const response = await backendFetchAuthed(req, res, '/api/auth/me', {
         method: 'PATCH',
         body: JSON.stringify(req.body ?? {}),
       })

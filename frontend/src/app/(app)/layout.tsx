@@ -19,6 +19,7 @@ import Chatbot from '@/components/chatbot/Chatbot'
 import { useModal } from '@/components/providers/modal-provider'
 import { AI_FEATURES_ENABLED } from '@/lib/feature-flags'
 import { AppLoadingSkeleton } from '@/components/layout/app-loading-skeleton'
+import { resolvePageSkeletonVariant } from '@/components/layout/page-skeleton'
 
 export default function AppLayout({
   children,
@@ -107,7 +108,7 @@ export default function AppLayout({
   // Theme is handled by SettingsProvider
 
   if (!authReady || !isAuthenticated || isHydrating) {
-    return <AppLoadingSkeleton />
+    return <AppLoadingSkeleton variant={resolvePageSkeletonVariant(pathname)} />
   }
 
   return (

@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { getAuthTokenFromRequest } from '@/lib/server/auth-token';
-import { backendFetch, backendFetchWithToken } from '@/lib/server/backend-client'
+import { backendFetchAuthed } from '@/lib/server/backend-authed-fetch'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { method } = req
@@ -10,8 +9,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: `Method ${method} Not Allowed` })
   }
 
-  const token = getAuthTokenFromRequest(req)
-
   try {
     const init: RequestInit = {
       method: 'POST',
@@ -19,9 +16,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       body: JSON.stringify(req.body ?? {}),
     }
 
-    const response = token
-      ? await backendFetchWithToken('/api/ai/tasks/analyze', token, init)
-      : await backendFetch('/api/ai/tasks/analyze', init)
+    const response = await backendFetchAuthed(req, res, '/api/ai/tasks/analyze', init)
 
     if (response.status === 204) {
       return res.status(204).end()

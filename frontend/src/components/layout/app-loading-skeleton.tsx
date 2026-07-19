@@ -1,7 +1,17 @@
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  PageSkeleton,
+  resolvePageSkeletonVariant,
+  type PageSkeletonVariant,
+} from '@/components/layout/page-skeleton'
 
-/** Minimal loading shell — layout chrome only, no loud accent blocks. */
-export function AppLoadingSkeleton() {
+type AppLoadingSkeletonProps = {
+  /** When omitted, uses list-like default content. Pass pathname-based variant from layout. */
+  variant?: PageSkeletonVariant
+}
+
+/** Full-screen shell for auth / hydrate — chrome + page-matched content. */
+export function AppLoadingSkeleton({ variant = 'default' }: AppLoadingSkeletonProps) {
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       <div className="hidden w-14 shrink-0 border-r border-border md:block" aria-hidden />
@@ -17,17 +27,12 @@ export function AppLoadingSkeleton() {
           <Skeleton className="h-8 w-[72%]" />
         </div>
       </aside>
-      <main className="flex min-w-0 flex-1 flex-col px-4 py-6 sm:px-6 lg:px-8">
-        <Skeleton className="mb-3 h-7 w-40" />
-        <Skeleton className="mb-8 h-3.5 w-56 max-w-full" />
-        <div className="space-y-3">
-          <Skeleton className="h-11 w-full" />
-          <Skeleton className="h-11 w-full" />
-          <Skeleton className="h-11 w-[94%]" />
-          <Skeleton className="h-11 w-full" />
-          <Skeleton className="h-11 w-[90%]" />
-        </div>
+      <main className="flex min-w-0 flex-1 flex-col overflow-hidden py-2 sm:py-4">
+        <PageSkeleton variant={variant} />
       </main>
     </div>
   )
 }
+
+export { resolvePageSkeletonVariant }
+export type { PageSkeletonVariant }

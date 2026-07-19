@@ -1,14 +1,11 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getAuthTokenFromRequest } from '@/lib/server/auth-token';
-import { backendFetch, backendFetchWithToken } from '@/lib/server/backend-client';
+import { backendFetchAuthed } from '@/lib/server/backend-authed-fetch';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { method } = req;
   const { id, date } = req.query;
 
   const idValue = Array.isArray(id) ? id[0] : id
-
-  const token = getAuthTokenFromRequest(req);
 
   try {
     switch (method) {
@@ -17,9 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           ? `/api/habits/${encodeURIComponent(idValue)}`
           : '/api/habits'
 
-        const response = token
-          ? await backendFetchWithToken(targetPath, token)
-          : await backendFetch(targetPath);
+        const response = await backendFetchAuthed(req, res, targetPath);
 
         if (response.status === 204) {
           return res.status(204).end()
@@ -46,17 +41,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               : undefined
           const dateValue = queryDate ?? bodyDate
           const completeBody = dateValue ? { date: dateValue } : {}
-          const response = token
-            ? await backendFetchWithToken(`/api/habits/${encodeURIComponent(idValue)}/complete`, token, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(completeBody),
-              })
-            : await backendFetch(`/api/habits/${encodeURIComponent(idValue)}/complete`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(completeBody),
-              });
+          const response = await backendFetchAuthed(
+            req,
+            res,
+            `/api/habits/${encodeURIComponent(idValue)}/complete`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(completeBody),
+            },
+          );
 
           if (response.status === 204) {
             return res.status(204).end()
@@ -66,17 +60,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           return res.status(response.status).json(data ?? {})
         }
 
-        const response = token
-          ? await backendFetchWithToken('/api/habits', token, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(req.body),
-            })
-          : await backendFetch('/api/habits', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(req.body),
-            });
+        const response = await backendFetchAuthed(req, res, '/api/habits', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(req.body),
+        });
         const data = await response.json()
         return res.status(response.status).json(data)
       }
@@ -86,17 +74,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           return res.status(400).json({ error: 'Habit ID is required' })
         }
 
-        const response = token
-          ? await backendFetchWithToken(`/api/habits/${encodeURIComponent(idValue)}`, token, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(req.body),
-            })
-          : await backendFetch(`/api/habits/${encodeURIComponent(idValue)}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(req.body),
-            });
+        const response = await backendFetchAuthed(
+          req,
+          res,
+          `/api/habits/${encodeURIComponent(idValue)}`,
+          {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(req.body),
+          },
+        );
         const data = await response.json()
         return res.status(response.status).json(data)
       }
@@ -110,16 +97,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // If date is provided, treat as "uncomplete habit for date"; otherwise delete habit
         if (dateValue) {
-          const response = token
-            ? await backendFetchWithToken(
-                `/api/habits/${encodeURIComponent(idValue)}/complete?date=${encodeURIComponent(dateValue)}`,
-                token,
-                { method: 'DELETE' },
-              )
-            : await backendFetch(
-                `/api/habits/${encodeURIComponent(idValue)}/complete?date=${encodeURIComponent(dateValue)}`,
-                { method: 'DELETE' },
-              )
+          const response = await backendFetchAuthed(
+            req,
+            res,
+            `/api/habits/${encodeURIComponent(idValue)}/complete?date=${encodeURIComponent(dateValue)}`,
+            { method: 'DELETE' },
+          )
 
           if (response.status === 204) {
             return res.status(204).end()
@@ -129,13 +112,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           return res.status(response.status).json(data ?? {})
         }
 
-        const response = token
-          ? await backendFetchWithToken(`/api/habits/${encodeURIComponent(idValue)}`, token, {
-              method: 'DELETE',
-            })
-          : await backendFetch(`/api/habits/${encodeURIComponent(idValue)}`, {
-              method: 'DELETE',
-            });
+        const response = await backendFetchAuthed(
+          req,
+          res,
+          `/api/habits/${encodeURIComponent(idValue)}`,
+          {
+            method: 'DELETE',
+          },
+        );
         if (response.status === 204) {
           return res.status(204).end()
         }

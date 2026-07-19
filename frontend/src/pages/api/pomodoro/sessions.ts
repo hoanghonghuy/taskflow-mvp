@@ -1,14 +1,11 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getAuthTokenFromRequest } from '@/lib/server/auth-token';
-import { backendFetch, backendFetchWithToken } from '@/lib/server/backend-client';
+import { backendFetchAuthed } from '@/lib/server/backend-authed-fetch';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { method } = req;
   const { id } = req.query;
 
   const idValue = Array.isArray(id) ? id[0] : id;
-
-  const token = getAuthTokenFromRequest(req);
 
   try {
     switch (method) {
@@ -17,9 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           ? `/api/pomodoro/sessions/${encodeURIComponent(idValue)}`
           : '/api/pomodoro/sessions'
 
-        const response = token
-          ? await backendFetchWithToken(targetPath, token)
-          : await backendFetch(targetPath);
+        const response = await backendFetchAuthed(req, res, targetPath);
         if (response.status === 204) {
           return res.status(204).end()
         }
@@ -28,17 +23,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       case 'POST': {
-        const response = token
-          ? await backendFetchWithToken('/api/pomodoro/sessions', token, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(req.body),
-            })
-          : await backendFetch('/api/pomodoro/sessions', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(req.body),
-            });
+        const response = await backendFetchAuthed(req, res, '/api/pomodoro/sessions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(req.body),
+        });
         const data = await response.json()
         return res.status(response.status).json(data)
       }

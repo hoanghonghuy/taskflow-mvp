@@ -37,6 +37,7 @@ describe('session-events', () => {
 
     storage.set('isAuthenticated', 'true')
     expect(shouldEmitSessionExpired('/api/settings', 401)).toBe(true)
+    expect(shouldEmitSessionExpired('/api/settings', 403)).toBe(false)
     expect(shouldEmitSessionExpired('/api/settings', 500)).toBe(false)
 
     vi.unstubAllGlobals()

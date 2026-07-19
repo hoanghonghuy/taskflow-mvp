@@ -1,10 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { getAuthTokenFromRequest } from '@/lib/server/auth-token'
-import { backendFetchWithToken } from '@/lib/server/backend-client'
+import { getAuthTokenFromRequest, getRefreshTokenFromRequest } from '@/lib/server/auth-token'
+import { backendFetchAuthed } from '@/lib/server/backend-authed-fetch'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const token = getAuthTokenFromRequest(req)
-  if (!token) {
+  const accessToken = getAuthTokenFromRequest(req)
+  const refreshToken = getRefreshTokenFromRequest(req)
+  if (!accessToken && !refreshToken) {
     return res.status(401).json({ success: false, error: 'unauthorized', message: 'Authentication required' })
   }
 
@@ -13,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const backendPath = `/api/admin/${pathParts.join('/')}`
 
   try {
-    const response = await backendFetchWithToken(backendPath, token, {
+    const response = await backendFetchAuthed(req, res, backendPath, {
       method: req.method,
       headers: req.method !== 'GET' && req.method !== 'DELETE'
         ? { 'Content-Type': 'application/json' }
