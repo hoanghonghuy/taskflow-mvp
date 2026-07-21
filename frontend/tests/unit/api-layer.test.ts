@@ -644,11 +644,11 @@ describe('domain api modules', () => {
     await expect(aiApi.analyzeTaskText('buy milk tomorrow', 'en')).resolves.toMatchObject({ title: 'Buy milk' })
   })
 
-  it('profile api fetchProfileSummary returns null on failure', async () => {
+  it('profile api fetchProfileSummary surfaces transport failures', async () => {
     mockFetch.mockResolvedValue(jsonResponse({ error: 'nope' }, 500))
     const profileApi = await import('@/lib/api/profile')
 
-    await expect(profileApi.fetchProfileSummary()).resolves.toBeNull()
+    await expect(profileApi.fetchProfileSummary()).rejects.toMatchObject({ status: 500 })
   })
 
   it('habits and countdown api modules', async () => {
@@ -741,5 +741,45 @@ describe('domain api modules', () => {
 
     const ps = await settingsApi.fetchPomodoroSettings()
     expect(ps?.focusDuration).toBe(30)
+  })
+
+  it('does not turn transient read failures into empty domain data', async () => {
+    const unavailable = {
+      ok: false,
+      status: 503,
+      json: async () => ({ message: 'temporarily unavailable' }),
+    } as Response
+    mockFetch
+      .mockResolvedValueOnce(unavailable)
+      .mockResolvedValueOnce(unavailable)
+      .mockResolvedValueOnce(unavailable)
+
+    const countdownApi = await import('@/lib/api/countdown')
+    const pomodoroApi = await import('@/lib/api/pomodoro')
+    const profileApi = await import('@/lib/api/profile')
+
+    await expect(countdownApi.fetchCountdowns()).rejects.toMatchObject({ status: 503 })
+    await expect(pomodoroApi.fetchPomodoroSessions()).rejects.toMatchObject({ status: 503 })
+    await expect(profileApi.fetchAchievements()).rejects.toMatchObject({ status: 503 })
+  })
+
+  it('surfaces failed Board and Pomodoro settings writes', async () => {
+    const unavailable = {
+      ok: false,
+      status: 503,
+      json: async () => ({ message: 'temporarily unavailable' }),
+    } as Response
+    mockFetch.mockResolvedValue(unavailable)
+    const settingsApi = await import('@/lib/api/settings')
+
+    await expect(settingsApi.updateBoardColumns([])).rejects.toMatchObject({ status: 503 })
+    await expect(
+      settingsApi.updatePomodoroSettings({
+        focusDuration: 25,
+        shortBreakDuration: 5,
+        longBreakDuration: 15,
+        sessionsUntilLongBreak: 4,
+      }),
+    ).rejects.toMatchObject({ status: 503 })
   })
 })

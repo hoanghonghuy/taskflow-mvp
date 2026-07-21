@@ -6,6 +6,7 @@ import { useI18n } from '@/lib/i18n/hooks'
 import { useToast } from '@/components/providers/toast-provider'
 import { CloseIcon, SparklesIcon } from '@/lib/icons'
 import Spinner from '@/components/ui/spinner'
+import { AccessibleModalSurface } from '@/components/ui/accessible-modal-surface'
 import * as aiApi from '@/lib/api/ai'
 
 interface DailyBriefingModalProps {
@@ -61,7 +62,11 @@ const DailyBriefingModal: React.FC<DailyBriefingModalProps> = ({ onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-fade-in">
-      <div className="bg-card rounded-lg shadow-xl w-full max-w-2xl flex flex-col h-full max-h-[85vh]">
+      <AccessibleModalSurface
+        aria-label={t('briefing.title')}
+        onClose={onClose}
+        className="bg-card rounded-lg shadow-xl w-full max-w-2xl flex flex-col h-full max-h-[calc(100dvh-2rem)]"
+      >
         <header className="p-4 border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-3">
             <SparklesIcon className="h-6 w-6 text-primary" />
@@ -103,7 +108,7 @@ const DailyBriefingModal: React.FC<DailyBriefingModalProps> = ({ onClose }) => {
             {t('briefing.button.gotIt')}
           </button>
         </footer>
-      </div>
+      </AccessibleModalSurface>
     </div>
   )
 }

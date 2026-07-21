@@ -12,6 +12,7 @@ import { getSearchMatchMeta } from '@/lib/utils/search-helpers'
 import { HighlightText } from '@/components/ui/highlight-text'
 import * as tasksApi from '@/lib/api/tasks'
 import { Skeleton } from '@/components/ui/skeleton'
+import { AccessibleModalSurface } from '@/components/ui/accessible-modal-surface'
 
 interface SearchModalProps {
   onClose: () => void
@@ -97,8 +98,10 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose }) => {
       className="fixed inset-0 bg-background/90 z-50 flex justify-center p-4 sm:p-6 md:p-12 animate-fade-in" 
       onClick={onClose}
     >
-      <div 
-        className="bg-card rounded-lg shadow-xl w-full max-w-2xl flex flex-col h-full max-h-[80vh]" 
+      <AccessibleModalSurface
+        aria-label={t('common.search')}
+        onClose={onClose}
+        className="bg-card rounded-lg shadow-xl w-full max-w-2xl flex flex-col h-full max-h-[calc(100dvh-2rem)]" 
         onClick={e => e.stopPropagation()}
       >
         <header className="p-4 flex items-center border-b border-border">
@@ -167,7 +170,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose }) => {
             })}
           </div>
         </div>
-      </div>
+      </AccessibleModalSurface>
     </div>
   )
 }

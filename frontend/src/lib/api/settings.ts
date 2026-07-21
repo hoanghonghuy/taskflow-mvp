@@ -56,7 +56,7 @@ export async function updateSettings(payload: Partial<Settings>): Promise<void> 
 }
 
 export async function updatePomodoroSettings(settings: PomodoroSettingsDto): Promise<void> {
-  await apiFetch('/api/settings', {
+  await apiFetchJson('/api/settings', {
     method: 'PUT',
     body: JSON.stringify({ pomodoroSettings: settings }),
   })
@@ -65,7 +65,7 @@ export async function updatePomodoroSettings(settings: PomodoroSettingsDto): Pro
 export async function updateBoardColumns(
   boardColumns: Array<{ id: string; name: string; listId: string }>,
 ): Promise<void> {
-  await apiFetch('/api/settings', {
+  await apiFetchJson('/api/settings', {
     method: 'PUT',
     body: JSON.stringify({ boardColumns }),
   })

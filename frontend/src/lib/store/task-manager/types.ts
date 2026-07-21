@@ -96,5 +96,6 @@ export interface TaskManagerContextType {
   canUndo: boolean
   canRedo: boolean
   isHydrating: boolean
+  hydrationError: string | null
   syncFromBackend: () => Promise<void>
 }

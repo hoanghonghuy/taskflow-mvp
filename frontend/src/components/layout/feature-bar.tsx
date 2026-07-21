@@ -74,7 +74,7 @@ export default function FeatureBar({ onSidebarToggle }: FeatureBarProps) {
   }
 
   return (
-    <nav className="hidden md:flex flex-col shrink-0 w-16 h-full border-r border-border items-center py-4 justify-between bg-card">
+    <nav className="hidden md:flex flex-col shrink-0 w-16 h-full overflow-y-auto border-r border-border items-center py-4 justify-between bg-card">
       <div className="flex flex-col items-center gap-2">
         <NavButton label={t('feature.toggleSidebar')} onClick={onSidebarToggle}>
           <MenuIcon className="h-6 w-6" />

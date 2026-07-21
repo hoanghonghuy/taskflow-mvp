@@ -88,6 +88,26 @@ describe('UserProvider', () => {
     expect(localStorage.getItem('user')).toBeNull()
   })
 
+  it('preserves the saved user when initial session validation is temporarily unavailable', async () => {
+    localStorage.setItem('user', JSON.stringify(mockUser))
+    localStorage.setItem('isAuthenticated', 'true')
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: false,
+      status: 503,
+      json: async () => ({ temporarilyUnavailable: true }),
+    } as Response)
+
+    const { result } = renderHook(() => useUser(), { wrapper: UserTestWrapper })
+
+    await waitFor(() => {
+      expect(result.current.authReady).toBe(true)
+    })
+
+    expect(result.current.user).toEqual(mockUser)
+    expect(localStorage.getItem('isAuthenticated')).toBe('true')
+    expect(fetch).toHaveBeenCalledTimes(1)
+  })
+
   it('login stores user and clears taskflowState', async () => {
     mockSession(false)
     localStorage.setItem('taskflowState', '{}')

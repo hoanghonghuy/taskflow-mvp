@@ -21,6 +21,7 @@ import type { TranslationKey } from '@/lib/i18n/types'
 import { columnReducer } from '@/lib/store/task-manager/reducers/column-reducer'
 import { resolveBoardColumns } from '@/lib/utils/task-helpers'
 import { moveItemById } from '@/lib/utils/array-move'
+import { createKeyedMutationQueue } from '@/lib/utils/keyed-mutation-queue'
 
 interface HistoryState {
   past: AppState[]
@@ -37,6 +38,7 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
   const hasLoadedFromBackend = useRef(false)
   const wasAuthenticatedRef = useRef(isAuthenticated)
   const [isHydrating, setIsHydrating] = useState(false)
+  const [hydrationError, setHydrationError] = useState<string | null>(null)
   // Initialize with history state
   const [historyState, dispatch] = useReducer(
     historyReducer,
@@ -57,6 +59,8 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
   const syncFromBackend = useCallback(async () => {
     if (!isAuthenticated) return
 
+    setIsHydrating(true)
+    setHydrationError(null)
     try {
       const [tasks, lists, habits, countdownEvents] = await Promise.all([
         tasksApi.fetchTasks(),
@@ -97,8 +101,12 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
           tags: Array.from(tagSet).sort(),
         },
       })
+      setHydrationError(null)
     } catch (error) {
       console.error('Failed to sync data from backend', error)
+      setHydrationError(error instanceof Error ? error.message : 'Failed to load data')
+    } finally {
+      setIsHydrating(false)
     }
   }, [dispatch, historyState.present, isAuthenticated])
 
@@ -137,6 +145,7 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
 
     hasLoadedFromBackend.current = true
     setIsHydrating(true)
+    setHydrationError(null)
     let cancelled = false
 
     const loadFromBackend = async () => {
@@ -255,6 +264,9 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
         dispatch({ type: 'LOAD_STATE', payload: nextState })
       } catch (error) {
         console.error('Failed to load data from backend', error)
+        if (!cancelled) {
+          setHydrationError(error instanceof Error ? error.message : 'Failed to load data')
+        }
       } finally {
         if (!cancelled) {
           setIsHydrating(false)
@@ -401,6 +413,7 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
     if (!isAuthenticated) {
       hasLoadedFromBackend.current = false
       setIsHydrating(false)
+      setHydrationError(null)
       dispatch({ type: 'LOAD_STATE', payload: INITIAL_STATE })
     }
   }, [isAuthenticated, dispatch])
@@ -416,6 +429,7 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
         canUndo,
         canRedo,
         isHydrating,
+        hydrationError,
         syncFromBackend,
       }}
     >
@@ -444,9 +458,10 @@ async function refreshUnlockedAchievements(dispatch: (action: import('@/lib/stor
 }
 
 const habitToggleInFlight = new Set<string>()
+const taskMutationQueue = createKeyedMutationQueue()
 
 export function useTaskActions() {
-  const { state, dispatch } = useTaskManager()
+  const { state, dispatch, syncFromBackend } = useTaskManager()
   const { success, error: showError } = useToast()
   const { t } = useI18n()
   const { user } = useUser()
@@ -474,31 +489,36 @@ export function useTaskActions() {
             t('toast.taskAddedTitle' as TranslationKey),
             t('toast.taskAddedBody' as TranslationKey, { title: createdTask.title }),
           )
+          return true
         }
+        return false
       } catch (err) {
         console.error('Failed to create task via API', err)
         showError(
           t('toast.api.taskCreateFailedTitle' as TranslationKey),
           t('common.errorBody' as TranslationKey),
         )
+        return false
       }
     }, [dispatch, success, showError, t]),
 
     updateTask: useCallback(async (task: Task, options?: { silent?: boolean; rollback?: Task }) => {
       try {
-        const updatedTask = (await tasksApi.updateTask(task.id, {
-          title: task.title,
-          description: task.description,
-          completed: task.completed,
-          dueDate: task.dueDate ?? null,
-          priority: task.priority,
-          listId: task.listId,
-          columnId: task.columnId ?? null,
-          tags: task.tags ?? [],
-          recurrence: task.recurrence ?? null,
-          reminderMinutes: task.reminderMinutes ?? null,
-          assigneeId: task.assigneeId ?? null,
-        })) ?? task
+        const updatedTask = (await taskMutationQueue.run(task.id, () =>
+          tasksApi.updateTask(task.id, {
+            title: task.title,
+            description: task.description,
+            completed: task.completed,
+            dueDate: task.dueDate ?? null,
+            priority: task.priority,
+            listId: task.listId,
+            columnId: task.columnId ?? null,
+            tags: task.tags ?? [],
+            recurrence: task.recurrence ?? null,
+            reminderMinutes: task.reminderMinutes ?? null,
+            assigneeId: task.assigneeId ?? null,
+          }),
+        )) ?? task
 
         dispatch({ type: 'UPDATE_TASK', payload: updatedTask })
         if (!options?.silent) {
@@ -521,7 +541,7 @@ export function useTaskActions() {
 
     deleteTask: useCallback(async (taskId: string) => {
       try {
-        await tasksApi.deleteTask(taskId)
+        await taskMutationQueue.run(taskId, () => tasksApi.deleteTask(taskId))
       } catch (err) {
         console.error('Failed to delete task via API', err)
         showError(
@@ -722,18 +742,15 @@ export function useTaskActions() {
 
     deleteTag: useCallback(async (tagName: string) => {
       const tagToDelete = tagName.trim()
-      if (!tagToDelete) return
+      if (!tagToDelete) return false
 
       const affectedTasks = state.tasks.filter((task) =>
         task.tags.some((tag) => tag === tagToDelete),
       )
 
-      const beforeTasks = state.tasks
-      const beforeActiveTag = state.activeTag
-
       dispatch({ type: 'DELETE_TAG', payload: tagToDelete })
 
-      if (affectedTasks.length === 0) return
+      if (affectedTasks.length === 0) return true
 
       try {
         const updates = await Promise.all(
@@ -748,17 +765,17 @@ export function useTaskActions() {
         for (const updatedTask of updates) {
           dispatch({ type: 'UPDATE_TASK', payload: updatedTask })
         }
+        return true
       } catch (err) {
         console.error('Failed to delete tag via API', err)
-        dispatch({ type: 'SET_TASKS', payload: beforeTasks })
-        dispatch({ type: 'ADD_TAG', payload: { name: tagToDelete } })
-        dispatch({ type: 'SET_ACTIVE_TAG', payload: beforeActiveTag })
+        await syncFromBackend()
         showError(
           t('toast.api.taskUpdateFailedTitle' as TranslationKey),
           t('common.errorBody' as TranslationKey),
         )
+        return false
       }
-    }, [dispatch, showError, state.activeTag, state.tasks, t]),
+    }, [dispatch, showError, state.tasks, syncFromBackend, t]),
   }
 }
 
@@ -806,13 +823,12 @@ async function persistBoardColumns(columns: Column[], touchedListId?: string): P
 }
 
 export function useColumnActions() {
-  const { state, dispatch } = useTaskManager()
+  const { state, dispatch, syncFromBackend } = useTaskManager()
   const { error: showError } = useToast()
   const { t } = useI18n()
 
   const applyColumnChange = useCallback(
     async (action: Action, touchedListId?: string) => {
-      const snapshot = state
       const nextColumns = columnReducer(state, action).columns
       dispatch(action)
 
@@ -820,14 +836,14 @@ export function useColumnActions() {
         await persistBoardColumns(nextColumns, touchedListId)
       } catch (err) {
         console.error('Failed to persist board columns via API', err)
-        dispatch({ type: 'LOAD_STATE', payload: snapshot })
+        await syncFromBackend()
         showError(
           t('toast.api.taskUpdateFailedTitle' as TranslationKey),
           t('common.errorBody' as TranslationKey),
         )
       }
     },
-    [dispatch, showError, state, t],
+    [dispatch, showError, state, syncFromBackend, t],
   )
 
   return {
@@ -848,7 +864,6 @@ export function useColumnActions() {
     ),
     deleteColumn: useCallback(
       async (columnId: string, listId: string) => {
-        const snapshot = state
         const action = { type: 'DELETE_COLUMN', payload: { columnId, listId } } as const
         const nextState = columnReducer(state, action)
         const affectedTasks = state.tasks.filter((task) => task.columnId === columnId)
@@ -871,14 +886,14 @@ export function useColumnActions() {
           )
         } catch (err) {
           console.error('Failed to delete column via API', err)
-          dispatch({ type: 'LOAD_STATE', payload: snapshot })
+          await syncFromBackend()
           showError(
             t('toast.api.taskUpdateFailedTitle' as TranslationKey),
             t('common.errorBody' as TranslationKey),
           )
         }
       },
-      [dispatch, showError, state, t],
+      [dispatch, showError, state, syncFromBackend, t],
     ),
     reorderColumns: useCallback(
       (listId: string, draggedId: string, droppedOnId: string) =>
@@ -906,14 +921,16 @@ export function useListActions() {
 
         if (createdList) {
           dispatch({ type: 'ADD_LIST', payload: createdList })
-          return
+          return true
         }
+        return false
       } catch (err) {
         console.error('Failed to create list via API', err)
         showError(
           t('toast.api.listCreateFailedTitle' as TranslationKey),
           t('common.errorBody' as TranslationKey),
         )
+        return false
       }
     }, [dispatch, showError, t]),
 
@@ -929,13 +946,16 @@ export function useListActions() {
 
         if (updatedList) {
           dispatch({ type: 'UPDATE_LIST', payload: updatedList })
+          return true
         }
+        return false
       } catch (err) {
         console.error('Failed to update list via API', err)
         showError(
           t('toast.api.listUpdateFailedTitle' as TranslationKey),
           t('common.errorBody' as TranslationKey),
         )
+        return false
       }
     }, [dispatch, showError, t]),
 
@@ -948,10 +968,11 @@ export function useListActions() {
           t('toast.api.listDeleteFailedTitle' as TranslationKey),
           t('common.errorBody' as TranslationKey),
         )
-        return
+        return false
       }
 
       dispatch(listActions.delete(listId))
+      return true
     }, [dispatch, showError, t]),
 
     shareList: useCallback(async (listId: string, userId: string): Promise<boolean> => {

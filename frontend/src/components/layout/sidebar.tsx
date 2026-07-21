@@ -51,12 +51,13 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
     if (!name) return
 
     try {
-      await addList({ name, color: '#6b7280', members: [] })
-      addToast.success(t('sidebar.addList.success', { listName: name }))
+      const created = await addList({ name, color: '#6b7280', members: [] })
+      if (created) {
+        addToast.success(t('sidebar.addList.success', { listName: name }))
+        setNewList('')
+      }
     } catch (error) {
       console.error('Failed to add list via useListActions', error)
-    } finally {
-      setNewList('')
     }
   }
 
@@ -77,8 +78,10 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
     })
 
     if (isConfirmed) {
-      await deleteList(listId)
-      addToast.success(t('sidebar.deleteList.success', { listName }))
+      const deleted = await deleteList(listId)
+      if (deleted) {
+        addToast.success(t('sidebar.deleteList.success', { listName }))
+      }
     }
   }
 
@@ -91,8 +94,10 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
     })
 
     if (isConfirmed) {
-      await deleteTag(tagName)
-      addToast.success(t('sidebar.deleteTag.success', { tagName }))
+      const deleted = await deleteTag(tagName)
+      if (deleted) {
+        addToast.success(t('sidebar.deleteTag.success', { tagName }))
+      }
     }
   }
 
@@ -122,6 +127,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
     }
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (e.target !== e.currentTarget) return
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault()
         handleClick()

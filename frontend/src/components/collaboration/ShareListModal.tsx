@@ -8,6 +8,7 @@ import * as authApi from '@/lib/api/auth'
 import type { List, User } from '@/types'
 import { CloseIcon } from '@/lib/icons'
 import { Avatar } from '@/components/ui/avatar'
+import { AccessibleModalSurface } from '@/components/ui/accessible-modal-surface'
 
 interface ShareListModalProps {
   list: List
@@ -86,7 +87,11 @@ const ShareListModal: React.FC<ShareListModalProps> = ({ list, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-card rounded-lg shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
+      <AccessibleModalSurface
+        aria-label={t('shareList.title', { listName: list.name })}
+        onClose={onClose}
+        className="bg-card rounded-lg shadow-xl w-full max-w-md max-h-[calc(100dvh-2rem)] flex flex-col"
+      >
         <header className="p-4 border-b border-border flex items-center justify-between shrink-0">
           <div>
             <h2 className="text-lg font-semibold">
@@ -186,7 +191,7 @@ const ShareListModal: React.FC<ShareListModalProps> = ({ list, onClose }) => {
             {t('shareList.done')}
           </button>
         </footer>
-      </div>
+      </AccessibleModalSurface>
     </div>
   )
 }

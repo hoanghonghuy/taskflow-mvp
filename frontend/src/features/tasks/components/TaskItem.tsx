@@ -130,8 +130,8 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
   }
   
   const handleDrop = (e: React.DragEvent) => {
-    e.stopPropagation()
     if (canDrag && onDrop) {
+      e.stopPropagation()
       onDrop(task.id)
     }
     setIsDragOver(false)

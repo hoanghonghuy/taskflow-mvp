@@ -51,12 +51,19 @@ const CalendarView: React.FC = () => {
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 767px)')
-    if (!mq.matches) return
-    setViewMode('agenda')
-    const base = new Date()
-    base.setHours(0, 0, 0, 0)
-    setAgendaStartDate(base)
-    setSelectedDate(base)
+    const syncMobileView = (matches: boolean) => {
+      if (!matches) return
+      setViewMode('agenda')
+      const base = new Date()
+      base.setHours(0, 0, 0, 0)
+      setAgendaStartDate(base)
+      setSelectedDate(base)
+    }
+
+    syncMobileView(mq.matches)
+    const handleChange = (event: MediaQueryListEvent) => syncMobileView(event.matches)
+    mq.addEventListener('change', handleChange)
+    return () => mq.removeEventListener('change', handleChange)
   }, [setViewMode, setAgendaStartDate, setSelectedDate])
 
   const agendaRangeEnd = useMemo(() => {
@@ -120,7 +127,7 @@ const CalendarView: React.FC = () => {
     })
   }
 
-  const handleTaskDragStart = (e: React.DragEvent<HTMLDivElement>, taskId: string) => {
+  const handleTaskDragStart = (e: React.DragEvent<HTMLElement>, taskId: string) => {
     e.dataTransfer.setData('taskId', taskId)
     setDraggedTaskId(taskId)
   }
@@ -160,12 +167,13 @@ const CalendarView: React.FC = () => {
       : null
 
     return (
-      <div
+      <button
+        type="button"
         key={task.id}
         draggable={draggable}
         onDragStart={draggable ? (e) => handleTaskDragStart(e, task.id) : undefined}
         onDragEnd={draggable ? handleTaskDragEnd : undefined}
-        className={`w-full text-[10px] px-2 py-0.5 rounded-md text-background flex items-center gap-1 shadow-sm transition-opacity ${
+        className={`w-full text-left text-[10px] px-2 py-0.5 rounded-md text-background flex items-center gap-1 shadow-sm transition-opacity ${
           draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
         } ${isDraggingThis ? 'opacity-60' : ''}`}
         style={{ backgroundColor: bg }}
@@ -180,7 +188,7 @@ const CalendarView: React.FC = () => {
         <span className="truncate">
           {task.title}
         </span>
-      </div>
+      </button>
     )
   }
 

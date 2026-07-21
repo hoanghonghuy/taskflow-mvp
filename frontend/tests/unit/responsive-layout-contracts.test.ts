@@ -52,4 +52,54 @@ describe('responsive layout contracts', () => {
     )
     expect(src('app/(app)/dashboard/page.tsx')).not.toContain('rounded-lg p-5')
   })
+
+  it('lets unhandled task drops bubble to Board and Matrix containers', () => {
+    expect(src('features/tasks/components/TaskItem.tsx').replace(/\r/g, '')).toContain(
+      'if (canDrag && onDrop) {\n      e.stopPropagation()',
+    )
+    expect(src('features/board/components/BoardColumn.tsx')).not.toContain(
+      'onDrop={() => {}}',
+    )
+  })
+
+  it('keeps primary task controls keyboard accessible', () => {
+    expect(src('features/calendar/views/CalendarView.tsx').replace(/\r/g, '')).toContain(
+      '<button\n        type="button"\n        key={task.id}',
+    )
+    expect(src('features/pomodoro/views/PomodoroView.tsx')).toContain(
+      'aria-label={t(\'pomodoro.selectTask\')}',
+    )
+    expect(src('components/layout/sidebar.tsx')).toContain(
+      'if (e.target !== e.currentTarget) return',
+    )
+  })
+
+  it('prevents remaining narrow and short viewport overflows', () => {
+    expect(src('features/habits/views/HabitsView.tsx')).toContain(
+      'mt-4 flex flex-col gap-2 sm:flex-row',
+    )
+    expect(src('features/pomodoro/views/PomodoroView.tsx')).toContain(
+      'flex flex-wrap items-center justify-center gap-4',
+    )
+    expect(src('components/layout/feature-bar.tsx')).toContain('overflow-y-auto')
+    expect(src('components/layout/bottom-nav-bar.tsx')).toContain(
+      'max-w-full truncate',
+    )
+    expect(src('components/layout/task-column-shell.tsx')).toContain(
+      "'min-h-[160px] md:min-h-[260px]'",
+    )
+    expect(src('components/layout/app-loading-skeleton.tsx')).toContain(
+      'hidden w-64 shrink-0 border-r border-border p-4 lg:block',
+    )
+  })
+
+  it('discovers the Board E2E spec in the Chromium project', () => {
+    const playwrightConfig = readFileSync(
+      path.join(process.cwd(), 'playwright.config.ts'),
+      'utf8',
+    )
+    expect(playwrightConfig).toMatch(
+      /tasks\|navigation\|board\|habits\|countdown/,
+    )
+  })
 })

@@ -151,7 +151,6 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
               task={task}
               isDraggable={canManageColumns}
               onDragStart={onTaskDragStart}
-              onDrop={() => {}}
             />
             {canManageColumns && columns.length > 1 ? (
               <TaskMoveControl

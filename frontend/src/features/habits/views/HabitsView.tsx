@@ -151,7 +151,7 @@ const HabitsView: React.FC = () => {
             )}
           </div>
           {isAdding && (
-            <div className="mt-4 flex gap-2">
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row">
               <input
                 type="text"
                 value={newHabitName}
@@ -165,7 +165,7 @@ const HabitsView: React.FC = () => {
                   }
                 }}
                 placeholder={t('habits.namePlaceholder')}
-                className="flex-1 px-4 py-2 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                className="min-w-0 flex-1 px-4 py-2 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 autoFocus
               />
               <Button

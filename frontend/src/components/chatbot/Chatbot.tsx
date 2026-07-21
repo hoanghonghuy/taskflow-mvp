@@ -8,6 +8,7 @@ import { useToast } from '@/components/providers/toast-provider'
 import type { ChatMessage } from '@/types'
 import Spinner from '@/components/ui/spinner'
 import { SwitchField } from '@/components/ui/switch'
+import { AccessibleModalSurface } from '@/components/ui/accessible-modal-surface'
 import * as aiApi from '@/lib/api/ai'
 
 interface ChatbotProps {
@@ -91,7 +92,11 @@ const Chatbot: React.FC<ChatbotProps> = ({ onClose }) => {
   
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-fade-in">
-      <div className="bg-card rounded-lg shadow-xl w-full max-w-2xl flex flex-col h-[80vh]">
+      <AccessibleModalSurface
+        aria-label={t('chatbot.title')}
+        onClose={onClose}
+        className="bg-card rounded-lg shadow-xl w-full max-w-2xl flex flex-col h-[calc(100dvh-2rem)]"
+      >
         <header className="p-4 border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-2">
             <CubeTransparentIcon className="h-6 w-6 text-primary" />
@@ -209,7 +214,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ onClose }) => {
             </button>
           </div>
         </footer>
-      </div>
+      </AccessibleModalSurface>
     </div>
   )
 }

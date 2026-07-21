@@ -110,7 +110,7 @@ export default defineConfig({
         storageState: userAuthFile,
       },
       dependencies: ['setup'],
-      testMatch: /\/(tasks|navigation|habits|countdown|pomodoro|settings|profile|achievements|ai|core-regression)\.spec\.ts$/,
+      testMatch: /\/(tasks|navigation|board|habits|countdown|pomodoro|settings|profile|achievements|ai|core-regression)\.spec\.ts$/,
     },
     {
       name: 'mobile',

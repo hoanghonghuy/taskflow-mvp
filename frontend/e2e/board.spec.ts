@@ -8,13 +8,10 @@ test.describe('Board', () => {
     await page.goto('/board')
     await waitForAppReady(page)
 
-    const listSelect = page.locator('select').first()
+    const listSelect = page.locator('select[aria-label]:visible').first()
     await expect(listSelect).toBeVisible()
     const listOptions = await listSelect.locator('option').all()
-    if (listOptions.length === 0) {
-      test.skip()
-      return
-    }
+    expect(listOptions.length).toBeGreaterThan(0)
 
     await listSelect.selectOption({ index: 0 })
 
@@ -25,20 +22,29 @@ test.describe('Board', () => {
     await page.getByRole('button', { name: /create task|tạo nhiệm vụ/i }).click()
     await expect(page.getByText(taskTitle, { exact: true })).toBeVisible()
 
-    const taskCard = page.locator('.group').filter({ has: page.getByText(taskTitle, { exact: true }) })
-    const columns = page.locator('[class*="md:w-72"]').filter({ has: page.getByText(/in progress|đang thực hiện/i) })
-    const targetColumn = columns.first()
-
-    await taskCard.dragTo(targetColumn)
-    await page.waitForTimeout(500)
+    const taskCard = page
+      .locator('.group:has(select[aria-label])')
+      .filter({ has: page.getByText(taskTitle, { exact: true }) })
+      .first()
+    const moveSelect = taskCard.getByRole('combobox', {
+      name: /move task to column|chuyển nhiệm vụ sang cột/i,
+    })
+    const targetOption = moveSelect
+      .locator('option')
+      .filter({ hasText: /in progress|đang thực hiện/i })
+      .first()
+    const targetValue = await targetOption.getAttribute('value')
+    expect(targetValue).toBeTruthy()
+    await moveSelect.selectOption(targetValue!)
 
     await page.reload()
     await waitForAppReady(page)
     await page.goto('/board')
     await waitForAppReady(page)
 
-    await expect(page.getByText(taskTitle, { exact: true })).toBeVisible()
-    const inProgressColumn = page.locator('[class*="md:w-72"]').filter({ has: page.getByText(/in progress|đang thực hiện/i) })
+    const inProgressColumn = page
+      .getByRole('button', { name: /^(in progress|đang thực hiện)\s+\d+$/i })
+      .locator('xpath=ancestor::div[contains(@class,"md:w-72")][1]')
     await expect(inProgressColumn.getByText(taskTitle, { exact: true })).toBeVisible()
   })
 })

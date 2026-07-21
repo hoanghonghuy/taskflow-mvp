@@ -3,7 +3,7 @@ import { apiFetchJson } from './client'
 import { mapCountdownsFromApi } from './mappers'
 
 export async function fetchCountdowns(): Promise<CountdownEvent[]> {
-  const json = await apiFetchJson<unknown[]>('/api/countdown').catch(() => null)
+  const json = await apiFetchJson<unknown[]>('/api/countdown')
   return Array.isArray(json) ? mapCountdownsFromApi(json) : []
 }
 

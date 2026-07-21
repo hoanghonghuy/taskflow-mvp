@@ -5,12 +5,22 @@ const AUTH_PATH = '/api/auth/[...nextauth]'
 const SESSION_PATH = '/api/auth/session'
 
 export type SessionResponse = { authenticated?: boolean; user?: User } | null
+export type SessionStatus = 'available' | 'expired' | 'unavailable'
 
-export async function fetchSession(): Promise<{ ok: boolean; data: SessionResponse }> {
+export async function fetchSession(): Promise<{
+  ok: boolean
+  data: SessionResponse
+  status: SessionStatus
+}> {
   const response = await apiFetch(SESSION_PATH, { method: 'GET' })
   const json = await response.json().catch(() => null)
   const data = json ? (unwrapApiData<SessionResponse>(json, response.status) as SessionResponse) : null
-  return { ok: response.ok, data }
+  const status: SessionStatus = response.ok
+    ? 'available'
+    : response.status === 401
+      ? 'expired'
+      : 'unavailable'
+  return { ok: response.ok, data, status }
 }
 
 export async function login(email: string, password: string): Promise<User> {

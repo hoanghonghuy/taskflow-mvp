@@ -1,5 +1,5 @@
 import type { FocusSession, PomodoroState } from '@/types'
-import { apiFetch, unwrapApiData } from './client'
+import { apiFetch, apiFetchJson, unwrapApiData } from './client'
 import {
   mapFocusSessionsFromApi,
   mapPomodoroStateFromApi,
@@ -8,10 +8,7 @@ import {
 } from './mappers'
 
 export async function fetchPomodoroSessions(): Promise<FocusSession[]> {
-  const response = await apiFetch('/api/pomodoro/sessions')
-  if (!response.ok) return []
-  const raw = await response.json().catch(() => null)
-  const json = raw ? unwrapApiData<unknown>(raw, response.status) : null
+  const json = await apiFetchJson<unknown>('/api/pomodoro/sessions')
   return Array.isArray(json) ? mapFocusSessionsFromApi(json) : []
 }
 

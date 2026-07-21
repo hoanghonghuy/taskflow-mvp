@@ -29,7 +29,7 @@ export default function AppLayout({
   const router = useRouter()
   const pathname = usePathname()
   const { isAuthenticated, authReady } = useUser()
-  const { isHydrating, state } = useTaskManager()
+  const { hydrationError, isHydrating, state, syncFromBackend } = useTaskManager()
   const { t } = useI18n()
   const modal = useModal()
   // Closed by default; open only on large desktop (≥1024) after mount to avoid tablet dual-chrome + hydration flash.
@@ -110,6 +110,24 @@ export default function AppLayout({
   }, [authReady, isAuthenticated, router])
 
   // Theme is handled by SettingsProvider
+
+  if (authReady && isAuthenticated && hydrationError && !isHydrating) {
+    return (
+      <div className="flex h-dvh items-center justify-center bg-background p-4 text-foreground">
+        <div className="max-w-sm text-center">
+          <h1 className="text-xl font-semibold">{t('common.errorTitle')}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{t('common.errorBody')}</p>
+          <button
+            type="button"
+            onClick={() => void syncFromBackend()}
+            className="mt-6 min-h-11 rounded-lg bg-primary px-4 font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {t('common.tryAgain')}
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   if (!authReady || !isAuthenticated || isHydrating) {
     return <AppLoadingSkeleton variant={resolvePageSkeletonVariant(pathname)} />

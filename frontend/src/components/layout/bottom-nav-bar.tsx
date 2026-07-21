@@ -106,7 +106,7 @@ function BottomNavButton({ feature, isActive, onSelect, label }: BottomNavButton
       data-active={isActive ? 'true' : undefined}
     >
       <Icon className="h-6 w-6 relative" />
-      <span className="font-medium relative whitespace-nowrap">{label}</span>
+      <span className="relative max-w-full truncate font-medium">{label}</span>
       <span className="bottom-nav-indicator" aria-hidden="true" />
     </button>
   )
@@ -164,7 +164,7 @@ export default function BottomNavBar() {
             data-active={isMoreActive ? 'true' : undefined}
           >
             <MenuIcon className="h-6 w-6" />
-            <span className="font-medium relative text-[10px] whitespace-nowrap">{t('feature.more')}</span>
+            <span className="relative max-w-full truncate text-[10px] font-medium">{t('feature.more')}</span>
             <span className="bottom-nav-indicator" aria-hidden="true" />
           </button>
             )

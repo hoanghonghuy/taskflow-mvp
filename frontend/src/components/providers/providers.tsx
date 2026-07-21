@@ -4,7 +4,7 @@ import type { Settings } from '@/types'
 import { ThemeProvider } from './theme-provider'
 import { I18nProvider } from './i18n-provider'
 import { ToastProvider } from './toast-provider'
-import { UserProvider } from './user-provider'
+import { UserProvider, useUser } from './user-provider'
 import { SettingsProvider } from './settings-provider'
 import { ConfirmationProvider } from './confirmation-provider'
 import { TaskManagerProvider } from './task-manager-provider'
@@ -18,28 +18,41 @@ interface ProvidersProps {
   initialLocale: Settings['language']
 }
 
+function UserScopedProviders({ children, initialLocale }: ProvidersProps) {
+  const { user, authReady } = useUser()
+
+  return (
+    <SettingsProvider
+      initialLocale={initialLocale}
+      authScope={{ ready: authReady, userId: user?.id ?? null }}
+    >
+      <ThemeProvider>
+        <GeminiProvider>
+          <TaskManagerProvider>
+            <ToastProvider>
+              <TaskReminderWatcher />
+              <PomodoroSessionWatcher />
+              <ModalProvider>
+                <ConfirmationProvider>
+                  {children}
+                </ConfirmationProvider>
+              </ModalProvider>
+            </ToastProvider>
+          </TaskManagerProvider>
+        </GeminiProvider>
+      </ThemeProvider>
+    </SettingsProvider>
+  )
+}
+
 export function Providers({ children, initialLocale }: ProvidersProps) {
   return (
     <I18nProvider initialLocale={initialLocale}>
-      <SettingsProvider initialLocale={initialLocale}>
-        <ThemeProvider>
-          <GeminiProvider>
-            <UserProvider>
-              <TaskManagerProvider>
-                <ToastProvider>
-                  <TaskReminderWatcher />
-                  <PomodoroSessionWatcher />
-                  <ModalProvider>
-                    <ConfirmationProvider>
-                      {children}
-                    </ConfirmationProvider>
-                  </ModalProvider>
-                </ToastProvider>
-              </TaskManagerProvider>
-            </UserProvider>
-          </GeminiProvider>
-        </ThemeProvider>
-      </SettingsProvider>
+      <UserProvider>
+        <UserScopedProviders initialLocale={initialLocale}>
+          {children}
+        </UserScopedProviders>
+      </UserProvider>
     </I18nProvider>
   )
 }

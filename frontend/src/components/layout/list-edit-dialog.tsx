@@ -51,9 +51,11 @@ export function ListEditDialog({ list, open, onOpenChange }: ListEditDialogProps
 
     setSaving(true)
     try {
-      await updateList({ id: list.id, name: trimmed, color })
-      addToast.success(t('sidebar.editList.success', { listName: trimmed }))
-      onOpenChange(false)
+      const updated = await updateList({ id: list.id, name: trimmed, color })
+      if (updated) {
+        addToast.success(t('sidebar.editList.success', { listName: trimmed }))
+        onOpenChange(false)
+      }
     } finally {
       setSaving(false)
     }

@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { StatCard } from '@/components/ui/stat-card'
 import { SegmentedControl } from '@/components/ui/segmented-control'
+import { AccessibleModalSurface } from '@/components/ui/accessible-modal-surface'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import type { Task, Habit } from '@/types'
 import type { TranslationKey } from '@/lib/i18n/types'
@@ -289,8 +290,10 @@ const PomodoroView: React.FC = () => {
                   {getSessionName()}
                 </p>
               </div>
-              <div 
-                className={`text-lg md:text-xl font-medium min-h-8 cursor-pointer p-3 rounded-lg transition-colors border ${
+              <button
+                type="button"
+                aria-label={t('pomodoro.selectTask')}
+                className={`w-full text-lg md:text-xl font-medium min-h-11 cursor-pointer p-3 rounded-lg transition-colors border ${
                   focusedTask || focusedHabit
                     ? 'border-primary/60 bg-secondary'
                     : 'border-border/50 bg-secondary'
@@ -302,7 +305,7 @@ const PomodoroView: React.FC = () => {
                       taskTitle: focusedTask?.title ?? focusedHabit?.name ?? '',
                     })
                   : t('pomodoro.selectTask')}
-              </div>
+              </button>
               {focusedTask && (
                 <Badge variant="secondary" className="mt-2">
                   {focusedTask.priority === 'high' && t('pomodoro.highPriorityLabel')}
@@ -347,7 +350,7 @@ const PomodoroView: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center justify-center gap-4">
               <Button 
                 variant="outline"
                 size="lg"
@@ -372,7 +375,7 @@ const PomodoroView: React.FC = () => {
               <Button 
                 size="lg"
                 onClick={handlePauseResume}
-                className={`flex items-center gap-2 px-8 ${
+                className={`flex items-center gap-2 px-5 sm:px-8 ${
                   pomodoro.currentSession === 'focus' 
                     ? 'bg-[hsl(var(--color-pomodoro-focus))] hover:bg-[hsl(var(--color-pomodoro-focus) / 0.9)] text-white' 
                     : pomodoro.currentSession === 'shortBreak'
@@ -502,7 +505,11 @@ const PomodoroView: React.FC = () => {
 
         {isTaskPickerOpen && (
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div className="bg-card border border-border rounded-lg shadow-xl w-full max-w-lg flex flex-col max-h-[70vh]">
+            <AccessibleModalSurface
+              aria-label={t('focusPicker.title')}
+              onClose={() => setTaskPickerOpen(false)}
+              className="bg-card border border-border rounded-lg shadow-xl w-full max-w-lg flex flex-col max-h-[calc(100dvh-2rem)]"
+            >
               <header className="p-4 border-b border-border flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <h2 className="text-lg font-semibold">{t('focusPicker.title')}</h2>
@@ -680,75 +687,86 @@ const PomodoroView: React.FC = () => {
                 </div>
 
                 <ul className="space-y-2">
-                  <li
-                    onClick={() => {
-                      setFocusedTask(null)
-                      setFocusedHabit(null)
-                      setTaskPickerOpen(false)
-                    }}
-                    className={`p-3 flex items-center justify-between rounded-md cursor-pointer hover:bg-secondary ${
-                      !pomodoro.focusedTaskId && !pomodoro.focusedHabitId
-                        ? 'bg-secondary border-2 border-primary'
-                        : ''
-                    }`}
-                  >
-                    <span>{t('focusPicker.general')}</span>
-                    {!pomodoro.focusedTaskId && !pomodoro.focusedHabitId && (
-                      <CheckCircleIcon className="h-5 w-5 text-primary" />
-                    )}
+                  <li>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFocusedTask(null)
+                        setFocusedHabit(null)
+                        setTaskPickerOpen(false)
+                      }}
+                      className={`flex min-h-11 w-full items-center justify-between rounded-md p-3 text-left hover:bg-secondary ${
+                        !pomodoro.focusedTaskId && !pomodoro.focusedHabitId
+                          ? 'bg-secondary border-2 border-primary'
+                          : ''
+                      }`}
+                    >
+                      <span>{t('focusPicker.general')}</span>
+                      {!pomodoro.focusedTaskId && !pomodoro.focusedHabitId && (
+                        <CheckCircleIcon className="h-5 w-5 text-primary" />
+                      )}
+                    </button>
                   </li>
 
                   {activeTab === 'task'
                     ? filteredTasks.map(task => (
-                        <li
-                          key={task.id}
+                        <li key={task.id}>
+                          <button
+                          type="button"
                           onClick={() => {
                             setFocusedTask(task.id)
                             setTaskPickerOpen(false)
                           }}
-                          className={`p-3 flex items-center justify-between rounded-md cursor-pointer hover:bg-secondary ${
+                          className={`flex min-h-11 w-full items-center justify-between rounded-md p-3 text-left hover:bg-secondary ${
                             pomodoro.focusedTaskId === task.id
                               ? 'bg-secondary border-2 border-primary'
                               : ''
                           }`}
-                        >
-                          <span className="flex items-center gap-2">
-                            {task.listId === 'inbox' && <InboxIcon className="h-4 w-4 text-muted-foreground" />}
-                            <span>{task.title}</span>
-                          </span>
-                          {pomodoro.focusedTaskId === task.id && (
-                            <CheckCircleIcon className="h-5 w-5 text-primary" />
-                          )}
+                          >
+                            <span className="flex items-center gap-2">
+                              {task.listId === 'inbox' && <InboxIcon className="h-4 w-4 text-muted-foreground" />}
+                              <span>{task.title}</span>
+                            </span>
+                            {pomodoro.focusedTaskId === task.id && (
+                              <CheckCircleIcon className="h-5 w-5 text-primary" />
+                            )}
+                          </button>
                         </li>
                       ))
                     : filteredHabits.map(habit => (
-                        <li
-                          key={habit.id}
+                        <li key={habit.id}>
+                          <button
+                          type="button"
                           onClick={() => {
                             setFocusedHabit(habit.id)
                             setTaskPickerOpen(false)
                           }}
-                          className={`p-3 flex items-center justify-between rounded-md cursor-pointer hover:bg-secondary ${
+                          className={`flex min-h-11 w-full items-center justify-between rounded-md p-3 text-left hover:bg-secondary ${
                             pomodoro.focusedHabitId === habit.id
                               ? 'bg-secondary border-2 border-primary'
                               : ''
                           }`}
-                        >
-                          <span>{habit.name}</span>
-                          {pomodoro.focusedHabitId === habit.id && (
-                            <CheckCircleIcon className="h-5 w-5 text-primary" />
-                          )}
+                          >
+                            <span>{habit.name}</span>
+                            {pomodoro.focusedHabitId === habit.id && (
+                              <CheckCircleIcon className="h-5 w-5 text-primary" />
+                            )}
+                          </button>
                         </li>
                       ))}
                 </ul>
               </div>
-            </div>
+            </AccessibleModalSurface>
           </div>
         )}
 
         {isStatisticsOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-            <div className="w-full max-w-5xl max-h-[90vh] bg-card text-card-foreground border border-border rounded-2xl shadow-xl flex flex-col">
+            <AccessibleModalSurface
+              aria-label={t('pomodoro.statisticsTitle' as TranslationKey)}
+              onClose={() => setStatisticsOpen(false)}
+              className="w-full max-w-5xl max-h-[calc(100dvh-2rem)] bg-card text-card-foreground border border-border rounded-2xl shadow-xl flex flex-col"
+            >
               <header className="flex items-center justify-between px-6 py-4 border-b border-border">
                 <h2 className="text-lg font-semibold">{t('pomodoro.statisticsTitle' as TranslationKey)}</h2>
                 <Button
@@ -852,7 +870,7 @@ const PomodoroView: React.FC = () => {
                   )
                 )}
               </div>
-            </div>
+            </AccessibleModalSurface>
           </div>
         )}
       </AppPageMain>

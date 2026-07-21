@@ -31,7 +31,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
     async function validateSession() {
       try {
-        const { ok, data } = await authApi.fetchSession()
+        const { ok, data, status } = await authApi.fetchSession()
         if (cancelled) return
 
         if (ok) {
@@ -77,6 +77,17 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             localStorage.removeItem('user')
             localStorage.removeItem('isAuthenticated')
             void authApi.logout().catch(() => {})
+          }
+        } else if (status === 'unavailable') {
+          const savedUser = localStorage.getItem('user')
+          if (savedUser && localStorage.getItem('isAuthenticated') === 'true') {
+            try {
+              setUser(JSON.parse(savedUser) as User)
+            } catch (error) {
+              console.error('Failed to parse saved user during session outage', error)
+              localStorage.removeItem('user')
+              localStorage.removeItem('isAuthenticated')
+            }
           }
         } else {
           setUser(null)

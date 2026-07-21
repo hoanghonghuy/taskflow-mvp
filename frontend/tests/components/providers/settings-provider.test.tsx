@@ -1,7 +1,11 @@
-import { act, renderHook, waitFor } from '@testing-library/react'
+import { act, render, renderHook, screen, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { SettingsProvider, useSettings } from '@/components/providers/settings-provider'
+import {
+  SettingsProvider,
+  settingsStorageKey,
+  useSettings,
+} from '@/components/providers/settings-provider'
 import { I18nProvider } from '@/components/providers/i18n-provider'
 import { createLocalStorageMock } from '../../helpers/test-utils'
 
@@ -11,6 +15,11 @@ function SettingsTestWrapper({ children }: { children: ReactNode }) {
       <SettingsProvider initialLocale="en">{children}</SettingsProvider>
     </I18nProvider>
   )
+}
+
+function SettingsThemeProbe() {
+  const { theme, hydrated } = useSettings()
+  return <span>{hydrated ? theme : 'loading'}</span>
 }
 
 describe('SettingsProvider', () => {
@@ -26,6 +35,46 @@ describe('SettingsProvider', () => {
     expect(() => renderHook(() => useSettings())).toThrow(
       'useSettings must be used within SettingsProvider'
     )
+  })
+
+  it('isolates cached settings by user id', () => {
+    expect(settingsStorageKey('user-a')).toBe('settings:user-a')
+    expect(settingsStorageKey('user-b')).toBe('settings:user-b')
+    expect(settingsStorageKey(null)).toBe('settings')
+  })
+
+  it('rehydrates from the next user cache when account changes in the same tab', async () => {
+    const userASettings = { language: 'en', theme: 'dark' }
+    const userBSettings = { language: 'en', theme: 'light' }
+    localStorage.setItem('settings', JSON.stringify(userASettings))
+    localStorage.setItem(settingsStorageKey('user-a'), JSON.stringify(userASettings))
+    localStorage.setItem(settingsStorageKey('user-b'), JSON.stringify(userBSettings))
+
+    const { rerender } = render(
+      <I18nProvider initialLocale="en">
+        <SettingsProvider
+          initialLocale="en"
+          authScope={{ ready: true, userId: 'user-a' }}
+        >
+          <SettingsThemeProbe />
+        </SettingsProvider>
+      </I18nProvider>,
+    )
+
+    await waitFor(() => expect(screen.getByText('dark')).toBeInTheDocument())
+
+    rerender(
+      <I18nProvider initialLocale="en">
+        <SettingsProvider
+          initialLocale="en"
+          authScope={{ ready: true, userId: 'user-b' }}
+        >
+          <SettingsThemeProbe />
+        </SettingsProvider>
+      </I18nProvider>,
+    )
+
+    await waitFor(() => expect(screen.getByText('light')).toBeInTheDocument())
   })
 
   it('provides default settings', async () => {

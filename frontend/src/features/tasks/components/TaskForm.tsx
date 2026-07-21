@@ -20,6 +20,7 @@ import {
 } from '@/lib/icons'
 import { PRIORITY_MAP } from '@/lib/task-constants'
 import { Skeleton } from '@/components/ui/skeleton'
+import { AccessibleModalSurface } from '@/components/ui/accessible-modal-surface'
 import * as aiApi from '@/lib/api/ai'
 import { isOwnedList } from '@/lib/utils/list-access'
 import { dateOnlyInputToIso, toYYYYMMDD } from '@/lib/utils/date-helpers'
@@ -123,8 +124,10 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
       comments: [],
     }
     try {
-      await addTask(newTask)
-      onClose()
+      const created = await addTask(newTask)
+      if (created) {
+        onClose()
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -176,7 +179,11 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-card rounded-lg shadow-xl w-full max-w-lg flex flex-col max-h-[90vh]">
+      <AccessibleModalSurface
+        aria-label={t('taskForm.newTask')}
+        onClose={onClose}
+        className="bg-card rounded-lg shadow-xl w-full max-w-lg flex flex-col max-h-[calc(100dvh-2rem)]"
+      >
         <header className="p-4 border-b border-border flex items-center justify-between">
           <h2 className="text-lg font-semibold">{t('taskForm.newTask')}</h2>
           <button onClick={onClose} className="p-1 rounded-full hover:bg-secondary">
@@ -392,7 +399,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
             </footer>
           </form>
         </div>
-      </div>
+      </AccessibleModalSurface>
     </div>
   )
 }
