@@ -154,17 +154,18 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     if (!user) return
 
     try {
-      const ok = await authApi.refreshSession()
+      const result = await authApi.refreshSession()
 
-      if (!ok) {
+      if (result === 'expired') {
         await logout()
         return
       }
 
-      setLastRefreshAt(Date.now())
+      if (result === 'refreshed') {
+        setLastRefreshAt(Date.now())
+      }
     } catch (error) {
       console.error('Failed to refresh auth session', error)
-      await logout()
     }
   }, [logout, user])
 

@@ -75,24 +75,36 @@ describe('UI design tokens (audit regression)', () => {
   })
 
   it('page headers use responsive text-2xl md:text-3xl', () => {
-    const views = [
-      'src/features/achievements/views/AchievementsView.tsx',
+    const sharedHeader = readFileSync(
+      join(ROOT, 'src/components/layout/app-page-header.tsx'),
+      'utf8',
+    )
+    expect(sharedHeader).toContain("'text-2xl md:text-3xl'")
+
+    const sharedHeaderViews = [
       'src/features/pomodoro/views/PomodoroView.tsx',
       'src/features/countdown/views/CountdownView.tsx',
       'src/features/profile/views/ProfileView.tsx',
       'src/features/board/views/BoardView.tsx',
     ] as const
 
-    for (const relativePath of views) {
+    for (const relativePath of sharedHeaderViews) {
       const content = readFileSync(join(ROOT, relativePath), 'utf8')
+      if (content.includes('<AppPageHeader')) continue
+
       const h1Matches = [...content.matchAll(/<h1 className="([^"]+)"/g)]
       expect(h1Matches.length, `${relativePath} should have h1`).toBeGreaterThan(0)
       for (const match of h1Matches) {
-        expect(
-          match[1],
-          `${relativePath} h1 should include text-2xl md:text-3xl`,
-        ).toMatch(/text-2xl\s+md:text-3xl/)
+        expect(match[1]).toMatch(/text-2xl\s+md:text-3xl/)
       }
     }
+
+    const achievements = readFileSync(
+      join(ROOT, 'src/features/achievements/views/AchievementsView.tsx'),
+      'utf8',
+    )
+    expect(achievements.match(/<h1 className="([^"]+)"/)?.[1]).toMatch(
+      /text-2xl\s+md:text-3xl/,
+    )
   })
 })

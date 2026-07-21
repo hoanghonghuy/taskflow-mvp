@@ -8,6 +8,7 @@ import BoardColumn from '@/features/board/components/BoardColumn'
 import { PlusIcon } from '@/lib/icons'
 import { AppPage, AppPageMain } from '@/components/layout/app-page'
 import { AppPageHeader } from '@/components/layout/app-page-header'
+import { MobileHeaderActions } from '@/components/layout/mobile-header-actions'
 import { EmptyState } from '@/components/ui/empty-state'
 import { buildBoardColumns } from '@/lib/utils/task-helpers'
 import { isSharedListMember } from '@/lib/utils/list-access'
@@ -87,6 +88,11 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
     setDragOverColumnId(null)
   }
 
+  const handleMoveTask = (taskId: string, columnId: string) => {
+    if (!canManageColumns) return
+    void moveTaskToColumn(taskId, columnId, selectedListId)
+  }
+
   const handleColumnDragStart = (columnId: string) => {
     if (!canManageColumns) return
     setDraggedColumnId(columnId)
@@ -114,7 +120,7 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
     return (
       <AppPage>
         <AppPageHeader title={t('nav.board')} subtitle={t('board.title')} />
-        <AppPageMain className="py-6">
+        <AppPageMain className="py-4 md:py-6">
           <EmptyState title={t('board.noLists')} />
         </AppPageMain>
       </AppPage>
@@ -123,14 +129,28 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
 
   return (
     <AppPage>
+      <MobileHeaderActions>
+        <select
+          aria-label={t('board.selectList')}
+          value={selectedListId}
+          onChange={handleListChange}
+          className="h-11 w-full max-w-48 truncate rounded-lg border border-border bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+        >
+          {availableLists.map((list) => (
+            <option key={list.id} value={list.id}>
+              {list.name}
+            </option>
+          ))}
+        </select>
+      </MobileHeaderActions>
       <AppPageHeader
         title={t('nav.board')}
         subtitle={t('board.title')}
         hideOnMobile={true}
-        actionsAlwaysVisible
         containerClassName="max-w-none"
         actions={
           <select
+            aria-label={t('board.selectList')}
             value={selectedListId}
             onChange={handleListChange}
             className="w-full sm:w-auto px-4 py-2 bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm md:text-base text-foreground dark:bg-card dark:text-foreground"
@@ -194,13 +214,15 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
                   onDropOnColumn={handleDropOnColumn}
                   onOpenTaskForm={onOpenTaskForm}
                   onColumnDragStart={handleColumnDragStart}
+                  columns={columnsForList}
+                  onMoveTask={handleMoveTask}
                   canManageColumns={canManageColumns}
                 />
               </div>
             )
           })}
           {canManageColumns && (
-          <div className="w-full md:w-72 md:shrink-0 flex flex-col min-h-[260px] md:min-h-[calc(100vh-220px)] p-1">
+          <div className="w-full md:w-72 md:shrink-0 flex flex-col min-h-[260px] md:min-h-[calc(100dvh-220px)] p-1">
             {isAddingColumn ? (
               <form onSubmit={handleAddColumn} className="bg-card border border-border p-3 rounded-xl flex-1 flex flex-col shadow-sm">
                 <input

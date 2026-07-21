@@ -25,7 +25,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLaunch }) => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-dvh bg-background flex flex-col">
       {/* Navigation */}
       <nav className="p-6 flex items-center justify-between">
         <div className="flex items-center text-primary">

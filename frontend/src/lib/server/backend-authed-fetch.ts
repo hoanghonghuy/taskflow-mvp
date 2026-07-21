@@ -11,20 +11,24 @@ const REFRESH_COOKIE_NAME = 'taskflow_refresh'
 const TOKEN_MAX_AGE_SECONDS = 11 * 60 * 60
 const REFRESH_MAX_AGE_SECONDS = 7 * 24 * 60 * 60
 
-type RefreshResult = {
-  token: string
-  refreshToken?: string
-  cookies: string[]
-}
+export type RefreshAttempt =
+  | {
+      status: 'refreshed'
+      token: string
+      refreshToken?: string
+      cookies: string[]
+    }
+  | { status: 'expired' }
+  | { status: 'unavailable' }
 
-const refreshInflight = new Map<string, Promise<RefreshResult | null>>()
+const refreshInflight = new Map<string, Promise<RefreshAttempt>>()
 
 function buildAuthCookie(name: string, value: string, maxAgeSeconds: number): string {
   const secure = process.env.NODE_ENV === 'production' ? '; Secure' : ''
   return `${name}=${encodeURIComponent(value)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAgeSeconds}${secure}`
 }
 
-function appendSetCookies(res: NextApiResponse, cookies: string[]): void {
+export function appendSetCookies(res: NextApiResponse, cookies: string[]): void {
   if (cookies.length === 0) return
 
   const existing = res.getHeader?.('Set-Cookie')
@@ -35,9 +39,10 @@ function appendSetCookies(res: NextApiResponse, cookies: string[]): void {
   res.setHeader('Set-Cookie', merged)
 }
 
-async function refreshAccessToken(refreshToken: string): Promise<RefreshResult | null> {
+async function refreshAccessToken(refreshToken: string): Promise<RefreshAttempt> {
   if (isMockMode()) {
     return {
+      status: 'refreshed',
       token: 'mock-token',
       refreshToken: 'mock-refresh',
       cookies: [
@@ -47,33 +52,45 @@ async function refreshAccessToken(refreshToken: string): Promise<RefreshResult |
     }
   }
 
-  const response = await fetch(`${BACKEND_URL}/api/auth/refresh`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refreshToken }),
-  })
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }),
+    })
 
-  const body = await response.json().catch(() => null)
-  const data = unwrapBackendPayload<{ token?: string; refreshToken?: string }>(body)
+    const body = await response.json().catch(() => null)
+    const data = unwrapBackendPayload<{ token?: string; refreshToken?: string }>(body)
 
-  if (!response.ok || !data || typeof data.token !== 'string') {
-    return null
-  }
+    if (!response.ok) {
+      return response.status === 400 || response.status === 401
+        ? { status: 'expired' }
+        : { status: 'unavailable' }
+    }
 
-  const cookies = [buildAuthCookie(TOKEN_COOKIE_NAME, data.token, TOKEN_MAX_AGE_SECONDS)]
-  if (typeof data.refreshToken === 'string') {
-    cookies.push(buildAuthCookie(REFRESH_COOKIE_NAME, data.refreshToken, REFRESH_MAX_AGE_SECONDS))
-  }
+    if (!data || typeof data.token !== 'string') {
+      return { status: 'unavailable' }
+    }
 
-  return {
-    token: data.token,
-    refreshToken: typeof data.refreshToken === 'string' ? data.refreshToken : undefined,
-    cookies,
+    const cookies = [buildAuthCookie(TOKEN_COOKIE_NAME, data.token, TOKEN_MAX_AGE_SECONDS)]
+    if (typeof data.refreshToken === 'string') {
+      cookies.push(buildAuthCookie(REFRESH_COOKIE_NAME, data.refreshToken, REFRESH_MAX_AGE_SECONDS))
+    }
+
+    return {
+      status: 'refreshed',
+      token: data.token,
+      refreshToken: typeof data.refreshToken === 'string' ? data.refreshToken : undefined,
+      cookies,
+    }
+  } catch (error) {
+    console.error('Auth refresh backend is unavailable', error)
+    return { status: 'unavailable' }
   }
 }
 
 /** Single-flight refresh so concurrent BFF proxies do not burn a rotated refresh token. */
-export function refreshAccessTokenSingleFlight(refreshToken: string): Promise<RefreshResult | null> {
+export function refreshAccessTokenSingleFlight(refreshToken: string): Promise<RefreshAttempt> {
   const existing = refreshInflight.get(refreshToken)
   if (existing) return existing
 
@@ -116,9 +133,10 @@ export async function backendFetchAuthed(
   }
 
   const refreshed = await refreshAccessTokenSingleFlight(refreshToken)
-  if (!refreshed) {
+  if (refreshed.status !== 'refreshed') {
+    const status = refreshed.status === 'expired' ? 401 : 503
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-      status: 401,
+      status,
       headers: { 'Content-Type': 'application/json' },
     })
   }

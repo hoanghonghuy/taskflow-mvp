@@ -223,7 +223,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
           <div className="pt-4">
             <div className="flex items-center justify-between px-3 mb-2">
                     <h2 className="text-xs font-semibold text-muted-foreground">{t('sidebar.myLists')}</h2>
-              <button onClick={() => setIsListsExpanded(!isListsExpanded)} className="rounded-md p-2 hover:bg-muted/50 md:p-1">
+              <button onClick={() => setIsListsExpanded(!isListsExpanded)} className="flex size-11 items-center justify-center rounded-md hover:bg-muted/50 md:size-auto md:p-1">
                 <ArrowDownIcon className={`h-4 w-4 text-muted-foreground transition-transform ${!isListsExpanded && '-rotate-90'}`} />
               </button>
             </div>
@@ -264,7 +264,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                               <>
                                 <IconButton
                                   size="sm"
-                                  className="size-9 p-2 hover:text-primary md:size-auto md:p-0.5"
+                                  className="size-11 p-2 hover:text-primary md:size-auto md:p-0.5"
                                   onClick={(e) => { e.stopPropagation(); setEditingList(list) }}
                                   aria-label={t('sidebar.aria.editList', { listName: list.name })}
                                 >
@@ -273,7 +273,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                                 {onShareList && (
                                   <IconButton
                                     size="sm"
-                                    className="size-9 p-2 hover:text-primary md:size-auto md:p-0.5"
+                                    className="size-11 p-2 hover:text-primary md:size-auto md:p-0.5"
                                     onClick={(e) => { e.stopPropagation(); onShareList(list.id); }}
                                     aria-label={t('sidebar.aria.shareList', { listName: list.name })}
                                   >
@@ -283,7 +283,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                                 <IconButton
                                   size="sm"
                                   variant="destructive"
-                                  className="size-9 p-2 md:size-auto md:p-0.5"
+                                  className="size-11 p-2 md:size-auto md:p-0.5"
                                   onClick={(e) => { e.stopPropagation(); handleDeleteList(list.id, list.name); }}
                                   aria-label={t('sidebar.aria.deleteList', { listName: list.name })}
                                 >
@@ -317,7 +317,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
           <div className="pt-4">
             <div className="flex items-center justify-between px-3 mb-2">
                     <h2 className="text-xs font-semibold text-muted-foreground">{t('sidebar.tags')}</h2>
-              <button onClick={() => setIsTagsExpanded(!isTagsExpanded)} className="rounded-md p-2 hover:bg-muted/50 md:p-1">
+              <button onClick={() => setIsTagsExpanded(!isTagsExpanded)} className="flex size-11 items-center justify-center rounded-md hover:bg-muted/50 md:size-auto md:p-1">
                 <ArrowDownIcon className={`h-4 w-4 text-muted-foreground transition-transform ${!isTagsExpanded && '-rotate-90'}`} />
               </button>
             </div>
@@ -352,7 +352,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                           <IconButton
                             size="sm"
                             variant="destructive"
-                            className="size-9 p-2 opacity-100 md:size-auto md:p-0.5 md:opacity-0 md:group-hover:opacity-100"
+                            className="size-11 p-2 opacity-100 md:size-auto md:p-0.5 md:opacity-0 md:group-hover:opacity-100"
                             onClick={() => handleDeleteTag(tag)}
                             aria-label={t('sidebar.aria.deleteTag', { tagName: tag })}
                           >

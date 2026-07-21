@@ -10,7 +10,7 @@ export default function ForgotPasswordPage() {
 
   // MVP: luôn hiện hướng dẫn thay thế. Khi ship reset password thật, thay bằng form + API.
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-dvh flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-2">
           <CardTitle className="text-2xl font-bold text-center">{t('auth.forgotPasswordTitle')}</CardTitle>

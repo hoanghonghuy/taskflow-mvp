@@ -707,7 +707,7 @@ describe('domain api modules', () => {
     const tasksApi = await import('@/lib/api/tasks')
 
     await authApi.logout()
-    await expect(authApi.refreshSession()).resolves.toBe(true)
+    await expect(authApi.refreshSession()).resolves.toBe('refreshed')
 
     const created = await tasksApi.createTask({ title: 'New', listId: 'inbox' })
     expect(created?.title).toBe('New')

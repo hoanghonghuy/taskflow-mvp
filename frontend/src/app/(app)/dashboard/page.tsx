@@ -186,7 +186,7 @@ export default function DashboardPage() {
           <p className="text-muted-foreground">{t('dashboard.subtitle')}</p>
         </header>
       </AppPageContainer>
-      <AppPageMain className="py-6">
+      <AppPageMain className="py-4 md:py-6">
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-6 lg:gap-8">
           <div className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -196,7 +196,7 @@ export default function DashboardPage() {
                   dispatch({ type: 'SET_ACTIVE_LIST', payload: 'today' })
                   router.push('/list')
                 }}
-                className="bg-card border border-border rounded-lg p-5 flex items-start gap-4 text-left hover:shadow-md hover:border-primary/50 transition-all"
+                className="bg-card border border-border rounded-lg p-6 flex items-start gap-4 text-left hover:shadow-md hover:border-primary/50 transition-[border-color,box-shadow]"
               >
                 <div className="bg-[hsl(var(--color-dashboard-today) / 0.1)] text-[hsl(var(--color-dashboard-today))] p-3 rounded-lg">
                   <CalendarDayIcon className="h-6 w-6" />
@@ -213,7 +213,7 @@ export default function DashboardPage() {
                   dispatch({ type: 'SET_ACTIVE_LIST', payload: 'upcoming' })
                   router.push('/list')
                 }}
-                className="bg-card border border-border rounded-lg p-5 flex items-start gap-4 text-left hover:shadow-md hover:border-primary/50 transition-all"
+                className="bg-card border border-border rounded-lg p-6 flex items-start gap-4 text-left hover:shadow-md hover:border-primary/50 transition-[border-color,box-shadow]"
               >
                 <div className="bg-[hsl(var(--color-dashboard-upcoming) / 0.1)] text-[hsl(var(--color-dashboard-upcoming))] p-3 rounded-lg">
                   <CalendarIcon className="h-6 w-6" />
@@ -230,7 +230,7 @@ export default function DashboardPage() {
                   dispatch({ type: 'SET_VIEW', payload: 'habit' })
                   router.push('/habits')
                 }}
-                className="bg-card border border-border rounded-lg p-5 flex items-start gap-4 text-left hover:shadow-md hover:border-primary/50 transition-all"
+                className="bg-card border border-border rounded-lg p-6 flex items-start gap-4 text-left hover:shadow-md hover:border-primary/50 transition-[border-color,box-shadow]"
               >
                 <div className="bg-[hsl(var(--color-dashboard-habits) / 0.1)] text-[hsl(var(--color-dashboard-habits))] p-3 rounded-lg">
                   <RepeatIcon className="h-6 w-6" />

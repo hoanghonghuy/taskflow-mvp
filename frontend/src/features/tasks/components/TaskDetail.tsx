@@ -703,16 +703,20 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                     disabled={isReadOnly}
                     aria-label={st.completed ? t('taskItem.aria.markIncomplete') : t('taskItem.aria.markComplete')}
                     className={`
-                      flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border transition-all duration-150
+                      -m-3 flex size-11 shrink-0 items-center justify-center rounded-md transition-all duration-150 md:m-0 md:size-4
                       focus:outline-none focus:ring-1 focus:ring-ring
                       ${isReadOnly ? 'cursor-not-allowed opacity-50' : ''}
-                      ${st.completed
-                        ? 'border-primary bg-primary'
-                        : 'border-muted-foreground/45 bg-transparent'
-                      }
                     `}
                   >
-                    {st.completed && <CheckIcon className="h-2.5 w-2.5 text-primary-foreground" />}
+                    <span
+                      className={`flex size-4 items-center justify-center rounded-sm border ${
+                        st.completed
+                          ? 'border-primary bg-primary'
+                          : 'border-muted-foreground/45 bg-transparent'
+                      }`}
+                    >
+                      {st.completed && <CheckIcon className="h-2.5 w-2.5 text-primary-foreground" />}
+                    </span>
                   </button>
                   <input
                     type="text"
@@ -732,7 +736,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                       type="button"
                       onClick={() => handleDeleteSubtask(st.id)}
                       aria-label={t('taskDetail.aria.deleteSubtask' as TranslationKey)}
-                      className="rounded-full p-0.5 text-muted-foreground opacity-0 transition-opacity hover:bg-muted group-hover:opacity-100"
+                      className="flex size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity hover:bg-muted md:size-6"
                     >
                       <CloseIcon className="h-3 w-3" />
                     </button>

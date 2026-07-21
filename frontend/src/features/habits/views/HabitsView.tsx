@@ -290,7 +290,7 @@ const HabitsView: React.FC = () => {
                               key={date}
                               type="button"
                               className={`
-                                size-8 shrink-0 rounded-md border transition-all md:size-auto md:aspect-square md:min-w-0
+                                size-11 shrink-0 rounded-md border transition-all md:size-auto md:aspect-square md:min-w-0
                                 ${isCompleted
                                   ? 'bg-[hsl(var(--color-habits-completed))] border-[hsl(var(--color-habits-completed))] hover:bg-[hsl(var(--color-habits-completed-weak))]'
                                   : 'bg-muted border-border hover:border-[hsl(var(--color-habits-completed-weak))]'}

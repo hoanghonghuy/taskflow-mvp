@@ -14,6 +14,7 @@ import {
   TaskColumnHeader,
   TaskColumnShell,
 } from '@/components/layout/task-column-shell'
+import { TaskMoveControl } from '@/components/ui/task-move-control'
 import type { Column, Task } from '@/types'
 
 interface BoardColumnProps {
@@ -23,6 +24,8 @@ interface BoardColumnProps {
   onDropOnColumn: (columnId: string) => void
   onOpenTaskForm?: (defaultValues?: { listId?: string; columnId?: string }) => void
   onColumnDragStart: (columnId: string) => void
+  columns: Column[]
+  onMoveTask: (taskId: string, columnId: string) => void
   canManageColumns?: boolean
 }
 
@@ -33,6 +36,8 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
   onDropOnColumn,
   onOpenTaskForm,
   onColumnDragStart,
+  columns,
+  onMoveTask,
   canManageColumns = true,
 }) => {
   const { updateColumn, deleteColumn } = useColumnActions()
@@ -141,13 +146,25 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
       </TaskColumnHeader>
       <TaskColumnBody>
         {tasks.map(task => (
-          <TaskItem
-            key={task.id}
-            task={task}
-            isDraggable={true}
-            onDragStart={onTaskDragStart}
-            onDrop={() => {}}
-          />
+          <div key={task.id} className="group">
+            <TaskItem
+              task={task}
+              isDraggable={canManageColumns}
+              onDragStart={onTaskDragStart}
+              onDrop={() => {}}
+            />
+            {canManageColumns && columns.length > 1 ? (
+              <TaskMoveControl
+                label={t('board.moveTask' as TranslationKey)}
+                value={column.id}
+                options={columns.map((target) => ({
+                  value: target.id,
+                  label: target.name,
+                }))}
+                onMove={(columnId) => onMoveTask(task.id, columnId)}
+              />
+            ) : null}
+          </div>
         ))}
       </TaskColumnBody>
       {onOpenTaskForm && canManageColumns && (

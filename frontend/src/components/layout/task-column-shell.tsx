@@ -49,9 +49,9 @@ export function TaskColumnShell({
       className={cn(
         'flex flex-col rounded-xl border border-border bg-card shadow-sm transition-colors',
         variant === 'board' &&
-          'w-full min-h-[260px] md:w-72 md:shrink-0 md:min-h-[calc(100vh-220px)]',
+          'w-full min-h-[260px] md:w-72 md:shrink-0 md:min-h-[calc(100dvh-220px)]',
         variant === 'matrix' &&
-          'min-h-[160px] md:min-h-[calc(100vh-240px)]',
+          'min-h-[160px] md:min-h-[calc(100dvh-240px)]',
         isDragOver && 'border-primary bg-primary/5',
         className,
       )}

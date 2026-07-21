@@ -17,7 +17,9 @@ import {
 } from '@/components/layout/task-column-shell'
 import { isSharedListMember } from '@/lib/utils/list-access'
 import { EmptyState } from '@/components/ui/empty-state'
+import { TaskMoveControl } from '@/components/ui/task-move-control'
 import { cn } from '@/lib/utils'
+import type { TranslationKey } from '@/lib/i18n/types'
 
 interface QuadrantConfig {
   id: string
@@ -38,6 +40,9 @@ interface QuadrantProps {
   onDrop: (e: React.DragEvent) => void
   onTaskDragStart: (taskId: string) => void
   onTaskDragEnd: () => void
+  quadrants: QuadrantConfig[]
+  onMoveTask: (taskId: string, quadrantId: string) => void
+  canMoveTask: (task: Task) => boolean
 }
 
 /** Board-style column: equal-height card, header strip, scroll body. */
@@ -50,6 +55,9 @@ const Quadrant: React.FC<QuadrantProps> = ({
   onDrop,
   onTaskDragStart,
   onTaskDragEnd,
+  quadrants,
+  onMoveTask,
+  canMoveTask,
 }) => {
   const { t } = useI18n()
 
@@ -80,12 +88,23 @@ const Quadrant: React.FC<QuadrantProps> = ({
       <TaskColumnBody>
         {tasks.length > 0 ? (
           tasks.map((task) => (
-            <div key={task.id} onDragEnd={onTaskDragEnd}>
+            <div key={task.id} className="group" onDragEnd={onTaskDragEnd}>
               <TaskItem
                 task={task}
-                isDraggable
+                isDraggable={canMoveTask(task)}
                 onDragStart={onTaskDragStart}
               />
+              {canMoveTask(task) ? (
+                <TaskMoveControl
+                  label={t('matrix.changePriority' as TranslationKey)}
+                  value={config.id}
+                  options={quadrants.map((quadrant) => ({
+                    value: quadrant.id,
+                    label: t(quadrant.titleKey),
+                  }))}
+                  onMove={(quadrantId) => onMoveTask(task.id, quadrantId)}
+                />
+              ) : null}
             </div>
           ))
         ) : (
@@ -182,20 +201,26 @@ const MatrixView: React.FC = () => {
     const taskId = e.dataTransfer.getData('taskId') || draggedTaskId
     if (!taskId) return
 
-    const task = state.tasks.find((item) => item.id === taskId)
-    if (!task || task.priority === dropPriority) {
-      handleTaskDragEnd()
-      return
-    }
+    moveTaskToPriority(taskId, dropPriority)
+    handleTaskDragEnd()
+  }
 
+  const canMoveTask = (task: Task) => {
     const parentList = state.lists.find((list) => list.id === task.listId)
-    if (isSharedListMember(parentList, user?.id)) {
-      handleTaskDragEnd()
-      return
-    }
+    return !isSharedListMember(parentList, user?.id)
+  }
+
+  const moveTaskToPriority = (taskId: string, dropPriority: Priority) => {
+    const task = state.tasks.find((item) => item.id === taskId)
+    if (!task || task.priority === dropPriority || !canMoveTask(task)) return
 
     void updateTask({ ...task, priority: dropPriority }, { silent: true })
-    handleTaskDragEnd()
+  }
+
+  const handleMoveTask = (taskId: string, quadrantId: string) => {
+    const target = QUADRANT_CONFIG.find((config) => config.id === quadrantId)
+    if (!target) return
+    moveTaskToPriority(taskId, target.dropPriority)
   }
 
   return (
@@ -219,6 +244,9 @@ const MatrixView: React.FC = () => {
               onDrop={(e) => handleQuadrantDrop(e, config.dropPriority)}
               onTaskDragStart={handleTaskDragStart}
               onTaskDragEnd={handleTaskDragEnd}
+              quadrants={QUADRANT_CONFIG}
+              onMoveTask={handleMoveTask}
+              canMoveTask={canMoveTask}
             />
           ))}
         </div>

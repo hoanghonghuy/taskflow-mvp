@@ -6,6 +6,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { unwrapBackendPayload } from '@/lib/server/backend-response'
 import { isMockMode, buildMockAuthUser } from '@/lib/server/mock-backend'
+import {
+  appendSetCookies,
+  refreshAccessTokenSingleFlight,
+} from '@/lib/server/backend-authed-fetch'
 
 const BACKEND_URL = (process.env.BACKEND_URL || 'http://localhost:8080').replace(/\/$/, '')
 const TOKEN_COOKIE_NAME = 'taskflow_token'
@@ -119,52 +123,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(401).json({ error: 'Missing refresh token' })
     }
 
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/auth/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken }),
-      })
-
-      const data = await response.json().catch(() => null)
-      const payload = unwrapBackendPayload<AuthResponse>(data) ?? {}
-
-      if (response.ok && typeof payload.token === 'string') {
-        const cookies: string[] = []
-
-        cookies.push(
-          buildAuthCookie(TOKEN_COOKIE_NAME, payload.token, TOKEN_MAX_AGE_SECONDS),
-        )
-
-        if (typeof payload.refreshToken === 'string') {
-          cookies.push(
-            buildAuthCookie(REFRESH_COOKIE_NAME, payload.refreshToken, REFRESH_MAX_AGE_SECONDS),
-          )
-        }
-
-        if (cookies.length > 0) {
-          res.setHeader('Set-Cookie', cookies)
-        }
-
-        const safeData: AuthResponse = { ...payload }
-        delete safeData.refreshToken
-
-        return res.status(response.status).json(safeData)
-      }
-
-      res.setHeader('Set-Cookie', [
-        buildExpiredAuthCookie(TOKEN_COOKIE_NAME),
-        buildExpiredAuthCookie(REFRESH_COOKIE_NAME),
-      ])
-      return res.status(response.status).json(data ?? payload)
-    } catch (error) {
-      console.error('API Error (proxy to backend /api/auth/refresh):', error)
-      res.setHeader('Set-Cookie', [
-        buildExpiredAuthCookie(TOKEN_COOKIE_NAME),
-        buildExpiredAuthCookie(REFRESH_COOKIE_NAME),
-      ])
-      return res.status(500).json({ error: 'Internal server error' })
+    const refreshed = await refreshAccessTokenSingleFlight(refreshToken)
+    if (refreshed.status === 'refreshed') {
+      appendSetCookies(res, refreshed.cookies)
+      return res.status(200).json({ token: refreshed.token })
     }
+
+    if (refreshed.status === 'expired') {
+      res.setHeader('Set-Cookie', [
+        buildExpiredAuthCookie(TOKEN_COOKIE_NAME),
+        buildExpiredAuthCookie(REFRESH_COOKIE_NAME),
+      ])
+      return res.status(401).json({ error: 'Invalid or expired refresh token' })
+    }
+
+    return res.status(503).json({ error: 'Authentication service temporarily unavailable' })
   }
 
   if (!email || !password || typeof email !== 'string' || typeof password !== 'string') {

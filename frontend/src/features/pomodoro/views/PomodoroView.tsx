@@ -263,7 +263,7 @@ const PomodoroView: React.FC = () => {
         title={t('nav.pomodoro')}
         subtitle={t('pomodoro.subtitle')}
       />
-      <AppPageMain className="py-4 md:py-8">
+      <AppPageMain className="py-4 md:py-6">
         <div className="mb-4 flex justify-end lg:hidden">
           <PomodoroOverflowMenu
             onOpenStatistics={() => setStatisticsOpen(true)}

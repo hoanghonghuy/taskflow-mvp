@@ -116,7 +116,7 @@ export default function AppLayout({
   }
 
   return (
-    <div className="flex h-screen bg-background text-foreground overflow-hidden">
+    <div className="flex h-dvh bg-background text-foreground overflow-hidden">
       <FeatureBar onSidebarToggle={() => setSidebarOpen(prev => !prev)} />
       
       <Sidebar 
@@ -132,12 +132,16 @@ export default function AppLayout({
           <button onClick={() => setSidebarOpen(true)} aria-label="Open sidebar">
             <MenuIcon className="h-6 w-6" />
           </button>
-          <div className="flex-1 flex justify-center px-2">
+          <div className="flex flex-1 justify-center px-2 [&:has(#mobile-header-actions:not(:empty))>h1]:hidden">
             {mobileTitle && (
               <h1 className="text-sm font-semibold truncate">
                 {mobileTitle}
               </h1>
             )}
+            <div
+              id="mobile-header-actions"
+              className="flex min-w-0 flex-1 items-center justify-center empty:hidden"
+            />
           </div>
           <div className="w-6" />
         </header>

@@ -149,4 +149,39 @@ describe('UserProvider', () => {
     expect(localStorage.getItem('user')).toBeNull()
     expect(localStorage.getItem('isAuthenticated')).toBeNull()
   })
+
+  it('keeps the current user when a background refresh fails temporarily', async () => {
+    localStorage.setItem('user', JSON.stringify(mockUser))
+    mockSession(true)
+
+    const { result } = renderHook(() => useUser(), { wrapper: UserTestWrapper })
+
+    await waitFor(() => {
+      expect(result.current.isAuthenticated).toBe(true)
+    })
+
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: false,
+      status: 503,
+      json: async () => ({ error: 'temporarily_unavailable' }),
+    } as Response)
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      value: 'visible',
+    })
+
+    act(() => {
+      document.dispatchEvent(new Event('visibilitychange'))
+    })
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith(
+        '/api/auth/[...nextauth]',
+        expect.objectContaining({ method: 'POST' }),
+      )
+    })
+
+    expect(result.current.user).toEqual(mockUser)
+    expect(localStorage.getItem('isAuthenticated')).toBe('true')
+  })
 })

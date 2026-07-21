@@ -58,12 +58,16 @@ export async function logout(): Promise<void> {
   })
 }
 
-export async function refreshSession(): Promise<boolean> {
+export type RefreshSessionResult = 'refreshed' | 'expired' | 'unavailable'
+
+export async function refreshSession(): Promise<RefreshSessionResult> {
   const response = await apiFetch(AUTH_PATH, {
     method: 'POST',
     body: JSON.stringify({ action: 'refresh' }),
   })
-  return response.ok
+  if (response.ok) return 'refreshed'
+  if (response.status === 400 || response.status === 401) return 'expired'
+  return 'unavailable'
 }
 
 export async function fetchCurrentUser(): Promise<User | null> {
