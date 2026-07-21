@@ -753,14 +753,17 @@ describe('domain api modules', () => {
       .mockResolvedValueOnce(unavailable)
       .mockResolvedValueOnce(unavailable)
       .mockResolvedValueOnce(unavailable)
+      .mockResolvedValueOnce(unavailable)
 
     const countdownApi = await import('@/lib/api/countdown')
     const pomodoroApi = await import('@/lib/api/pomodoro')
     const profileApi = await import('@/lib/api/profile')
+    const settingsApi = await import('@/lib/api/settings')
 
     await expect(countdownApi.fetchCountdowns()).rejects.toMatchObject({ status: 503 })
     await expect(pomodoroApi.fetchPomodoroSessions()).rejects.toMatchObject({ status: 503 })
     await expect(profileApi.fetchAchievements()).rejects.toMatchObject({ status: 503 })
+    await expect(settingsApi.fetchSettings()).rejects.toMatchObject({ status: 503 })
   })
 
   it('surfaces failed Board and Pomodoro settings writes', async () => {

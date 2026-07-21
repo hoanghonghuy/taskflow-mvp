@@ -98,4 +98,5 @@ export interface TaskManagerContextType {
   isHydrating: boolean
   hydrationError: string | null
   syncFromBackend: () => Promise<void>
+  retryHydration: () => void
 }

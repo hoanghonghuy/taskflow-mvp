@@ -29,7 +29,7 @@ export default function AppLayout({
   const router = useRouter()
   const pathname = usePathname()
   const { isAuthenticated, authReady } = useUser()
-  const { hydrationError, isHydrating, state, syncFromBackend } = useTaskManager()
+  const { hydrationError, isHydrating, retryHydration, state } = useTaskManager()
   const { t } = useI18n()
   const modal = useModal()
   // Closed by default; open only on large desktop (≥1024) after mount to avoid tablet dual-chrome + hydration flash.
@@ -119,7 +119,7 @@ export default function AppLayout({
           <p className="mt-2 text-sm text-muted-foreground">{t('common.errorBody')}</p>
           <button
             type="button"
-            onClick={() => void syncFromBackend()}
+            onClick={retryHydration}
             className="mt-6 min-h-11 rounded-lg bg-primary px-4 font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             {t('common.tryAgain')}
@@ -134,7 +134,10 @@ export default function AppLayout({
   }
 
   return (
-    <div className="flex h-dvh bg-background text-foreground overflow-hidden">
+    <div
+      data-testid="app-shell"
+      className="flex h-dvh bg-background text-foreground overflow-hidden"
+    >
       <FeatureBar onSidebarToggle={() => setSidebarOpen(prev => !prev)} />
       
       <Sidebar 

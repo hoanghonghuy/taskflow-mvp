@@ -13,7 +13,7 @@ type AppLoadingSkeletonProps = {
 /** Full-screen shell for auth / hydrate — chrome + page-matched content. */
 export function AppLoadingSkeleton({ variant = 'default' }: AppLoadingSkeletonProps) {
   return (
-    <div className="flex h-dvh overflow-hidden bg-background">
+    <div data-testid="app-loading" className="flex h-dvh overflow-hidden bg-background">
       <div className="hidden w-16 shrink-0 border-r border-border md:block" aria-hidden />
       <aside className="hidden w-64 shrink-0 border-r border-border p-4 lg:block" aria-hidden>
         <div className="mb-8 flex items-center gap-3 px-1">

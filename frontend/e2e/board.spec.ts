@@ -35,16 +35,26 @@ test.describe('Board', () => {
       .first()
     const targetValue = await targetOption.getAttribute('value')
     expect(targetValue).toBeTruthy()
-    await moveSelect.selectOption(targetValue!)
-
-    await page.reload()
-    await waitForAppReady(page)
-    await page.goto('/board')
-    await waitForAppReady(page)
+    const moveResponse = page.waitForResponse((response) => {
+      const request = response.request()
+      if (
+        request.method() !== 'PUT' ||
+        !/\/api\/tasks\/[^/]+$/.test(new URL(response.url()).pathname)
+      ) {
+        return false
+      }
+      const body = request.postDataJSON() as { columnId?: string } | null
+      return response.ok() && body?.columnId === targetValue
+    })
+    await Promise.all([moveResponse, moveSelect.selectOption(targetValue!)])
 
     const inProgressColumn = page
       .getByRole('button', { name: /^(in progress|đang thực hiện)\s+\d+$/i })
       .locator('xpath=ancestor::div[contains(@class,"md:w-72")][1]')
+    await expect(inProgressColumn.getByText(taskTitle, { exact: true })).toBeVisible()
+
+    await page.reload()
+    await waitForAppReady(page)
     await expect(inProgressColumn.getByText(taskTitle, { exact: true })).toBeVisible()
   })
 })

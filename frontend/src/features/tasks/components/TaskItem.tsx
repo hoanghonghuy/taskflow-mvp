@@ -224,14 +224,22 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
           {task.completed && <CheckIcon className="h-3.5 w-3.5 text-primary-foreground" />}
         </button>
         <div className="ml-4 grow flex items-center gap-2 min-w-0">
-          <div className="flex flex-col min-w-0">
+          <button
+            type="button"
+            aria-label={task.title}
+            onClick={(event) => {
+              event.stopPropagation()
+              handleSelect()
+            }}
+            className="flex min-w-0 flex-col text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
             <p className={`text-sm truncate ${task.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
               <HighlightText text={task.title} term={highlightTerm} />
             </p>
             {listName && (
               <span className="text-[11px] text-muted-foreground truncate">{listName}</span>
             )}
-          </div>
+          </button>
           {task.subtasks.length > 0 && (
             <IconButton
               onClick={handleToggleSubtasksVisibility}

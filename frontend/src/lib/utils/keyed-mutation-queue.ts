@@ -1,3 +1,7 @@
+export function scopedMutationKey(scope: string | null | undefined, entityId: string): string {
+  return `${scope ?? 'anonymous'}:${entityId}`
+}
+
 export function createKeyedMutationQueue() {
   const tails = new Map<string, Promise<void>>()
 

@@ -27,7 +27,7 @@ const iconButtonVariants = cva(
 
 /** Reveal on desktop group-hover (task list / sidebar actions). */
 export const revealOnGroupHoverClassName =
-  'opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity'
+  'opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 md:focus-visible:opacity-100'
 
 type IconButtonProps = React.ComponentProps<'button'> &
   VariantProps<typeof iconButtonVariants> & {

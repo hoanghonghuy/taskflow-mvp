@@ -63,6 +63,9 @@ describe('responsive layout contracts', () => {
   })
 
   it('keeps primary task controls keyboard accessible', () => {
+    expect(src('features/tasks/components/TaskItem.tsx')).toContain(
+      'aria-label={task.title}',
+    )
     expect(src('features/calendar/views/CalendarView.tsx').replace(/\r/g, '')).toContain(
       '<button\n        type="button"\n        key={task.id}',
     )
@@ -71,6 +74,10 @@ describe('responsive layout contracts', () => {
     )
     expect(src('components/layout/sidebar.tsx')).toContain(
       'if (e.target !== e.currentTarget) return',
+    )
+    expect(src('components/layout/sidebar.tsx')).toContain('inert={!isOpen}')
+    expect(src('components/ui/icon-button.tsx')).toContain(
+      'md:group-focus-within:opacity-100',
     )
   })
 
@@ -101,5 +108,28 @@ describe('responsive layout contracts', () => {
     expect(playwrightConfig).toMatch(
       /tasks\|navigation\|board\|habits\|countdown/,
     )
+    expect(playwrightConfig).toContain('failOnFlakyTests: !!process.env.CI')
+
+    const boardE2e = readFileSync(
+      path.join(process.cwd(), 'e2e/board.spec.ts'),
+      'utf8',
+    )
+    expect(boardE2e).toContain('page.waitForResponse')
+    expect(boardE2e).toContain('response.ok()')
+  })
+
+  it('exposes real app loading and ready markers to E2E', () => {
+    expect(src('components/layout/app-loading-skeleton.tsx')).toContain(
+      'data-testid="app-loading"',
+    )
+    expect(src('app/(app)/layout.tsx')).toContain('data-testid="app-shell"')
+
+    const readinessHelper = readFileSync(
+      path.join(process.cwd(), 'e2e/helpers/app-ready.ts'),
+      'utf8',
+    )
+    expect(readinessHelper).toContain("getByTestId('app-loading')")
+    expect(readinessHelper).toContain("getByTestId('app-shell')")
+    expect(readinessHelper).not.toContain("getByText('Loading...')")
   })
 })

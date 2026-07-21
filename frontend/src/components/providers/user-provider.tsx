@@ -173,6 +173,22 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (result === 'refreshed') {
+        const session = await authApi.fetchSession()
+        if (session.status === 'expired' || (session.ok && !session.data?.authenticated)) {
+          await logout()
+          return
+        }
+
+        const refreshedUser = session.data?.user
+        if (session.ok && refreshedUser) {
+          if (refreshedUser.id !== user.id) {
+            setAllUsers([])
+            localStorage.removeItem('taskflowState')
+          }
+          setUser(refreshedUser)
+          localStorage.setItem('user', JSON.stringify(refreshedUser))
+          localStorage.setItem('isAuthenticated', 'true')
+        }
         setLastRefreshAt(Date.now())
       }
     } catch (error) {

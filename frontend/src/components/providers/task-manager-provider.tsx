@@ -21,7 +21,10 @@ import type { TranslationKey } from '@/lib/i18n/types'
 import { columnReducer } from '@/lib/store/task-manager/reducers/column-reducer'
 import { resolveBoardColumns } from '@/lib/utils/task-helpers'
 import { moveItemById } from '@/lib/utils/array-move'
-import { createKeyedMutationQueue } from '@/lib/utils/keyed-mutation-queue'
+import {
+  createKeyedMutationQueue,
+  scopedMutationKey,
+} from '@/lib/utils/keyed-mutation-queue'
 
 interface HistoryState {
   past: AppState[]
@@ -39,6 +42,7 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
   const wasAuthenticatedRef = useRef(isAuthenticated)
   const [isHydrating, setIsHydrating] = useState(false)
   const [hydrationError, setHydrationError] = useState<string | null>(null)
+  const [hydrationAttempt, setHydrationAttempt] = useState(0)
   // Initialize with history state
   const [historyState, dispatch] = useReducer(
     historyReducer,
@@ -134,6 +138,12 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
   const presentRef = useRef(historyState.present)
   presentRef.current = historyState.present
 
+  const retryHydration = useCallback(() => {
+    hasLoadedFromBackend.current = false
+    setHydrationError(null)
+    setHydrationAttempt((attempt) => attempt + 1)
+  }, [])
+
   useLayoutEffect(() => {
     if (!isAuthenticated) {
       return
@@ -147,6 +157,7 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
     setIsHydrating(true)
     setHydrationError(null)
     let cancelled = false
+    let settled = false
 
     const loadFromBackend = async () => {
       const presentSnapshot = presentRef.current
@@ -268,6 +279,7 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
           setHydrationError(error instanceof Error ? error.message : 'Failed to load data')
         }
       } finally {
+        settled = true
         if (!cancelled) {
           setIsHydrating(false)
         }
@@ -278,8 +290,11 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
 
     return () => {
       cancelled = true
+      if (!settled) {
+        hasLoadedFromBackend.current = false
+      }
     }
-  }, [dispatch, isAuthenticated])
+  }, [dispatch, hydrationAttempt, isAuthenticated])
 
   // Pomodoro timer tick
   useEffect(() => {
@@ -431,6 +446,7 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
         isHydrating,
         hydrationError,
         syncFromBackend,
+        retryHydration,
       }}
     >
       {children}
@@ -459,6 +475,24 @@ async function refreshUnlockedAchievements(dispatch: (action: import('@/lib/stor
 
 const habitToggleInFlight = new Set<string>()
 const taskMutationQueue = createKeyedMutationQueue()
+
+function queueTaskUpdate(
+  userId: string | null | undefined,
+  taskId: string,
+  updates: Parameters<typeof tasksApi.updateTask>[1],
+) {
+  return taskMutationQueue.run(
+    scopedMutationKey(userId, taskId),
+    () => tasksApi.updateTask(taskId, updates),
+  )
+}
+
+function queueTaskDelete(userId: string | null | undefined, taskId: string) {
+  return taskMutationQueue.run(
+    scopedMutationKey(userId, taskId),
+    () => tasksApi.deleteTask(taskId),
+  )
+}
 
 export function useTaskActions() {
   const { state, dispatch, syncFromBackend } = useTaskManager()
@@ -504,21 +538,19 @@ export function useTaskActions() {
 
     updateTask: useCallback(async (task: Task, options?: { silent?: boolean; rollback?: Task }) => {
       try {
-        const updatedTask = (await taskMutationQueue.run(task.id, () =>
-          tasksApi.updateTask(task.id, {
-            title: task.title,
-            description: task.description,
-            completed: task.completed,
-            dueDate: task.dueDate ?? null,
-            priority: task.priority,
-            listId: task.listId,
-            columnId: task.columnId ?? null,
-            tags: task.tags ?? [],
-            recurrence: task.recurrence ?? null,
-            reminderMinutes: task.reminderMinutes ?? null,
-            assigneeId: task.assigneeId ?? null,
-          }),
-        )) ?? task
+        const updatedTask = (await queueTaskUpdate(user?.id, task.id, {
+          title: task.title,
+          description: task.description,
+          completed: task.completed,
+          dueDate: task.dueDate ?? null,
+          priority: task.priority,
+          listId: task.listId,
+          columnId: task.columnId ?? null,
+          tags: task.tags ?? [],
+          recurrence: task.recurrence ?? null,
+          reminderMinutes: task.reminderMinutes ?? null,
+          assigneeId: task.assigneeId ?? null,
+        })) ?? task
 
         dispatch({ type: 'UPDATE_TASK', payload: updatedTask })
         if (!options?.silent) {
@@ -537,11 +569,11 @@ export function useTaskActions() {
           t('common.errorBody' as TranslationKey),
         )
       }
-    }, [dispatch, success, showError, t]),
+    }, [dispatch, success, showError, t, user]),
 
     deleteTask: useCallback(async (taskId: string) => {
       try {
-        await taskMutationQueue.run(taskId, () => tasksApi.deleteTask(taskId))
+        await queueTaskDelete(user?.id, taskId)
       } catch (err) {
         console.error('Failed to delete task via API', err)
         showError(
@@ -557,7 +589,7 @@ export function useTaskActions() {
         t('toast.taskDeletedTitle' as TranslationKey),
         t('toast.taskDeletedBody' as TranslationKey),
       )
-    }, [dispatch, success, showError, t]),
+    }, [dispatch, success, showError, t, user]),
 
     toggleTask: useCallback(async (taskId: string) => {
       const existing = state.tasks.find(t => t.id === taskId)
@@ -568,7 +600,9 @@ export function useTaskActions() {
       const newCompleted = !existing.completed
 
       try {
-        const updatedTask = await tasksApi.updateTask(taskId, { completed: newCompleted })
+        const updatedTask = await queueTaskUpdate(user?.id, taskId, {
+          completed: newCompleted,
+        })
 
         if (updatedTask) {
           dispatch({ type: 'UPDATE_TASK', payload: updatedTask })
@@ -585,14 +619,16 @@ export function useTaskActions() {
       }
 
       // If the API fails, keep local state unchanged.
-    }, [dispatch, showError, state.tasks, t]),
+    }, [dispatch, showError, state.tasks, t, user]),
 
     assignTask: useCallback(async (taskId: string, userId: string | null) => {
       const existing = state.tasks.find((t) => t.id === taskId)
       if (!existing) return
 
       try {
-        const updatedTask = await tasksApi.updateTask(taskId, { assigneeId: userId })
+        const updatedTask = await queueTaskUpdate(user?.id, taskId, {
+          assigneeId: userId,
+        })
         if (updatedTask) {
           dispatch({ type: 'UPDATE_TASK', payload: updatedTask })
         }
@@ -609,14 +645,14 @@ export function useTaskActions() {
           t('common.errorBody' as TranslationKey),
         )
       }
-    }, [dispatch, showError, state.tasks, success, t]),
+    }, [dispatch, showError, state.tasks, success, t, user]),
 
     addComment: useCallback(async (taskId: string, comment: Comment) => {
       const existing = state.tasks.find((t) => t.id === taskId)
       if (!existing) return
       const comments = [...(existing.comments ?? []), comment]
       try {
-        const updatedTask = (await tasksApi.updateTask(taskId, { comments })) ?? {
+        const updatedTask = (await queueTaskUpdate(user?.id, taskId, { comments })) ?? {
           ...existing,
           comments,
         }
@@ -632,7 +668,7 @@ export function useTaskActions() {
           t('common.errorBody' as TranslationKey),
         )
       }
-    }, [dispatch, showError, state.tasks, success, t]),
+    }, [dispatch, showError, state.tasks, success, t, user]),
 
     reorderTasks: useCallback(async (draggedId: string, droppedOnId: string) => {
       const before = state.tasks
@@ -668,14 +704,14 @@ export function useTaskActions() {
           t('common.errorBody' as TranslationKey),
         )
       }
-    }, [dispatch, showError, state.lists, state.tasks, t, user?.id]),
+    }, [dispatch, showError, state.lists, state.tasks, t, user]),
 
     syncSubtasks: useCallback(async (taskId: string, subtasks: import('@/types').Subtask[]) => {
       const existing = state.tasks.find((t) => t.id === taskId)
       if (!existing) return
 
       try {
-        const updatedTask = (await tasksApi.updateTask(taskId, { subtasks })) ?? {
+        const updatedTask = (await queueTaskUpdate(user?.id, taskId, { subtasks })) ?? {
           ...existing,
           subtasks,
         }
@@ -688,14 +724,14 @@ export function useTaskActions() {
           t('common.errorBody' as TranslationKey),
         )
       }
-    }, [dispatch, showError, state.tasks, t]),
+    }, [dispatch, showError, state.tasks, t, user]),
 
     syncComments: useCallback(async (taskId: string, comments: Comment[]) => {
       const existing = state.tasks.find((t) => t.id === taskId)
       if (!existing) return
 
       try {
-        const updatedTask = (await tasksApi.updateTask(taskId, { comments })) ?? {
+        const updatedTask = (await queueTaskUpdate(user?.id, taskId, { comments })) ?? {
           ...existing,
           comments,
         }
@@ -708,7 +744,7 @@ export function useTaskActions() {
           t('common.errorBody' as TranslationKey),
         )
       }
-    }, [dispatch, showError, state.tasks, t]),
+    }, [dispatch, showError, state.tasks, t, user]),
 
     moveToColumn: useCallback((taskId: string, newColumnId: string, listId: string) => {
       dispatch(taskActions.moveToColumn(taskId, newColumnId, listId))
@@ -722,7 +758,7 @@ export function useTaskActions() {
       dispatch(taskActions.moveToColumn(taskId, newColumnId, listId))
 
       try {
-        const updatedTask = await tasksApi.updateTask(taskId, {
+        const updatedTask = await queueTaskUpdate(user?.id, taskId, {
           columnId: newColumnId,
           listId,
         })
@@ -738,7 +774,7 @@ export function useTaskActions() {
           t('common.errorBody' as TranslationKey),
         )
       }
-    }, [dispatch, showError, state.tasks, t]),
+    }, [dispatch, showError, state.tasks, t, user]),
 
     deleteTag: useCallback(async (tagName: string) => {
       const tagToDelete = tagName.trim()
@@ -757,7 +793,7 @@ export function useTaskActions() {
           affectedTasks.map(async (task) => {
             const tags = task.tags.filter((tag) => tag !== tagToDelete)
             const updated =
-              (await tasksApi.updateTask(task.id, { tags })) ?? { ...task, tags }
+              (await queueTaskUpdate(user?.id, task.id, { tags })) ?? { ...task, tags }
             return updated
           }),
         )
@@ -775,7 +811,7 @@ export function useTaskActions() {
         )
         return false
       }
-    }, [dispatch, showError, state.tasks, syncFromBackend, t]),
+    }, [dispatch, showError, state.tasks, syncFromBackend, t, user]),
   }
 }
 
@@ -826,6 +862,7 @@ export function useColumnActions() {
   const { state, dispatch, syncFromBackend } = useTaskManager()
   const { error: showError } = useToast()
   const { t } = useI18n()
+  const { user } = useUser()
 
   const applyColumnChange = useCallback(
     async (action: Action, touchedListId?: string) => {
@@ -876,7 +913,7 @@ export function useColumnActions() {
             affectedTasks.map(async (task) => {
               const updatedTask = nextState.tasks.find((t) => t.id === task.id)
               if (!updatedTask) return
-              const saved = await tasksApi.updateTask(task.id, {
+              const saved = await queueTaskUpdate(user?.id, task.id, {
                 columnId: updatedTask.columnId ?? null,
               })
               if (saved) {
@@ -893,7 +930,7 @@ export function useColumnActions() {
           )
         }
       },
-      [dispatch, showError, state, syncFromBackend, t],
+      [dispatch, showError, state, syncFromBackend, t, user],
     ),
     reorderColumns: useCallback(
       (listId: string, draggedId: string, droppedOnId: string) =>
@@ -910,7 +947,7 @@ export function useColumnActions() {
 }
 
 export function useListActions() {
-  const { state, dispatch } = useTaskManager()
+  const { dispatch } = useTaskManager()
   const { error: showError } = useToast()
   const { t } = useI18n()
 

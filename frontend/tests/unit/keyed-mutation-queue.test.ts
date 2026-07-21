@@ -1,8 +1,17 @@
 import { describe, expect, it } from 'vitest'
 
-import { createKeyedMutationQueue } from '@/lib/utils/keyed-mutation-queue'
+import {
+  createKeyedMutationQueue,
+  scopedMutationKey,
+} from '@/lib/utils/keyed-mutation-queue'
 
 describe('createKeyedMutationQueue', () => {
+  it('isolates identical entity ids between users', () => {
+    expect(scopedMutationKey('user-a', 'task-1')).not.toBe(
+      scopedMutationKey('user-b', 'task-1'),
+    )
+  })
+
   it('serializes mutations for the same entity while allowing other entities', async () => {
     const queue = createKeyedMutationQueue()
     const events: string[] = []

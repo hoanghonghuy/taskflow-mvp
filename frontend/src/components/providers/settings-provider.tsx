@@ -193,9 +193,9 @@ export function SettingsProvider({ children, initialLocale, authScope }: Setting
         // ignore localStorage errors
       }
 
-      persistToBackend(updated)
       return updated
     })
+    persistToBackend(updates)
 
     if (updates.language) {
       void applyLanguage(updates.language)

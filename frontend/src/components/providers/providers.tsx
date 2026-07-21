@@ -28,7 +28,7 @@ function UserScopedProviders({ children, initialLocale }: ProvidersProps) {
     >
       <ThemeProvider>
         <GeminiProvider>
-          <TaskManagerProvider>
+          <TaskManagerProvider key={user?.id ?? 'anonymous'}>
             <ToastProvider>
               <TaskReminderWatcher />
               <PomodoroSessionWatcher />

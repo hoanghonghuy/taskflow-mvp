@@ -204,4 +204,43 @@ describe('UserProvider', () => {
     expect(result.current.user).toEqual(mockUser)
     expect(localStorage.getItem('isAuthenticated')).toBe('true')
   })
+
+  it('switches identity and clears task cache when another tab changes account', async () => {
+    const nextUser = {
+      ...mockUser,
+      id: 'user-002',
+      name: 'Blair Chen',
+      email: 'blair.chen@example.com',
+    }
+    localStorage.setItem('user', JSON.stringify(mockUser))
+    localStorage.setItem('taskflowState', '{"owner":"user-001"}')
+    mockSession(true)
+
+    const { result } = renderHook(() => useUser(), { wrapper: UserTestWrapper })
+    await waitFor(() => expect(result.current.user).toEqual(mockUser))
+
+    vi.mocked(fetch)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ token: 'refreshed' }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ authenticated: true, user: nextUser }),
+      } as Response)
+
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      value: 'visible',
+    })
+    act(() => {
+      document.dispatchEvent(new Event('visibilitychange'))
+    })
+
+    await waitFor(() => expect(result.current.user).toEqual(nextUser))
+    expect(localStorage.getItem('user')).toBe(JSON.stringify(nextUser))
+    expect(localStorage.getItem('taskflowState')).toBeNull()
+  })
 })

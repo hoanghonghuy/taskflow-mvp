@@ -100,6 +100,7 @@ describe('SettingsProvider', () => {
       defaultListId: 'work',
       bottomNavActions: ['dashboard', 'list'],
       geminiApiKey: 'key',
+      boardColumns: [{ id: 'stale-column', name: 'Stale', listId: 'inbox' }],
     }
     localStorage.setItem('settings', JSON.stringify(saved))
 
@@ -110,7 +111,9 @@ describe('SettingsProvider', () => {
       expect(result.current.settings.language).toBe('vi')
       expect(result.current.settings.theme).toBe('dark')
       expect((result.current.settings as unknown as Record<string, unknown>).geminiApiKey).toBeUndefined()
+      expect((result.current.settings as unknown as Record<string, unknown>).boardColumns).toBeUndefined()
       expect(JSON.parse(localStorage.getItem('settings')!)).not.toHaveProperty('geminiApiKey')
+      expect(JSON.parse(localStorage.getItem('settings')!)).not.toHaveProperty('boardColumns')
     })
   })
 
@@ -149,7 +152,10 @@ describe('SettingsProvider', () => {
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith(
         '/api/settings',
-        expect.objectContaining({ method: 'PUT' })
+        expect.objectContaining({
+          method: 'PUT',
+          body: JSON.stringify({ language: 'vi', theme: 'dark' }),
+        })
       )
     })
   })

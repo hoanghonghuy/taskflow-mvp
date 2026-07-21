@@ -1,6 +1,6 @@
 import type { PomodoroState, Settings, ThemeOption } from '@/types'
 import { THEME_PRESET_IDS } from '@/lib/theme-presets'
-import { apiFetch, apiFetchJson, unwrapApiData } from './client'
+import { apiFetchJson } from './client'
 
 const THEME_OPTIONS_SET = new Set<ThemeOption>(['system', ...THEME_PRESET_IDS])
 
@@ -9,8 +9,7 @@ export function mapSettingsFromApi(payload: unknown, fallback: Settings): Settin
     return fallback
   }
 
-  const data = { ...(payload as Partial<Settings> & { geminiApiKey?: unknown }) }
-  delete data.geminiApiKey
+  const data = payload as Partial<Settings>
 
   const language = data.language === 'en' || data.language === 'vi' ? data.language : fallback.language
   const theme = ((): Settings['theme'] => {
@@ -22,12 +21,21 @@ export function mapSettingsFromApi(payload: unknown, fallback: Settings): Settin
   })()
 
   return {
-    ...fallback,
-    ...data,
     language,
     theme,
+    notifications:
+      typeof data.notifications === 'boolean' ? data.notifications : fallback.notifications,
+    soundEnabled:
+      typeof data.soundEnabled === 'boolean' ? data.soundEnabled : fallback.soundEnabled,
+    autoStartPomodoro:
+      typeof data.autoStartPomodoro === 'boolean'
+        ? data.autoStartPomodoro
+        : fallback.autoStartPomodoro,
+    defaultPriority: data.defaultPriority ?? fallback.defaultPriority,
+    defaultListId:
+      typeof data.defaultListId === 'string' ? data.defaultListId : fallback.defaultListId,
     bottomNavActions:
-      data.bottomNavActions && data.bottomNavActions.length > 0
+      Array.isArray(data.bottomNavActions) && data.bottomNavActions.length > 0
         ? data.bottomNavActions
         : fallback.bottomNavActions,
   }
@@ -36,10 +44,9 @@ export function mapSettingsFromApi(payload: unknown, fallback: Settings): Settin
 export type PomodoroSettingsDto = PomodoroState['settings']
 
 export async function fetchSettings(): Promise<unknown | null> {
-  const response = await apiFetch('/api/settings', { method: 'GET' })
-  if (!response.ok) return null
-  const json = await response.json().catch(() => null)
-  return json ? unwrapApiData<unknown>(json, response.status) : null
+  return (await apiFetchJson<unknown | undefined>('/api/settings', {
+    method: 'GET',
+  })) ?? null
 }
 
 export async function fetchPomodoroSettings(): Promise<PomodoroSettingsDto | null> {

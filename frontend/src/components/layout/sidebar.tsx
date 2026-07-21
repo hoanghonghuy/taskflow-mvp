@@ -168,14 +168,18 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
         }}
         className={`fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       ></div>
-      <aside className={`
+      <aside
+        inert={!isOpen}
+        aria-hidden={!isOpen}
+        className={`
         fixed md:relative inset-y-0 left-0 bg-card flex flex-col shrink-0 z-50
         w-64 transition-transform md:transition-all duration-300 ease-in-out overflow-hidden border-border
         ${isOpen 
           ? 'p-4 border-r translate-x-0 md:w-64'
           : 'p-4 -translate-x-full md:w-0 md:p-0 md:border-r-0 md:translate-x-0'
         }
-      `}>
+      `}
+      >
         <div className="flex items-center gap-3 mb-6 px-2 justify-start md:justify-between">
           <div className="hidden md:flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" className="h-8 w-8 text-primary">
