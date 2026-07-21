@@ -6,7 +6,13 @@ import { useI18n } from '@/lib/i18n/hooks'
 import { useConfirmation } from '@/lib/hooks/use-confirmation'
 import type { TranslationKey } from '@/lib/i18n/types'
 import TaskItem from '@/features/tasks/components/TaskItem'
-import { PlusIcon, GripVerticalIcon, TrashIcon } from '@/lib/icons'
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  PlusIcon,
+  GripVerticalIcon,
+  TrashIcon,
+} from '@/lib/icons'
 import {
   CountBadge,
   TaskColumnBody,
@@ -26,6 +32,9 @@ interface BoardColumnProps {
   onColumnDragStart: (columnId: string) => void
   columns: Column[]
   onMoveTask: (taskId: string, columnId: string) => void
+  onMoveColumn: (offset: -1 | 1) => void
+  canMoveUp: boolean
+  canMoveDown: boolean
   canManageColumns?: boolean
 }
 
@@ -38,6 +47,9 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
   onColumnDragStart,
   columns,
   onMoveTask,
+  onMoveColumn,
+  canMoveUp,
+  canMoveDown,
   canManageColumns = true,
 }) => {
   const { updateColumn, deleteColumn } = useColumnActions()
@@ -134,14 +146,34 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
           </div>
         )}
         {canManageColumns && (
-          <button
-            type="button"
-            onClick={handleDeleteColumn}
-            className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-muted/60 transition-colors"
-            aria-label={t('board.column.delete')}
-          >
-            <TrashIcon className="h-4 w-4" />
-          </button>
+          <>
+            <button
+              type="button"
+              disabled={!canMoveUp}
+              onClick={() => onMoveColumn(-1)}
+              className="rounded-md p-1.5 text-muted-foreground hover:bg-muted/60 disabled:opacity-30"
+              aria-label={t('common.moveUp')}
+            >
+              <ArrowUpIcon className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              disabled={!canMoveDown}
+              onClick={() => onMoveColumn(1)}
+              className="rounded-md p-1.5 text-muted-foreground hover:bg-muted/60 disabled:opacity-30"
+              aria-label={t('common.moveDown')}
+            >
+              <ArrowDownIcon className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={handleDeleteColumn}
+              className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-muted/60 transition-colors"
+              aria-label={t('board.column.delete')}
+            >
+              <TrashIcon className="h-4 w-4" />
+            </button>
+          </>
         )}
       </TaskColumnHeader>
       <TaskColumnBody>

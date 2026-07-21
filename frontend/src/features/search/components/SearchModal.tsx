@@ -114,7 +114,12 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose }) => {
             className="w-full bg-transparent text-lg focus:outline-none"
             autoFocus
           />
-          <button onClick={onClose} className="p-1 rounded-full hover:bg-secondary ml-4">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t('common.close')}
+            className="p-1 rounded-full hover:bg-secondary ml-4"
+          >
             <CloseIcon className="h-5 w-5 text-muted-foreground" />
           </button>
         </header>

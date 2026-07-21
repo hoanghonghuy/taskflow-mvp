@@ -106,6 +106,14 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
     setDraggedColumnId(null)
   }
 
+  const handleMoveColumn = (columnId: string, offset: -1 | 1) => {
+    if (!canManageColumns) return
+    const columnIndex = columnsForList.findIndex((column) => column.id === columnId)
+    const targetColumn = columnsForList[columnIndex + offset]
+    if (!targetColumn) return
+    void reorderColumns(selectedListId, columnId, targetColumn.id)
+  }
+
   const handleAddColumn = (e?: React.FormEvent) => {
     e?.preventDefault()
     if (!canManageColumns) return
@@ -181,7 +189,7 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
             setDragOverColumnId(null)
           }}
         >
-          {columnsForList.map(column => {
+          {columnsForList.map((column, columnIndex) => {
             const columnTasks = tasksForList.filter(
               t => t.columnId === column.id || (!t.columnId && columnsForList.findIndex(c => c.id === column.id) === 0)
             )
@@ -216,6 +224,9 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
                   onColumnDragStart={handleColumnDragStart}
                   columns={columnsForList}
                   onMoveTask={handleMoveTask}
+                  onMoveColumn={(offset) => handleMoveColumn(column.id, offset)}
+                  canMoveUp={columnIndex > 0}
+                  canMoveDown={columnIndex < columnsForList.length - 1}
                   canManageColumns={canManageColumns}
                 />
               </div>

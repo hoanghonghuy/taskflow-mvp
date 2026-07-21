@@ -173,10 +173,11 @@ const CalendarView: React.FC = () => {
         draggable={draggable}
         onDragStart={draggable ? (e) => handleTaskDragStart(e, task.id) : undefined}
         onDragEnd={draggable ? handleTaskDragEnd : undefined}
-        className={`w-full text-left text-[10px] px-2 py-0.5 rounded-md text-background flex items-center gap-1 shadow-sm transition-opacity ${
+        aria-label={timeLabel ? `${timeLabel}, ${task.title}` : task.title}
+        className={`w-full border border-border bg-card text-left text-[10px] px-2 py-0.5 rounded-md text-foreground flex items-center gap-1 shadow-sm transition-opacity ${
           draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
         } ${isDraggingThis ? 'opacity-60' : ''}`}
-        style={{ backgroundColor: bg }}
+        style={{ borderLeftColor: bg, borderLeftWidth: '4px' }}
         title={task.title}
         onClick={() => handleTaskClick(task)}
       >
@@ -280,7 +281,11 @@ const CalendarView: React.FC = () => {
 
                   return (
                     <button
+                      type="button"
                       key={index}
+                      aria-label={date.toLocaleDateString(locale, { dateStyle: 'full' })}
+                      aria-pressed={isSelectedDate}
+                      aria-current={isTodayDate ? 'date' : undefined}
                       onClick={() => setSelectedDate(date)}
                       onDragOver={(e) => {
                         e.preventDefault()

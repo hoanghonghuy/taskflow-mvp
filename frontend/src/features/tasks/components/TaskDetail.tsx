@@ -21,6 +21,8 @@ import {
   GripVerticalIcon,
   PlayCircleIcon,
   RepeatIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
 } from '@/lib/icons'
 import { PRIORITY_MAP } from '@/lib/task-constants'
 import { useGemini } from '@/lib/hooks/use-gemini'
@@ -36,6 +38,7 @@ import {
   fieldControlClassName,
 } from '@/components/ui/property-list'
 import { useUser } from '@/components/providers/user-provider'
+import { AccessibleModalSurface } from '@/components/ui/accessible-modal-surface'
 
 interface TaskDetailProps {
   taskId: string
@@ -256,6 +259,24 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
     applyTaskUpdates({ tags: task.tags.filter(tag => tag !== tagToRemove) })
   }
 
+  const handleMoveTag = (index: number, offset: -1 | 1) => {
+    if (isReadOnly) return
+    const targetIndex = index + offset
+    if (targetIndex < 0 || targetIndex >= task.tags.length) return
+    const tags = [...task.tags]
+    ;[tags[index], tags[targetIndex]] = [tags[targetIndex], tags[index]]
+    applyTaskUpdates({ tags })
+  }
+
+  const handleMoveSubtask = (index: number, offset: -1 | 1) => {
+    if (isReadOnly) return
+    const targetIndex = index + offset
+    if (targetIndex < 0 || targetIndex >= task.subtasks.length) return
+    const subtasks = [...task.subtasks]
+    ;[subtasks[index], subtasks[targetIndex]] = [subtasks[targetIndex], subtasks[index]]
+    void syncSubtasks(task.id, subtasks)
+  }
+
   // Drag and Drop handlers for tags
   const handleTagDragStart = (e: React.DragEvent<HTMLSpanElement>, index: number) => {
     setDraggedTagIndex(index)
@@ -357,7 +378,11 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   const priorityClasses = PRIORITY_MAP[task.priority]
 
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden border-l border-border bg-card shadow-[-8px_0_24px_rgba(0,0,0,0.06)] md:max-w-xl md:animate-slide-in">
+    <AccessibleModalSurface
+      aria-label={task.title}
+      onClose={handleClose}
+      className="flex h-full w-full flex-col overflow-hidden border-l border-border bg-card shadow-[-8px_0_24px_rgba(0,0,0,0.06)] md:max-w-xl md:animate-slide-in"
+    >
       <header className="flex shrink-0 items-center justify-between gap-3 border-b border-border bg-secondary/20 px-4 py-3">
         <div className="flex min-w-0 items-center gap-3">
           <button
@@ -636,9 +661,34 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
               >
                 {tag}
                 {!isReadOnly && (
-                  <button onClick={() => handleRemoveTag(tag)} className="rounded-full p-0.5 hover:bg-muted z-10">
-                    <CloseIcon className="h-3 w-3" />
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      disabled={index === 0}
+                      onClick={() => handleMoveTag(index, -1)}
+                      aria-label={t('common.moveUp')}
+                      className="rounded-full p-0.5 hover:bg-muted disabled:opacity-30"
+                    >
+                      <ArrowUpIcon className="h-3 w-3" />
+                    </button>
+                    <button
+                      type="button"
+                      disabled={index === task.tags.length - 1}
+                      onClick={() => handleMoveTag(index, 1)}
+                      aria-label={t('common.moveDown')}
+                      className="rounded-full p-0.5 hover:bg-muted disabled:opacity-30"
+                    >
+                      <ArrowDownIcon className="h-3 w-3" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveTag(tag)}
+                      aria-label={t('taskForm.removeTagAria', { tag })}
+                      className="z-10 rounded-full p-0.5 hover:bg-muted"
+                    >
+                      <CloseIcon className="h-3 w-3" />
+                    </button>
+                  </>
                 )}
               </span>
             ))}
@@ -698,6 +748,28 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                   className={`group flex items-center gap-2 rounded-lg border border-border/50 bg-background/70 px-2 py-2 transition-opacity ${draggedIndex === index ? 'opacity-50' : 'opacity-100'}`}
                 >
                   <GripVerticalIcon className="h-4 w-4 cursor-move text-muted-foreground/40 group-hover:text-muted-foreground" />
+                  {!isReadOnly && (
+                    <div className="flex shrink-0 flex-col">
+                      <button
+                        type="button"
+                        disabled={index === 0}
+                        onClick={() => handleMoveSubtask(index, -1)}
+                        aria-label={t('common.moveUp')}
+                        className="rounded p-0.5 text-muted-foreground hover:bg-muted disabled:opacity-30"
+                      >
+                        <ArrowUpIcon className="h-3 w-3" />
+                      </button>
+                      <button
+                        type="button"
+                        disabled={index === task.subtasks.length - 1}
+                        onClick={() => handleMoveSubtask(index, 1)}
+                        aria-label={t('common.moveDown')}
+                        className="rounded p-0.5 text-muted-foreground hover:bg-muted disabled:opacity-30"
+                      >
+                        <ArrowDownIcon className="h-3 w-3" />
+                      </button>
+                    </div>
+                  )}
                   <button
                     onClick={() => handleSubtaskChange(st.id, !st.completed)}
                     disabled={isReadOnly}
@@ -820,7 +892,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
           {t('taskDetail.startFocusButton')}
         </button>
       </div>
-    </div>
+    </AccessibleModalSurface>
   )
 }
 

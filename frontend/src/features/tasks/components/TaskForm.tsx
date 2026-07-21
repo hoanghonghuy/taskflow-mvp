@@ -9,7 +9,6 @@ import { useAiFeature } from '@/lib/hooks/use-ai-feature'
 import { AI_FEATURES_ENABLED } from '@/lib/feature-flags'
 import { useToast } from '@/components/providers/toast-provider'
 import type { Task, Priority } from '@/types'
-import type { TranslationKey } from '@/lib/i18n/types'
 import {
   CloseIcon,
   SparklesIcon,
@@ -186,7 +185,12 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
       >
         <header className="p-4 border-b border-border flex items-center justify-between">
           <h2 className="text-lg font-semibold">{t('taskForm.newTask')}</h2>
-          <button onClick={onClose} className="p-1 rounded-full hover:bg-secondary">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t('common.close')}
+            className="p-1 rounded-full hover:bg-secondary"
+          >
             <CloseIcon className="h-5 w-5 text-muted-foreground" />
           </button>
         </header>

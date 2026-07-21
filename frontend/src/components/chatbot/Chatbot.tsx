@@ -104,7 +104,12 @@ const Chatbot: React.FC<ChatbotProps> = ({ onClose }) => {
               {t('chatbot.title')}
             </h2>
           </div>
-          <button onClick={onClose} className="p-1 rounded-full hover:bg-secondary">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t('common.close')}
+            className="p-1 rounded-full hover:bg-secondary"
+          >
             <CloseIcon className="h-5 w-5 text-muted-foreground" />
           </button>
         </header>
@@ -206,8 +211,10 @@ const Chatbot: React.FC<ChatbotProps> = ({ onClose }) => {
               disabled={!isAvailable}
             />
             <button 
+              type="button"
               onClick={handleSend} 
               disabled={isLoading || !isAvailable || !input.trim()} 
+              aria-label={t('chatbot.send')}
               className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted disabled:cursor-not-allowed"
             >
               {isLoading ? <Spinner size="sm" /> : <PaperAirplaneIcon className="h-5 w-5" />}

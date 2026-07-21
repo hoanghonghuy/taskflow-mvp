@@ -79,6 +79,37 @@ describe('responsive layout contracts', () => {
     expect(src('components/ui/icon-button.tsx')).toContain(
       'md:group-focus-within:opacity-100',
     )
+    const taskDetail = src('features/tasks/components/TaskDetail.tsx')
+    expect(taskDetail).toContain('<AccessibleModalSurface')
+    expect(taskDetail).toContain('aria-label={task.title}')
+    expect(taskDetail).toContain('handleMoveTag')
+    expect(taskDetail).toContain('handleMoveSubtask')
+    expect(taskDetail).toContain("t('common.moveUp')")
+    expect(taskDetail).toContain("t('common.moveDown')")
+    expect(src('features/board/views/BoardView.tsx')).toContain('handleMoveColumn')
+    expect(src('features/board/components/BoardColumn.tsx')).toContain(
+      'onMoveColumn',
+    )
+    const calendar = src('features/calendar/views/CalendarView.tsx')
+    expect(calendar).toContain("aria-current={isTodayDate ? 'date' : undefined}")
+    expect(calendar).toContain('aria-pressed={isSelectedDate}')
+    expect(calendar).toContain('borderLeftColor: bg')
+    expect(calendar).not.toContain('rounded-md text-background')
+  })
+
+  it('names close and send icon buttons', () => {
+    for (const file of [
+      'features/tasks/components/TaskForm.tsx',
+      'features/search/components/SearchModal.tsx',
+      'components/briefing/DailyBriefingModal.tsx',
+      'components/collaboration/ShareListModal.tsx',
+      'components/chatbot/Chatbot.tsx',
+    ]) {
+      expect(src(file)).toContain("aria-label={t('common.close')}")
+    }
+    expect(src('components/chatbot/Chatbot.tsx')).toContain(
+      "aria-label={t('chatbot.send')}",
+    )
   })
 
   it('prevents remaining narrow and short viewport overflows', () => {
