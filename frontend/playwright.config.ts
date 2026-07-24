@@ -89,6 +89,8 @@ export default defineConfig({
     {
       name: 'setup',
       testMatch: /auth\.setup\.ts/,
+      // Admin session first so leftover e2e-*@taskflow.test users are purged before register.
+      dependencies: ['admin-setup'],
     },
     {
       name: 'admin-setup',

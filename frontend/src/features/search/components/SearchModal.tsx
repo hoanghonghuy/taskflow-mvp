@@ -124,7 +124,11 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose }) => {
           </button>
         </header>
         
-        <div className="grow p-4 overflow-y-auto">
+        <div
+          aria-live="polite"
+          aria-busy={activeSearching}
+          className="grow p-4 overflow-y-auto"
+        >
           {!trimmedTerm && (
             <div className="text-center py-12 text-muted-foreground space-y-2">
               <p className="text-sm">{t('search.hintEmpty')}</p>
@@ -139,7 +143,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose }) => {
             </div>
           )}
           {trimmedTerm && activeError && !activeSearching && (
-            <div className="text-center py-12 text-destructive text-sm">
+            <div role="alert" className="text-center py-12 text-destructive text-sm">
               {activeError}
             </div>
           )}

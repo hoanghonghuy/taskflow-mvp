@@ -113,7 +113,10 @@ export default function AppLayout({
 
   if (authReady && isAuthenticated && hydrationError && !isHydrating) {
     return (
-      <div className="flex h-dvh items-center justify-center bg-background p-4 text-foreground">
+      <div
+        role="alert"
+        className="flex h-dvh items-center justify-center bg-background p-4 text-foreground"
+      >
         <div className="max-w-sm text-center">
           <h1 className="text-xl font-semibold">{t('common.errorTitle')}</h1>
           <p className="mt-2 text-sm text-muted-foreground">{t('common.errorBody')}</p>

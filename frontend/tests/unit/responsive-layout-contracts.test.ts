@@ -53,6 +53,25 @@ describe('responsive layout contracts', () => {
     expect(src('app/(app)/dashboard/page.tsx')).not.toContain('rounded-lg p-5')
   })
 
+  it('reserves bottom-nav space and keeps page titles consistent on mobile', () => {
+    expect(src('components/layout/app-page.tsx')).toContain(
+      'pb-[calc(5rem+env(safe-area-inset-bottom,0px))] md:pb-6',
+    )
+    expect(src('components/layout/app-page-header.tsx')).toContain('hideOnMobile = true')
+
+    const achievements = src('features/achievements/views/AchievementsView.tsx')
+    expect(achievements).toContain('AppPageMain')
+    expect(achievements).toContain('AppPageHeader')
+    expect(achievements).not.toMatch(/<main className="flex-1 p-4 md:p-6/)
+
+    expect(src('features/calendar/views/CalendarView.tsx')).toContain(
+      'text-2xl md:text-3xl font-bold',
+    )
+    expect(src('features/calendar/views/CalendarView.tsx')).not.toContain(
+      'text-xl md:text-3xl font-bold',
+    )
+  })
+
   it('lets unhandled task drops bubble to Board and Matrix containers', () => {
     expect(src('features/tasks/components/TaskItem.tsx').replace(/\r/g, '')).toContain(
       'if (canDrag && onDrop) {\n      e.stopPropagation()',
@@ -78,6 +97,9 @@ describe('responsive layout contracts', () => {
     expect(src('components/layout/sidebar.tsx')).toContain('inert={!isOpen}')
     expect(src('components/ui/icon-button.tsx')).toContain(
       'md:group-focus-within:opacity-100',
+    )
+    expect(src('components/ui/icon-button.tsx')).toContain(
+      "sm: 'size-11 p-0.5 md:size-7'",
     )
     const taskDetail = src('features/tasks/components/TaskDetail.tsx')
     expect(taskDetail).toContain('<AccessibleModalSurface')
@@ -112,7 +134,38 @@ describe('responsive layout contracts', () => {
     )
   })
 
+  it('associates task form and detail fields with accessible names', () => {
+    const taskForm = src('features/tasks/components/TaskForm.tsx')
+    expect(taskForm).toContain('htmlFor="task-form-title"')
+    expect(taskForm).toContain('id="task-form-title"')
+    expect(taskForm).toContain('htmlFor="task-form-description"')
+    expect(taskForm).toContain('id="task-form-description"')
+
+    const taskDetail = src('features/tasks/components/TaskDetail.tsx')
+    expect(taskDetail).toContain("aria-label={t('taskDetail.titleLabel'")
+    expect(taskDetail).toContain('controlId="task-priority"')
+
+    const propertyList = src('components/ui/property-list.tsx')
+    expect(propertyList).toContain('controlId?: string')
+    expect(propertyList).toContain('htmlFor={controlId}')
+  })
+
+  it('announces dynamic loading, errors and results', () => {
+    expect(src('components/layout/app-loading-skeleton.tsx')).toContain(
+      'aria-live="polite"',
+    )
+    expect(src('app/(app)/layout.tsx')).toContain('role="alert"')
+    expect(src('features/search/components/SearchModal.tsx')).toContain(
+      'aria-live="polite"',
+    )
+    expect(src('components/chatbot/Chatbot.tsx')).toContain(
+      'aria-live="polite"',
+    )
+  })
+
   it('prevents remaining narrow and short viewport overflows', () => {
+    expect(src('app/layout.tsx')).toContain("viewportFit: 'cover'")
+    expect(src('app/globals.css')).toContain('@media (prefers-reduced-motion: reduce)')
     expect(src('features/habits/views/HabitsView.tsx')).toContain(
       'mt-4 flex flex-col gap-2 sm:flex-row',
     )
@@ -122,6 +175,10 @@ describe('responsive layout contracts', () => {
     expect(src('components/layout/feature-bar.tsx')).toContain('overflow-y-auto')
     expect(src('components/layout/bottom-nav-bar.tsx')).toContain(
       'max-w-full truncate',
+    )
+    expect(src('components/layout/bottom-nav-bar.tsx')).toContain('text-xs')
+    expect(src('features/calendar/views/CalendarView.tsx')).toContain(
+      'text-left text-xs px-2',
     )
     expect(src('components/layout/task-column-shell.tsx')).toContain(
       "'min-h-[160px] md:min-h-[260px]'",

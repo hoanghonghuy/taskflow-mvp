@@ -20,4 +20,22 @@ describe('AccessibleModalSurface', () => {
     await userEvent.setup().keyboard('{Escape}')
     expect(onClose).toHaveBeenCalledOnce()
   })
+
+  it('locks page scrolling and makes background siblings inert', () => {
+    const { unmount } = render(
+      <div>
+        <button type="button">Background action</button>
+        <AccessibleModalSurface aria-label="Settings" onClose={vi.fn()}>
+          <button type="button">Save</button>
+        </AccessibleModalSurface>
+      </div>,
+    )
+
+    const background = screen.getByRole('button', { name: 'Background action', hidden: true })
+    expect(document.body.style.overflow).toBe('hidden')
+    expect(background).toHaveAttribute('inert')
+
+    unmount()
+    expect(document.body.style.overflow).toBe('')
+  })
 })

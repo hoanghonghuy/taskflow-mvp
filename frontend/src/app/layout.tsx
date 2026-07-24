@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { cookies } from 'next/headers'
 import { Inter } from 'next/font/google'
 import './globals.css'
@@ -11,6 +11,12 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'TaskFlow - Your Productivity Companion',
   description: 'Organize your tasks, build habits, and boost productivity',
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
 }
 
 export default async function RootLayout({

@@ -13,9 +13,9 @@ const iconButtonVariants = cva(
         toolbar: 'text-muted-foreground hover:bg-secondary hover:text-foreground',
       },
       size: {
-        sm: 'size-7 p-0.5',
-        md: 'size-8 p-1.5',
-        lg: 'size-9 p-2',
+        sm: 'size-11 p-0.5 md:size-7',
+        md: 'size-11 p-1.5 md:size-8',
+        lg: 'size-11 p-2 md:size-9',
       },
     },
     defaultVariants: {

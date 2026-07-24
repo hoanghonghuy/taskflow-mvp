@@ -228,11 +228,12 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <label htmlFor="task-form-title" className="text-sm font-semibold text-foreground flex items-center gap-2">
                 <span className="text-primary">*</span>
                 {t('taskForm.titleLabel')}
               </label>
               <input
+                id="task-form-title"
                 type="text"
                 value={title}
                 onChange={e => setTitle(e.target.value)}
@@ -243,10 +244,11 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
             </div>
             
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-foreground">
+              <label htmlFor="task-form-description" className="text-sm font-semibold text-foreground">
                 {t('taskForm.descriptionLabel')}
               </label>
               <textarea
+                id="task-form-description"
                 value={description}
                 onChange={e => setDescription(e.target.value)}
                 rows={3}
@@ -259,11 +261,12 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <label htmlFor="task-form-due-date" className="text-sm font-semibold text-foreground flex items-center gap-2">
                   <CalendarDayIcon className="h-4 w-4 text-muted-foreground" />
                   {t('taskForm.dueDateLabel')}
                 </label>
                 <input
+                  id="task-form-due-date"
                   type="date"
                   value={dueDate}
                   onChange={e => setDueDate(e.target.value)}
@@ -271,11 +274,12 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <label htmlFor="task-form-priority" className="text-sm font-semibold text-foreground flex items-center gap-2">
                   <FlagIcon className="h-4 w-4 text-muted-foreground" />
                   {t('taskForm.priorityLabel')}
                 </label>
                 <select 
+                  id="task-form-priority"
                   value={priority} 
                   onChange={e => setPriority(e.target.value as Priority)} 
                   className="w-full p-3 bg-secondary/50 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-colors appearance-none cursor-pointer"
@@ -294,7 +298,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-foreground">
+                <label htmlFor="task-form-tags" className="text-sm font-semibold text-foreground">
                   {t('taskForm.tagsLabel')}
                 </label>
                 <div className="flex flex-wrap items-center gap-2 p-2 min-h-[44px] bg-secondary/50 border border-border rounded-md">
@@ -315,6 +319,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
                     </span>
                   ))}
                   <input
+                    id="task-form-tags"
                     type="text"
                     value={newTag}
                     onChange={(e) => setNewTag(e.target.value)}
@@ -326,10 +331,11 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
                 <p className="text-xs text-muted-foreground">{t('taskForm.tagsHelper')}</p>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-foreground">
+                <label htmlFor="task-form-reminder" className="text-sm font-semibold text-foreground">
                   {t('taskForm.reminderLabel')}
                 </label>
                 <select
+                  id="task-form-reminder"
                   value={reminderMinutes}
                   onChange={(e) => {
                     const raw = e.target.value
@@ -349,11 +355,12 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
             <div className="border-t border-border pt-4"></div>
             
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <label htmlFor="task-form-list" className="text-sm font-semibold text-foreground flex items-center gap-2">
                 <ListBulletIcon className="h-4 w-4 text-muted-foreground" />
                 {t('taskForm.listLabel')}
               </label>
               <select 
+                id="task-form-list"
                 value={listId} 
                 onChange={e => setListId(e.target.value)} 
                 className="w-full p-3 bg-secondary/50 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-colors appearance-none cursor-pointer"
@@ -370,11 +377,12 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
             
             {columnsForList.length > 0 && (
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <label htmlFor="task-form-column" className="text-sm font-semibold text-foreground flex items-center gap-2">
                   <ViewColumnsIcon className="h-4 w-4 text-muted-foreground" />
                   {t('board.columnName')}
                 </label>
                 <select 
+                  id="task-form-column"
                   value={columnId || ''} 
                   onChange={e => setColumnId(e.target.value || undefined)} 
                   className="w-full p-3 bg-secondary/50 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-colors appearance-none cursor-pointer"

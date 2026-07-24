@@ -441,6 +441,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
               type="text"
               value={task.title}
               readOnly={isReadOnly}
+              aria-label={t('taskDetail.titleLabel')}
               onChange={(e) => applyTaskUpdates({ title: e.target.value }, { debounce: true })}
               className={`w-full bg-transparent text-2xl font-semibold tracking-tight focus:outline-none md:text-[1.7rem] ${isReadOnly ? 'cursor-default' : ''}`}
             />
@@ -493,6 +494,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
             id="task-description"
             value={task.description || ''}
             readOnly={isReadOnly}
+            aria-label={t('taskDetail.descriptionLabel')}
             onChange={(e) => applyTaskUpdates({ description: e.target.value }, { debounce: true })}
             rows={4}
             placeholder={t('taskDetail.descriptionPlaceholder')}
@@ -501,8 +503,9 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
         </DetailSection>
 
         <PropertyList title={t('task.viewDetails')}>
-          <PropertyRow label={t('taskDetail.assigneeLabel')}>
+          <PropertyRow label={t('taskDetail.assigneeLabel')} controlId="task-assignee">
             <select
+              id="task-assignee"
               value={task.assigneeId || ''}
               disabled={isReadOnly}
               onChange={(e) => handleAssignTask(e.target.value || null)}
@@ -514,7 +517,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
               )) || []}
             </select>
           </PropertyRow>
-          <PropertyRow label={t('taskDetail.priorityLabel')}>
+          <PropertyRow label={t('taskDetail.priorityLabel')} controlId="task-priority">
             <select
               id="task-priority"
               value={task.priority}
@@ -532,8 +535,9 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
               })}
             </select>
           </PropertyRow>
-          <PropertyRow label={t('taskDetail.dueDateLabel')}>
+          <PropertyRow label={t('taskDetail.dueDateLabel')} controlId="task-due-date">
             <input
+              id="task-due-date"
               type="date"
               value={task.dueDate ? toYYYYMMDD(new Date(task.dueDate)) : ''}
               readOnly={isReadOnly}
@@ -541,8 +545,9 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
               className={fieldControlClassName}
             />
           </PropertyRow>
-          <PropertyRow label={t('taskDetail.reminderLabel')}>
+          <PropertyRow label={t('taskDetail.reminderLabel')} controlId="task-reminder">
             <select
+              id="task-reminder"
               value={task.reminderMinutes || ''}
               disabled={isReadOnly}
               onChange={(e) => {
@@ -558,9 +563,10 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
               <option value="60">1 {t('taskDetail.hour')}</option>
             </select>
           </PropertyRow>
-          <PropertyRow label={t('taskDetail.recurrenceLabel')} align="start">
+          <PropertyRow label={t('taskDetail.recurrenceLabel')} controlId="task-recurrence" align="start">
             <div className="space-y-3">
               <select
+                id="task-recurrence"
                 value={task.recurrence?.type ?? ''}
                 disabled={isReadOnly}
                 onChange={(e) => handleRecurrenceChange(e.target.value)}

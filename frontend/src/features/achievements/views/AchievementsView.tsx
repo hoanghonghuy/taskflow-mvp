@@ -5,6 +5,8 @@ import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useI18n } from '@/lib/i18n/hooks'
 import { ACHIEVEMENT_DEFINITIONS } from '@/lib/achievements'
 import { achievementDescriptionKey, achievementTitleKey } from '@/lib/achievements-i18n'
+import { AppPage, AppPageMain } from '@/components/layout/app-page'
+import { AppPageHeader } from '@/components/layout/app-page-header'
 
 const AchievementsView: React.FC = () => {
   const { state } = useTaskManager()
@@ -20,12 +22,12 @@ const AchievementsView: React.FC = () => {
   })
 
   return (
-    <div className="flex-1 flex flex-col overflow-y-auto">
-      <header className="p-6 border-b border-border flex-shrink-0 hidden md:block">
-        <h1 className="text-2xl md:text-3xl font-bold">{t('nav.achievements')}</h1>
-        <p className="text-muted-foreground">{t('achievements.subtitle')}</p>
-      </header>
-      <main className="flex-1 p-4 md:p-6 overflow-y-auto pb-[calc(5rem+env(safe-area-inset-bottom,0px))] md:pb-6">
+    <AppPage>
+      <AppPageHeader
+        title={t('nav.achievements')}
+        subtitle={t('achievements.subtitle')}
+      />
+      <AppPageMain className="py-4 md:py-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {sortedAchievements.map(achievement => {
             const isUnlocked = unlockedSet.has(achievement.id)
@@ -65,10 +67,9 @@ const AchievementsView: React.FC = () => {
             )
           })}
         </div>
-      </main>
-    </div>
+      </AppPageMain>
+    </AppPage>
   )
 }
 
 export default AchievementsView
-

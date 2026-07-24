@@ -13,6 +13,58 @@ const FOCUSABLE_SELECTOR = [
   '[tabindex]:not([tabindex="-1"])',
 ].join(',')
 
+const inertElements = new Map<HTMLElement, { count: number; wasInert: boolean }>()
+let scrollLockCount = 0
+let previousBodyOverflow = ''
+
+function acquireModalIsolation(surface: HTMLElement): () => void {
+  const acquired: HTMLElement[] = []
+  let activeElement: HTMLElement = surface
+
+  while (activeElement.parentElement) {
+    const parent = activeElement.parentElement
+    for (const sibling of parent.children) {
+      if (sibling === activeElement || !(sibling instanceof HTMLElement)) continue
+      const current = inertElements.get(sibling)
+      if (current) {
+        current.count += 1
+      } else {
+        inertElements.set(sibling, {
+          count: 1,
+          wasInert: sibling.hasAttribute('inert'),
+        })
+        sibling.setAttribute('inert', '')
+      }
+      acquired.push(sibling)
+    }
+    if (parent === document.body) break
+    activeElement = parent
+  }
+
+  if (scrollLockCount === 0) {
+    previousBodyOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+  }
+  scrollLockCount += 1
+
+  return () => {
+    for (const element of acquired) {
+      const current = inertElements.get(element)
+      if (!current) continue
+      current.count -= 1
+      if (current.count === 0) {
+        if (!current.wasInert) element.removeAttribute('inert')
+        inertElements.delete(element)
+      }
+    }
+
+    scrollLockCount = Math.max(0, scrollLockCount - 1)
+    if (scrollLockCount === 0) {
+      document.body.style.overflow = previousBodyOverflow
+    }
+  }
+}
+
 type AccessibleModalSurfaceProps = ComponentProps<'div'> & {
   onClose: () => void
 }
@@ -28,10 +80,13 @@ export function AccessibleModalSurface({
   useEffect(() => {
     const previousFocus = document.activeElement as HTMLElement | null
     const surface = surfaceRef.current
+    if (!surface) return
+    const releaseModalIsolation = acquireModalIsolation(surface)
     const firstFocusable = surface?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR)
     ;(firstFocusable ?? surface)?.focus()
 
     return () => {
+      releaseModalIsolation()
       previousFocus?.focus()
     }
   }, [])

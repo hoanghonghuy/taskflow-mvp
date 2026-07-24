@@ -40,6 +40,8 @@ type PropertyRowProps = {
   className?: string
   align?: 'center' | 'start'
   labelClassName?: string
+  /** When set, renders a real <label htmlFor> so the control gets an accessible name. */
+  controlId?: string
 }
 
 /** One property row: fixed label column + flexible control. */
@@ -49,7 +51,14 @@ function PropertyRow({
   className,
   align = 'center',
   labelClassName,
+  controlId,
 }: PropertyRowProps) {
+  const labelClass = cn(
+    'text-sm text-muted-foreground',
+    align === 'start' && 'sm:pt-2',
+    labelClassName,
+  )
+
   return (
     <div
       data-slot="property-row"
@@ -59,15 +68,13 @@ function PropertyRow({
         className,
       )}
     >
-      <span
-        className={cn(
-          'text-sm text-muted-foreground',
-          align === 'start' && 'sm:pt-2',
-          labelClassName,
-        )}
-      >
-        {label}
-      </span>
+      {controlId ? (
+        <label htmlFor={controlId} className={labelClass}>
+          {label}
+        </label>
+      ) : (
+        <span className={labelClass}>{label}</span>
+      )}
       <div className="min-w-0">{children}</div>
     </div>
   )

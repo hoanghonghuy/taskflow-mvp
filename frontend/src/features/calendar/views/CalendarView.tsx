@@ -174,7 +174,7 @@ const CalendarView: React.FC = () => {
         onDragStart={draggable ? (e) => handleTaskDragStart(e, task.id) : undefined}
         onDragEnd={draggable ? handleTaskDragEnd : undefined}
         aria-label={timeLabel ? `${timeLabel}, ${task.title}` : task.title}
-        className={`w-full border border-border bg-card text-left text-[10px] px-2 py-0.5 rounded-md text-foreground flex items-center gap-1 shadow-sm transition-opacity ${
+        className={`w-full border border-border bg-card text-left text-xs px-2 py-0.5 rounded-md text-foreground flex items-center gap-1 shadow-sm transition-opacity ${
           draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
         } ${isDraggingThis ? 'opacity-60' : ''}`}
         style={{ borderLeftColor: bg, borderLeftWidth: '4px' }}
@@ -182,7 +182,7 @@ const CalendarView: React.FC = () => {
         onClick={() => handleTaskClick(task)}
       >
         {timeLabel && (
-          <span className="shrink-0 opacity-90 text-[9px]">
+          <span className="shrink-0 opacity-90 text-[10px]">
             {timeLabel}
           </span>
         )}
@@ -199,7 +199,7 @@ const CalendarView: React.FC = () => {
         <header className="py-4 md:py-6 border-b border-border shrink-0">
           <div className="flex flex-col gap-2 md:gap-4 md:flex-row md:items-center md:justify-between mb-3 md:mb-6">
             <div>
-              <h1 className="hidden md:block text-xl md:text-3xl font-bold">{t('nav.calendar')}</h1>
+              <h1 className="hidden md:block text-2xl md:text-3xl font-bold">{t('nav.calendar')}</h1>
               <p className="text-sm text-muted-foreground hidden md:block">{t('calendar.subtitle')}</p>
             </div>
             <div className="flex items-center gap-2 flex-wrap justify-end md:justify-start">
@@ -265,7 +265,7 @@ const CalendarView: React.FC = () => {
             <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
               <div className="grid grid-cols-7 border-b border-border bg-muted/30">
                 {DAY_LABELS.map(label => (
-                  <div key={label} className="p-1.5 text-center text-[10px] font-semibold uppercase tracking-wide text-muted-foreground md:p-3 md:text-xs">
+                  <div key={label} className="p-1.5 text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground md:p-3 md:text-sm">
                     {label}
                   </div>
                 ))}

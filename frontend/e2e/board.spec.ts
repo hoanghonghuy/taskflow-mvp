@@ -1,7 +1,12 @@
 import { test, expect } from '@playwright/test'
 import { waitForAppReady } from './helpers/app-ready'
+import { cleanupOwnedTestTasks } from './helpers/cleanup'
 
 test.describe('Board', () => {
+  test.afterEach(async ({ page }) => {
+    await cleanupOwnedTestTasks(page, ['Board E2E'])
+  })
+
   test('persists task column after reload', async ({ page }) => {
     const taskTitle = `Board E2E ${Date.now()}`
 

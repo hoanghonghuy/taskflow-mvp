@@ -100,7 +100,7 @@ function BottomNavButton({ feature, isActive, onSelect, label }: BottomNavButton
       type="button"
       onClick={() => onSelect(feature.view)}
       aria-current={isActive ? 'page' : undefined}
-      className={`bottom-nav-button relative flex flex-col items-center justify-center gap-1 flex-1 mx-1 text-[10px] ${
+      className={`bottom-nav-button relative flex flex-col items-center justify-center gap-1 flex-1 mx-1 text-xs ${
         isActive ? 'text-foreground font-semibold' : 'text-muted-foreground'
       }`}
       data-active={isActive ? 'true' : undefined}

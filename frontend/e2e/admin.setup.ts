@@ -2,6 +2,7 @@ import { mkdirSync } from 'node:fs'
 import path from 'node:path'
 import { test as setup, expect } from '@playwright/test'
 import { submitLogin, submitRegister } from './helpers/auth'
+import { cleanupStaleE2eUsers } from './helpers/cleanup'
 import { E2E_ADMIN_EMAIL, E2E_ADMIN_PASSWORD, isMockE2e } from './helpers/env'
 import { E2E_PASSWORD, uniqueE2eAdminEmail } from './helpers/test-data'
 
@@ -21,6 +22,7 @@ setup('authenticate admin and save session', async ({ page }) => {
       password: E2E_ADMIN_PASSWORD,
     })
     await expect(page).toHaveURL(/\/admin/, { timeout: 30_000 })
+    await cleanupStaleE2eUsers(page)
   }
 
   await page.context().storageState({ path: adminAuthFile })

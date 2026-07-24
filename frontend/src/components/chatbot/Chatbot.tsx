@@ -114,7 +114,11 @@ const Chatbot: React.FC<ChatbotProps> = ({ onClose }) => {
           </button>
         </header>
 
-        <div className="grow p-4 overflow-y-auto space-y-4">
+        <div
+          aria-live="polite"
+          aria-busy={isLoading}
+          className="grow p-4 overflow-y-auto space-y-4"
+        >
           {messages.map((msg) => (
             <div key={msg.id}>
               <div className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
