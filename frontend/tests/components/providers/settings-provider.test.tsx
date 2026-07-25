@@ -77,6 +77,224 @@ describe('SettingsProvider', () => {
     await waitFor(() => expect(screen.getByText('light')).toBeInTheDocument())
   })
 
+  it('migrates anonymous settings into the user cache on login so theme does not reset to light', async () => {
+    localStorage.setItem(
+      'settings',
+      JSON.stringify({ language: 'en', theme: 'dark', notifications: false }),
+    )
+
+    const { rerender } = render(
+      <I18nProvider initialLocale="en">
+        <SettingsProvider
+          initialLocale="en"
+          authScope={{ ready: true, userId: null }}
+        >
+          <SettingsThemeProbe />
+        </SettingsProvider>
+      </I18nProvider>,
+    )
+
+    await waitFor(() => expect(screen.getByText('dark')).toBeInTheDocument())
+
+    rerender(
+      <I18nProvider initialLocale="en">
+        <SettingsProvider
+          initialLocale="en"
+          authScope={{ ready: true, userId: 'user-login' }}
+        >
+          <SettingsThemeProbe />
+        </SettingsProvider>
+      </I18nProvider>,
+    )
+
+    await waitFor(() => expect(screen.getByText('dark')).toBeInTheDocument())
+    expect(JSON.parse(localStorage.getItem(settingsStorageKey('user-login'))!)).toMatchObject({
+      theme: 'dark',
+      notifications: false,
+    })
+  })
+
+  it('keeps migrated theme when backend still returns the light default', async () => {
+    localStorage.setItem('settings', JSON.stringify({ language: 'en', theme: 'dark' }))
+    vi.mocked(fetch).mockImplementation(async (input, init) => {
+      const url = String(input)
+      if (url.includes('/api/settings') && (!init || init.method === 'GET' || init.method === undefined)) {
+        return {
+          ok: true,
+          json: async () => ({ language: 'en', theme: 'light' }),
+        } as Response
+      }
+      return { ok: true, json: async () => ({}) } as Response
+    })
+
+    render(
+      <I18nProvider initialLocale="en">
+        <SettingsProvider
+          initialLocale="en"
+          authScope={{ ready: true, userId: 'user-login' }}
+        >
+          <SettingsThemeProbe />
+        </SettingsProvider>
+      </I18nProvider>,
+    )
+
+    await waitFor(() => expect(screen.getByText('dark')).toBeInTheDocument())
+    // Give the backend fetch a chance to race; migrated local must win.
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 30))
+    })
+    expect(screen.getByText('dark')).toBeInTheDocument()
+  })
+
+  it('changing language does not rewrite other users settings caches', async () => {
+    localStorage.setItem(
+      settingsStorageKey('user-a'),
+      JSON.stringify({ language: 'en', theme: 'dark' }),
+    )
+    localStorage.setItem(
+      settingsStorageKey('user-b'),
+      JSON.stringify({ language: 'en', theme: 'light' }),
+    )
+
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <I18nProvider initialLocale="en">
+        <SettingsProvider
+          initialLocale="en"
+          authScope={{ ready: true, userId: 'user-a' }}
+        >
+          {children}
+        </SettingsProvider>
+      </I18nProvider>
+    )
+
+    const { result } = renderHook(() => useSettings(), { wrapper })
+    await waitFor(() => expect(result.current.hydrated).toBe(true))
+
+    act(() => {
+      result.current.setLanguage('vi')
+    })
+
+    await waitFor(() => expect(result.current.language).toBe('vi'))
+    expect(JSON.parse(localStorage.getItem(settingsStorageKey('user-b'))!)).toMatchObject({
+      language: 'en',
+      theme: 'light',
+    })
+  })
+
+  it('mirrors authenticated settings to anonymous cache so logout keeps theme', async () => {
+    let authScope = { ready: true, userId: 'user-a' as string | null }
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <I18nProvider initialLocale="en">
+        <SettingsProvider initialLocale="en" authScope={authScope}>
+          {children}
+        </SettingsProvider>
+      </I18nProvider>
+    )
+
+    const { result, rerender } = renderHook(() => useSettings(), { wrapper })
+
+    await waitFor(() => expect(result.current.hydrated).toBe(true))
+
+    act(() => {
+      result.current.setTheme('dark')
+    })
+
+    expect(JSON.parse(localStorage.getItem(settingsStorageKey('user-a'))!)).toMatchObject({
+      theme: 'dark',
+    })
+    expect(JSON.parse(localStorage.getItem('settings')!)).toMatchObject({
+      theme: 'dark',
+    })
+
+    authScope = { ready: true, userId: null }
+    rerender()
+
+    await waitFor(() => {
+      expect(result.current.hydrated).toBe(true)
+      expect(result.current.theme).toBe('dark')
+    })
+  })
+
+  it('on login from guest overlays anonymous theme onto existing user cache', async () => {
+    localStorage.setItem(
+      settingsStorageKey('user-a'),
+      JSON.stringify({ language: 'en', theme: 'light', notifications: true }),
+    )
+    localStorage.setItem(
+      'settings',
+      JSON.stringify({ language: 'en', theme: 'dark', notifications: false }),
+    )
+
+    const { rerender } = render(
+      <I18nProvider initialLocale="en">
+        <SettingsProvider
+          initialLocale="en"
+          authScope={{ ready: true, userId: null }}
+        >
+          <SettingsThemeProbe />
+        </SettingsProvider>
+      </I18nProvider>,
+    )
+
+    await waitFor(() => expect(screen.getByText('dark')).toBeInTheDocument())
+
+    rerender(
+      <I18nProvider initialLocale="en">
+        <SettingsProvider
+          initialLocale="en"
+          authScope={{ ready: true, userId: 'user-a' }}
+        >
+          <SettingsThemeProbe />
+        </SettingsProvider>
+      </I18nProvider>,
+    )
+
+    await waitFor(() => expect(screen.getByText('dark')).toBeInTheDocument())
+    expect(JSON.parse(localStorage.getItem(settingsStorageKey('user-a'))!)).toMatchObject({
+      theme: 'dark',
+      // account-specific prefs stay from user cache
+      notifications: true,
+    })
+  })
+
+  it('does not overlay anonymous theme when switching accounts', async () => {
+    localStorage.setItem('settings', JSON.stringify({ language: 'en', theme: 'dark' }))
+    localStorage.setItem(
+      settingsStorageKey('user-a'),
+      JSON.stringify({ language: 'en', theme: 'dark' }),
+    )
+    localStorage.setItem(
+      settingsStorageKey('user-b'),
+      JSON.stringify({ language: 'en', theme: 'light' }),
+    )
+
+    const { rerender } = render(
+      <I18nProvider initialLocale="en">
+        <SettingsProvider
+          initialLocale="en"
+          authScope={{ ready: true, userId: 'user-a' }}
+        >
+          <SettingsThemeProbe />
+        </SettingsProvider>
+      </I18nProvider>,
+    )
+
+    await waitFor(() => expect(screen.getByText('dark')).toBeInTheDocument())
+
+    rerender(
+      <I18nProvider initialLocale="en">
+        <SettingsProvider
+          initialLocale="en"
+          authScope={{ ready: true, userId: 'user-b' }}
+        >
+          <SettingsThemeProbe />
+        </SettingsProvider>
+      </I18nProvider>,
+    )
+
+    await waitFor(() => expect(screen.getByText('light')).toBeInTheDocument())
+  })
+
   it('provides default settings', async () => {
     const { result } = renderHook(() => useSettings(), { wrapper: SettingsTestWrapper })
 

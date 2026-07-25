@@ -201,8 +201,9 @@ describe('responsive layout contracts', () => {
 
   it('avoids escaped quotes in Button svg size selectors for Tailwind CSS parsing', () => {
     const button = src('components/ui/button.tsx')
-    expect(button).not.toContain("class*=\\'size-")
-    expect(button).toContain("[&_svg:not([class*='size-'])]:size-4")
+    expect(button).toContain('[&_svg:not([class*=size-])]:size-4')
+    expect(button).not.toContain("class*='size-")
+    expect(button).not.toContain('class*="size-')
   })
 
   it('reserves bottom-nav space and keeps page titles consistent on mobile', () => {

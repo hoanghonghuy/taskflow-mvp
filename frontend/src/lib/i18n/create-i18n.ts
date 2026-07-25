@@ -25,17 +25,8 @@ export function createI18nInstance(locale: Settings['language']): I18nInstance {
 
     setLocaleCookie(lng as Settings['language'])
     document.documentElement.lang = lng
-
-    try {
-      const settings = localStorage.getItem('settings')
-      if (settings) {
-        const parsed = JSON.parse(settings) as Record<string, unknown>
-        parsed.language = lng
-        localStorage.setItem('settings', JSON.stringify(parsed))
-      }
-    } catch {
-      // ignore localStorage errors
-    }
+    // Settings persistence is owned by SettingsProvider (scoped keys).
+    // Do not rewrite every settings:* cache — that leaks language across accounts.
   })
 
   return instance

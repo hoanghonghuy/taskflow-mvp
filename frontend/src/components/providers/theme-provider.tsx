@@ -17,7 +17,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 const THEME_CLASS_NAMES = THEME_PRESET_IDS.map((id) => `theme-${id}`)
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const { theme, setTheme } = useSettings()
+  const { theme, setTheme, hydrated } = useSettings()
   const [systemTheme, setSystemTheme] = useState<'light' | 'dark'>(() => {
     if (typeof window === 'undefined') return 'light'
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
@@ -51,6 +51,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     if (typeof window === 'undefined') {
       return
     }
+    // Keep last DOM theme classes while settings re-hydrate (e.g. login scope change).
+    if (!hydrated) {
+      return
+    }
 
     const applyClasses = (element: Element) => {
       element.classList.remove(...THEME_CLASS_NAMES, 'light', 'dark')
@@ -74,7 +78,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     if (body) {
       body.setAttribute('data-theme', appliedTheme)
     }
-  }, [appliedTheme])
+  }, [appliedTheme, hydrated])
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme, appliedTheme }}>

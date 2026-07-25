@@ -40,6 +40,21 @@ export function settingsStorageKey(userId: string | null): string {
   return userId ? `settings:${userId}` : 'settings'
 }
 
+function persistSettingsSnapshot(
+  storageKey: string,
+  snapshot: Settings,
+  options?: { mirrorAnonymous?: boolean },
+): void {
+  try {
+    localStorage.setItem(storageKey, JSON.stringify(snapshot))
+    if (options?.mirrorAnonymous && storageKey !== settingsStorageKey(null)) {
+      localStorage.setItem(settingsStorageKey(null), JSON.stringify(snapshot))
+    }
+  } catch {
+    // ignore localStorage errors
+  }
+}
+
 function handleAuthFailure(): void {
   emitSessionExpired()
 }
@@ -69,6 +84,7 @@ export function SettingsProvider({ children, initialLocale, authScope }: Setting
   const [hydrated, setHydrated] = useState(false)
   const initialLocaleRef = useRef(initialLocale)
   const settingsDirtyAtRef = useRef(0)
+  const previousStorageKeyRef = useRef<string | null>(null)
 
   const applyLanguage = useCallback(async (language: Settings['language']) => {
     setLocaleCookie(language)
@@ -83,24 +99,70 @@ export function SettingsProvider({ children, initialLocale, authScope }: Setting
     const hydrateFromStorage = async () => {
       if (!authReady) return
 
+      setHydrated(false)
+
       let nextSettings: Settings = {
         ...DEFAULT_SETTINGS,
         language: initialLocaleRef.current,
       }
       const savedSettings = localStorage.getItem(storageKey)
+      const previousStorageKey = previousStorageKeyRef.current
+      previousStorageKeyRef.current = storageKey
+      const isLoginFromGuest =
+        Boolean(userId) && previousStorageKey === settingsStorageKey(null)
+      let shouldPushBackend = false
 
       if (savedSettings) {
         try {
           const parsed = JSON.parse(savedSettings) as Settings
           nextSettings = mapSettingsFromApi(parsed, nextSettings)
-          try {
-            localStorage.setItem(storageKey, JSON.stringify(nextSettings))
-          } catch {
-            // ignore localStorage errors
+
+          if (isLoginFromGuest) {
+            const anonymousSettings = localStorage.getItem(settingsStorageKey(null))
+            if (anonymousSettings) {
+              try {
+                const anonymous = JSON.parse(anonymousSettings) as Settings
+                const themeChanged =
+                  anonymous.theme != null && anonymous.theme !== nextSettings.theme
+                const languageChanged =
+                  anonymous.language != null && anonymous.language !== nextSettings.language
+                if (themeChanged || languageChanged) {
+                  nextSettings = {
+                    ...nextSettings,
+                    ...(themeChanged ? { theme: anonymous.theme } : {}),
+                    ...(languageChanged ? { language: anonymous.language } : {}),
+                  }
+                  shouldPushBackend = true
+                  settingsDirtyAtRef.current = Date.now()
+                }
+              } catch (error) {
+                console.error(t('console.failedParseSettings'), error)
+              }
+            }
           }
+
+          persistSettingsSnapshot(storageKey, nextSettings, {
+            mirrorAnonymous: Boolean(userId),
+          })
         } catch (error) {
           console.error(t('console.failedParseSettings'), error)
           localStorage.removeItem(storageKey)
+        }
+      } else if (userId) {
+        // Login / first visit for this account: keep anonymous pre-auth preferences
+        // (theme, language, etc.) instead of snapping back to DEFAULT light.
+        const anonymousSettings = localStorage.getItem(settingsStorageKey(null))
+        if (anonymousSettings) {
+          try {
+            const parsed = JSON.parse(anonymousSettings) as Settings
+            nextSettings = mapSettingsFromApi(parsed, nextSettings)
+            shouldPushBackend = true
+            // Mark dirty before any await so a racing backend fetch cannot overwrite.
+            settingsDirtyAtRef.current = Date.now()
+            persistSettingsSnapshot(storageKey, nextSettings, { mirrorAnonymous: true })
+          } catch (error) {
+            console.error(t('console.failedParseSettings'), error)
+          }
         }
       }
 
@@ -111,6 +173,15 @@ export function SettingsProvider({ children, initialLocale, authScope }: Setting
       if (!cancelled) {
         setSettings(nextSettings)
         setHydrated(true)
+        if (shouldPushBackend && canUseBackend) {
+          void settingsApi.updateSettings(nextSettings).catch((error) => {
+            if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
+              handleAuthFailure()
+              return
+            }
+            console.error('Failed to persist migrated settings to backend', error)
+          })
+        }
       }
     }
 
@@ -119,7 +190,7 @@ export function SettingsProvider({ children, initialLocale, authScope }: Setting
     return () => {
       cancelled = true
     }
-  }, [applyLanguage, authReady, storageKey, t])
+  }, [applyLanguage, authReady, canUseBackend, storageKey, t, userId])
 
   useEffect(() => {
     let isMounted = true
@@ -132,19 +203,18 @@ export function SettingsProvider({ children, initialLocale, authScope }: Setting
       try {
         const data = await settingsApi.fetchSettings()
         if (!isMounted || data == null) return
-        // Ignore stale fetch if user already changed settings locally
-        if (settingsDirtyAtRef.current > loadStartedAt) return
+        // Ignore stale/racing fetch if local settings changed at the same tick or later
+        // (login migrate, user edits). Use >= so same-ms races keep local preference.
+        if (settingsDirtyAtRef.current >= loadStartedAt) return
 
         let mergedLanguage: Settings['language'] | undefined
 
         setSettings((prev) => {
           const merged = mapSettingsFromApi(data, prev)
           mergedLanguage = merged.language
-          try {
-            localStorage.setItem(storageKey, JSON.stringify(merged))
-          } catch {
-            // ignore localStorage errors
-          }
+          persistSettingsSnapshot(storageKey, merged, {
+            mirrorAnonymous: Boolean(userId),
+          })
           return merged
         })
 
@@ -165,7 +235,7 @@ export function SettingsProvider({ children, initialLocale, authScope }: Setting
     return () => {
       isMounted = false
     }
-  }, [applyLanguage, canUseBackend, storageKey])
+  }, [applyLanguage, canUseBackend, storageKey, userId])
 
   const persistToBackend = useCallback((payload: Partial<Settings>) => {
     if (typeof window === 'undefined') return
@@ -185,12 +255,10 @@ export function SettingsProvider({ children, initialLocale, authScope }: Setting
     setSettings((prev) => {
       const updated = { ...prev, ...updates }
 
-      try {
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(storageKey, JSON.stringify(updated))
-        }
-      } catch {
-        // ignore localStorage errors
+      if (typeof window !== 'undefined') {
+        persistSettingsSnapshot(storageKey, updated, {
+          mirrorAnonymous: Boolean(userId),
+        })
       }
 
       return updated
@@ -200,22 +268,20 @@ export function SettingsProvider({ children, initialLocale, authScope }: Setting
     if (updates.language) {
       void applyLanguage(updates.language)
     }
-  }, [applyLanguage, persistToBackend, storageKey])
+  }, [applyLanguage, persistToBackend, storageKey, userId])
 
   const resetSettings = useCallback(() => {
     setSettings(DEFAULT_SETTINGS)
 
-    try {
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(storageKey, JSON.stringify(DEFAULT_SETTINGS))
-      }
-    } catch {
-      // ignore localStorage errors
+    if (typeof window !== 'undefined') {
+      persistSettingsSnapshot(storageKey, DEFAULT_SETTINGS, {
+        mirrorAnonymous: Boolean(userId),
+      })
     }
 
     void applyLanguage(DEFAULT_SETTINGS.language)
     persistToBackend(DEFAULT_SETTINGS)
-  }, [applyLanguage, persistToBackend, storageKey])
+  }, [applyLanguage, persistToBackend, storageKey, userId])
 
   const setTheme = useCallback((theme: Settings['theme']) => {
     updateSettings({ theme })

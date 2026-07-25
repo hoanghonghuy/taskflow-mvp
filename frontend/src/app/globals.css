@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Only scan app source — exclude tests/caches that can embed escaped class snippets. */
+@source not "../../tests";
+@source not "../../.next";
+@source not "../../.next-e2e";
+
 /* Theme configuration using @theme directive */
 @theme {
   /* Base colors */
