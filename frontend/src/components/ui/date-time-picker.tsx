@@ -73,7 +73,7 @@ export function DateTimePicker({
       </PopoverTrigger>
       <PopoverContent
         data-dtp-content="true"
-        className="w-[320px] space-y-4 p-4 rounded-xl border border-border bg-card shadow-xl"
+        className="w-[320px] space-y-4 p-4 rounded-xl border border-border bg-card shadow-lg"
         align="end"
       >
         <Calendar
@@ -97,7 +97,7 @@ export function DateTimePicker({
             type="time"
             value={timeValue}
             onChange={(e) => handleTimeChange(e.target.value)}
-            className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+            className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
           <Button
             type="button"

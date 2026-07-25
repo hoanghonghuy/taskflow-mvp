@@ -56,7 +56,7 @@ const MoreMenu: React.FC<MoreMenuProps> = ({ hiddenViews, currentView, onClose }
   return (
     <div
       ref={menuRef}
-      className="absolute bottom-full right-0 mb-2 w-48 rounded-xl border border-border/80 bg-card shadow-xl backdrop-blur-xl animate-fade-in"
+      className="absolute bottom-full right-0 mb-2 w-48 rounded-xl border border-border/80 bg-card shadow-lg backdrop-blur-xl animate-fade-in"
     >
       <div className="p-2 space-y-1">
         {hiddenViews.map((view, index) => {

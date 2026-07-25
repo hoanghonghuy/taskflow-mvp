@@ -90,7 +90,7 @@ const ShareListModal: React.FC<ShareListModalProps> = ({ list, onClose }) => {
       <AccessibleModalSurface
         aria-label={t('shareList.title', { listName: list.name })}
         onClose={onClose}
-        className="bg-card rounded-lg shadow-xl w-full max-w-md max-h-[calc(100dvh-2rem)] flex flex-col"
+        className="bg-card rounded-lg shadow-lg w-full max-w-md max-h-[calc(100dvh-2rem)] flex flex-col"
       >
         <header className="p-4 border-b border-border flex items-center justify-between shrink-0">
           <div>
@@ -165,7 +165,7 @@ const ShareListModal: React.FC<ShareListModalProps> = ({ list, onClose }) => {
                     setInviteError(null)
                   }}
                   placeholder={t('shareList.inviteEmailPlaceholder')}
-                  className="flex-1 px-3 py-2 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  className="flex-1 px-3 py-2 rounded-md border border-border bg-background text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                   disabled={isInviting}
                   autoComplete="off"
                 />

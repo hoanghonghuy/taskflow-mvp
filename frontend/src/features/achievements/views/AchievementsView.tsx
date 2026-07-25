@@ -40,7 +40,7 @@ const AchievementsView: React.FC = () => {
                 key={achievement.id}
                 className={`
                   bg-card border border-border rounded-lg p-6 flex flex-col items-center justify-center text-center
-                  transition-all duration-300
+                  transition-[opacity,filter,box-shadow] duration-200
                   ${isUnlocked ? 'opacity-100 shadow-md' : 'opacity-50 filter grayscale'}
                 `}
                 title={isUnlocked ? description : t('achievements.locked.description')}
@@ -51,7 +51,7 @@ const AchievementsView: React.FC = () => {
                 `}>
                   {achievement.icon}
                 </div>
-                <h3 className="font-bold text-lg mb-2">{title}</h3>
+                <h3 className="font-semibold text-lg mb-2">{title}</h3>
                 <p className="text-sm text-muted-foreground mb-2">{description}</p>
                 {!isUnlocked && (
                   <p className="text-xs text-muted-foreground mt-1">

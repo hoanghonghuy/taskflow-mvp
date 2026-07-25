@@ -101,7 +101,7 @@ const ListView: React.FC = () => {
       {canAddTask && (
       <button
         onClick={() => openTaskForm()}
-        className="flex fixed md:absolute bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] md:bottom-8 right-4 md:right-8 bg-primary text-primary-foreground rounded-full p-4 shadow-lg hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-transform hover:scale-105 z-20"
+        className="flex fixed md:absolute bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] md:bottom-8 right-4 md:right-8 bg-primary text-primary-foreground rounded-full p-4 shadow-lg hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-transform hover:scale-105 z-20"
         aria-label={t('taskList.addTask')}
       >
         <PlusIcon className="h-6 w-6" />

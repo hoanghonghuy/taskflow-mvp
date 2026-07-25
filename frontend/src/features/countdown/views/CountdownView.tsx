@@ -266,7 +266,7 @@ const CountdownView: React.FC = () => {
               )}
             </div>
             {isAdding && (
-              <div className="flex flex-col gap-4 rounded-2xl border border-border-subtle/80 bg-card/80 p-4 backdrop-blur">
+              <div className="flex flex-col gap-4 rounded-lg border border-border-subtle/80 bg-card/80 p-4 backdrop-blur">
                 <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_240px]">
                   <div className="space-y-2">
                     <label htmlFor="new-countdown-name" className="text-sm font-medium text-muted-foreground">

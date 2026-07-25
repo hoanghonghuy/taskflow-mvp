@@ -40,10 +40,9 @@ export function StatCard({
       className={cn(
         'text-left transition-colors',
         variant === 'default' && 'rounded-lg border border-border bg-card p-6 shadow-sm',
-        variant === 'compact' && 'rounded-2xl border border-border bg-card p-4 shadow-sm',
+        variant === 'compact' && 'rounded-lg border border-border bg-card p-4 shadow-sm',
         variant === 'muted' && 'rounded-lg bg-secondary/50 p-4',
-        onClick && 'cursor-pointer hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-        className,
+        onClick && 'cursor-pointer hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',        className,
       )}
     >
       <div className="flex items-center gap-2">

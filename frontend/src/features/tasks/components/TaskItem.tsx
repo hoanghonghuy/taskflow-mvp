@@ -197,7 +197,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
         onDragEnd={() => setIsDragOver(false)}
         className={`
           group flex items-center p-3 bg-card shadow-sm relative
-          transition-all duration-200 ease-in-out
+          transition-[box-shadow,background-color,opacity] duration-200 ease-in-out
           ${canDrag ? 'cursor-grab' : 'cursor-pointer'}
           ${task.completed ? 'opacity-50' : 'opacity-100'}
           ${isDragOver ? 'bg-primary/10 shadow-lg' : 'hover:shadow-md'}
@@ -211,8 +211,8 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
           className={`
             h-5 w-5 rounded shrink-0
             flex items-center justify-center 
-            transition-all duration-150 transform hover:scale-110
-            focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
+            transition-transform duration-150 transform hover:scale-110
+            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
             ${isReadOnly ? 'cursor-not-allowed opacity-60' : ''}
             ${task.completed 
               ? 'bg-primary border-2 border-primary' 
@@ -295,8 +295,8 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
                   className={`
                     h-4 w-4 rounded-sm shrink-0
                     flex items-center justify-center 
-                    transition-all duration-150
-                    focus:outline-none focus:ring-1 focus:ring-ring
+                    transition-colors duration-150
+                    focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring
                     ${subtask.completed 
                       ? 'bg-primary border border-primary' 
                       : 'bg-transparent border border-muted-foreground/50'

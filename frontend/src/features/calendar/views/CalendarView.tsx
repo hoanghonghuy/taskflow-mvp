@@ -262,7 +262,7 @@ const CalendarView: React.FC = () => {
       <AppPageMain className="py-4 md:py-6 space-y-4 md:space-y-6">
         {viewMode === 'month' ? (
           <>
-            <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
+            <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
               <div className="grid grid-cols-7 border-b border-border bg-muted/30">
                 {DAY_LABELS.map(label => (
                   <div key={label} className="p-1.5 text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground md:p-3 md:text-sm">
@@ -352,7 +352,7 @@ const CalendarView: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div className="lg:col-span-2 bg-card border border-border rounded-2xl p-4 shadow-sm">
+              <div className="lg:col-span-2 bg-card border border-border rounded-lg p-4 shadow-sm">
                 <div className="flex items-center gap-2 mb-4">
                   <CalendarIcon className="h-5 w-5 text-primary" />
                   <div>
@@ -392,7 +392,7 @@ const CalendarView: React.FC = () => {
                   </div>
                 )}
               </div>
-              <div className="bg-card border border-border rounded-2xl p-4 shadow-sm">
+              <div className="bg-card border border-border rounded-lg p-4 shadow-sm">
                 <h3 className="font-semibold mb-4">{t('calendar.legend.title')}</h3>
                 <div className="space-y-3 text-sm">
                   {(['urgent', 'high', 'medium', 'low', 'none'] as const).map(priority => (
@@ -411,7 +411,7 @@ const CalendarView: React.FC = () => {
             </div>
           </>
         ) : (
-          <div className="bg-card border border-border rounded-2xl shadow-sm">
+          <div className="bg-card border border-border rounded-xl shadow-sm">
             <div className="p-4 border-b border-border">
               <h3 className="font-semibold">{t('calendar.upcomingAgenda')}</h3>
               <p className="text-sm text-muted-foreground">

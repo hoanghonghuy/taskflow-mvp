@@ -158,7 +158,7 @@ function CalendarSkeleton() {
   return (
     <div className="space-y-4 py-4 md:space-y-6 md:py-6">
       <PageHeaderSkeleton withActions />
-      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
         <div className="grid grid-cols-7 border-b border-border">
           {Array.from({ length: 7 }).map((_, i) => (
             <div key={i} className="flex justify-center py-2">
@@ -209,7 +209,7 @@ function HabitsSkeleton() {
       <PageHeaderSkeleton withActions />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+          <div key={i} className="rounded-lg border border-border bg-card p-4 shadow-sm">
             <div className="mb-2 flex items-center gap-2">
               <Skeleton className="size-2.5 rounded-full" />
               <Skeleton className="h-3.5 w-24" />
@@ -220,7 +220,7 @@ function HabitsSkeleton() {
       </div>
       <div className="space-y-4">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+          <div key={i} className="rounded-lg border border-border bg-card p-6 shadow-sm">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
               <div className="space-y-2">
                 <Skeleton className="h-5 w-40" />

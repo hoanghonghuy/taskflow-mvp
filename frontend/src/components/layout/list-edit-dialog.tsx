@@ -78,7 +78,7 @@ export function ListEditDialog({ list, open, onOpenChange }: ListEditDialogProps
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 bg-secondary border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 bg-secondary border border-border rounded-lg text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               disabled={saving}
             />
           </div>

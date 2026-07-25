@@ -127,7 +127,7 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
               onChange={(e) => setColumnName(e.target.value)}
               onBlur={handleRenameSubmit}
               autoFocus
-              className="font-semibold text-sm p-1 -m-1 bg-secondary rounded-md focus:outline-none focus:ring-2 focus:ring-primary w-full"
+              className="font-semibold text-sm p-1 -m-1 bg-secondary rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring w-full"
             />
           </form>
         ) : canManageColumns ? (

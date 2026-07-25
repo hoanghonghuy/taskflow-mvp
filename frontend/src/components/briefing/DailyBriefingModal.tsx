@@ -65,7 +65,7 @@ const DailyBriefingModal: React.FC<DailyBriefingModalProps> = ({ onClose }) => {
       <AccessibleModalSurface
         aria-label={t('briefing.title')}
         onClose={onClose}
-        className="bg-card rounded-lg shadow-xl w-full max-w-2xl flex flex-col h-full max-h-[calc(100dvh-2rem)]"
+        className="bg-card rounded-lg shadow-lg w-full max-w-2xl flex flex-col h-full max-h-[calc(100dvh-2rem)]"
       >
         <header className="p-4 border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-3">

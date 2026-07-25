@@ -389,7 +389,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
             onClick={() => { if (!isReadOnly) void toggleTask(task.id) }}
             disabled={isReadOnly}
             aria-label={task.completed ? t('taskItem.aria.markIncomplete') : t('taskItem.aria.markComplete')}
-            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${isReadOnly ? 'cursor-not-allowed opacity-50' : ''} ${task.completed ? 'border-primary bg-primary' : `bg-background ${priorityClasses.checkboxBorderColor}`}`}
+            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${isReadOnly ? 'cursor-not-allowed opacity-50' : ''} ${task.completed ? 'border-primary bg-primary' : `bg-background ${priorityClasses.checkboxBorderColor}`}`}
           >
             {task.completed && <CheckIcon className="h-3.5 w-3.5 text-primary-foreground" />}
           </button>
@@ -588,7 +588,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                       value={task.recurrence.interval || 1}
                       disabled={isReadOnly}
                       onChange={(e) => handleRecurrenceIntervalChange(parseInt(e.target.value) || 1)}
-                      className="w-16 rounded-md border border-border bg-background p-1.5 text-center text-sm focus:outline-none focus:ring-2 focus:ring-primary/25"
+                      className="w-16 rounded-md border border-border bg-background p-1.5 text-center text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25"
                     />
                     <span className="text-xs text-muted-foreground">
                       {task.recurrence.type === 'daily'
@@ -781,8 +781,8 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                     disabled={isReadOnly}
                     aria-label={st.completed ? t('taskItem.aria.markIncomplete') : t('taskItem.aria.markComplete')}
                     className={`
-                      -m-3 flex size-11 shrink-0 items-center justify-center rounded-md transition-all duration-150 md:m-0 md:size-4
-                      focus:outline-none focus:ring-1 focus:ring-ring
+                      -m-3 flex size-11 shrink-0 items-center justify-center rounded-md transition-colors duration-150 md:m-0 md:size-4
+                      focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring
                       ${isReadOnly ? 'cursor-not-allowed opacity-50' : ''}
                     `}
                   >

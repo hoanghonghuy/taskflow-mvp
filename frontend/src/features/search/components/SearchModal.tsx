@@ -101,7 +101,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose }) => {
       <AccessibleModalSurface
         aria-label={t('common.search')}
         onClose={onClose}
-        className="bg-card rounded-lg shadow-xl w-full max-w-2xl flex flex-col h-full max-h-[calc(100dvh-2rem)]" 
+        className="bg-card rounded-lg shadow-lg w-full max-w-2xl flex flex-col h-full max-h-[calc(100dvh-2rem)]" 
         onClick={e => e.stopPropagation()}
       >
         <header className="p-4 flex items-center border-b border-border">

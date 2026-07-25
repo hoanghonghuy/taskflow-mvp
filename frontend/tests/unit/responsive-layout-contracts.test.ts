@@ -51,6 +51,152 @@ describe('responsive layout contracts', () => {
       '<AppPageMain className="py-4 md:py-6">',
     )
     expect(src('app/(app)/dashboard/page.tsx')).not.toContain('rounded-lg p-5')
+
+    const habitCards = src('features/habits/views/HabitsView.tsx')
+    expect(habitCards).toContain('rounded-lg p-6 shadow-sm')
+    expect(habitCards).not.toContain('rounded-2xl p-5')
+
+    expect(src('features/profile/views/ProfileView.tsx')).toContain(
+      'bg-card border border-border rounded-lg p-6',
+    )
+    expect(src('features/achievements/views/AchievementsView.tsx')).toContain(
+      'rounded-lg p-6',
+    )
+  })
+
+  it('prefers shared Button / IconButton for common profile and habit actions', () => {
+    const profile = src('features/profile/views/ProfileView.tsx')
+    expect(profile).toContain("from '@/components/ui/button'")
+    expect(profile).toMatch(/<Button[\s\S]*profile\.save/)
+    expect(profile).toMatch(/<Button[\s\S]*profile\.cancel/)
+
+    const habits = src('features/habits/views/HabitsView.tsx')
+    expect(habits).toContain("from '@/components/ui/icon-button'")
+    expect(habits).toContain('variant="destructive"')
+    expect(habits).toContain("aria-label={t('habits.aria.deleteHabit')}")
+  })
+
+  it('applies shared radius, elevation, motion, and focus polish', () => {
+    const statCard = src('components/ui/stat-card.tsx')
+    expect(statCard).toContain(
+      "variant === 'compact' && 'rounded-lg border border-border bg-card p-4 shadow-sm'",
+    )
+    expect(statCard).not.toContain('rounded-2xl border border-border bg-card p-4')
+
+    const achievements = src('features/achievements/views/AchievementsView.tsx')
+    expect(achievements).toContain(
+      'transition-[opacity,filter,box-shadow] duration-200',
+    )
+    expect(achievements).not.toContain('transition-all duration-300')
+    expect(achievements).toContain('font-semibold text-lg')
+
+    const settings = src('features/settings/views/SettingsView.tsx')
+    expect(settings).toContain(
+      'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4',
+    )
+    expect(settings).toContain(
+      'group flex items-center gap-3 rounded-lg border p-3 text-left transition-colors',
+    )
+
+    const featureBar = src('components/layout/feature-bar.tsx')
+    expect(featureBar).toContain(
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+    )
+    expect(featureBar).not.toContain(
+      'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background',
+    )
+  })
+
+  it('cleans leftover Phase 3 polish on list, calendar, and chrome', () => {
+    const calendar = src('features/calendar/views/CalendarView.tsx')
+    expect(calendar).not.toContain('rounded-2xl')
+    expect(calendar).toContain('rounded-xl overflow-hidden shadow-sm')
+    expect(calendar).toContain('rounded-lg p-4 shadow-sm')
+
+    const taskList = src('features/tasks/components/TaskList.tsx')
+    expect(taskList).not.toContain('rounded-2xl')
+    expect(taskList).toContain('grid grid-cols-2 sm:grid-cols-4 gap-4')
+    expect(taskList).toContain('rounded-lg border border-border/60')
+
+    const taskItem = src('features/tasks/components/TaskItem.tsx')
+    expect(taskItem).toContain(
+      'transition-[box-shadow,background-color,opacity] duration-200 ease-in-out',
+    )
+    expect(taskItem).toContain(
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+    )
+    expect(taskItem).not.toContain(
+      'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+    )
+
+    const listView = src('features/tasks/views/ListView.tsx')
+    expect(listView).toContain(
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+    )
+    expect(listView).not.toContain(
+      'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+    )
+
+    const skeleton = src('components/layout/page-skeleton.tsx')
+    expect(skeleton).not.toMatch(/habits[\s\S]*rounded-2xl/)
+    expect(skeleton).toContain('rounded-lg border border-border bg-card p-6 shadow-sm')
+
+    expect(src('components/layout/sidebar.tsx')).toContain(
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card',
+    )
+    expect(src('features/tasks/components/TaskDetail.tsx')).toContain(
+      'transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+    )
+    expect(src('features/countdown/views/CountdownView.tsx')).toContain(
+      'flex flex-col gap-4 rounded-lg border border-border-subtle/80',
+    )
+    expect(src('components/auth/profile-dropdown.tsx')).toContain('shadow-lg')
+    expect(src('components/auth/profile-dropdown.tsx')).not.toContain('shadow-2xl')
+    expect(src('features/tasks/components/TaskForm.tsx')).toContain('shadow-lg w-full max-w-lg')
+    expect(src('features/tasks/components/TaskForm.tsx')).not.toContain('shadow-xl w-full max-w-lg')
+    expect(src('features/profile/views/ProfileView.tsx')).toContain(
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+    )
+  })
+
+  it('finishes Low polish on modals and create fields', () => {
+    for (const file of [
+      'components/briefing/DailyBriefingModal.tsx',
+      'components/chatbot/Chatbot.tsx',
+      'components/collaboration/ShareListModal.tsx',
+      'features/search/components/SearchModal.tsx',
+      'features/pomodoro/views/PomodoroView.tsx',
+      'components/layout/bottom-nav-bar.tsx',
+      'components/ui/date-time-picker.tsx',
+    ]) {
+      expect(src(file)).not.toContain('shadow-xl')
+      expect(src(file)).toContain('shadow-lg')
+    }
+
+    expect(src('features/pomodoro/views/PomodoroView.tsx')).not.toContain('rounded-2xl shadow')
+    expect(src('features/pomodoro/views/PomodoroView.tsx')).toContain('rounded-xl shadow-lg')
+
+    expect(src('features/board/views/BoardView.tsx')).toContain(
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+    )
+    expect(src('features/board/views/BoardView.tsx')).not.toContain(
+      'focus:outline-none focus:ring-2 focus:ring-primary',
+    )
+    expect(src('features/habits/views/HabitsView.tsx')).toContain(
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+    )
+    expect(src('features/habits/views/HabitsView.tsx')).not.toContain(
+      'focus:outline-none focus:ring-2 focus:ring-primary',
+    )
+    expect(src('components/layout/list-edit-dialog.tsx')).toContain(
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+    )
+    expect(src('features/tasks/components/TaskForm.tsx')).not.toContain(
+      'focus:outline-none focus:ring-2 focus:ring-primary/50',
+    )
+    expect(src('features/tasks/components/TaskForm.tsx')).toContain(
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+    )
   })
 
   it('reserves bottom-nav space and keeps page titles consistent on mobile', () => {

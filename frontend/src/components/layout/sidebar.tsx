@@ -191,7 +191,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
           <Dialog open={isProfileDialogOpen} onOpenChange={setProfileDialogOpen}>
             <DialogTrigger asChild>
               <button
-                className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-card md:hidden"
+                className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card md:hidden"
               >
                 <Avatar user={user} className="w-9 h-9" />
                 <span className="text-sm font-semibold truncate max-w-28">{user?.name || t('profile.viewProfile')}</span>

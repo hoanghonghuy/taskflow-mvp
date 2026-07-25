@@ -158,7 +158,7 @@ const SettingsView: React.FC = () => {
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
               {filteredThemeOptions.map((option) => {
                 const isSelected = theme === option.id
                 return (
@@ -167,7 +167,7 @@ const SettingsView: React.FC = () => {
                     type="button"
                     onClick={() => setTheme(option.id)}
                     aria-pressed={isSelected}
-                    className={`group flex items-center gap-3 rounded-xl border p-3 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                    className={`group flex items-center gap-3 rounded-lg border p-3 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                       isSelected
                         ? 'border-primary bg-primary/5 shadow-sm'
                         : 'border-border hover:border-primary/60 hover:bg-muted/20'

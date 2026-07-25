@@ -9,6 +9,7 @@ import { CalendarIcon, CheckCircleIcon, ClockIcon, TrophyIcon } from 'lucide-rea
 import { toYYYYMMDD } from '@/lib/utils/date-helpers'
 import { AppPage, AppPageMain } from '@/components/layout/app-page'
 import { AppPageHeader } from '@/components/layout/app-page-header'
+import { Button } from '@/components/ui/button'
 import { StatCard } from '@/components/ui/stat-card'
 import { useToast } from '@/lib/hooks/use-toast'
 import * as profileApi from '@/lib/api/profile'
@@ -153,40 +154,40 @@ const ProfileView: React.FC = () => {
                       type="text"
                       value={editName}
                       onChange={(e) => setEditName(e.target.value)}
-                      className="w-full px-3 py-2 rounded-md border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      className="w-full px-3 py-2 rounded-md border border-border bg-background text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       autoFocus
                       required
                       minLength={1}
                     />
                     <div className="flex gap-2">
-                      <button
+                      <Button
                         type="submit"
                         disabled={isSaving || !editName.trim()}
-                        className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium disabled:opacity-50"
                       >
                         {t('profile.save')}
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         type="button"
+                        variant="outline"
                         onClick={handleCancelEdit}
                         disabled={isSaving}
-                        className="px-4 py-2 rounded-md border border-border text-sm font-medium hover:bg-secondary/50"
                       >
                         {t('profile.cancel')}
-                      </button>
+                      </Button>
                     </div>
                   </form>
                 ) : (
                   <>
                     <h2 className="text-2xl font-bold truncate">{user?.name}</h2>
                     <p className="text-muted-foreground truncate">{user?.email}</p>
-                    <button
+                    <Button
                       type="button"
+                      variant="link"
                       onClick={handleStartEdit}
-                      className="mt-3 text-sm font-medium text-primary hover:underline"
+                      className="mt-3 h-auto px-0"
                     >
                       {t('profile.edit')}
-                    </button>
+                    </Button>
                   </>
                 )}
               </div>

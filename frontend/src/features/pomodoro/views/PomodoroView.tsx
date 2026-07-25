@@ -508,7 +508,7 @@ const PomodoroView: React.FC = () => {
             <AccessibleModalSurface
               aria-label={t('focusPicker.title')}
               onClose={() => setTaskPickerOpen(false)}
-              className="bg-card border border-border rounded-lg shadow-xl w-full max-w-lg flex flex-col max-h-[calc(100dvh-2rem)]"
+              className="bg-card border border-border rounded-lg shadow-lg w-full max-w-lg flex flex-col max-h-[calc(100dvh-2rem)]"
             >
               <header className="p-4 border-b border-border flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -765,7 +765,7 @@ const PomodoroView: React.FC = () => {
             <AccessibleModalSurface
               aria-label={t('pomodoro.statisticsTitle' as TranslationKey)}
               onClose={() => setStatisticsOpen(false)}
-              className="w-full max-w-5xl max-h-[calc(100dvh-2rem)] bg-card text-card-foreground border border-border rounded-2xl shadow-xl flex flex-col"
+              className="w-full max-w-5xl max-h-[calc(100dvh-2rem)] bg-card text-card-foreground border border-border rounded-xl shadow-lg flex flex-col"
             >
               <header className="flex items-center justify-between px-6 py-4 border-b border-border">
                 <h2 className="text-lg font-semibold">{t('pomodoro.statisticsTitle' as TranslationKey)}</h2>

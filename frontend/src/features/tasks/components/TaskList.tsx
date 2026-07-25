@@ -223,11 +223,11 @@ const TaskList: React.FC<TaskListProps> = ({ onAddTask }) => {
 
   return (
     <div className="space-y-6">
-      <section className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <section className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {summaryCards.map(({ key, label, value, accent }) => (
           <div
             key={key}
-            className="rounded-2xl border border-border/60 bg-card/70 p-4 shadow-sm"
+            className="rounded-lg border border-border/60 bg-card/70 p-4 shadow-sm"
           >
             <p className="text-xs font-medium text-muted-foreground mb-2">{label}</p>
             <div className="flex items-end justify-between gap-2">
@@ -242,7 +242,7 @@ const TaskList: React.FC<TaskListProps> = ({ onAddTask }) => {
 
       <div
         onDragOver={(e) => e.preventDefault()}
-        className="rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm"
+        className="rounded-lg border border-border/60 bg-card/80 p-4 shadow-sm"
       >
         {groupedUpcomingTasks ? (
           uncompletedTasks.length === 0 ? (
@@ -293,7 +293,7 @@ const TaskList: React.FC<TaskListProps> = ({ onAddTask }) => {
         )}
       </div>
       {completedTasks.length > 0 && (
-        <div className="rounded-2xl border border-border/60 bg-card/60 p-4 shadow-sm">
+        <div className="rounded-lg border border-border/60 bg-card/60 p-4 shadow-sm">
           <button 
             onClick={() => setIsCompletedOpen(!isCompletedOpen)}
             className="w-full flex items-center justify-between text-sm font-semibold text-muted-foreground py-1"

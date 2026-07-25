@@ -95,7 +95,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ onClose }) => {
       <AccessibleModalSurface
         aria-label={t('chatbot.title')}
         onClose={onClose}
-        className="bg-card rounded-lg shadow-xl w-full max-w-2xl flex flex-col h-[calc(100dvh-2rem)]"
+        className="bg-card rounded-lg shadow-lg w-full max-w-2xl flex flex-col h-[calc(100dvh-2rem)]"
       >
         <header className="p-4 border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -209,7 +209,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ onClose }) => {
                 }
               }}
               placeholder={t('chatbot.placeholder')}
-              className="w-full p-3 pr-12 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+              className="w-full p-3 pr-12 bg-secondary/50 rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 resize-none"
               rows={1}
               style={{ height: 'auto', maxHeight: '100px' }}
               disabled={!isAvailable}

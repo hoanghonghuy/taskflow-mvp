@@ -142,7 +142,7 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
           aria-label={t('board.selectList')}
           value={selectedListId}
           onChange={handleListChange}
-          className="h-11 w-full max-w-48 truncate rounded-lg border border-border bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+          className="h-11 w-full max-w-48 truncate rounded-lg border border-border bg-card px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {availableLists.map((list) => (
             <option key={list.id} value={list.id}>
@@ -161,7 +161,7 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
             aria-label={t('board.selectList')}
             value={selectedListId}
             onChange={handleListChange}
-            className="w-full sm:w-auto px-4 py-2 bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm md:text-base text-foreground dark:bg-card dark:text-foreground"
+            className="w-full sm:w-auto px-4 py-2 bg-card border border-border rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring text-sm md:text-base text-foreground dark:bg-card dark:text-foreground"
           >
             {availableLists.map(list => {
               const listKey =
@@ -242,7 +242,7 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
                   value={newColumnName}
                   onChange={e => setNewColumnName(e.target.value)}
                   placeholder={t('board.columnName')}
-                  className="w-full p-2 bg-secondary border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 mb-2"
+                  className="w-full p-2 bg-secondary border border-border rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 mb-2"
                 />
                 <div className="flex items-center gap-2 mt-auto">
                   <button

@@ -11,6 +11,7 @@ import { PlusIcon, TrashIcon } from '@/lib/icons'
 import { toYYYYMMDD } from '@/lib/utils/date-helpers'
 import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
 import { Button } from '@/components/ui/button'
+import { IconButton } from '@/components/ui/icon-button'
 import { EmptyState } from '@/components/ui/empty-state'
 import { StatCard } from '@/components/ui/stat-card'
 
@@ -165,7 +166,7 @@ const HabitsView: React.FC = () => {
                   }
                 }}
                 placeholder={t('habits.namePlaceholder')}
-                className="min-w-0 flex-1 px-4 py-2 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                className="min-w-0 flex-1 px-4 py-2 bg-secondary border border-border rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 autoFocus
               />
               <Button
@@ -215,7 +216,7 @@ const HabitsView: React.FC = () => {
               const streak = calculateStreak(habit.completions)
 
               return (
-                <div key={habit.id} className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+                <div key={habit.id} className="bg-card border border-border rounded-lg p-6 shadow-sm">
                   <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
@@ -242,13 +243,13 @@ const HabitsView: React.FC = () => {
                       >
                         {isCompletedToday ? t('habits.completed') : t('habits.markComplete')}
                       </Button>
-                      <button
+                      <IconButton
+                        variant="destructive"
                         onClick={() => handleDeleteHabit(habit.id, habit.name)}
-                        className="p-2 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                         aria-label={t('habits.aria.deleteHabit')}
                       >
                         <TrashIcon className="h-5 w-5" />
-                      </button>
+                      </IconButton>
                     </div>
                   </div>
 

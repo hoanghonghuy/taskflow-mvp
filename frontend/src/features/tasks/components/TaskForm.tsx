@@ -181,7 +181,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
       <AccessibleModalSurface
         aria-label={t('taskForm.newTask')}
         onClose={onClose}
-        className="bg-card rounded-lg shadow-xl w-full max-w-lg flex flex-col max-h-[calc(100dvh-2rem)]"
+        className="bg-card rounded-lg shadow-lg w-full max-w-lg flex flex-col max-h-[calc(100dvh-2rem)]"
       >
         <header className="p-4 border-b border-border flex items-center justify-between">
           <h2 className="text-lg font-semibold">{t('taskForm.newTask')}</h2>
@@ -209,12 +209,12 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
                 onChange={e => setTextToAnalyze(e.target.value)}
                 placeholder={t('taskForm.geminiPlaceholder')}
                 rows={3}
-                className="w-full p-3 bg-background/50 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-colors"
+                className="w-full p-3 bg-background/50 border border-border rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-primary/50 transition-colors"
               />
               <button 
                 onClick={handleAnalyzeText} 
                 disabled={isAnalyzing || !textToAnalyze.trim()} 
-                className="mt-3 w-full text-sm flex items-center justify-center gap-2 px-4 py-2.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm"
+                className="mt-3 w-full text-sm flex items-center justify-center gap-2 px-4 py-2.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm"
               >
                 {isAnalyzing ? (
                   <Skeleton className="h-4 w-4 rounded" />
@@ -238,7 +238,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
                 value={title}
                 onChange={e => setTitle(e.target.value)}
                 placeholder={t('taskForm.titlePlaceholder')}
-                className="w-full p-3 bg-secondary/50 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-colors"
+                className="w-full p-3 bg-secondary/50 border border-border rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-primary/50 transition-colors"
                 required
               />
             </div>
@@ -253,7 +253,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
                 onChange={e => setDescription(e.target.value)}
                 rows={3}
                 placeholder={t('taskForm.descriptionPlaceholder')}
-                className="w-full p-3 bg-secondary/50 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-colors resize-none"
+                className="w-full p-3 bg-secondary/50 border border-border rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-primary/50 transition-colors resize-none"
               />
             </div>
             
@@ -270,7 +270,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
                   type="date"
                   value={dueDate}
                   onChange={e => setDueDate(e.target.value)}
-                  className="w-full p-3 bg-secondary/50 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-colors"
+                  className="w-full p-3 bg-secondary/50 border border-border rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-primary/50 transition-colors"
                 />
               </div>
               <div className="space-y-2">
@@ -282,7 +282,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
                   id="task-form-priority"
                   value={priority} 
                   onChange={e => setPriority(e.target.value as Priority)} 
-                  className="w-full p-3 bg-secondary/50 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-colors appearance-none cursor-pointer"
+                  className="w-full p-3 bg-secondary/50 border border-border rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-primary/50 transition-colors appearance-none cursor-pointer"
                 >
                   {(Object.keys(PRIORITY_MAP) as (keyof typeof PRIORITY_MAP)[]).map(priorityKey => {
                     const { label } = PRIORITY_MAP[priorityKey]
@@ -341,7 +341,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
                     const raw = e.target.value
                     setReminderMinutes(raw === '' ? '' : parseInt(raw, 10))
                   }}
-                  className="w-full p-3 bg-secondary/50 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-colors appearance-none cursor-pointer"
+                  className="w-full p-3 bg-secondary/50 border border-border rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-primary/50 transition-colors appearance-none cursor-pointer"
                 >
                   <option value="">{t('taskDetail.noReminder')}</option>
                   <option value="5">{t('reminder.5min')}</option>
@@ -363,7 +363,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
                 id="task-form-list"
                 value={listId} 
                 onChange={e => setListId(e.target.value)} 
-                className="w-full p-3 bg-secondary/50 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-colors appearance-none cursor-pointer"
+                className="w-full p-3 bg-secondary/50 border border-border rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-primary/50 transition-colors appearance-none cursor-pointer"
               >
                 {ownedLists.map((list) => (
                   <option key={list.id} value={list.id}>
@@ -385,7 +385,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
                   id="task-form-column"
                   value={columnId || ''} 
                   onChange={e => setColumnId(e.target.value || undefined)} 
-                  className="w-full p-3 bg-secondary/50 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-colors appearance-none cursor-pointer"
+                  className="w-full p-3 bg-secondary/50 border border-border rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-primary/50 transition-colors appearance-none cursor-pointer"
                 >
                   {columnsForList.map(column => (
                     <option key={column.id} value={column.id}>{column.name}</option>
@@ -404,7 +404,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
               <button 
                 type="submit"
                 disabled={isSubmitting}
-                className="px-5 py-2.5 bg-primary text-primary-foreground rounded-md text-sm font-semibold hover:bg-primary/90 transition-all shadow-sm hover:shadow-md order-1 sm:order-2 disabled:opacity-60 disabled:pointer-events-none"
+                className="px-5 py-2.5 bg-primary text-primary-foreground rounded-md text-sm font-semibold hover:bg-primary/90 transition-[colors,box-shadow] shadow-sm hover:shadow-md order-1 sm:order-2 disabled:opacity-60 disabled:pointer-events-none"
               >
                 {t('taskForm.createTask')}
               </button>

@@ -116,7 +116,7 @@ function SettingsNumberStepper({
           min={min}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-16 rounded-md bg-secondary/50 px-2 py-1 text-center text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+          className="w-16 rounded-md bg-secondary/50 px-2 py-1 text-center text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
         />
         <Button
           type="button"

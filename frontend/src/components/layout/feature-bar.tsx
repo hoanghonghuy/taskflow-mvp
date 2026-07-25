@@ -104,7 +104,11 @@ export default function FeatureBar({ onSidebarToggle }: FeatureBarProps) {
 
       <div ref={dropdownRef} className="relative flex flex-col items-center">
         <div className="border-b w-8 my-2 border-border"></div>
-        <button onClick={() => setDropdownOpen(prev => !prev)} className="p-1 rounded-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background">
+        <button
+          type="button"
+          onClick={() => setDropdownOpen(prev => !prev)}
+          className="p-1 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        >
           <Avatar user={user} className="w-10 h-10" />
         </button>
         {isDropdownOpen && <ProfileDropdown user={user} onClose={() => setDropdownOpen(false)} />}
