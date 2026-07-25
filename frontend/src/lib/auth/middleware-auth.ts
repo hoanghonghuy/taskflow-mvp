@@ -10,6 +10,17 @@ export interface MiddlewareAuthState {
   role?: AccessTokenRole
 }
 
+/**
+ * Admin gate for edge middleware.
+ * Refresh-only sessions have no role yet — allow through so the client can renew
+ * the access JWT; AdminLayout still enforces isAdmin after authReady.
+ */
+export function allowsAdminRoute(auth: MiddlewareAuthState): boolean {
+  if (!auth.authenticated) return false
+  if (auth.role === undefined) return true
+  return auth.role === 'ADMIN'
+}
+
 export async function resolveMiddlewareAuth(request: NextRequest): Promise<MiddlewareAuthState> {
   const accessToken = request.cookies.get(TOKEN_COOKIE)?.value
   const refreshToken = request.cookies.get(REFRESH_COOKIE)?.value?.trim()

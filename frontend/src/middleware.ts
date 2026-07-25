@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { resolveMiddlewareAuth } from '@/lib/auth/middleware-auth'
+import { allowsAdminRoute, resolveMiddlewareAuth } from '@/lib/auth/middleware-auth'
 
 const AUTH_PAGES = new Set(['/login', '/register', '/forgot-password'])
 
@@ -44,11 +44,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  if (isAdminRoute(pathname)) {
-    if (!auth.authenticated || auth.role !== 'ADMIN') {
-      const target = auth.authenticated ? '/dashboard' : '/login'
-      return NextResponse.redirect(new URL(target, request.url))
-    }
+  if (isAdminRoute(pathname) && !allowsAdminRoute(auth)) {
+    const target = auth.authenticated ? '/dashboard' : '/login'
+    return NextResponse.redirect(new URL(target, request.url))
   }
 
   if (AUTH_PAGES.has(pathname) && auth.authenticated) {

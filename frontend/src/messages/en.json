@@ -158,6 +158,7 @@
     "confirmPassword": "Confirm Password",
     "name": "Name",
     "forgotPassword": "Forgot password?",
+    "forgotPasswordMvpNote": "Email reset not available yet",
     "noAccount": "Don't have an account?",
     "hasAccount": "Already have an account?",
     "signIn": "Sign In",

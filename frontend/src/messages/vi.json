@@ -158,6 +158,7 @@
     "confirmPassword": "Xác nhận mật khẩu",
     "name": "Tên",
     "forgotPassword": "Quên mật khẩu?",
+    "forgotPasswordMvpNote": "Chưa hỗ trợ gửi email đặt lại",
     "noAccount": "Chưa có tài khoản?",
     "hasAccount": "Đã có tài khoản?",
     "signIn": "Đăng nhập",
