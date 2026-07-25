@@ -106,6 +106,36 @@ describe('pomodoro.service', () => {
     expect(state.sessionsCompleted).toBe(0)
   })
 
+  it('concurrent getPomodoroState while active elapsed rejects the loser with ConcurrentUpdateError', async () => {
+    const twoMinutesAgo = new Date(Date.now() - 120_000)
+    await prisma.userSettings.create({
+      data: {
+        userId,
+        pomodoroStateJson: JSON.stringify({
+          isActive: true,
+          isPaused: false,
+          remainingSeconds: 300,
+          currentSession: 'focus',
+          focusedTaskId: null,
+          focusedHabitId: null,
+          sessionsCompleted: 0,
+        }),
+        pomodoroStateUpdatedAt: twoMinutesAgo,
+      },
+    })
+
+    const results = await Promise.allSettled([
+      getPomodoroState(userId),
+      getPomodoroState(userId),
+    ])
+
+    const fulfilled = results.filter((r) => r.status === 'fulfilled')
+    const rejected = results.filter((r) => r.status === 'rejected')
+    expect(fulfilled.length).toBeGreaterThanOrEqual(1)
+    expect(rejected).toHaveLength(1)
+    expect((rejected[0] as PromiseRejectedResult).reason.name).toBe('ConcurrentUpdateError')
+  })
+
   it('updatePomodoroState rejects a concurrent stale write', async () => {
     const first = await updatePomodoroState(userId, {
       isActive: true,

@@ -441,6 +441,29 @@ describe('pomodoro API client', () => {
     expect(result).toBeNull()
   })
 
+  it('fetchPomodoroState retries once on 409 conflict then returns state', async () => {
+    const fallback = basePomodoroState({ remainingSeconds: 1500 })
+    mockFetch
+      .mockResolvedValueOnce({ ok: false, status: 409, json: async () => ({}) } as Response)
+      .mockResolvedValueOnce(
+        jsonResponse({
+          isActive: true,
+          isPaused: false,
+          remainingSeconds: 1400,
+          currentSession: 'focus',
+          sessionsCompleted: 0,
+          updatedAt: '2026-06-01T00:00:00.000Z',
+        }),
+      )
+
+    const { fetchPomodoroState } = await import('@/lib/api/pomodoro')
+    const result = await fetchPomodoroState(fallback)
+
+    expect(mockFetch).toHaveBeenCalledTimes(2)
+    expect(result).not.toBeNull()
+    expect(result?.patch.remainingTime).toBe(1400)
+  })
+
   it('updatePomodoroState with keepalive option', async () => {
     mockFetch.mockResolvedValue(jsonResponse({}))
     const { updatePomodoroState } = await import('@/lib/api/pomodoro')

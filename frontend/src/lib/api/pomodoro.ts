@@ -17,10 +17,10 @@ export type PomodoroStateFetchResult = {
   updatedAt: string | null
 }
 
-export async function fetchPomodoroState(
+async function readPomodoroStateResponse(
+  response: Response,
   fallback: PomodoroState,
 ): Promise<PomodoroStateFetchResult | null> {
-  const response = await apiFetch('/api/pomodoro/state')
   if (!response.ok) return null
   const raw = await response.json().catch(() => null)
   const json = raw ? unwrapApiData<unknown>(raw, response.status) : null
@@ -28,6 +28,19 @@ export async function fetchPomodoroState(
   const patch = mapPomodoroStateFromApi(json, fallback)
   if (!patch) return null
   return { patch, updatedAt: readPomodoroUpdatedAt(json) }
+}
+
+export async function fetchPomodoroState(
+  fallback: PomodoroState,
+): Promise<PomodoroStateFetchResult | null> {
+  // GET may return 409 when two concurrent requests both try to persist elapsed time.
+  // Backend expects the client to retry once and read the winner's state.
+  const response = await apiFetch('/api/pomodoro/state')
+  if (response.status === 409) {
+    const retry = await apiFetch('/api/pomodoro/state')
+    return readPomodoroStateResponse(retry, fallback)
+  }
+  return readPomodoroStateResponse(response, fallback)
 }
 
 export async function updatePomodoroState(

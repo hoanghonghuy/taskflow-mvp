@@ -180,28 +180,37 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
 
-      - name: Start backend for contract test
+      - name: Prepare backend for contract test
         working-directory: backend
         run: |
           npm ci
           npx prisma generate
           npx prisma migrate deploy
-          PORT=8081 npm run dev &
-          for i in $(seq 1 30); do
-            if curl -sf http://127.0.0.1:8081/health > /dev/null; then
-              echo "Backend ready"
-              exit 0
-            fi
-            sleep 2
-          done
-          echo "Backend failed to start"
-          exit 1
 
       - name: Install frontend dependencies
         working-directory: frontend
         run: npm ci
 
-      - name: Run real-backend contract test
-        working-directory: frontend
-        # Skip coverage gates — this job runs a single optional file against a live backend.
-        run: npx vitest run --coverage.enabled=false real-backend-contract
+      - name: Start backend and run real-backend contract test
+        # Keep server + Vitest in the same step so the process tree stays alive
+        # for the whole contract run (runner orphan cleanup only runs at job end,
+        # but starting across steps is fragile).
+        run: |
+          (
+            cd backend
+            PORT=8081 npm run dev
+          ) &
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:8081/health > /dev/null; then
+              echo "Backend ready"
+              break
+            fi
+            if [ "$i" -eq 30 ]; then
+              echo "Backend failed to start"
+              exit 1
+            fi
+            sleep 2
+          done
+          cd frontend
+          # Skip coverage gates — this job runs a single optional file against a live backend.
+          npx vitest run --coverage.enabled=false real-backend-contract

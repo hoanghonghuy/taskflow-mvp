@@ -59,12 +59,31 @@ export async function listTasks(userId: string): Promise<TaskDto[]> {
 }
 
 export async function searchTasks(userId: string, query: string, limit: number): Promise<TaskDto[]> {
-  // Over-fetch then filter user-facing fields so JSON metadata keys (id, completed, …)
-  // from raw TEXT contains matches do not leak into results.
+  // Title/description are plain text — fetch them first so JSON-metadata false positives
+  // in tags/subtasks/comments cannot crowd real title matches out of the take window.
+  const textHits = await taskRepository.searchTasksAccessibleByUserId(userId, query, limit, {
+    scope: 'text',
+  })
+
+  if (textHits.length >= limit) {
+    return mapTasksWithFocus(textHits)
+  }
+
+  // Over-fetch JSON-field candidates then keep only user-facing matches (title/tag/subtask/comment text).
   const fetchLimit = Math.min(Math.max(limit * 5, limit), 200)
-  const candidates = await taskRepository.searchTasksAccessibleByUserId(userId, query, fetchLimit)
-  const mapped = await mapTasksWithFocus(candidates)
-  return mapped.filter((task) => taskMatchesUserFacingSearch(task, query)).slice(0, limit)
+  const excludeIds = textHits.map((task) => task.id)
+  const jsonCandidates = await taskRepository.searchTasksAccessibleByUserId(
+    userId,
+    query,
+    fetchLimit,
+    { scope: 'json', excludeIds },
+  )
+  const mappedJson = (await mapTasksWithFocus(jsonCandidates)).filter((task) =>
+    taskMatchesUserFacingSearch(task, query),
+  )
+  const mappedText = await mapTasksWithFocus(textHits)
+  const remaining = limit - mappedText.length
+  return [...mappedText, ...mappedJson.slice(0, remaining)]
 }
 
 export async function getTask(userId: string, id: string): Promise<TaskDto | null> {

@@ -112,4 +112,50 @@ describe('Task search API', () => {
       .expect(200)
     expect(apiData<TaskDto[]>(byRealSubtask)).toHaveLength(1)
   })
+
+  it('still returns a title match when JSON-metadata-only hits fill the fetch window', async () => {
+    const { prisma } = await import('../../src/lib/prisma')
+    const me = await request(app).get('/api/auth/me').set(authHeader(token)).expect(200)
+    const userId = (me.body.data ?? me.body).id as string
+
+    // 200 tasks whose subtasks JSON contains "completed" (DB contains match)
+    // but user-facing filter rejects them. Created first → low sortOrder → fill take:200.
+    const decoys = Array.from({ length: 200 }, (_, i) => ({
+      id: `decoy-${i}`,
+      userId,
+      listId,
+      title: `Decoy ${i}`,
+      description: null as string | null,
+      completed: false,
+      priority: 'none',
+      sortOrder: i,
+      tags: '[]',
+      subtasks: JSON.stringify([{ id: `s-${i}`, title: 'Do work', completed: false }]),
+      comments: '[]',
+    }))
+    await prisma.todoTask.createMany({ data: decoys })
+
+    // Real title match created last → high sortOrder → outside fetch window of 200.
+    await prisma.todoTask.create({
+      data: {
+        id: 'title-hit',
+        userId,
+        listId,
+        title: 'completed homework',
+        sortOrder: 9999,
+        tags: '[]',
+        subtasks: '[]',
+        comments: '[]',
+      },
+    })
+
+    const res = await request(app)
+      .get('/api/tasks/search')
+      .query({ q: 'completed', limit: 20 })
+      .set(authHeader(token))
+      .expect(200)
+
+    const hits = apiData<TaskDto[]>(res)
+    expect(hits.some((t) => t.title.toLowerCase().includes('completed'))).toBe(true)
+  })
 })

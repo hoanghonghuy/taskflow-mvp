@@ -34,14 +34,43 @@ function buildAccessibleTasksWhere(userId: string, sharedListIds: string[]): Pri
     : { userId }
 }
 
+export type TaskSearchFieldScope = 'text' | 'json' | 'any'
+
+export type SearchTasksOptions = {
+  /** text = title/description; json = tags/subtasks/comments; any = all (default). */
+  scope?: TaskSearchFieldScope
+  excludeIds?: string[]
+}
+
+function buildSearchFieldOr(
+  term: string,
+  scope: TaskSearchFieldScope,
+): Prisma.TodoTaskWhereInput[] {
+  const textFields: Prisma.TodoTaskWhereInput[] = [
+    { title: { contains: term, mode: 'insensitive' } },
+    { description: { contains: term, mode: 'insensitive' } },
+  ]
+  const jsonFields: Prisma.TodoTaskWhereInput[] = [
+    { tags: { contains: term, mode: 'insensitive' } },
+    { subtasks: { contains: term, mode: 'insensitive' } },
+    { comments: { contains: term, mode: 'insensitive' } },
+  ]
+  if (scope === 'text') return textFields
+  if (scope === 'json') return jsonFields
+  return [...textFields, ...jsonFields]
+}
+
 export async function searchTasksAccessibleByUserId(
   userId: string,
   query: string,
   limit = 50,
+  options: SearchTasksOptions = {},
 ): Promise<TodoTask[]> {
   const term = query.trim()
   if (!term) return []
 
+  const scope = options.scope ?? 'any'
+  const excludeIds = options.excludeIds?.filter(Boolean) ?? []
   const sharedListIds = await listRepository.findSharedListIdsForMember(userId)
   const accessWhere = buildAccessibleTasksWhere(userId, sharedListIds)
 
@@ -49,15 +78,8 @@ export async function searchTasksAccessibleByUserId(
     where: {
       AND: [
         accessWhere,
-        {
-          OR: [
-            { title: { contains: term, mode: 'insensitive' } },
-            { description: { contains: term, mode: 'insensitive' } },
-            { tags: { contains: term, mode: 'insensitive' } },
-            { subtasks: { contains: term, mode: 'insensitive' } },
-            { comments: { contains: term, mode: 'insensitive' } },
-          ],
-        },
+        { OR: buildSearchFieldOr(term, scope) },
+        ...(excludeIds.length > 0 ? [{ id: { notIn: excludeIds } }] : []),
       ],
     },
     orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
