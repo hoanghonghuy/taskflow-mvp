@@ -107,13 +107,18 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
     {
+      name: 'validation',
+      testMatch: /validation\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
       name: 'chromium',
       use: {
         ...devices['Desktop Chrome'],
         storageState: userAuthFile,
       },
       dependencies: ['setup'],
-      testMatch: /\/(tasks|navigation|board|habits|countdown|pomodoro|settings|profile|achievements|ai|core-regression)\.spec\.ts$/,
+      testMatch: /\/(tasks|navigation|board|habits|countdown|pomodoro|settings|profile|achievements|ai|core-regression|calendar|matrix|lists|collaboration|dashboard|error-handling|session|theme|drag-drop|empty-states|concurrency|a11y)\.spec\.ts$/,
     },
     {
       name: 'mobile',

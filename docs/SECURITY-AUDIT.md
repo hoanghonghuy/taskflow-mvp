@@ -32,7 +32,7 @@ Má»i bug liá»‡t kÃª dÆ°á»›i Ä‘Ã¢y lÃ  **lá»—i logic /
 
 ## CRITICAL â€” Seed user cÃ³ thá»ƒ phÃ¡ há»ng quyá»n
 
-### [ ] **SA-C1** `seedDemoUser` Ã©p role USER, xÃ³a quyá»n admin náº¿u trÃ¹ng email
+### [x] **SA-C1** `seedDemoUser` Ã©p role USER, xÃ³a quyá»n admin náº¿u trÃ¹ng email
 
 **File:** `backend/src/seedDemoUser.ts:20-24`
 
@@ -51,7 +51,7 @@ Náº¿u `DEMO_EMAIL` trÃ¹ng `ADMIN_EMAIL` trong env, má»—i láº§n resta
 
 ---
 
-### [ ] **SA-C2** `seedAdminUser` re-hash password má»—i restart
+### [x] **SA-C2** `seedAdminUser` re-hash password má»—i restart
 
 **File:** `backend/src/seedAdmin.ts:18-27` (cÃ¹ng logic `seedDemoUser.ts:17`)
 
@@ -68,7 +68,7 @@ Admin Ä‘á»•i máº­t kháº©u qua UI â†’ restart sau â†’ hash
 
 ---
 
-### [ ] **SA-C3** `seedAdminUser` tá»± demote admin khÃ¡c má»—i restart
+### [x] **SA-C3** `seedAdminUser` tá»± demote admin khÃ¡c má»—i restart
 
 **File:** `backend/src/seedAdmin.ts:48-51`
 
@@ -85,7 +85,7 @@ Cháº¡y khÃ´ng Ä‘iá»u kiá»‡n. Náº¿u DB cÃ³ nhiá»u admin 
 
 ---
 
-### [ ] **SA-C4** `start()` race condition vá»›i DB cháº­m / import-time error
+### [x] **SA-C4** `start()` race condition vá»›i DB cháº­m / import-time error
 
 **File:** `backend/src/server.ts:8-19`
 
@@ -111,7 +111,7 @@ Try/catch nuá»‘t lá»—i seed, nhÆ°ng:
 
 ## HIGH â€” Logic nghiá»‡p vá»¥ & báº£o máº­t
 
-### [ ] **SA-H1** `taskService.createTask` race condition trÃªn `sortOrder`
+### [x] **SA-H1** `taskService.createTask` race condition trÃªn `sortOrder`
 
 **File:** `backend/src/services/taskService.ts:47-62`
 
@@ -121,7 +121,7 @@ Try/catch nuá»‘t lá»—i seed, nhÆ°ng:
 
 ---
 
-### [ ] **SA-H2** `pomodoroService.getPomodoroState` khÃ´ng atomic
+### [x] **SA-H2** `pomodoroService.getPomodoroState` khÃ´ng atomic
 
 **File:** `backend/src/services/pomodoroService.ts:35-66`
 
@@ -131,7 +131,7 @@ Read `pomodoroStateJson` â†’ tÃ­nh elapsed â†’ ghi láº¡i. Mobile 
 
 ---
 
-### [ ] **SA-H3** `geminiApiKey` lÆ°u plaintext trong DB
+### [x] **SA-H3** `geminiApiKey` lÆ°u plaintext trong DB
 
 **File:** `backend/src/services/settingsService.ts:32-35`, `backend/src/validators/settings.validator.ts:19`
 
@@ -143,7 +143,7 @@ User API key Gemini lÆ°u tháº³ng vÃ o `UserSettings.geminiApiKey` (Postgr
 
 ---
 
-### [ ] **SA-H4** `authController.login` khÃ´ng rate-limit
+### [x] **SA-H4** `authController.login` khÃ´ng rate-limit
 
 **File:** `backend/src/controllers/authController.ts:27-35`
 
@@ -155,7 +155,7 @@ Chá»‰ AI endpoint cÃ³ rate-limit. Login/refresh khÃ´ng cÃ³ `express-ra
 
 ## MEDIUM â€” Validation, logging, performance
 
-### [ ] **SA-M1** `listService.createList` skip validation á»Ÿ service layer
+### [x] **SA-M1** `listService.createList` skip validation á»Ÿ service layer
 
 **File:** `backend/src/services/listService.ts:36,42-46`
 
@@ -165,7 +165,7 @@ Zod validator á»Ÿ controller cÃ³ regex `^#[0-9A-Fa-f]{6}$` cho `color`, nh�
 
 ---
 
-### [ ] **SA-M2** `errorHandler` máº¥t `ZodError.issues.path`
+### [x] **SA-M2** `errorHandler` máº¥t `ZodError.issues.path`
 
 **File:** `backend/src/middleware/errorHandler.ts:43-47`
 
@@ -175,7 +175,7 @@ Chá»‰ join `.message` báº±ng `'; '`. Frontend khÃ´ng biáº¿t field n�
 
 ---
 
-### [ ] **SA-M3** `pomodoroController.updateState` luÃ´n `getOrCreate` má»—i tick
+### [x] **SA-M3** `pomodoroController.updateState` luÃ´n `getOrCreate` má»—i tick
 
 **File:** `backend/src/services/pomodoroService.ts:100-104`
 
@@ -185,7 +185,7 @@ Endpoint Pomodoro tick má»—i giÃ¢y â†’ 2 query (find + cÃ³ thá»ƒ
 
 ---
 
-### [ ] **SA-M4** `seed.ts` thiáº¿u transaction khi táº¡o default lists
+### [x] **SA-M4** `seed.ts` thiáº¿u transaction khi táº¡o default lists
 
 **File:** `backend/src/seed.ts:10-22`
 
@@ -195,7 +195,7 @@ Endpoint Pomodoro tick má»—i giÃ¢y â†’ 2 query (find + cÃ³ thá»ƒ
 
 ---
 
-### [ ] **SA-M5** Timezone mismatch client/server (habit "today" lá»‡ch 0-1 ngÃ y)
+### [x] **SA-M5** Timezone mismatch client/server (habit "today" lá»‡ch 0-1 ngÃ y)
 
 **File:** `frontend/src/app/(app)/dashboard/page.tsx:59` dÃ¹ng `toISOString().split('T')[0]` (UTC) trong khi backend `getProfileSummary` dÃ¹ng `Asia/Ho_Chi_Minh` qua `todayDateString()`.
 
@@ -287,16 +287,3 @@ Cáº­p nháº­t file nÃ y sau má»—i Ä‘á»£t sá»­a lá»›n.
 
 ---
 
-## Test pre-existing failures (PHÁT HIỆN TRONG QUÁ TRÌNH SỬA LOW)
-
-Sau khi fix L1-L4, chạy lại 
-pm test thấy **2 test fail** không liên quan đến fix:
-
-| Test | File | Lỗi |
-|---|---|---|
-| pomodoro state returns 204 then saved state | ackend/tests/crud.test.ts:240 | expected 200 "OK", got 204 "No Content" |
-| pomodoro: state elapsed time adjustment | ackend/tests/integration/edge-cases.test.ts:150 | expected 200 "OK", got 204 "No Content" |
-
-**Verified:** Stash toàn bộ thay đổi L1-L4, chạy lại crud.test.ts trên HEAD cũ (commit 339332) — **vẫn fail y chang**. Đây là bug tồn tại từ trước, nằm ngoài scope của SECURITY-AUDIT.md. Có thể liên quan đến việc UserSettings chưa được auto-create cho user mới test (PUT /api/pomodoro/state xong nhưng GET vẫn trả 204 vì settings row chưa có pomodoroStateJson).
-
-**Cần root-cause riêng** — KHÔNG thuộc audit này.

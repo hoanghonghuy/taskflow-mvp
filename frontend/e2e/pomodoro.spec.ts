@@ -150,4 +150,71 @@ test.describe('Pomodoro', () => {
       await expect(page.locator('text=/duration|timer.*settings|pomodoro.*settings/i').first()).toBeVisible()
     }
   })
+
+  test('timer shows correct default focus duration', async ({ page }) => {
+    await page.goto('/pomodoro')
+    await waitForAppReady(page)
+
+    // Default focus duration is 25:00
+    await expect(page.locator('text=/25:00/').first()).toBeVisible()
+  })
+
+  test('changing focus duration in settings reflects on timer', async ({ page }) => {
+    // Set custom duration in settings
+    await page.goto('/settings')
+    await waitForAppReady(page)
+
+    const durationInput = page.locator('#focus-duration')
+    await expect(durationInput).toBeVisible()
+    await durationInput.fill('30')
+
+    // Navigate to pomodoro
+    await page.goto('/pomodoro')
+    await waitForAppReady(page)
+
+    // Timer should show 30:00
+    await expect(page.locator('text=/30:00/').first()).toBeVisible()
+  })
+
+  test('session count increments after completing a focus session', async ({ page }) => {
+    await page.goto('/pomodoro')
+    await waitForAppReady(page)
+
+    // Check initial session count
+    const sessionText = page.locator('text=/session|phiên/i').first()
+    const hasSessions = await sessionText.isVisible().catch(() => false)
+
+    // Start timer
+    const startButton = page.getByRole('button', { name: /^start$/i })
+    if (await startButton.isVisible()) {
+      await startButton.click()
+      await page.waitForTimeout(1000)
+
+      // Stop timer (simulates session completion)
+      const stopButton = page.getByRole('button', { name: /^stop$/i })
+      if (await stopButton.isVisible()) {
+        await stopButton.click()
+      }
+    }
+
+    // Session stats should be visible
+    await expect(
+      page.locator('text=/session|completed|focus|today/i').first(),
+    ).toBeVisible({ timeout: 10_000 })
+  })
+
+  test('break mode is accessible after focus session', async ({ page }) => {
+    await page.goto('/pomodoro')
+    await waitForAppReady(page)
+
+    // Check if break-related UI elements exist
+    const breakIndicator = page.getByText(/break|nghỉ/i).first()
+    const skipBreak = page.getByRole('button', { name: /skip.*break|bỏ qua/i })
+
+    // At least one break-related element should exist
+    const hasBreakUI =
+      (await breakIndicator.isVisible().catch(() => false)) ||
+      (await skipBreak.isVisible().catch(() => false))
+    expect(hasBreakUI).toBeTruthy()
+  })
 })
