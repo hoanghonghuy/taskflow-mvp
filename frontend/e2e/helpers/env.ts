@@ -1,8 +1,8 @@
 /** E2E admin — must match backend seed (ADMIN_EMAIL / ADMIN_PASSWORD). */
 export const E2E_ADMIN_EMAIL =
-  process.env.E2E_ADMIN_EMAIL?.trim().toLowerCase() || 'e2e-admin@taskflow.test'
+  process.env.E2E_ADMIN_EMAIL?.trim().toLowerCase() || 'admin@gmail.com'
 
-export const E2E_ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD || 'E2eAdminPass123!'
+export const E2E_ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD || 'admin123'
 
 export const E2E_BACKEND_PORT = process.env.E2E_BACKEND_PORT || '8099'
 

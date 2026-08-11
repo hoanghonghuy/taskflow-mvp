@@ -13,8 +13,8 @@ const databaseUrl =
   process.env.DATABASE_URL ||
   'postgresql://postgres:taskflow@localhost:5434/taskflow_db?sslmode=disable'
 
-const e2eAdminEmail = process.env.E2E_ADMIN_EMAIL?.trim().toLowerCase() || 'e2e-admin@taskflow.test'
-const e2eAdminPassword = process.env.E2E_ADMIN_PASSWORD || 'E2eAdminPass123!'
+const e2eAdminEmail = process.env.E2E_ADMIN_EMAIL?.trim().toLowerCase() || 'admin@gmail.com'
+const e2eAdminPassword = process.env.E2E_ADMIN_PASSWORD || 'admin123'
 
 const userAuthFile = 'playwright/.auth/user.json'
 const adminAuthFile = 'playwright/.auth/admin.json'
