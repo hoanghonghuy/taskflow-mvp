@@ -192,7 +192,11 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
           {columnsForList.map((column, columnIndex) => {
             const columnTasks = tasksForList.filter(
               t => t.columnId === column.id || (!t.columnId && columnsForList.findIndex(c => c.id === column.id) === 0)
-            )
+            ).filter((task, index, self) => {
+              // Deduplicate tasks by id to prevent React key conflicts
+              return self.findIndex(t => t.id === task.id) === index
+            })
+
             return (
               <div
                 key={column.id}
