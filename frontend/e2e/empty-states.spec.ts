@@ -70,11 +70,11 @@ test.describe('Empty States', () => {
     await page.goto('/matrix')
     await waitForAppReady(page)
 
-    // All four quadrants should be visible
-    await expect(page.getByText(/urgent.*important|khẩn.*quan trọng/i).first()).toBeVisible()
-    await expect(
-      page.getByText(/not urgent.*important|không khẩn.*quan trọng/i).first(),
-    ).toBeVisible()
+    // All four quadrants should be visible — actual English text from i18n
+    await expect(page.getByText(/Urgent & High/i).first()).toBeVisible()
+    await expect(page.getByText(/Low Priority/i).first()).toBeVisible()
+    await expect(page.getByText(/Medium Priority/i).first()).toBeVisible()
+    await expect(page.getByText(/No Priority/i).first()).toBeVisible()
   })
 
   test('calendar view shows month grid even when no tasks', async ({ page }) => {

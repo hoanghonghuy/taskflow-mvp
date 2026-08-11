@@ -21,8 +21,8 @@ test.describe('Calendar', () => {
     await page.goto('/calendar')
     await waitForAppReady(page)
 
-    const prevButton = page.locator('button[aria-label="calendar.prevMonth"]')
-    const nextButton = page.locator('button[aria-label="calendar.nextMonth"]')
+    const prevButton = page.locator('button[aria-label="Previous month"]')
+    const nextButton = page.locator('button[aria-label="Next month"]')
 
     await expect(prevButton).toBeVisible()
     await expect(nextButton).toBeVisible()
@@ -80,7 +80,7 @@ test.describe('Calendar', () => {
     await page.goto('/calendar')
     await waitForAppReady(page)
 
-    const nextButton = page.locator('button[aria-label="calendar.nextMonth"]')
+    const nextButton = page.locator('button[aria-label="Next month"]')
     await nextButton.click()
     await page.waitForTimeout(300)
 

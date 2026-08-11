@@ -14,13 +14,11 @@ test.describe('Matrix', () => {
 
     await expect(page.getByRole('heading', { name: /matrix|ma trận/i }).first()).toBeVisible()
 
-    // Four quadrant headings
-    await expect(page.getByText(/urgent.*important|khẩn.*quan trọng/i).first()).toBeVisible()
-    await expect(page.getByText(/not urgent.*important|không khẩn.*quan trọng/i).first()).toBeVisible()
-    await expect(page.getByText(/urgent.*not important|khẩn.*không quan trọng/i).first()).toBeVisible()
-    await expect(
-      page.getByText(/not urgent.*not important|không khẩn.*không quan trọng/i).first(),
-    ).toBeVisible()
+    // Four quadrant headings — actual English text from i18n
+    await expect(page.getByText(/Urgent & High/i).first()).toBeVisible()
+    await expect(page.getByText(/Low Priority/i).first()).toBeVisible()
+    await expect(page.getByText(/Medium Priority/i).first()).toBeVisible()
+    await expect(page.getByText(/No Priority/i).first()).toBeVisible()
   })
 
   test('task appears in correct quadrant by priority', async ({ page }) => {

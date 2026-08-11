@@ -104,8 +104,8 @@ test.describe('Lists', () => {
     await page.goto('/list')
     await waitForAppReady(page)
 
-    // Inbox should not have delete button
-    const inboxRow = page.locator('div[role="button"]').filter({ hasText: /inbox|hộp thư đến/i })
+    // Inbox should not have delete button — use .first() to avoid strict mode
+    const inboxRow = page.locator('div[role="button"]').filter({ hasText: /inbox|hộp thư đến/i }).first()
     await inboxRow.hover()
     await expect(
       inboxRow.locator('button[aria-label*="Delete list"]'),

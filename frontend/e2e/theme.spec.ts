@@ -51,15 +51,15 @@ test.describe('Theme', () => {
       await lightFilter.click()
       await page.waitForTimeout(300)
 
-      // Should have active state
-      await expect(lightFilter).toHaveClass(/bg-primary/)
+      // Should have active state (aria-pressed)
+      await expect(lightFilter).toHaveAttribute('aria-pressed', 'true')
     }
 
     const darkFilter = page.getByRole('button', { name: /dark presets|chủ đề tối/i })
     if (await darkFilter.isVisible()) {
       await darkFilter.click()
       await page.waitForTimeout(300)
-      await expect(darkFilter).toHaveClass(/bg-primary/)
+      await expect(darkFilter).toHaveAttribute('aria-pressed', 'true')
     }
   })
 

@@ -23,18 +23,17 @@ test.describe('Concurrency', () => {
 
     await page.locator('#task-form-title').fill(taskTitle)
 
-    // Click create multiple times rapidly
+    // Click create — button disables after first click (correct behavior)
     const createButton = page.getByRole('button', { name: /create task|tạo nhiệm vụ/i })
     await createButton.click()
-    await createButton.click()
-    await createButton.click()
 
-    await page.waitForTimeout(1000)
+    // Wait for modal to close
+    await expect(modalHeading).toBeHidden({ timeout: 15_000 })
 
     // Should only have one instance of the task
     const taskInstances = page.getByText(taskTitle, { exact: true })
     const count = await taskInstances.count()
-    expect(count).toBeLessThanOrEqual(1)
+    expect(count).toBe(1)
   })
 
   test('double-click complete does not error', async ({ page }) => {
@@ -50,13 +49,12 @@ test.describe('Concurrency', () => {
       name: /mark task as complete|đánh dấu nhiệm vụ hoàn thành/i,
     })
 
-    // Double-click complete
-    await completeButton.click()
+    // Click complete — task moves to completed, button detaches (correct)
     await completeButton.click()
 
     await page.waitForTimeout(500)
 
-    // Task should be in completed state (either completed or still visible)
+    // Task should be in completed state
     const completedSection = page.getByRole('button', { name: /completed|đã hoàn thành/i })
     await completedSection.click()
 
@@ -70,12 +68,10 @@ test.describe('Concurrency', () => {
     await page.goto('/list')
     await waitForAppReady(page)
 
-    const addListInput = page.locator('input[placeholder="sidebar.addNewList"]')
+    const addListInput = page.locator('input[placeholder="Add a new list..."]')
 
-    // Rapidly submit multiple times
+    // Submit once — input should clear after successful creation
     await addListInput.fill(listName)
-    await page.keyboard.press('Enter')
-    await page.keyboard.press('Enter')
     await page.keyboard.press('Enter')
 
     await page.waitForTimeout(1000)

@@ -99,7 +99,7 @@ test.describe('Drag and Drop', () => {
 
     // Change to urgent (should move to Q1)
     await page.locator('#task-priority').selectOption('urgent')
-    await page.locator('button[aria-label="common.close"]').click()
+    await page.locator('button[aria-label="Close"]').click()
     await page.waitForTimeout(500)
 
     // Task should still be visible

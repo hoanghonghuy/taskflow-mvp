@@ -85,16 +85,18 @@ test.describe('Tasks', () => {
   })
 
   test.skip('deletes a task', async ({ page }) => {
-    // ponytail: delete confirmation dialog selector needs investigation — 
-    // the dialog doesn't use role="alertdialog", need to find actual selector
+    // ponytail: Radix AlertDialog role="alertdialog" not found in DOM at runtime.
+    // Need --debug mode to inspect actual dialog structure. Suspect Radix portal
+    // renders outside the test's viewport or uses a different role.
     const taskTitle = `E2E Edit ${Date.now()}`
     await createTask(page, taskTitle)
     await deleteTaskViaDetail(page, taskTitle)
   })
 
   test.skip('adds and completes a subtask', async ({ page }) => {
-    // ponytail: subtask form submit button selector needs investigation —
-    // the form:has + button[type="submit"] selector doesn't match the actual DOM
+    // ponytail: subtask form submit via button[type="submit"] click doesn't trigger
+    // the onSubmit handler. May need to use page.keyboard.press('Enter') on the input
+    // or the form uses preventDefault that conflicts with Playwright's click.
     const taskTitle = `E2E Subtask ${Date.now()}`
     const subtaskTitle = 'Subtask item 1'
 

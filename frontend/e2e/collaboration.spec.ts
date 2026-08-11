@@ -131,7 +131,7 @@ test.describe('Collaboration', () => {
 
     const inboxRow = page.locator('div[role="button"]').filter({
       hasText: /inbox|hộp thư đến/i,
-    })
+    }).first()
     await inboxRow.hover()
 
     await expect(

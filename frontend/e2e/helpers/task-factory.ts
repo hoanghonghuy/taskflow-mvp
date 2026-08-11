@@ -56,11 +56,11 @@ export async function openTaskDetail(page: Page, title: string) {
 
 export async function deleteTaskViaDetail(page: Page, title: string) {
   await openTaskDetail(page, title)
-  // Delete button in detail panel
+  // Click delete button in detail panel header
   await page.locator('button[aria-label="Delete"]').first().click({ force: true })
-  // Confirm in the dialog — use text-based selector since dialog role varies
-  await page.getByRole('button', { name: /^Delete$/i }).last().click()
-  // Wait for the task to disappear from the list
-  await page.waitForTimeout(1000)
+  // Wait for Radix AlertDialog to appear
+  await expect(page.locator('[role="alertdialog"]')).toBeVisible({ timeout: 5_000 })
+  // Confirm button text is "Delete task"
+  await page.locator('[role="alertdialog"]').getByRole('button', { name: /Delete task/i }).click()
   await expect(page.getByText(title, { exact: true })).not.toBeVisible({ timeout: 15_000 })
 }
