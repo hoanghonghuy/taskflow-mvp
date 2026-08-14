@@ -177,28 +177,26 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
         )}
       </TaskColumnHeader>
       <TaskColumnBody>
-        {tasks
-          .filter((task, index, self) => self.findIndex(t => t.id === task.id) === index)
-          .map(task => (
-            <div key={task.id} className="group">
-              <TaskItem
-                task={task}
-                isDraggable={canManageColumns}
-                onDragStart={onTaskDragStart}
+        {tasks.map(task => (
+          <div key={task.id} className="group">
+            <TaskItem
+              task={task}
+              isDraggable={canManageColumns}
+              onDragStart={onTaskDragStart}
+            />
+            {canManageColumns && columns.length > 1 ? (
+              <TaskMoveControl
+                label={t('board.moveTask' as TranslationKey)}
+                value={column.id}
+                options={columns.map((target) => ({
+                  value: target.id,
+                  label: target.name,
+                }))}
+                onMove={(columnId) => onMoveTask(task.id, columnId)}
               />
-              {canManageColumns && columns.length > 1 ? (
-                <TaskMoveControl
-                  label={t('board.moveTask' as TranslationKey)}
-                  value={column.id}
-                  options={columns.map((target) => ({
-                    value: target.id,
-                    label: target.name,
-                  }))}
-                  onMove={(columnId) => onMoveTask(task.id, columnId)}
-                />
-              ) : null}
-            </div>
-          ))}
+            ) : null}
+          </div>
+        ))}
       </TaskColumnBody>
       {onOpenTaskForm && canManageColumns && (
         <TaskColumnFooter>

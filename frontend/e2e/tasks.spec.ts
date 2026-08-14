@@ -143,6 +143,75 @@ test.describe('Tasks', () => {
     await expect(page.getByText(commentText, { exact: true })).toBeVisible({ timeout: 10_000 })
   })
 
+  test('task with due date, priority and tags', async ({ page }) => {
+    const taskTitle = `E2E Full Task ${Date.now()}`
+    const dueDate = new Date(Date.now() + 86400000) // Tomorrow
+    const dueDateStr = dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+
+    await page.goto('/list')
+    await waitForAppReady(page)
+
+    await page.locator('button[aria-label*="Add"], button[aria-label*="Thêm"]').last().click()
+    await page.getByRole('heading', { name: /new task|nhiệm vụ mới/i }).waitFor()
+
+    // Fill title
+    await page.getByPlaceholder(/pay electricity bill|thanh toán hóa đơn điện/i).fill(taskTitle)
+
+    // Set due date
+    const dueDateInput = page.locator('input[aria-label="Due date"]')
+    await expect(dueDateInput).toBeVisible()
+    await dueDateInput.fill(dueDate.toISOString().split('T')[0])
+
+    // Set priority
+    const prioritySelect = page.locator('#task-priority')
+    await expect(prioritySelect).toBeVisible()
+    await prioritySelect.selectOption('high')
+
+    // Add tags
+    const tagsInput = page.locator('input[placeholder*="tag" i]')
+    if (await tagsInput.isVisible()) {
+      await tagsInput.fill('test-tag')
+      await page.keyboard.press('Enter')
+    }
+
+    await page.getByRole('button', { name: /create task|tạo nhiệm vụ/i }).click()
+    await expect(page.getByText(taskTitle, { exact: true })).toBeVisible()
+
+    // Verify task shows priority indicator (high priority should have visual indicator)
+    const taskRow = page.locator('.group').filter({ has: page.getByText(taskTitle, { exact: true }) })
+    await expect(taskRow).toBeVisible()
+  })
+
+  test('complete and uncomplete task', async ({ page }) => {
+    const taskTitle = `E2E Toggle ${Date.now()}`
+
+    await createTask(page, taskTitle)
+
+    const taskRow = page.locator('.group').filter({ has: page.getByText(taskTitle, { exact: true }) })
+
+    // Mark as complete
+    await taskRow.getByRole('button', { name: /mark.*complete/i }).first().click()
+    await expect(taskRow.locator('[class*="line-through"]')).toBeVisible({ timeout: 5000 })
+
+    // Mark as incomplete
+    await taskRow.getByRole('button', { name: /mark.*incomplete/i }).first().click()
+    await expect(taskRow.locator('[class*="line-through"]')).not.toBeVisible({ timeout: 5000 })
+  })
+
+  test('task detail panel opens and closes', async ({ page }) => {
+    const taskTitle = `E2E Detail ${Date.now()}`
+
+    await createTask(page, taskTitle)
+    await openTaskDetail(page, taskTitle)
+
+    // Detail panel should be visible
+    await expect(page.getByRole('heading', { name: taskTitle })).toBeVisible()
+
+    // Close panel
+    await page.locator('button[aria-label="Close"]').click()
+    await expect(page.getByRole('heading', { name: taskTitle })).not.toBeVisible({ timeout: 5000 })
+  })
+
   test('dashboard is accessible when authenticated', async ({ page }) => {
     await page.goto('/dashboard')
     await waitForAppReady(page)

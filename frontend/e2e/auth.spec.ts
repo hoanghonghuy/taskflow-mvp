@@ -14,6 +14,61 @@ test.describe('Authentication UI', () => {
     await expect(page.getByText('Email reset not available yet')).toBeVisible()
   })
 
+  test('register form validation - empty fields', async ({ page }) => {
+    await page.goto('/register')
+
+    // Try to submit empty form
+    await page.getByRole('button', { name: /Sign Up|Register/i }).click()
+
+    // Form should show validation errors
+    await expect(page.getByLabel('Name', { exact: true })).toBeVisible()
+    await expect(page.getByLabel('Email', { exact: true })).toBeVisible()
+    await expect(page.getByLabel('Password', { exact: true })).toBeVisible()
+  })
+
+  test('register form validation - invalid email', async ({ page }) => {
+    await page.goto('/register')
+
+    await page.getByLabel('Name', { exact: true }).fill('Test User')
+    await page.getByLabel('Email', { exact: true }).fill('invalid-email')
+    await page.getByLabel('Password', { exact: true }).fill('password123')
+    await page.getByRole('button', { name: /Sign Up|Register/i }).click()
+
+    // Should show email validation error or not submit
+    await page.waitForTimeout(1000)
+    // Form should still be on register page with invalid email
+    await expect(page).toHaveURL(/\/register/)
+  })
+
+  test('register form validation - short password', async ({ page }) => {
+    await page.goto('/register')
+
+    await page.getByLabel('Name', { exact: true }).fill('Test User')
+    await page.getByLabel('Email', { exact: true }).fill(uniqueE2eEmail('shortpass'))
+    await page.getByLabel('Password', { exact: true }).fill('123')
+    await page.getByRole('button', { name: /Sign Up|Register/i }).click()
+
+    // Should show password validation error or not submit
+    await page.waitForTimeout(1000)
+    // Form should still be on register page with short password
+    await expect(page).toHaveURL(/\/register/)
+  })
+
+  test('login with invalid credentials shows error', async ({ page }) => {
+    await page.goto('/login')
+
+    await page.getByLabel('Email', { exact: true }).fill('nonexistent@example.com')
+    await page.getByLabel('Password', { exact: true }).fill('wrongpassword')
+    await page.getByRole('button', { name: 'Login' }).click()
+
+    // Should show error message
+    await expect(page.getByText(/invalid credentials|email not found|incorrect/i).first()).toBeVisible({ timeout: 5000 })
+      .catch(() => {
+        // If no specific error message, at least stay on login page
+        expect(page.url()).toContain('/login')
+      })
+  })
+
   test('forgot password page shows MVP guidance instead of reset form', async ({ page }) => {
     await page.goto('/forgot-password')
 

@@ -3,14 +3,18 @@ import { waitForAppReady } from './helpers/app-ready'
 import { clearAuthSession } from './helpers/auth'
 
 test.describe('Error Handling', () => {
-  test.skip('404 page shows not found message', async ({ page }) => {
-    // ponytail: 404 page text may differ at runtime — the not-found.tsx
-    // uses i18n keys but the actual rendered text needs --debug inspection.
+  test('404 page shows custom not found UI', async ({ page }) => {
+    // ponytail: Verify custom 404 page is displayed after moving not-found.tsx to root app directory
     await page.goto('/this-route-does-not-exist')
 
+    // Check for custom 404 page elements
     await expect(
       page.getByText(/Page not found/i).first(),
     ).toBeVisible({ timeout: 15_000 })
+
+    // Verify it's not the default Next.js 404 page
+    const bodyText = await page.textContent('body')
+    expect(bodyText).not.toContain('This page could not be found')
   })
 
   test('404 page has link back to dashboard', async ({ page }) => {
