@@ -1,8 +1,8 @@
 ﻿import request from 'supertest'
 
-type ListRef = { id: string }
+type ListRef = { id: string; name: string }
 type IdDto = { id: string }
-type SettingsDto = { geminiApiKey: string; bottomNavActions: string[] }
+type SettingsDto = { geminiApiKey: string; bottomNavActions: string[]; defaultListId: string }
 
 import { prisma } from '../../src/lib/prisma'
 import {app, authHeader, registerAndLogin, resetDatabase, apiData } from '../helpers'
@@ -95,6 +95,26 @@ describe('Full route & service coverage', () => {
       .then((r) => {
         expect(apiData<SettingsDto>(r).geminiApiKey).toBe('configured')
         expect(apiData<SettingsDto>(r).bottomNavActions).toEqual(['dashboard', 'list'])
+      })
+  })
+
+  it('falls back to Inbox when defaultListId is stale/invalid', async () => {
+    const lists = await request(app).get('/api/lists').set(authHeader(token)).expect(200)
+    const inbox = apiData<ListRef[]>(lists).find((l) => l.name === 'Inbox')
+    expect(inbox).toBeDefined()
+
+    // Stale listId: không tồn tại trong DB → backend phải fallback về Inbox,
+    // không ném 400 khiến toàn bộ lệnh lưu settings thất bại.
+    await request(app)
+      .put('/api/settings')
+      .set(authHeader(token))
+      .send({
+        language: 'vi',
+        defaultListId: '00000000-0000-0000-0000-000000000099',
+      })
+      .expect(200)
+      .then((r) => {
+        expect(apiData<SettingsDto>(r).defaultListId).toBe(inbox!.id)
       })
   })
 

@@ -1,7 +1,7 @@
 import type { Prisma } from '@prisma/client'
 import { decryptSecret, encryptSecret } from '../lib/crypto'
 import { toJsonString } from '../lib/json'
-import { normalizeListId } from '../lib/inbox-list'
+import { normalizeListIdOrInbox } from '../lib/inbox-list'
 import { mergePomodoroSettings, parsePomodoroSettings } from '../lib/pomodoro-settings'
 import { mapSettingsToDto, type SettingsDto } from '../mappers/settings.mapper'
 import * as listRepository from '../repositories/listRepository'
@@ -26,7 +26,7 @@ export async function updateSettings(
   if ('autoStartPomodoro' in body) data.autoStartPomodoro = Boolean(body.autoStartPomodoro)
   if ('defaultPriority' in body) data.defaultPriority = String(body.defaultPriority ?? 'medium')
   if ('defaultListId' in body) {
-    data.defaultListId = await normalizeListId(userId, body.defaultListId ?? 'inbox')
+    data.defaultListId = await normalizeListIdOrInbox(userId, body.defaultListId ?? 'inbox')
   }
   if ('bottomNavActions' in body && Array.isArray(body.bottomNavActions)) {
     data.bottomNavActions = toJsonString(body.bottomNavActions.map(String))

@@ -280,13 +280,21 @@ const CalendarView: React.FC = () => {
                   const isDragOverDay = dragOverDateKey === dateKey
 
                   return (
-                    <button
-                      type="button"
+                    <div
+                      role="button"
+                      tabIndex={0}
                       key={index}
                       aria-label={date.toLocaleDateString(locale, { dateStyle: 'full' })}
                       aria-pressed={isSelectedDate}
                       aria-current={isTodayDate ? 'date' : undefined}
                       onClick={() => setSelectedDate(date)}
+                      onKeyDown={(e) => {
+                        if (e.target !== e.currentTarget) return
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          setSelectedDate(date)
+                        }
+                      }}
                       onDragOver={(e) => {
                         e.preventDefault()
                         setDragOverDateKey(dateKey)
@@ -345,7 +353,7 @@ const CalendarView: React.FC = () => {
                           </div>
                         )}
                       </div>
-                    </button>
+                    </div>
                   )
                 })}
               </div>

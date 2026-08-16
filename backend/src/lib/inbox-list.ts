@@ -23,3 +23,18 @@ export async function normalizeListId(userId: string, listId: unknown): Promise<
 
   return raw
 }
+
+/**
+ * Like normalizeListId, but never throws: falls back to the user's Inbox when
+ * the given listId is stale/invalid. Used for non-critical preferences (e.g.
+ * settings.defaultListId) where a stale id must not fail the whole request.
+ */
+export async function normalizeListIdOrInbox(userId: string, listId: unknown): Promise<string> {
+  const raw = listId != null ? String(listId).trim() : ''
+  if (!raw || raw === 'inbox') {
+    return resolveInboxListId(userId)
+  }
+
+  const list = await listRepository.findListByIdAccessible(raw, userId)
+  return list ? raw : resolveInboxListId(userId)
+}

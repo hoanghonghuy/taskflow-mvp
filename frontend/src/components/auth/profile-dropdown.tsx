@@ -107,7 +107,7 @@ export default function ProfileDropdown({ user, onClose, variant = 'floating' }:
       absolute bottom-full mb-2 md:bottom-4 md:left-full md:ml-2 md:mb-0
       w-64 bg-card rounded-lg shadow-lg border border-border
       animate-fade-in
-      origin-bottom md:origin-bottom-left z-50
+      origin-bottom md:origin-bottom-left z-[60]
     ">
       <button
         onClick={handleViewProfileClick}
