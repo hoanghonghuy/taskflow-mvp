@@ -342,7 +342,7 @@ export default function DashboardPage() {
               <button
                 type="button"
                 onClick={openBriefing}
-                className="inline-flex items-center gap-1.5 px-3 py-2 bg-primary text-primary-foreground rounded-full text-xs font-semibold hover:bg-primary/90 transition-transform hover:scale-105 self-start"
+                className="inline-flex items-center gap-1.5 px-3 py-2 bg-primary text-primary-foreground rounded-full text-xs font-semibold hover:opacity-90 active:scale-95 transition-all hover:scale-105 self-start"
               >
                 <SparklesIcon className="h-4 w-4" />
                 {t('dashboard.cta.button')}
