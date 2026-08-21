@@ -36,13 +36,14 @@ const ProfileView: React.FC = () => {
 
   const localStats = useMemo<ProfileSummary>(() => {
     const totalTasks = state.tasks.length
-    const completedTasks = state.tasks.filter(t => t.completed).length
+    const completedTasks = state.tasks.filter((task) => task.completed).length
     const totalHabits = state.habits.length
     const today = toYYYYMMDD(new Date())
-    const completedHabitsToday = state.habits.filter(h => h.completions.includes(today)).length
-    const totalFocusTime = state.pomodoro.focusHistory.reduce((acc, curr) => acc + curr.duration, 0)
-    const totalPomos = state.pomodoro.focusHistory.length
-    const unlockedAchievements = state.unlockedAchievements?.length || 0
+    const completedHabitsToday = state.habits.filter((habit) => habit.completions.includes(today)).length
+    const totalFocusTime = state.pomodoro.focusHistory.reduce(
+      (total, session) => total + session.duration,
+      0,
+    )
 
     return {
       totalTasks,
@@ -51,12 +52,12 @@ const ProfileView: React.FC = () => {
       totalHabits,
       completedHabitsToday,
       totalFocusTime,
-      totalPomos,
-      unlockedAchievements,
+      totalPomos: state.pomodoro.focusHistory.length,
+      unlockedAchievements: state.unlockedAchievements?.length || 0,
     }
-  }, [state])
+  }, [state.tasks, state.habits, state.pomodoro.focusHistory, state.unlockedAchievements])
 
-  const [remoteStats, setRemoteStats] = useState<ProfileSummary | null>(null)
+  const [remoteStats, setRemoteStats] = useState<Partial<ProfileSummary> | null>(null)
 
   useEffect(() => {
     let isMounted = true
@@ -64,31 +65,24 @@ const ProfileView: React.FC = () => {
     const loadProfileSummary = async () => {
       try {
         const data = (await profileApi.fetchProfileSummary()) as Partial<ProfileSummary> | null
-        if (!data || !isMounted) return
-
-        setRemoteStats(prev => ({
-          totalTasks: data.totalTasks ?? prev?.totalTasks ?? localStats.totalTasks,
-          completedTasks: data.completedTasks ?? prev?.completedTasks ?? localStats.completedTasks,
-          completionRate: data.completionRate ?? prev?.completionRate ?? localStats.completionRate,
-          totalHabits: data.totalHabits ?? prev?.totalHabits ?? localStats.totalHabits,
-          completedHabitsToday: data.completedHabitsToday ?? prev?.completedHabitsToday ?? localStats.completedHabitsToday,
-          totalFocusTime: data.totalFocusTime ?? prev?.totalFocusTime ?? localStats.totalFocusTime,
-          totalPomos: data.totalPomos ?? prev?.totalPomos ?? localStats.totalPomos,
-          unlockedAchievements: data.unlockedAchievements ?? prev?.unlockedAchievements ?? localStats.unlockedAchievements,
-        }))
+        if (data && isMounted) setRemoteStats(data)
       } catch (error) {
         console.error('Failed to load profile summary from backend', error)
       }
     }
 
+    setRemoteStats(null)
     void loadProfileSummary()
 
     return () => {
       isMounted = false
     }
-  }, [localStats])
+  }, [user?.id])
 
-  const stats = remoteStats ?? localStats
+  const stats = useMemo<ProfileSummary>(
+    () => ({ ...localStats, ...remoteStats }),
+    [localStats, remoteStats],
+  )
 
   const handleStartEdit = () => {
     setEditName(user?.name ?? '')
@@ -100,8 +94,8 @@ const ProfileView: React.FC = () => {
     setEditName('')
   }
 
-  const handleSaveName = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSaveName = async (event: React.FormEvent) => {
+    event.preventDefault()
     const trimmed = editName.trim()
     if (!trimmed || trimmed === user?.name) {
       handleCancelEdit()
@@ -117,8 +111,8 @@ const ProfileView: React.FC = () => {
       }
       success(t('profile.updateSuccessTitle'), t('profile.updateSuccessBody'))
       setIsEditing(false)
-    } catch (err) {
-      console.error('Failed to update profile name', err)
+    } catch (error) {
+      console.error('Failed to update profile name', error)
       showError(t('profile.updateFailedTitle'), t('profile.updateFailedBody'))
     } finally {
       setIsSaving(false)
@@ -134,58 +128,41 @@ const ProfileView: React.FC = () => {
 
   return (
     <AppPage>
-      <AppPageHeader
-        title={t('nav.profile')}
-        subtitle={t('profile.subtitle')}
-      />
+      <AppPageHeader title={t('nav.profile')} subtitle={t('profile.subtitle')} />
       <AppPageMain className="py-4 md:py-6">
-        <div className="max-w-4xl mx-auto space-y-6">
-          {/* Profile Card */}
-          <div className="bg-card border border-border rounded-lg p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-6">
-              <Avatar user={user} className="w-20 h-20 shrink-0" />
-              <div className="flex-1 min-w-0">
+        <div className="mx-auto max-w-4xl space-y-6">
+          <div className="rounded-lg border border-border bg-card p-6">
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
+              <Avatar user={user} className="h-20 w-20 shrink-0" />
+              <div className="min-w-0 flex-1">
                 {isEditing ? (
-                  <form onSubmit={handleSaveName} className="space-y-3 max-w-md">
+                  <form onSubmit={handleSaveName} className="max-w-md space-y-3">
                     <label className="block text-sm font-medium text-muted-foreground">
                       {t('profile.name')}
                     </label>
                     <input
                       type="text"
                       value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                      className="w-full px-3 py-2 rounded-md border border-border bg-background text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      onChange={(event) => setEditName(event.target.value)}
+                      className="w-full rounded-md border border-border bg-background px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       autoFocus
                       required
                       minLength={1}
                     />
                     <div className="flex gap-2">
-                      <Button
-                        type="submit"
-                        disabled={isSaving || !editName.trim()}
-                      >
+                      <Button type="submit" disabled={isSaving || !editName.trim()}>
                         {t('profile.save')}
                       </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handleCancelEdit}
-                        disabled={isSaving}
-                      >
+                      <Button type="button" variant="outline" onClick={handleCancelEdit} disabled={isSaving}>
                         {t('profile.cancel')}
                       </Button>
                     </div>
                   </form>
                 ) : (
                   <>
-                    <h2 className="text-2xl font-bold truncate">{user?.name}</h2>
-                    <p className="text-muted-foreground truncate">{user?.email}</p>
-                    <Button
-                      type="button"
-                      variant="link"
-                      onClick={handleStartEdit}
-                      className="mt-3 h-auto px-0"
-                    >
+                    <h2 className="truncate text-2xl font-bold">{user?.name}</h2>
+                    <p className="truncate text-muted-foreground">{user?.email}</p>
+                    <Button type="button" variant="link" onClick={handleStartEdit} className="mt-3 h-auto px-0">
                       {t('profile.edit')}
                     </Button>
                   </>
@@ -194,8 +171,7 @@ const ProfileView: React.FC = () => {
             </div>
           </div>
 
-          {/* Statistics Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             <StatCard
               icon={<CheckCircleIcon className="h-6 w-6 text-primary" />}
               label={t('profile.tasksCompleted')}
@@ -228,4 +204,3 @@ const ProfileView: React.FC = () => {
 }
 
 export default ProfileView
-
