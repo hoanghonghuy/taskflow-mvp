@@ -12,8 +12,11 @@ import { CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react'
 import { PRIORITY_MAP } from '@/lib/task-constants'
 import { isSharedListMember } from '@/lib/utils/list-access'
 import type { Task } from '@/types'
-import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
+import { AppPage, AppPageMain } from '@/components/layout/app-page'
+import { AppPageHeader } from '@/components/layout/app-page-header'
 import { SegmentedControl } from '@/components/ui/segmented-control'
+import { Button } from '@/components/ui/button'
+import { IconButton } from '@/components/ui/icon-button'
 
 const CalendarView: React.FC = () => {
   const { t } = useI18n()
@@ -46,11 +49,10 @@ const CalendarView: React.FC = () => {
   const { tasks } = state
   const { settings } = useSettings()
   const { user } = useUser()
-
   const locale = settings.language || undefined
 
   useEffect(() => {
-    const mq = window.matchMedia('(max-width: 767px)')
+    const mediaQuery = window.matchMedia('(max-width: 767px)')
     const syncMobileView = (matches: boolean) => {
       if (!matches) return
       setViewMode('agenda')
@@ -60,11 +62,11 @@ const CalendarView: React.FC = () => {
       setSelectedDate(base)
     }
 
-    syncMobileView(mq.matches)
+    syncMobileView(mediaQuery.matches)
     const handleChange = (event: MediaQueryListEvent) => syncMobileView(event.matches)
-    mq.addEventListener('change', handleChange)
-    return () => mq.removeEventListener('change', handleChange)
-  }, [setViewMode, setAgendaStartDate, setSelectedDate])
+    mediaQuery.addEventListener('change', handleChange)
+    return () => mediaQuery.removeEventListener('change', handleChange)
+  }, [setAgendaStartDate, setSelectedDate, setViewMode])
 
   const agendaRangeEnd = useMemo(() => {
     const end = new Date(agendaStartDate)
@@ -73,19 +75,17 @@ const CalendarView: React.FC = () => {
   }, [agendaStartDate])
 
   const upcomingAgenda = useMemo(() => {
-    const agenda: { date: Date; tasks: Task[] }[] = []
-    for (let i = 0; i < 10; i++) {
+    return Array.from({ length: 10 }, (_, index) => {
       const date = new Date(agendaStartDate)
-      date.setDate(agendaStartDate.getDate() + i)
-      const tasks = getTasksForDate(date)
-      agenda.push({ date, tasks })
-    }
-    return agenda
+      date.setDate(agendaStartDate.getDate() + index)
+      return { date, tasks: getTasksForDate(date) }
+    })
   }, [agendaStartDate, getTasksForDate])
 
-  const selectedTasks = useMemo(() => {
-    return getTasksForDate(selectedDate)
-  }, [getTasksForDate, selectedDate])
+  const selectedTasks = useMemo(
+    () => getTasksForDate(selectedDate),
+    [getTasksForDate, selectedDate],
+  )
 
   const parseCalendarTaskId = (taskId: string) => {
     const separatorIndex = taskId.lastIndexOf('_')
@@ -98,43 +98,42 @@ const CalendarView: React.FC = () => {
     }
   }
 
+  const canDragTask = (task: Task) => {
+    const { isInstance, originalId, instanceDateStr } = parseCalendarTaskId(task.id)
+    const master = tasks.find((item) => item.id === originalId) ?? task
+    const parentList = state.lists.find((list) => list.id === master.listId)
+    if (isSharedListMember(parentList, user?.id)) return false
+    if (!isInstance || !instanceDateStr || !master.recurrence) return true
+    const anchorDateStr = master.dueDate
+      ? new Date(master.dueDate).toISOString().slice(0, 10)
+      : ''
+    return instanceDateStr === anchorDateStr
+  }
+
   const moveTaskToDate = (taskId: string, targetDate: Date) => {
     const { isInstance, originalId, instanceDateStr } = parseCalendarTaskId(taskId)
-    const task = tasks.find(t => t.id === originalId)
+    const task = tasks.find((item) => item.id === originalId)
     if (!task) return
 
     const parentList = state.lists.find((list) => list.id === task.listId)
     if (isSharedListMember(parentList, user?.id)) return
 
-    // Non-anchor recurring instances: do not move the whole series
     if (task.recurrence && isInstance && instanceDateStr) {
       const anchorDateStr = task.dueDate
         ? new Date(task.dueDate).toISOString().slice(0, 10)
         : ''
-      if (instanceDateStr !== anchorDateStr) {
-        return
-      }
+      if (instanceDateStr !== anchorDateStr) return
     }
 
     const originalDate = task.dueDate ? new Date(task.dueDate) : new Date()
     const newDueDate = new Date(targetDate)
-    // Preserve original time component
-    newDueDate.setHours(originalDate.getHours(), originalDate.getMinutes(), originalDate.getSeconds(), originalDate.getMilliseconds())
-
-    void updateTask({
-      ...task,
-      dueDate: newDueDate.toISOString(),
-    })
-  }
-
-  const handleTaskDragStart = (e: React.DragEvent<HTMLElement>, taskId: string) => {
-    e.dataTransfer.setData('taskId', taskId)
-    setDraggedTaskId(taskId)
-  }
-
-  const handleTaskDragEnd = () => {
-    setDraggedTaskId(null)
-    setDragOverDateKey(null)
+    newDueDate.setHours(
+      originalDate.getHours(),
+      originalDate.getMinutes(),
+      originalDate.getSeconds(),
+      originalDate.getMilliseconds(),
+    )
+    void updateTask({ ...task, dueDate: newDueDate.toISOString() })
   }
 
   const handleTaskClick = (task: Task) => {
@@ -142,26 +141,10 @@ const CalendarView: React.FC = () => {
     dispatch({ type: 'SET_SELECTED_TASK', payload: originalId })
   }
 
-  const canDragTask = (task: Task) => {
-    const { isInstance, originalId, instanceDateStr } = parseCalendarTaskId(task.id)
-    const master = tasks.find(t => t.id === originalId) ?? task
-    const parentList = state.lists.find((list) => list.id === master.listId)
-    if (isSharedListMember(parentList, user?.id)) return false
-    if (!isInstance || !instanceDateStr) return true
-    if (!master.recurrence) return true
-    const anchorDateStr = master.dueDate
-      ? new Date(master.dueDate).toISOString().slice(0, 10)
-      : ''
-    return instanceDateStr === anchorDateStr
-  }
-
   const renderTaskPill = (task: Task) => {
     const priority = PRIORITY_MAP[task.priority || 'none']
-    const bg = priority.checkboxBorderValue
-
     const isDraggingThis = draggedTaskId === task.id
     const draggable = canDragTask(task)
-
     const timeLabel = task.dueDate
       ? new Date(task.dueDate).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
       : null
@@ -171,108 +154,121 @@ const CalendarView: React.FC = () => {
         type="button"
         key={task.id}
         draggable={draggable}
-        onDragStart={draggable ? (e) => handleTaskDragStart(e, task.id) : undefined}
-        onDragEnd={draggable ? handleTaskDragEnd : undefined}
+        onDragStart={
+          draggable
+            ? (event) => {
+                event.dataTransfer.setData('taskId', task.id)
+                setDraggedTaskId(task.id)
+              }
+            : undefined
+        }
+        onDragEnd={
+          draggable
+            ? () => {
+                setDraggedTaskId(null)
+                setDragOverDateKey(null)
+              }
+            : undefined
+        }
         aria-label={timeLabel ? `${timeLabel}, ${task.title}` : task.title}
-        className={`w-full border border-border bg-card text-left text-xs px-2 py-0.5 rounded-md text-foreground flex items-center gap-1 shadow-sm transition-opacity ${
-          draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
-        } ${isDraggingThis ? 'opacity-60' : ''}`}
-        style={{ borderLeftColor: bg, borderLeftWidth: '4px' }}
-        title={task.title}
         onClick={() => handleTaskClick(task)}
+        className={`flex min-h-7 w-full items-center gap-1.5 rounded-md border border-border bg-card px-2 py-1 text-left text-xs text-foreground shadow-sm transition-[opacity,background-color,border-color] duration-150 hover:bg-secondary/60 motion-reduce:transition-none ${
+          draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
+        } ${isDraggingThis ? 'opacity-50' : ''}`}
+        style={{ borderLeftColor: priority.checkboxBorderValue, borderLeftWidth: '3px' }}
+        title={task.title}
       >
-        {timeLabel && (
-          <span className="shrink-0 opacity-90 text-[10px]">
-            {timeLabel}
-          </span>
-        )}
-        <span className="truncate">
-          {task.title}
-        </span>
+        {timeLabel && <span className="shrink-0 text-[10px] text-muted-foreground">{timeLabel}</span>}
+        <span className="truncate font-medium">{task.title}</span>
       </button>
     )
   }
 
+  const rangeLabel =
+    viewMode === 'month'
+      ? currentDate.toLocaleDateString(locale, { month: 'long', year: 'numeric' })
+      : `${agendaStartDate.toLocaleDateString(locale, { month: 'short', day: 'numeric' })} – ${agendaRangeEnd.toLocaleDateString(locale, { month: 'short', day: 'numeric' })}`
+
   return (
     <AppPage>
-      <AppPageContainer>
-        <header className="py-4 md:py-6 border-b border-border shrink-0">
-          <div className="flex flex-col gap-2 md:gap-4 md:flex-row md:items-center md:justify-between mb-3 md:mb-6">
-            <div>
-              <h1 className="hidden md:block text-2xl md:text-3xl font-bold">{t('nav.calendar')}</h1>
-              <p className="text-sm text-muted-foreground hidden md:block">{t('calendar.subtitle')}</p>
-            </div>
-            <div className="flex items-center gap-2 flex-wrap justify-end md:justify-start">
-              <span className="text-sm font-medium text-muted-foreground md:hidden">
-                {viewMode === 'month'
-                  ? currentDate.toLocaleDateString(locale, { month: 'short', year: 'numeric' })
-                  : `${agendaStartDate.toLocaleDateString(locale, { month: 'short', day: 'numeric' })} - ${agendaRangeEnd.toLocaleDateString(locale, { month: 'short', day: 'numeric' })}`}
-              </span>
-              <button
+      <AppPageHeader
+        title={t('nav.calendar')}
+        subtitle={t('calendar.subtitle')}
+        hideOnMobile={false}
+      />
+
+      <AppPageMain className="space-y-4 py-4 md:space-y-6 md:py-6">
+        <div className="flex flex-col gap-3 rounded-xl border border-border/70 bg-card p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4">
+          <div className="min-w-0">
+            <p className="truncate text-base font-semibold sm:text-lg">{rangeLabel}</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center rounded-lg border border-border/60 bg-background p-0.5">
+              <IconButton
+                type="button"
+                size="md"
+                variant="toolbar"
                 onClick={handlePrevMonth}
-                className="p-1.5 md:p-2 rounded-lg hover:bg-secondary transition-colors"
                 aria-label={t('calendar.prevMonth' as TranslationKey)}
               >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-              <button
-                onClick={handleToday}
-                className="px-3 py-1.5 md:px-4 md:py-2 bg-secondary rounded-lg hover:bg-muted transition-colors text-sm font-medium"
-              >
+                <ChevronLeft className="h-4 w-4" />
+              </IconButton>
+              <Button type="button" variant="ghost" size="sm" onClick={handleToday}>
                 {t('calendar.today')}
-              </button>
-              <button
+              </Button>
+              <IconButton
+                type="button"
+                size="md"
+                variant="toolbar"
                 onClick={handleNextMonth}
-                className="p-1.5 md:p-2 rounded-lg hover:bg-secondary transition-colors"
                 aria-label={t('calendar.nextMonth' as TranslationKey)}
               >
-                <ChevronRight className="h-5 w-5" />
-              </button>
-              <SegmentedControl
-                shape="pill"
-                size="sm"
-                aria-label={t('calendar.view.month')}
-                value={viewMode}
-                onValueChange={(mode) => {
-                  setViewMode(mode)
-                  if (mode === 'agenda') {
-                    const base = new Date(selectedDate)
-                    base.setHours(0, 0, 0, 0)
-                    setAgendaStartDate(base)
-                  } else {
-                    const monthAnchor = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)
-                    setCurrentDate(monthAnchor)
-                    setSelectedDate(monthAnchor)
-                  }
-                }}
-                options={[
-                  { value: 'month', label: t('calendar.view.month') },
-                  { value: 'agenda', label: t('calendar.view.agenda') },
-                ]}
-              />
+                <ChevronRight className="h-4 w-4" />
+              </IconButton>
             </div>
+
+            <SegmentedControl
+              shape="pill"
+              size="sm"
+              aria-label={t('calendar.view.month')}
+              value={viewMode}
+              onValueChange={(mode) => {
+                setViewMode(mode)
+                if (mode === 'agenda') {
+                  const base = new Date(selectedDate)
+                  base.setHours(0, 0, 0, 0)
+                  setAgendaStartDate(base)
+                } else {
+                  const monthAnchor = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)
+                  setCurrentDate(monthAnchor)
+                  setSelectedDate(monthAnchor)
+                }
+              }}
+              options={[
+                { value: 'month', label: t('calendar.view.month') },
+                { value: 'agenda', label: t('calendar.view.agenda') },
+              ]}
+            />
           </div>
-          <h2 className="hidden md:block text-2xl font-semibold">
-            {viewMode === 'month'
-              ? currentDate.toLocaleDateString(locale, { month: 'long', year: 'numeric' })
-              : `${agendaStartDate.toLocaleDateString(locale, { weekday: 'long', month: 'long', day: 'numeric' })} – ${agendaRangeEnd.toLocaleDateString(locale, { weekday: 'long', month: 'long', day: 'numeric' })}`}
-          </h2>
-        </header>
-      </AppPageContainer>
-      <AppPageMain className="py-4 md:py-6 space-y-4 md:space-y-6">
+        </div>
+
         {viewMode === 'month' ? (
           <>
-            <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
+            <section className="overflow-hidden rounded-xl border border-border/70 bg-card shadow-sm">
               <div className="grid grid-cols-7 border-b border-border bg-muted/30">
-                {DAY_LABELS.map(label => (
-                  <div key={label} className="p-1.5 text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground md:p-3 md:text-sm">
+                {DAY_LABELS.map((label) => (
+                  <div
+                    key={label}
+                    className="p-1.5 text-center text-[10px] font-semibold uppercase tracking-wide text-muted-foreground sm:text-xs md:p-3"
+                  >
                     {label}
                   </div>
                 ))}
               </div>
+
               <div className="grid grid-cols-7">
-                {days.map((date, index) => {
-                  const tasks = getTasksForDate(date)
+                {days.map((date) => {
+                  const dateTasks = getTasksForDate(date)
                   const isTodayDate = isToday(date)
                   const isCurrentMonthDate = isCurrentMonth(date)
                   const isSelectedDate = isSelected(date)
@@ -282,65 +278,64 @@ const CalendarView: React.FC = () => {
                   return (
                     <button
                       type="button"
-                      key={index}
+                      key={date.toISOString()}
                       aria-label={date.toLocaleDateString(locale, { dateStyle: 'full' })}
                       aria-pressed={isSelectedDate}
                       aria-current={isTodayDate ? 'date' : undefined}
                       onClick={() => setSelectedDate(date)}
-                      onDragOver={(e) => {
-                        e.preventDefault()
+                      onDragOver={(event) => {
+                        event.preventDefault()
                         setDragOverDateKey(dateKey)
                       }}
-                      onDragLeave={(e) => {
-                        e.preventDefault()
-                        if (dragOverDateKey === dateKey) {
-                          setDragOverDateKey(null)
-                        }
+                      onDragLeave={() => {
+                        if (dragOverDateKey === dateKey) setDragOverDateKey(null)
                       }}
-                      onDrop={(e) => {
-                        e.preventDefault()
-                        const taskId = e.dataTransfer.getData('taskId')
-                        if (taskId) {
-                          moveTaskToDate(taskId, date)
-                        }
+                      onDrop={(event) => {
+                        event.preventDefault()
+                        const taskId = event.dataTransfer.getData('taskId')
+                        if (taskId) moveTaskToDate(taskId, date)
                         setDraggedTaskId(null)
                         setDragOverDateKey(null)
                       }}
-                      className={`min-h-[52px] p-1 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring md:min-h-[130px] md:p-1.5
-                        ${isSelectedDate ? 'border-2 border-primary bg-primary/10 z-10 relative' : 'border-r border-b border-border'}
-                        ${isCurrentMonthDate ? 'bg-card' : 'bg-muted/30'}
-                        ${isTodayDate && !isSelectedDate ? 'bg-primary/10 border-primary' : ''}
-                        ${isDragOverDay ? 'outline-2 outline-primary/60 bg-primary/5 relative z-10' : ''}
-                      `}
+                      className={`relative min-h-[54px] border-b border-r border-border p-1 text-left transition-[background-color,box-shadow] duration-150 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring motion-reduce:transition-none md:min-h-[130px] md:p-1.5 ${
+                        isCurrentMonthDate ? 'bg-card' : 'bg-muted/25 text-muted-foreground'
+                      } ${isSelectedDate ? 'z-10 bg-primary/5 shadow-[inset_0_0_0_2px_hsl(var(--primary))]' : ''} ${
+                        isTodayDate && !isSelectedDate ? 'bg-primary/[0.035]' : ''
+                      } ${isDragOverDay ? 'z-20 bg-primary/10 shadow-[inset_0_0_0_2px_hsl(var(--primary))]' : ''}`}
                     >
                       <div className="flex h-full flex-col">
-                        <div
-                          className={`mb-0.5 flex items-center gap-1 text-xs font-semibold md:mb-1
-                            ${isTodayDate ? 'text-primary' : isCurrentMonthDate ? 'text-foreground' : 'text-muted-foreground'}
-                          `}
-                        >
-                          <span>{date.getDate()}</span>
-                          {tasks.length > 0 && (
+                        <div className="mb-0.5 flex items-center gap-1 md:mb-1">
+                          <span
+                            className={`flex h-6 min-w-6 items-center justify-center rounded-full px-1 text-xs font-semibold ${
+                              isTodayDate
+                                ? 'bg-primary text-primary-foreground'
+                                : isSelectedDate
+                                  ? 'text-primary'
+                                  : ''
+                            }`}
+                          >
+                            {date.getDate()}
+                          </span>
+                          {dateTasks.length > 0 && (
                             <span className="ml-auto rounded-full bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
-                              {tasks.length}
+                              {dateTasks.length}
                             </span>
                           )}
                         </div>
+
                         <div className="mt-0.5 hidden flex-col gap-1 md:flex">
-                          {tasks.slice(0, 2).map(task => renderTaskPill(task))}
-                          {tasks.length > 2 && (
-                            <div className="text-[11px] text-muted-foreground">
-                              {t('calendar.moreTasks', { count: tasks.length - 2 })}
-                            </div>
+                          {dateTasks.slice(0, 2).map(renderTaskPill)}
+                          {dateTasks.length > 2 && (
+                            <span className="px-1 text-[11px] text-muted-foreground">
+                              {t('calendar.moreTasks', { count: dateTasks.length - 2 })}
+                            </span>
                           )}
                         </div>
-                        {tasks.length > 0 && (
-                          <div className="mt-auto flex justify-center gap-0.5 md:hidden" aria-hidden>
-                            {tasks.slice(0, 3).map((task) => (
-                              <span
-                                key={task.id}
-                                className="size-1.5 rounded-full bg-primary/70"
-                              />
+
+                        {dateTasks.length > 0 && (
+                          <div className="mt-auto flex justify-center gap-0.5 pb-0.5 md:hidden" aria-hidden>
+                            {dateTasks.slice(0, 3).map((task) => (
+                              <span key={task.id} className="h-1.5 w-1.5 rounded-full bg-primary/70" />
                             ))}
                           </div>
                         )}
@@ -349,40 +344,53 @@ const CalendarView: React.FC = () => {
                   )
                 })}
               </div>
-            </div>
+            </section>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div className="lg:col-span-2 bg-card border border-border rounded-lg p-4 shadow-sm">
-                <div className="flex items-center gap-2 mb-4">
-                  <CalendarIcon className="h-5 w-5 text-primary" />
-                  <div>
-                    <h3 className="font-semibold">{t('calendar.selectedDayTasks')}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {selectedDate.toLocaleDateString(locale, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+              <section className="rounded-xl border border-border/70 bg-card p-4 shadow-sm lg:col-span-2">
+                <div className="mb-4 flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <CalendarIcon className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <h2 className="font-semibold">{t('calendar.selectedDayTasks')}</h2>
+                    <p className="truncate text-sm text-muted-foreground">
+                      {selectedDate.toLocaleDateString(locale, {
+                        weekday: 'long',
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}
                     </p>
                   </div>
                 </div>
+
                 {selectedTasks.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">{t('calendar.noTasks')}</p>
+                  <div className="rounded-lg border border-dashed border-border/70 px-4 py-8 text-center text-sm text-muted-foreground">
+                    {t('calendar.noTasks')}
+                  </div>
                 ) : (
                   <div className="space-y-2">
-                    {selectedTasks.map(task => (
+                    {selectedTasks.map((task) => (
                       <button
                         key={task.id}
                         type="button"
                         onClick={() => handleTaskClick(task)}
-                        className="w-full flex items-center justify-between rounded-xl border border-border/60 p-3 bg-muted/30 text-left hover:bg-muted/50 transition-colors"
+                        className="flex min-h-14 w-full items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 p-3 text-left transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none"
                       >
-                        <div>
-                          <p className="font-medium text-sm">{task.title}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium">{task.title}</p>
                           {task.dueDate && (
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(task.dueDate).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              {new Date(task.dueDate).toLocaleTimeString(locale, {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
                             </p>
                           )}
                         </div>
                         <span
-                          className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-muted/40"
+                          className="shrink-0 rounded-full bg-muted/60 px-2 py-1 text-[11px] font-medium"
                           style={{ color: PRIORITY_MAP[task.priority || 'none'].checkboxBorderValue }}
                         >
                           {t(PRIORITY_MAP[task.priority || 'none'].label)}
@@ -391,60 +399,77 @@ const CalendarView: React.FC = () => {
                     ))}
                   </div>
                 )}
-              </div>
-              <div className="bg-card border border-border rounded-lg p-4 shadow-sm">
-                <h3 className="font-semibold mb-4">{t('calendar.legend.title')}</h3>
+              </section>
+
+              <aside className="rounded-xl border border-border/70 bg-card p-4 shadow-sm">
+                <h2 className="mb-4 font-semibold">{t('calendar.legend.title')}</h2>
                 <div className="space-y-3 text-sm">
-                  {(['urgent', 'high', 'medium', 'low', 'none'] as const).map(priority => (
-                    <div key={priority} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: PRIORITY_MAP[priority].checkboxBorderValue }}
-                        />
-                        <span>{t(PRIORITY_MAP[priority].label)}</span>
-                      </div>
+                  {(['urgent', 'high', 'medium', 'low', 'none'] as const).map((priority) => (
+                    <div key={priority} className="flex items-center gap-2">
+                      <span
+                        className="h-2.5 w-2.5 rounded-full"
+                        style={{ backgroundColor: PRIORITY_MAP[priority].checkboxBorderValue }}
+                      />
+                      <span>{t(PRIORITY_MAP[priority].label)}</span>
                     </div>
                   ))}
                 </div>
-              </div>
+              </aside>
             </div>
           </>
         ) : (
-          <div className="bg-card border border-border rounded-xl shadow-sm">
-            <div className="p-4 border-b border-border">
-              <h3 className="font-semibold">{t('calendar.upcomingAgenda')}</h3>
-              <p className="text-sm text-muted-foreground">
-                {t('calendar.upcomingSubtitle')}
-              </p>
+          <section className="overflow-hidden rounded-xl border border-border/70 bg-card shadow-sm">
+            <div className="border-b border-border px-4 py-4 sm:px-5">
+              <h2 className="font-semibold">{t('calendar.upcomingAgenda')}</h2>
+              <p className="mt-1 text-sm text-muted-foreground">{t('calendar.upcomingSubtitle')}</p>
             </div>
-            <div className="divide-y divide-border">
-              {upcomingAgenda.map(({ date, tasks }) => (
-                <div key={date.toISOString()} className="p-4 flex flex-col gap-2">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">
-                        {date.toLocaleDateString(locale, { weekday: 'long', month: 'long', day: 'numeric' })}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {tasks.length} {tasks.length === 1 ? t('calendar.taskCountSingle') : t('calendar.taskCountPlural', { count: tasks.length })}
-                      </p>
+
+            <div className="divide-y divide-border/60">
+              {upcomingAgenda.map(({ date, tasks: dateTasks }) => {
+                const today = isToday(date)
+                return (
+                  <div
+                    key={date.toISOString()}
+                    className={`p-4 sm:p-5 ${today ? 'bg-primary/[0.035]' : ''}`}
+                  >
+                    <div className="mb-3 flex items-start justify-between gap-3">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="font-medium">
+                            {date.toLocaleDateString(locale, {
+                              weekday: 'long',
+                              month: 'long',
+                              day: 'numeric',
+                            })}
+                          </h3>
+                          {today && (
+                            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                              {t('calendar.today')}
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {dateTasks.length === 1
+                            ? `1 ${t('calendar.taskCountSingle')}`
+                            : t('calendar.taskCountPlural', { count: dateTasks.length })}
+                        </p>
+                      </div>
                     </div>
-                    <span className="text-sm text-muted-foreground">
-                      {isToday(date) ? t('calendar.today') : ''}
-                    </span>
+
+                    {dateTasks.length === 0 ? (
+                      <p className="rounded-lg border border-dashed border-border/60 px-3 py-4 text-xs text-muted-foreground">
+                        {t('calendar.noTasks')}
+                      </p>
+                    ) : (
+                      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                        {dateTasks.map(renderTaskPill)}
+                      </div>
+                    )}
                   </div>
-                  {tasks.length === 0 ? (
-                    <p className="text-xs text-muted-foreground">{t('calendar.noTasks')}</p>
-                  ) : (
-                    <div className="flex flex-wrap gap-2">
-                      {tasks.map(task => renderTaskPill(task))}
-                    </div>
-                  )}
-                </div>
-              ))}
+                )
+              })}
             </div>
-          </div>
+          </section>
         )}
       </AppPageMain>
     </AppPage>
@@ -452,4 +477,3 @@ const CalendarView: React.FC = () => {
 }
 
 export default CalendarView
-
