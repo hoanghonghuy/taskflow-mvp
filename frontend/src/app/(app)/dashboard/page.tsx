@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useMemo, useState, useEffect } from 'react'
+import React, { useMemo, useState, useEffect, useRef } from 'react'
 import { useTaskManager } from '@/lib/hooks/use-task-manager'
 import { useI18n } from '@/lib/i18n/hooks'
 import type { TranslationKey } from '@/lib/i18n/types'
@@ -17,8 +17,12 @@ import * as profileApi from '@/lib/api/profile'
 
 const useCountUp = (end: number, duration = 650) => {
   const [count, setCount] = useState(end)
+  const previousValueRef = useRef(end)
 
   useEffect(() => {
+    const startValue = previousValueRef.current
+    previousValueRef.current = end
+
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (prefersReducedMotion) {
       setCount(end)
@@ -27,7 +31,6 @@ const useCountUp = (end: number, duration = 650) => {
 
     let frame = 0
     let startTimestamp: number | null = null
-    const startValue = count
 
     const step = (timestamp: number) => {
       if (startTimestamp === null) startTimestamp = timestamp
