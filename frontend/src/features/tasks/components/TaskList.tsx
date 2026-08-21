@@ -89,86 +89,33 @@ const TaskList: React.FC<TaskListProps> = ({ onAddTask }) => {
 
     return filteredTasks.reduce(
       (acc, task) => {
-        if (!task.dueDate || task.completed) {
-          return acc
-        }
+        if (!task.dueDate || task.completed) return acc
 
         const dueDate = startOfDay(new Date(task.dueDate))
-
-        if (isSameDay(dueDate, today)) {
-          acc.today += 1
-        } else if (dueDate < today) {
-          acc.overdue += 1
-        } else if (dueDate > today) {
-          acc.upcoming += 1
-        }
-
+        if (isSameDay(dueDate, today)) acc.today += 1
+        else if (dueDate < today) acc.overdue += 1
+        else acc.upcoming += 1
         return acc
       },
-      { today: 0, upcoming: 0, overdue: 0, total: filteredTasks.length }
+      { today: 0, upcoming: 0, overdue: 0, total: filteredTasks.length },
     )
   }, [filteredTasks])
 
-  const formatTaskCount = useCallback(
-    (count: number) =>
-      count === 1
-        ? t('taskList.summary.tasks', { count })
-        : t('taskList.summary.tasks_plural', { count }),
-    [t]
+  const uncompletedTasks = useMemo(
+    () => sortTasks(filteredTasks.filter((task) => !task.completed), state.sortOrder, state.tasks),
+    [filteredTasks, state.sortOrder, state.tasks],
   )
 
-  const summaryCards = useMemo(
-    () => [
-      {
-        key: 'today',
-        label: t('taskList.summary.today'),
-        value: summary.today,
-        accent: 'bg-primary/10 text-primary'
-      },
-      {
-        key: 'upcoming',
-        label: t('taskList.summary.upcoming'),
-        value: summary.upcoming,
-        accent: 'bg-[hsl(var(--color-dashboard-upcoming) / 0.1)] text-[hsl(var(--color-dashboard-upcoming))]'
-      },
-      {
-        key: 'overdue',
-        label: t('taskList.summary.overdue'),
-        value: summary.overdue,
-        accent: 'bg-destructive/10 text-destructive'
-      },
-      {
-        key: 'total',
-        label: t('taskList.summary.total'),
-        value: summary.total,
-        accent: 'bg-muted text-muted-foreground'
-      }
-    ],
-    [summary, t]
+  const completedTasks = useMemo(
+    () => sortTasks(filteredTasks.filter((task) => task.completed), state.sortOrder, state.tasks),
+    [filteredTasks, state.sortOrder, state.tasks],
   )
-
-  const uncompletedTasks = useMemo(() => {
-    return sortTasks(
-      filteredTasks.filter(task => !task.completed),
-      state.sortOrder,
-      state.tasks
-    )
-  }, [filteredTasks, state.sortOrder, state.tasks])
 
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
-
   const visibleUncompletedTasks = useMemo(
     () => uncompletedTasks.slice(0, visibleCount),
     [uncompletedTasks, visibleCount],
   )
-
-  const completedTasks = useMemo(() => {
-    return sortTasks(
-      filteredTasks.filter(task => task.completed),
-      state.sortOrder,
-      state.tasks
-    )
-  }, [filteredTasks, state.sortOrder, state.tasks])
 
   const groupedUpcomingTasks = useMemo(() => {
     if (state.activeListId !== 'upcoming') return null
@@ -178,16 +125,36 @@ const TaskList: React.FC<TaskListProps> = ({ onAddTask }) => {
   const upcomingGroupOrder = useMemo(() => {
     if (!groupedUpcomingTasks) return []
     return Object.keys(groupedUpcomingTasks).sort((a, b) => {
-      const earliestA = Math.min(...groupedUpcomingTasks[a].map(t => new Date(t.dueDate!).getTime()))
-      const earliestB = Math.min(...groupedUpcomingTasks[b].map(t => new Date(t.dueDate!).getTime()))
+      const earliestA = Math.min(...groupedUpcomingTasks[a].map((task) => new Date(task.dueDate!).getTime()))
+      const earliestB = Math.min(...groupedUpcomingTasks[b].map((task) => new Date(task.dueDate!).getTime()))
       return earliestA - earliestB
     })
   }, [groupedUpcomingTasks])
 
-  const handleDragStart = (taskId: string) => {
-    setDraggedTaskId(taskId)
-  }
+  const formatTaskCount = useCallback(
+    (count: number) =>
+      count === 1
+        ? t('taskList.summary.tasks', { count })
+        : t('taskList.summary.tasks_plural', { count }),
+    [t],
+  )
 
+  const summaryItems = useMemo(
+    () => [
+      { key: 'today', label: t('taskList.summary.today'), value: summary.today, tone: 'text-primary' },
+      {
+        key: 'upcoming',
+        label: t('taskList.summary.upcoming'),
+        value: summary.upcoming,
+        tone: 'text-[hsl(var(--color-dashboard-upcoming))]',
+      },
+      { key: 'overdue', label: t('taskList.summary.overdue'), value: summary.overdue, tone: 'text-destructive' },
+      { key: 'total', label: t('taskList.summary.total'), value: summary.total, tone: 'text-foreground' },
+    ],
+    [summary, t],
+  )
+
+  const handleDragStart = (taskId: string) => setDraggedTaskId(taskId)
   const handleDrop = (droppedOnId: string) => {
     if (draggedTaskId && draggedTaskId !== droppedOnId) {
       void reorderTasks(draggedTaskId, droppedOnId)
@@ -203,117 +170,138 @@ const TaskList: React.FC<TaskListProps> = ({ onAddTask }) => {
 
   if (filteredTasks.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full">
+      <div className="flex min-h-[52vh] flex-col items-center justify-center">
         <TaskListEmptyState variant={emptyStateVariant} onAddTask={onAddTask} />
       </div>
     )
   }
 
-  const renderTaskItems = (tasks: Task[]) => (
-    tasks.map(task => (
-      <TaskItem 
-        key={task.id} 
+  const renderTaskItems = (tasks: Task[]) =>
+    tasks.map((task) => (
+      <TaskItem
+        key={task.id}
         task={task}
         isDraggable={state.sortOrder === 'default' && state.activeListId !== 'upcoming'}
         onDragStart={handleDragStart}
         onDrop={handleDrop}
       />
     ))
-  )
 
   return (
-    <div className="space-y-6">
-      <section className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {summaryCards.map(({ key, label, value, accent }) => (
+    <div className="space-y-5">
+      <section
+        aria-label={t('taskList.summary.total')}
+        className="grid grid-cols-2 overflow-hidden rounded-xl border border-border/60 bg-card/65 sm:grid-cols-4"
+      >
+        {summaryItems.map(({ key, label, value, tone }, index) => (
           <div
             key={key}
-            className="rounded-lg border border-border/60 bg-card/70 p-4 shadow-sm"
+            className={`px-4 py-3 sm:px-5 ${index > 0 ? 'border-l border-border/50' : ''} ${index > 1 ? 'border-t sm:border-t-0' : index === 1 ? 'border-l border-border/50' : ''}`}
           >
-            <p className="text-xs font-medium text-muted-foreground mb-2">{label}</p>
-            <div className="flex items-end justify-between gap-2">
-              <span className="text-2xl font-semibold">{value}</span>
-              <span className={`text-xs px-2 py-1 rounded-full font-medium ${accent}`}>
-                {formatTaskCount(value)}
-              </span>
+            <div className="flex items-baseline justify-between gap-2">
+              <span className={`text-xl font-semibold tabular-nums ${tone}`}>{value}</span>
+              <span className="text-[11px] text-muted-foreground sm:hidden">{formatTaskCount(value)}</span>
             </div>
+            <p className="mt-1 truncate text-xs font-medium text-muted-foreground">{label}</p>
           </div>
         ))}
       </section>
 
-      <div
-        onDragOver={(e) => e.preventDefault()}
-        className="rounded-lg border border-border/60 bg-card/80 p-4 shadow-sm"
-      >
-        {groupedUpcomingTasks ? (
-          uncompletedTasks.length === 0 ? (
+      <section className="overflow-hidden rounded-xl border border-border/60 bg-card/80 shadow-sm">
+        <div className="flex items-center justify-between border-b border-border/50 px-4 py-3 sm:px-5">
+          <div>
+            <h2 className="text-sm font-semibold text-foreground">{t('taskList.summary.total')}</h2>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {formatTaskCount(uncompletedTasks.length)}
+            </p>
+          </div>
+          {onAddTask && (
+            <Button type="button" size="sm" onClick={onAddTask} className="gap-2">
+              <PlusIcon className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('taskList.addTask')}</span>
+            </Button>
+          )}
+        </div>
+
+        <div className="p-3 sm:p-4" onDragOver={(event) => event.preventDefault()}>
+          {groupedUpcomingTasks ? (
+            uncompletedTasks.length === 0 ? (
+              <TaskListEmptyState variant={emptyStateVariant} onAddTask={onAddTask} />
+            ) : (
+              upcomingGroupOrder.map(
+                (groupName) =>
+                  groupedUpcomingTasks[groupName] && (
+                    <div key={groupName} className="mb-6 last:mb-0">
+                      <div className="mb-3 flex items-baseline justify-between">
+                        <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                          {groupName}
+                        </h3>
+                        <span className="text-xs text-muted-foreground/80">
+                          {formatTaskCount(groupedUpcomingTasks[groupName].length)}
+                        </span>
+                      </div>
+                      <div className="space-y-2">{renderTaskItems(groupedUpcomingTasks[groupName])}</div>
+                    </div>
+                  ),
+              )
+            )
+          ) : uncompletedTasks.length === 0 ? (
             <TaskListEmptyState variant={emptyStateVariant} onAddTask={onAddTask} />
           ) : (
-            upcomingGroupOrder.map(groupName => (
-              groupedUpcomingTasks[groupName] && (
-                <div key={groupName} className="mb-6">
-                  <div className="flex items-baseline justify-between mb-3">
-                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{groupName}</h3>
-                    <span className="text-xs text-muted-foreground/80">{formatTaskCount(groupedUpcomingTasks[groupName].length)}</span>
-                  </div>
-                  <div className="space-y-2">
-                    {renderTaskItems(groupedUpcomingTasks[groupName])}
-                  </div>
+            <>
+              <div className="space-y-2">{renderTaskItems(visibleUncompletedTasks)}</div>
+              {visibleCount < uncompletedTasks.length && (
+                <div className="mt-4 flex justify-center">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setVisibleCount((previous) =>
+                        Math.min(previous + PAGE_SIZE, uncompletedTasks.length),
+                      )
+                    }
+                  >
+                    {t('taskList.loadMore')}
+                  </Button>
                 </div>
-              )
-            ))
-          )
-        ) : uncompletedTasks.length === 0 ? (
-          <TaskListEmptyState variant={emptyStateVariant} onAddTask={onAddTask} />
-        ) : (
-          <>
-            <div className="space-y-2">
-              {renderTaskItems(visibleUncompletedTasks)}
-            </div>
-            {visibleCount < uncompletedTasks.length && (
-              <div className="mt-4 flex justify-center">
-                <button
-                  type="button"
-                  onClick={() => setVisibleCount(prev => Math.min(prev + PAGE_SIZE, uncompletedTasks.length))}
-                  className="px-4 py-2 text-sm rounded-md border border-border text-muted-foreground hover:bg-secondary/80 transition-colors"
-                >
-                  {t('taskList.loadMore')}
-                </button>
-              </div>
-            )}
-          </>
-        )}
-        {onAddTask && (
-          <button 
-            onClick={onAddTask}
-            className="w-full flex items-center gap-2 p-3 mt-4 rounded-lg text-primary hover:bg-primary/10 transition-colors"
-          >
-            <PlusIcon className="h-5 w-5" />
-            <span className="text-sm font-semibold">{t('taskList.addTask')}</span>
-          </button>
-        )}
-      </div>
+              )}
+            </>
+          )}
+        </div>
+      </section>
+
       {completedTasks.length > 0 && (
-        <div className="rounded-lg border border-border/60 bg-card/60 p-4 shadow-sm">
-          <button 
-            onClick={() => setIsCompletedOpen(!isCompletedOpen)}
-            className="w-full flex items-center justify-between text-sm font-semibold text-muted-foreground py-1"
+        <section className="overflow-hidden rounded-xl border border-border/60 bg-card/55">
+          <button
+            type="button"
+            onClick={() => setIsCompletedOpen((open) => !open)}
+            className="flex min-h-12 w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-secondary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring motion-reduce:transition-none sm:px-5"
+            aria-expanded={isCompletedOpen}
           >
-            <span>{t('taskList.completed')} ({completedTasks.length})</span>
-            {isCompletedOpen ? <ArrowUpIcon className="h-4 w-4" /> : <ArrowDownIcon className="h-4 w-4" />}
+            <span>
+              <span className="block text-sm font-semibold text-foreground">{t('taskList.completed')}</span>
+              <span className="mt-0.5 block text-xs text-muted-foreground">
+                {formatTaskCount(completedTasks.length)}
+              </span>
+            </span>
+            {isCompletedOpen ? (
+              <ArrowUpIcon className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <ArrowDownIcon className="h-4 w-4 text-muted-foreground" />
+            )}
           </button>
           {isCompletedOpen && (
-            <div className="space-y-2 animate-accordion-down overflow-hidden">
-              {completedTasks.map(task => (
+            <div className="space-y-2 border-t border-border/50 p-3 animate-accordion-down overflow-hidden sm:p-4 motion-reduce:animate-none">
+              {completedTasks.map((task) => (
                 <TaskItem key={task.id} task={task} isDraggable={false} />
               ))}
             </div>
           )}
-        </div>
+        </section>
       )}
     </div>
   )
 }
 
 export default TaskList
-
-
