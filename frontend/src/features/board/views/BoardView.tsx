@@ -1,15 +1,20 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
-import { useTaskManager, useTaskActions, useColumnActions } from '@/components/providers/task-manager-provider'
+import React, { useMemo, useState } from 'react'
+import {
+  useTaskManager,
+  useTaskActions,
+  useColumnActions,
+} from '@/components/providers/task-manager-provider'
 import { useUser } from '@/components/providers/user-provider'
 import { useI18n } from '@/lib/i18n/hooks'
 import BoardColumn from '@/features/board/components/BoardColumn'
 import { PlusIcon } from '@/lib/icons'
 import { AppPage, AppPageMain } from '@/components/layout/app-page'
 import { AppPageHeader } from '@/components/layout/app-page-header'
-import { MobileHeaderActions } from '@/components/layout/mobile-header-actions'
 import { EmptyState } from '@/components/ui/empty-state'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { buildBoardColumns } from '@/lib/utils/task-helpers'
 import { isSharedListMember } from '@/lib/utils/list-access'
 import type { Column } from '@/types'
@@ -24,7 +29,13 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
   const { t } = useI18n()
   const { moveTaskToColumn } = useTaskActions()
   const { addColumn, reorderColumns } = useColumnActions()
-  const initialListId = state.lists.find(l => l.id !== 'inbox')?.id || state.lists[0]?.id || ''
+
+  const availableLists = useMemo(
+    () => state.lists.filter((list) => list.id !== 'inbox' && list.name !== 'Inbox'),
+    [state.lists],
+  )
+
+  const initialListId = availableLists[0]?.id ?? ''
   const [selectedListId, setSelectedListId] = useState<string>(() => initialListId)
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null)
   const [draggedColumnId, setDraggedColumnId] = useState<string | null>(null)
@@ -32,48 +43,42 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
   const [newColumnName, setNewColumnName] = useState('')
   const [isAddingColumn, setIsAddingColumn] = useState(false)
 
-  const availableLists = useMemo(() => state.lists.filter(l => l.id !== 'inbox'), [state.lists])
+  const effectiveSelectedListId = availableLists.some((list) => list.id === selectedListId)
+    ? selectedListId
+    : availableLists[0]?.id ?? ''
 
-  const handleListChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedListId(e.target.value)
-  }
+  const selectedList = useMemo(
+    () => state.lists.find((list) => list.id === effectiveSelectedListId) ?? null,
+    [effectiveSelectedListId, state.lists],
+  )
 
   const columnsForList = useMemo(() => {
-    const selectedList = state.lists.find((list) => list.id === selectedListId)
-    const listTasks = state.tasks.filter((task) => task.listId === selectedListId)
+    const listTasks = state.tasks.filter((task) => task.listId === effectiveSelectedListId)
     const isSharedMemberView = isSharedListMember(selectedList, user?.id)
 
     if (!isSharedMemberView) {
-      return state.columns.filter((column) => column.listId === selectedListId)
+      return state.columns.filter((column) => column.listId === effectiveSelectedListId)
     }
 
     const fallbackColumns = selectedList
-      ? buildBoardColumns([selectedList], listTasks).filter((column) => column.listId === selectedListId)
+      ? buildBoardColumns([selectedList], listTasks).filter(
+          (column) => column.listId === effectiveSelectedListId,
+        )
       : []
     const merged = new Map<string, Column>()
-    for (const column of fallbackColumns) {
-      merged.set(column.id, column)
-    }
+    for (const column of fallbackColumns) merged.set(column.id, column)
     for (const column of state.columns) {
-      if (column.listId === selectedListId) {
-        merged.set(column.id, column)
-      }
+      if (column.listId === effectiveSelectedListId) merged.set(column.id, column)
     }
     return [...merged.values()]
-  }, [state.columns, state.lists, state.tasks, selectedListId, user?.id])
+  }, [effectiveSelectedListId, selectedList, state.columns, state.tasks, user?.id])
 
-  const canManageColumns = useMemo(() => {
-    const selectedList = state.lists.find((list) => list.id === selectedListId)
-    return !isSharedListMember(selectedList, user?.id)
-  }, [state.lists, selectedListId, user?.id])
+  const canManageColumns = !isSharedListMember(selectedList, user?.id)
 
-  const tasksForList = useMemo(() => {
-    return state.tasks.filter(t => t.listId === selectedListId)
-  }, [state.tasks, selectedListId])
-
-  const handleTaskDragStart = (taskId: string) => {
-    setDraggedTaskId(taskId)
-  }
+  const tasksForList = useMemo(
+    () => state.tasks.filter((task) => task.listId === effectiveSelectedListId),
+    [effectiveSelectedListId, state.tasks],
+  )
 
   const handleDropOnColumn = (columnId: string) => {
     if (!canManageColumns) {
@@ -82,26 +87,16 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
       return
     }
     if (draggedTaskId) {
-      void moveTaskToColumn(draggedTaskId, columnId, selectedListId)
+      void moveTaskToColumn(draggedTaskId, columnId, effectiveSelectedListId)
     }
     setDraggedTaskId(null)
     setDragOverColumnId(null)
   }
 
-  const handleMoveTask = (taskId: string, columnId: string) => {
-    if (!canManageColumns) return
-    void moveTaskToColumn(taskId, columnId, selectedListId)
-  }
-
-  const handleColumnDragStart = (columnId: string) => {
-    if (!canManageColumns) return
-    setDraggedColumnId(columnId)
-  }
-
   const handleColumnDrop = (droppedOnId: string) => {
     if (!canManageColumns) return
     if (draggedColumnId && draggedColumnId !== droppedOnId) {
-      void reorderColumns(selectedListId, draggedColumnId, droppedOnId)
+      void reorderColumns(effectiveSelectedListId, draggedColumnId, droppedOnId)
     }
     setDraggedColumnId(null)
   }
@@ -110,24 +105,26 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
     if (!canManageColumns) return
     const columnIndex = columnsForList.findIndex((column) => column.id === columnId)
     const targetColumn = columnsForList[columnIndex + offset]
-    if (!targetColumn) return
-    void reorderColumns(selectedListId, columnId, targetColumn.id)
+    if (targetColumn) {
+      void reorderColumns(effectiveSelectedListId, columnId, targetColumn.id)
+    }
   }
 
-  const handleAddColumn = (e?: React.FormEvent) => {
-    e?.preventDefault()
+  const handleAddColumn = (event?: React.FormEvent) => {
+    event?.preventDefault()
     if (!canManageColumns) return
-    if (newColumnName.trim() && selectedListId) {
-      void addColumn(selectedListId, newColumnName.trim())
-      setNewColumnName('')
-      setIsAddingColumn(false)
-    }
+    const name = newColumnName.trim()
+    if (!name || !effectiveSelectedListId) return
+
+    void addColumn(effectiveSelectedListId, name)
+    setNewColumnName('')
+    setIsAddingColumn(false)
   }
 
   if (availableLists.length === 0) {
     return (
       <AppPage>
-        <AppPageHeader title={t('nav.board')} subtitle={t('board.title')} />
+        <AppPageHeader title={t('nav.board')} subtitle={t('board.title')} hideOnMobile={false} />
         <AppPageMain className="py-4 md:py-6">
           <EmptyState title={t('board.noLists')} />
         </AppPageMain>
@@ -137,65 +134,60 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
 
   return (
     <AppPage>
-      <MobileHeaderActions>
-        <select
-          aria-label={t('board.selectList')}
-          value={selectedListId}
-          onChange={handleListChange}
-          className="h-11 w-full max-w-48 truncate rounded-lg border border-border bg-card px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          {availableLists.map((list) => (
-            <option key={list.id} value={list.id}>
-              {list.name}
-            </option>
-          ))}
-        </select>
-      </MobileHeaderActions>
       <AppPageHeader
         title={t('nav.board')}
-        subtitle={t('board.title')}
-        hideOnMobile={true}
+        subtitle={selectedList?.name ?? t('board.title')}
+        hideOnMobile={false}
         containerClassName="max-w-none"
         actions={
           <select
             aria-label={t('board.selectList')}
-            value={selectedListId}
-            onChange={handleListChange}
-            className="w-full sm:w-auto px-4 py-2 bg-card border border-border rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring text-sm md:text-base text-foreground dark:bg-card dark:text-foreground"
+            value={effectiveSelectedListId}
+            onChange={(event) => {
+              setSelectedListId(event.target.value)
+              setIsAddingColumn(false)
+              setNewColumnName('')
+            }}
+            className="h-10 max-w-44 truncate rounded-lg border border-border bg-card px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:max-w-56"
           >
-            {availableLists.map(list => {
-              const listKey =
-                list.id === 'inbox' ? 'specialLists.inbox' :
-                list.id === 'list-1' ? 'lists.work' :
-                list.id === 'list-2' ? 'lists.personal' :
-                list.id === 'list-3' ? 'lists.shopping' :
-                list.id === 'list-4' ? 'lists.healthFitness' :
-                list.id === 'list-5' ? 'lists.learning' : null
-
-              return (
-                <option key={list.id} value={list.id}>
-                  {listKey ? t(listKey) : list.name}
-                </option>
-              )
-            })}
+            {availableLists.map((list) => (
+              <option key={list.id} value={list.id}>
+                {list.name}
+              </option>
+            ))}
           </select>
         }
       />
-      <AppPageMain className="py-4 md:py-6 md:max-w-none">
+
+      <AppPageMain className="py-4 md:max-w-none md:py-6">
+        <div className="mb-4 flex flex-wrap items-center gap-2 px-1 text-xs text-muted-foreground md:px-2">
+          <span className="rounded-full border border-border/60 bg-card px-2.5 py-1">
+            {tasksForList.length === 1
+              ? t('taskList.summary.tasks', { count: tasksForList.length })
+              : t('taskList.summary.tasks_plural', { count: tasksForList.length })}
+          </span>
+          <span className="rounded-full border border-border/60 bg-card px-2.5 py-1">
+            {columnsForList.length} {t('board.columns')}
+          </span>
+        </div>
+
         <div
-          className="flex flex-col md:flex-row gap-4 md:gap-6 md:overflow-x-auto px-1 md:px-2 pb-2"
+          className="flex flex-col gap-4 px-1 pb-3 md:flex-row md:gap-5 md:overflow-x-auto md:px-2 md:snap-x md:snap-mandatory"
           onDragEnd={() => {
             setDraggedColumnId(null)
             setDragOverColumnId(null)
           }}
         >
           {columnsForList.map((column, columnIndex) => {
-            const columnTasks = tasksForList.filter(
-              t => t.columnId === column.id || (!t.columnId && columnsForList.findIndex(c => c.id === column.id) === 0)
-            ).filter((task, index, self) => {
-              // Deduplicate tasks by id to prevent React key conflicts
-              return self.findIndex(t => t.id === task.id) === index
-            })
+            const columnTasks = tasksForList
+              .filter(
+                (task) =>
+                  task.columnId === column.id ||
+                  (!task.columnId && columnsForList.findIndex((item) => item.id === column.id) === 0),
+              )
+              .filter(
+                (task, index, self) => self.findIndex((candidate) => candidate.id === task.id) === index,
+              )
 
             return (
               <div
@@ -204,30 +196,36 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
                   handleColumnDrop(column.id)
                   setDragOverColumnId(null)
                 }}
-                onDragOver={(e) => {
-                  e.preventDefault()
+                onDragOver={(event) => {
+                  event.preventDefault()
                   if (draggedColumnId && draggedColumnId !== column.id) {
                     setDragOverColumnId(column.id)
                   }
                 }}
-                onDragLeave={() => {
-                  setDragOverColumnId(null)
-                }}
-                className={`
-                  transition-all duration-200 p-1 rounded-lg
-                  ${draggedColumnId === column.id ? 'opacity-30' : ''}
-                  ${draggedColumnId && dragOverColumnId === column.id ? 'bg-primary/10' : ''}
-                `}
+                onDragLeave={() => setDragOverColumnId(null)}
+                className={`rounded-xl p-1 transition-[background-color,opacity,transform] duration-150 motion-reduce:transition-none md:snap-start ${
+                  draggedColumnId === column.id ? 'opacity-40' : ''
+                } ${
+                  draggedColumnId && dragOverColumnId === column.id
+                    ? 'bg-primary/10 ring-1 ring-primary/20'
+                    : ''
+                }`}
               >
                 <BoardColumn
                   column={column}
                   tasks={columnTasks}
-                  onTaskDragStart={handleTaskDragStart}
+                  onTaskDragStart={setDraggedTaskId}
                   onDropOnColumn={handleDropOnColumn}
                   onOpenTaskForm={onOpenTaskForm}
-                  onColumnDragStart={handleColumnDragStart}
+                  onColumnDragStart={(columnId) => {
+                    if (canManageColumns) setDraggedColumnId(columnId)
+                  }}
                   columns={columnsForList}
-                  onMoveTask={handleMoveTask}
+                  onMoveTask={(taskId, columnId) => {
+                    if (canManageColumns) {
+                      void moveTaskToColumn(taskId, columnId, effectiveSelectedListId)
+                    }
+                  }}
                   onMoveColumn={(offset) => handleMoveColumn(column.id, offset)}
                   canMoveUp={columnIndex > 0}
                   canMoveDown={columnIndex < columnsForList.length - 1}
@@ -236,47 +234,49 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
               </div>
             )
           })}
+
           {canManageColumns && (
-          <div className="w-full md:w-72 md:shrink-0 flex flex-col min-h-[260px] md:min-h-[calc(100dvh-220px)] p-1">
-            {isAddingColumn ? (
-              <form onSubmit={handleAddColumn} className="bg-card border border-border p-3 rounded-xl flex-1 flex flex-col shadow-sm">
-                <input
-                  autoFocus
-                  type="text"
-                  value={newColumnName}
-                  onChange={e => setNewColumnName(e.target.value)}
-                  placeholder={t('board.columnName')}
-                  className="w-full p-2 bg-secondary border border-border rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 mb-2"
-                />
-                <div className="flex items-center gap-2 mt-auto">
-                  <button
-                    type="submit"
-                    className="px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-semibold hover:bg-primary/90"
-                  >
-                    {t('board.add')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsAddingColumn(false)
-                      setNewColumnName('')
-                    }}
-                    className="text-sm text-muted-foreground hover:text-foreground"
-                  >
-                    {t('board.cancel')}
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <button
-                onClick={() => setIsAddingColumn(true)}
-                className="w-full flex-1 min-h-[200px] border-2 border-dashed border-border rounded-xl bg-muted/30 text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors flex items-center justify-center gap-2"
-              >
-                <PlusIcon className="h-5 w-5" />
-                <span>{t('board.addColumn')}</span>
-              </button>
-            )}
-          </div>
+            <div className="flex min-h-[180px] w-full flex-col p-1 md:min-h-[calc(100dvh-220px)] md:w-72 md:shrink-0 md:snap-start">
+              {isAddingColumn ? (
+                <form
+                  onSubmit={handleAddColumn}
+                  className="flex flex-1 flex-col rounded-xl border border-primary/30 bg-card p-3 shadow-sm"
+                >
+                  <Input
+                    autoFocus
+                    value={newColumnName}
+                    onChange={(event) => setNewColumnName(event.target.value)}
+                    placeholder={t('board.columnName')}
+                    className="h-10"
+                  />
+                  <div className="mt-3 flex items-center gap-2">
+                    <Button type="submit" size="sm" disabled={!newColumnName.trim()}>
+                      {t('board.add')}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setIsAddingColumn(false)
+                        setNewColumnName('')
+                      }}
+                    >
+                      {t('board.cancel')}
+                    </Button>
+                  </div>
+                </form>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsAddingColumn(true)}
+                  className="flex min-h-[160px] w-full flex-1 items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-muted/20 text-sm font-medium text-muted-foreground transition-[border-color,background-color,color] hover:border-primary/50 hover:bg-primary/5 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none"
+                >
+                  <PlusIcon className="h-5 w-5" />
+                  <span>{t('board.addColumn')}</span>
+                </button>
+              )}
+            </div>
           )}
         </div>
       </AppPageMain>
