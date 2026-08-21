@@ -243,7 +243,7 @@ const TaskItem: React.FC<TaskItemProps> = ({
               onClick={handleToggleSubtasksVisibility}
               size="md"
               variant="toolbar"
-              aria-label={isSubtasksOpen ? t('mainContent.collapse') : t('mainContent.expand')}
+              aria-label={`${task.title}: ${completedSubtasks}/${task.subtasks.length}`}
               className="rounded-lg"
             >
               {isSubtasksOpen ? <ArrowUpIcon className="h-4 w-4" /> : <ArrowDownIcon className="h-4 w-4" />}
