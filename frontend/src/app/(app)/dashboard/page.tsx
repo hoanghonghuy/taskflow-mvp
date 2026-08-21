@@ -9,26 +9,36 @@ import ProductivityHeatmap from '@/components/dashboard/ProductivityHeatmap'
 import { useRouter } from 'next/navigation'
 import { useModal } from '@/components/providers/modal-provider'
 import { useSettings } from '@/components/providers/settings-provider'
-import { AppPage, AppPageContainer, AppPageMain } from '@/components/layout/app-page'
+import { AppPage, AppPageMain } from '@/components/layout/app-page'
+import { AppPageHeader } from '@/components/layout/app-page-header'
+import { Button } from '@/components/ui/button'
 import { AI_FEATURES_ENABLED } from '@/lib/feature-flags'
 import * as profileApi from '@/lib/api/profile'
 
-const useCountUp = (end: number, duration = 1200) => {
-  const [count, setCount] = useState(0)
+const useCountUp = (end: number, duration = 650) => {
+  const [count, setCount] = useState(end)
 
   useEffect(() => {
-    let startTimestamp: number | null = null
-    const step = (timestamp: number) => {
-      if (!startTimestamp) startTimestamp = timestamp
-      const progress = Math.min((timestamp - startTimestamp) / duration, 1)
-      const current = Math.floor(progress * end)
-      setCount(current)
-      if (progress < 1) {
-        requestAnimationFrame(step)
-      }
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (prefersReducedMotion) {
+      setCount(end)
+      return
     }
-    requestAnimationFrame(step)
-  }, [end, duration])
+
+    let frame = 0
+    let startTimestamp: number | null = null
+    const startValue = count
+
+    const step = (timestamp: number) => {
+      if (startTimestamp === null) startTimestamp = timestamp
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1)
+      setCount(Math.round(startValue + (end - startValue) * progress))
+      if (progress < 1) frame = requestAnimationFrame(step)
+    }
+
+    frame = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(frame)
+  }, [duration, end])
 
   return count
 }
@@ -36,8 +46,8 @@ const useCountUp = (end: number, duration = 1200) => {
 const isToday = (date: Date): boolean => {
   const today = new Date()
   return date.getDate() === today.getDate() &&
-         date.getMonth() === today.getMonth() &&
-         date.getFullYear() === today.getFullYear()
+    date.getMonth() === today.getMonth() &&
+    date.getFullYear() === today.getFullYear()
 }
 
 const isFuture = (date: Date): boolean => {
@@ -57,10 +67,6 @@ const isOverdue = (date: Date): boolean => {
 }
 
 const toYYYYMMDD = (date: Date) => {
-  // Dùng local date (YYYY-MM-DD) thay vì UTC để khớp với backend
-  // `todayDateString()` (Asia/Ho_Chi_Minh). Trước đây dùng toISOString() trả
-  // về UTC → user ở múi giờ dương tick habit lúc 0-7h sáng sẽ thấy "today"
-  // bị lệch ngày.
   const y = date.getFullYear()
   const m = String(date.getMonth() + 1).padStart(2, '0')
   const d = String(date.getDate()).padStart(2, '0')
@@ -95,23 +101,25 @@ export default function DashboardPage() {
   const { settings } = useSettings()
 
   const localStats = useMemo<DashboardStats>(() => {
-    const uncompletedTasks = state.tasks.filter(t => !t.completed)
-    const todayTasks = uncompletedTasks.filter(t => {
-      if (!t.dueDate) return false
-      const taskDate = new Date(t.dueDate)
+    const uncompletedTasks = state.tasks.filter((task) => !task.completed)
+    const todayTasks = uncompletedTasks.filter((task) => {
+      if (!task.dueDate) return false
+      const taskDate = new Date(task.dueDate)
       return isToday(taskDate) || isOverdue(taskDate)
     }).length
 
-    const upcomingTasks = uncompletedTasks.filter(t => t.dueDate && isFuture(new Date(t.dueDate))).length
-    
+    const upcomingTasks = uncompletedTasks.filter(
+      (task) => task.dueDate && isFuture(new Date(task.dueDate)),
+    ).length
+
     const todayStr = toYYYYMMDD(new Date())
-    const habitsToday = state.habits.filter(h => h.completions.includes(todayStr)).length
+    const habitsToday = state.habits.filter((habit) => habit.completions.includes(todayStr)).length
 
     return {
       today: todayTasks,
       upcoming: upcomingTasks,
       habitsCompleted: habitsToday,
-      habitsTotal: state.habits.length
+      habitsTotal: state.habits.length,
     }
   }, [state.tasks, state.habits])
 
@@ -125,11 +133,12 @@ export default function DashboardPage() {
         const data = (await profileApi.fetchProfileSummary()) as Partial<ProfileSummaryResponse> | null
         if (!data || !isMounted) return
 
-        setRemoteStats((prev) => ({
-          today: data.todayTasksPending ?? prev?.today ?? localStats.today,
-          upcoming: data.upcomingTasksPending ?? prev?.upcoming ?? localStats.upcoming,
-          habitsCompleted: data.completedHabitsToday ?? prev?.habitsCompleted ?? localStats.habitsCompleted,
-          habitsTotal: data.totalHabits ?? prev?.habitsTotal ?? localStats.habitsTotal,
+        setRemoteStats((previous) => ({
+          today: data.todayTasksPending ?? previous?.today ?? localStats.today,
+          upcoming: data.upcomingTasksPending ?? previous?.upcoming ?? localStats.upcoming,
+          habitsCompleted:
+            data.completedHabitsToday ?? previous?.habitsCompleted ?? localStats.habitsCompleted,
+          habitsTotal: data.totalHabits ?? previous?.habitsTotal ?? localStats.habitsTotal,
         }))
       } catch (error) {
         console.error('Failed to load dashboard summary from backend', error)
@@ -137,37 +146,31 @@ export default function DashboardPage() {
     }
 
     void loadSummary()
-
     return () => {
       isMounted = false
     }
   }, [localStats])
 
   const stats = remoteStats ?? localStats
-
   const animatedToday = useCountUp(stats.today)
   const animatedUpcoming = useCountUp(stats.upcoming)
   const animatedHabits = useCountUp(stats.habitsCompleted)
-
-  const habitsCompletionPercent = stats.habitsTotal > 0
-    ? Math.round((stats.habitsCompleted / stats.habitsTotal) * 100)
-    : 0
+  const habitsCompletionPercent =
+    stats.habitsTotal > 0
+      ? Math.round((stats.habitsCompleted / stats.habitsTotal) * 100)
+      : 0
 
   const todayPlanTasks = useMemo(() => {
-    const uncompleted = state.tasks.filter(t => !t.completed)
-    const withDue = uncompleted.filter(t => t.dueDate)
-
-    const dueTodayOrOverdue = withDue.filter(t => {
-      const due = new Date(t.dueDate as string)
-      return isToday(due) || isOverdue(due)
-    })
-
-    return [...dueTodayOrOverdue]
-      .sort((a, b) => {
-        const da = new Date(a.dueDate as string).getTime()
-        const db = new Date(b.dueDate as string).getTime()
-        return da - db
+    return state.tasks
+      .filter((task) => !task.completed && task.dueDate)
+      .filter((task) => {
+        const due = new Date(task.dueDate as string)
+        return isToday(due) || isOverdue(due)
       })
+      .sort(
+        (a, b) =>
+          new Date(a.dueDate as string).getTime() - new Date(b.dueDate as string).getTime(),
+      )
       .slice(0, 5)
   }, [state.tasks])
 
@@ -178,180 +181,202 @@ export default function DashboardPage() {
     return t('dashboard.greeting.evening')
   }
 
+  const openTask = (taskId: string, listId?: string) => {
+    if (listId) dispatch({ type: 'SET_ACTIVE_LIST', payload: listId })
+    dispatch({ type: 'SET_SELECTED_TASK', payload: taskId })
+    router.push('/list')
+  }
+
   return (
     <AppPage>
-      <AppPageContainer>
-        <header className="py-6 border-b border-border shrink-0 hidden md:block">
-          <h1 className="text-3xl font-bold">{getGreeting()}</h1>
-          <p className="text-muted-foreground">{t('dashboard.subtitle')}</p>
-        </header>
-      </AppPageContainer>
+      <AppPageHeader
+        title={getGreeting()}
+        subtitle={t('dashboard.subtitle')}
+        hideOnMobile={false}
+      />
+
       <AppPageMain className="py-4 md:py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-6 lg:gap-8">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)] lg:gap-8">
           <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-              <button 
+            <section className="grid gap-3 sm:grid-cols-3 sm:gap-4" aria-label={t('dashboard.subtitle')}>
+              <button
                 type="button"
                 onClick={() => {
                   dispatch({ type: 'SET_ACTIVE_LIST', payload: 'today' })
                   router.push('/list')
                 }}
-                className="bg-card border border-border rounded-lg p-6 flex items-start gap-4 text-left hover:shadow-md hover:border-primary/50 transition-[border-color,box-shadow]"
+                className="group flex min-h-32 items-start gap-4 rounded-xl border border-border/70 bg-card p-4 text-left transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none sm:p-5"
               >
-                <div className="bg-[hsl(var(--color-dashboard-today) / 0.1)] text-[hsl(var(--color-dashboard-today))] p-3 rounded-lg">
+                <div className="rounded-xl bg-[hsl(var(--color-dashboard-today)/0.1)] p-3 text-[hsl(var(--color-dashboard-today))]">
                   <CalendarDayIcon className="h-6 w-6" />
                 </div>
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1">{t('dashboard.stat.today')}</p>
-                  <p className="text-3xl font-bold leading-tight">{animatedToday}</p>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    {t('dashboard.stat.today')}
+                  </p>
+                  <p className="mt-1 text-3xl font-bold tabular-nums">{animatedToday}</p>
                   <p className="mt-1 text-xs text-muted-foreground">{t('taskList.summary.today')}</p>
                 </div>
               </button>
-              <button 
+
+              <button
                 type="button"
                 onClick={() => {
                   dispatch({ type: 'SET_ACTIVE_LIST', payload: 'upcoming' })
                   router.push('/list')
                 }}
-                className="bg-card border border-border rounded-lg p-6 flex items-start gap-4 text-left hover:shadow-md hover:border-primary/50 transition-[border-color,box-shadow]"
+                className="group flex min-h-32 items-start gap-4 rounded-xl border border-border/70 bg-card p-4 text-left transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none sm:p-5"
               >
-                <div className="bg-[hsl(var(--color-dashboard-upcoming) / 0.1)] text-[hsl(var(--color-dashboard-upcoming))] p-3 rounded-lg">
+                <div className="rounded-xl bg-[hsl(var(--color-dashboard-upcoming)/0.1)] p-3 text-[hsl(var(--color-dashboard-upcoming))]">
                   <CalendarIcon className="h-6 w-6" />
                 </div>
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1">{t('dashboard.stat.upcoming')}</p>
-                  <p className="text-3xl font-bold leading-tight">{animatedUpcoming}</p>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    {t('dashboard.stat.upcoming')}
+                  </p>
+                  <p className="mt-1 text-3xl font-bold tabular-nums">{animatedUpcoming}</p>
                   <p className="mt-1 text-xs text-muted-foreground">{t('taskList.summary.upcoming')}</p>
                 </div>
               </button>
-              <button 
+
+              <button
                 type="button"
                 onClick={() => {
                   dispatch({ type: 'SET_VIEW', payload: 'habit' })
                   router.push('/habits')
                 }}
-                className="bg-card border border-border rounded-lg p-6 flex items-start gap-4 text-left hover:shadow-md hover:border-primary/50 transition-[border-color,box-shadow]"
+                className="group flex min-h-32 items-start gap-4 rounded-xl border border-border/70 bg-card p-4 text-left transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none sm:p-5"
               >
-                <div className="bg-[hsl(var(--color-dashboard-habits) / 0.1)] text-[hsl(var(--color-dashboard-habits))] p-3 rounded-lg">
+                <div className="rounded-xl bg-[hsl(var(--color-dashboard-habits)/0.1)] p-3 text-[hsl(var(--color-dashboard-habits))]">
                   <RepeatIcon className="h-6 w-6" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1">{t('dashboard.stat.habits')}</p>
-                  <p className="text-3xl font-bold leading-tight">{animatedHabits}/{stats.habitsTotal}</p>
-                  <div className="mt-2 h-1.5 rounded-full bg-muted overflow-hidden">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    {t('dashboard.stat.habits')}
+                  </p>
+                  <p className="mt-1 text-3xl font-bold tabular-nums">
+                    {animatedHabits}/{stats.habitsTotal}
+                  </p>
+                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
                     <div
-                      className="h-full rounded-full bg-[hsl(var(--color-dashboard-habits))] transition-all"
+                      className="h-full rounded-full bg-[hsl(var(--color-dashboard-habits))] transition-[width] duration-300 motion-reduce:transition-none"
                       style={{ width: `${habitsCompletionPercent}%` }}
                     />
                   </div>
-                  <p className="mt-1 text-xs text-muted-foreground">{t('habits.completed')}</p>
                 </div>
               </button>
-            </div>
+            </section>
 
-            <div className="bg-card border border-border rounded-lg p-4 md:p-6 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-primary/10 text-primary">
-                    <CalendarDayIcon className="h-4 w-4" />
-                  </div>
-                  <h2 className="text-base md:text-lg font-semibold">
-                    {t('dashboard.heatmapTitle')}
-                  </h2>
+            <section className="rounded-xl border border-border/70 bg-card p-4 shadow-sm md:p-6">
+              <div className="mb-4 flex items-center gap-3">
+                <div className="rounded-lg bg-primary/10 p-2 text-primary">
+                  <CalendarDayIcon className="h-4 w-4" />
                 </div>
+                <h2 className="text-base font-semibold md:text-lg">{t('dashboard.heatmapTitle')}</h2>
               </div>
               <ProductivityHeatmap />
-            </div>
+            </section>
           </div>
 
-          <div className="space-y-6">
-            <div className="bg-card border border-border rounded-lg p-6 flex flex-col gap-4">
-              <div>
+          <aside className="space-y-4 lg:space-y-6">
+            <section className="overflow-hidden rounded-xl border border-border/70 bg-card">
+              <div className="border-b border-border/60 px-4 py-4 sm:px-5">
                 <h2 className="text-lg font-semibold">
                   {t('dashboard.todayPlan.title' as TranslationKey)}
                 </h2>
-                <p className="text-sm text-muted-foreground">
+                <p className="mt-1 text-sm text-muted-foreground">
                   {t('dashboard.todayPlan.subtitle' as TranslationKey)}
                 </p>
               </div>
 
               {todayPlanTasks.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  {t('dashboard.todayPlan.empty' as TranslationKey)}
-                </p>
+                <div className="px-5 py-8 text-center">
+                  <CheckCircleIconFallback />
+                  <p className="mt-3 text-sm font-medium text-foreground">
+                    {t('dashboard.todayPlan.empty' as TranslationKey)}
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-4"
+                    onClick={() => {
+                      dispatch({ type: 'SET_ACTIVE_LIST', payload: 'today' })
+                      router.push('/list')
+                    }}
+                  >
+                    {t('taskList.summary.today')}
+                  </Button>
+                </div>
               ) : (
-                <ul className="space-y-2">
-                  {todayPlanTasks.map(task => {
-                    const due = task.dueDate ? new Date(task.dueDate as string) : null
-                    const isTaskOverdue = due ? isOverdue(due) : false
-                    const isTaskToday = due ? isToday(due) : false
-                    const timeLabel = due
-                      ? due.toLocaleTimeString(settings.language || undefined, { hour: '2-digit', minute: '2-digit' })
-                      : null
+                <ul className="divide-y divide-border/50">
+                  {todayPlanTasks.map((task) => {
+                    const due = new Date(task.dueDate as string)
+                    const isTaskOverdue = isOverdue(due)
+                    const timeLabel = due.toLocaleTimeString(settings.language || undefined, {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })
                     const statusLabel = isTaskOverdue
                       ? t('dashboard.todayPlan.status.overdue' as TranslationKey)
-                      : isTaskToday
-                        ? t('dashboard.todayPlan.status.today' as TranslationKey)
-                        : ''
+                      : t('dashboard.todayPlan.status.today' as TranslationKey)
 
                     return (
                       <li key={task.id}>
                         <button
                           type="button"
-                          onClick={() => {
-                            if (task.listId) {
-                              dispatch({ type: 'SET_ACTIVE_LIST', payload: task.listId })
-                            }
-                            dispatch({ type: 'SET_SELECTED_TASK', payload: task.id })
-                            router.push('/list')
-                          }}
-                          className="w-full flex items-start justify-between gap-3 rounded-md border border-transparent px-3 py-2 text-left hover:border-primary/40 hover:bg-muted/40 transition-colors"
+                          onClick={() => openTask(task.id, task.listId)}
+                          className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-secondary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring motion-reduce:transition-none sm:px-5"
                         >
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium">
                               {task.title || t('dashboard.todayPlan.untitled' as TranslationKey)}
                             </p>
-                            {(statusLabel || timeLabel) && (
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                {statusLabel}
-                                {timeLabel ? ` · ${timeLabel}` : ''}
-                              </p>
-                            )}
+                            <p
+                              className={`mt-1 text-xs ${
+                                isTaskOverdue ? 'font-medium text-destructive' : 'text-muted-foreground'
+                              }`}
+                            >
+                              {statusLabel} · {timeLabel}
+                            </p>
                           </div>
+                          <span className="text-sm text-muted-foreground" aria-hidden>→</span>
                         </button>
                       </li>
                     )
                   })}
                 </ul>
               )}
-            </div>
+            </section>
 
             {AI_FEATURES_ENABLED && (
-            <div className="bg-card border border-border rounded-lg p-4 flex flex-col gap-3">
-              <div className="flex items-start gap-3">
-                <div className="bg-primary/10 text-primary p-3 rounded-full shrink-0">
-                  <SparklesIcon className="h-6 w-6" />
+              <section className="rounded-xl border border-border/70 bg-card p-4">
+                <div className="flex items-start gap-3">
+                  <div className="shrink-0 rounded-xl bg-primary/10 p-3 text-primary">
+                    <SparklesIcon className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h2 className="text-sm font-semibold">{t('mainContent.dailyBriefing')}</h2>
+                    <p className="mt-1 text-xs text-muted-foreground">{t('dashboard.cta.subtitle')}</p>
+                    <Button type="button" size="sm" onClick={openBriefing} className="mt-3 gap-2">
+                      <SparklesIcon className="h-4 w-4" />
+                      {t('dashboard.cta.button')}
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex-1 text-left">
-                  <h2 className="text-sm font-semibold">{t('mainContent.dailyBriefing')}</h2>
-                  <p className="text-xs text-muted-foreground">
-                    {t('dashboard.cta.subtitle')}
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={openBriefing}
-                className="inline-flex items-center gap-1.5 px-3 py-2 bg-primary text-primary-foreground rounded-full text-xs font-semibold hover:bg-primary/90 transition-transform hover:scale-105 self-start"
-              >
-                <SparklesIcon className="h-4 w-4" />
-                {t('dashboard.cta.button')}
-              </button>
-            </div>
+              </section>
             )}
-          </div>
+          </aside>
         </div>
       </AppPageMain>
     </AppPage>
+  )
+}
+
+function CheckCircleIconFallback() {
+  return (
+    <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-primary" aria-hidden>
+      <span className="h-2.5 w-2.5 rounded-full bg-current" />
+    </span>
   )
 }
