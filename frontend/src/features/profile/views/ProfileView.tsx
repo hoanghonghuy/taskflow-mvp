@@ -10,7 +10,7 @@ import { toYYYYMMDD } from '@/lib/utils/date-helpers'
 import { AppPage, AppPageMain } from '@/components/layout/app-page'
 import { AppPageHeader } from '@/components/layout/app-page-header'
 import { Button } from '@/components/ui/button'
-import { StatCard } from '@/components/ui/stat-card'
+import { Input } from '@/components/ui/input'
 import { useToast } from '@/lib/hooks/use-toast'
 import * as profileApi from '@/lib/api/profile'
 
@@ -73,7 +73,6 @@ const ProfileView: React.FC = () => {
 
     setRemoteStats(null)
     void loadProfileSummary()
-
     return () => {
       isMounted = false
     }
@@ -122,34 +121,80 @@ const ProfileView: React.FC = () => {
   const formatDuration = (seconds: number) => {
     const hours = Math.floor(seconds / 3600)
     const minutes = Math.floor((seconds % 3600) / 60)
-    if (hours > 0) return `${hours}h ${minutes}m`
-    return `${minutes}m`
+    return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`
   }
+
+  const habitProgress =
+    stats.totalHabits > 0
+      ? Math.round((stats.completedHabitsToday / stats.totalHabits) * 100)
+      : 0
+
+  const overviewItems = [
+    {
+      key: 'tasks',
+      icon: <CheckCircleIcon className="h-5 w-5" />,
+      label: t('profile.tasksCompleted'),
+      value: `${stats.completedTasks}/${stats.totalTasks}`,
+      detail: `${stats.completionRate}% ${t('profile.completionRate')}`,
+      progress: stats.completionRate,
+      className: 'text-primary',
+    },
+    {
+      key: 'habits',
+      icon: <CalendarIcon className="h-5 w-5" />,
+      label: t('dashboard.stat.habits'),
+      value: `${stats.completedHabitsToday}/${stats.totalHabits}`,
+      detail: t('profile.completedToday'),
+      progress: habitProgress,
+      className: 'text-[hsl(var(--color-habits-summary-completed))]',
+    },
+    {
+      key: 'focus',
+      icon: <ClockIcon className="h-5 w-5" />,
+      label: t('pomodoro.focusTime'),
+      value: formatDuration(stats.totalFocusTime),
+      detail: `${stats.totalPomos} ${t('profile.sessions')}`,
+      progress: null,
+      className: 'text-[hsl(var(--color-pomodoro-focus))]',
+    },
+    {
+      key: 'achievements',
+      icon: <TrophyIcon className="h-5 w-5" />,
+      label: t('profile.achievements'),
+      value: String(stats.unlockedAchievements),
+      detail: t('profile.unlocked'),
+      progress: null,
+      className: 'text-[hsl(var(--color-habits-summary-streak))]',
+    },
+  ]
 
   return (
     <AppPage>
-      <AppPageHeader title={t('nav.profile')} subtitle={t('profile.subtitle')} />
+      <AppPageHeader
+        title={t('nav.profile')}
+        subtitle={t('profile.subtitle')}
+        hideOnMobile={false}
+      />
       <AppPageMain className="py-4 md:py-6">
-        <div className="mx-auto max-w-4xl space-y-6">
-          <div className="rounded-lg border border-border bg-card p-6">
-            <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
-              <Avatar user={user} className="h-20 w-20 shrink-0" />
+        <div className="mx-auto max-w-4xl space-y-5 md:space-y-6">
+          <section className="rounded-2xl border border-border/70 bg-card p-4 shadow-sm sm:p-6">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+              <Avatar user={user} className="h-20 w-20 shrink-0 sm:h-24 sm:w-24" />
               <div className="min-w-0 flex-1">
                 {isEditing ? (
                   <form onSubmit={handleSaveName} className="max-w-md space-y-3">
-                    <label className="block text-sm font-medium text-muted-foreground">
+                    <label htmlFor="profile-display-name" className="block text-sm font-medium">
                       {t('profile.name')}
                     </label>
-                    <input
-                      type="text"
+                    <Input
+                      id="profile-display-name"
                       value={editName}
                       onChange={(event) => setEditName(event.target.value)}
-                      className="w-full rounded-md border border-border bg-background px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       autoFocus
                       required
                       minLength={1}
                     />
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <Button type="submit" disabled={isSaving || !editName.trim()}>
                         {t('profile.save')}
                       </Button>
@@ -159,44 +204,49 @@ const ProfileView: React.FC = () => {
                     </div>
                   </form>
                 ) : (
-                  <>
-                    <h2 className="truncate text-2xl font-bold">{user?.name}</h2>
-                    <p className="truncate text-muted-foreground">{user?.email}</p>
-                    <Button type="button" variant="link" onClick={handleStartEdit} className="mt-3 h-auto px-0">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                    <div className="min-w-0">
+                      <h2 className="truncate text-2xl font-bold tracking-tight">{user?.name}</h2>
+                      <p className="mt-1 truncate text-sm text-muted-foreground">{user?.email}</p>
+                    </div>
+                    <Button type="button" variant="outline" size="sm" onClick={handleStartEdit}>
                       {t('profile.edit')}
                     </Button>
-                  </>
+                  </div>
                 )}
               </div>
             </div>
-          </div>
+          </section>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <StatCard
-              icon={<CheckCircleIcon className="h-6 w-6 text-primary" />}
-              label={t('profile.tasksCompleted')}
-              value={`${stats.completedTasks}/${stats.totalTasks}`}
-              description={`${stats.completionRate}% ${t('profile.completionRate')}`}
-            />
-            <StatCard
-              icon={<CalendarIcon className="h-6 w-6 text-[hsl(var(--color-habits-summary-completed))]" />}
-              label={t('dashboard.stat.habits')}
-              value={`${stats.completedHabitsToday}/${stats.totalHabits}`}
-              description={t('profile.completedToday')}
-            />
-            <StatCard
-              icon={<ClockIcon className="h-6 w-6 text-[hsl(var(--color-pomodoro-focus))]" />}
-              label={t('pomodoro.focusTime')}
-              value={formatDuration(stats.totalFocusTime)}
-              description={`${stats.totalPomos} ${t('profile.sessions')}`}
-            />
-            <StatCard
-              icon={<TrophyIcon className="h-6 w-6 text-[hsl(var(--color-habits-summary-streak))]" />}
-              label={t('profile.achievements')}
-              value={stats.unlockedAchievements}
-              description={t('profile.unlocked')}
-            />
-          </div>
+          <section className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {overviewItems.map((item) => (
+              <div
+                key={item.key}
+                className="rounded-xl border border-border/70 bg-card p-4 transition-[border-color,box-shadow] duration-150 hover:border-border hover:shadow-sm motion-reduce:transition-none sm:p-5"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+                      {item.label}
+                    </p>
+                    <p className="mt-2 text-2xl font-semibold tabular-nums text-foreground">{item.value}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{item.detail}</p>
+                  </div>
+                  <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted/60 ${item.className}`}>
+                    {item.icon}
+                  </span>
+                </div>
+                {item.progress !== null && (
+                  <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-muted">
+                    <div
+                      className={`h-full rounded-full bg-current transition-[width] duration-300 motion-reduce:transition-none ${item.className}`}
+                      style={{ width: `${Math.max(0, Math.min(100, item.progress))}%` }}
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+          </section>
         </div>
       </AppPageMain>
     </AppPage>
