@@ -166,9 +166,11 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
               ? t('taskList.summary.tasks', { count: tasksForList.length })
               : t('taskList.summary.tasks_plural', { count: tasksForList.length })}
           </span>
-          <span className="rounded-full border border-border/60 bg-card px-2.5 py-1">
-            {columnsForList.length} {t('board.columns')}
-          </span>
+          {!canManageColumns && (
+            <span className="max-w-full rounded-full border border-border/60 bg-muted/50 px-2.5 py-1">
+              {t('taskDetail.sharedReadOnly')}
+            </span>
+          )}
         </div>
 
         <div
