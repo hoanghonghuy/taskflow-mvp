@@ -38,7 +38,7 @@ test.describe('Offline', () => {
     await page.goto('/dashboard')
     await page.waitForTimeout(3000)
 
-    const bodyText = await page.textContent('body').catch(() => '')
+    const bodyText = (await page.textContent('body').catch(() => null)) ?? ''
     expect(bodyText.length).toBeGreaterThan(0)
 
     await page.context().setOffline(false)
