@@ -129,10 +129,6 @@ export default function BottomNavBar() {
   const currentView = getViewFromPathname(pathname)
   const hasHiddenActive = hiddenFeatures.includes(currentView)
 
-  useEffect(() => {
-    setIsMoreMenuOpen(false)
-  }, [pathname])
-
   const handleFeatureSelect = useCallback(
     (view: View) => {
       setIsMoreMenuOpen(false)
