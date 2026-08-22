@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
-import { clearAuthSession } from './helpers/auth'
+import { clearAuthSession, submitLogin } from './helpers/auth'
 import { waitForAppReady } from './helpers/app-ready'
+import { E2E_PASSWORD } from './helpers/test-data'
 
 test.describe('Form Validation', () => {
   test('register rejects invalid email format', async ({ page }) => {
@@ -86,7 +87,9 @@ test.describe('Form Validation', () => {
   })
 
   test('task form requires title', async ({ page }) => {
-    // Use existing auth session
+    await submitLogin(page, { email: 'user@gmail.com', password: E2E_PASSWORD })
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 15_000 })
+
     await page.goto('/list')
     await waitForAppReady(page)
 
