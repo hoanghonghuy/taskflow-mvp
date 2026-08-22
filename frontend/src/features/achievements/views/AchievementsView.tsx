@@ -84,7 +84,7 @@ const AchievementsView: React.FC = () => {
           <div className="flex items-end justify-between gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                {t('achievements.progress')}
+                {t('achievement.progress')}
               </p>
               <p className="mt-1 text-2xl font-semibold tabular-nums">
                 {unlockedCount}/{sortedAchievements.length}
@@ -149,7 +149,7 @@ const AchievementsView: React.FC = () => {
                         }`}
                       >
                         {isUnlocked
-                          ? t('achievements.earned')
+                          ? t('achievement.earned')
                           : isCompleted
                             ? t('achievements.ready')
                             : t('achievements.locked.status')}
@@ -162,7 +162,7 @@ const AchievementsView: React.FC = () => {
                 {!isUnlocked && (
                   <div className="mt-5 border-t border-border/50 pt-4">
                     <div className="mb-2 flex items-center justify-between gap-3 text-xs text-muted-foreground">
-                      <span>{t('achievements.progress')}</span>
+                      <span>{t('achievement.progress')}</span>
                       {progress ? (
                         <span className="tabular-nums">
                           {progress.current}/{progress.target}
