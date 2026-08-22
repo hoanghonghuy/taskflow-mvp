@@ -5,9 +5,19 @@ export async function clearAuthSession(page: Page): Promise<void> {
   await page.context().clearCookies()
 }
 
-function isAuthResponse(response: Response, endpoint: 'login' | 'register'): boolean {
-  const url = new URL(response.url())
-  return url.pathname.endsWith(`/api/auth/${endpoint}`) && response.request().method() === 'POST'
+function isAuthResponse(response: Response, action: 'login' | 'register'): boolean {
+  const request = response.request()
+  if (request.method() !== 'POST') return false
+
+  const pathname = decodeURIComponent(new URL(response.url()).pathname)
+  if (!pathname.endsWith('/api/auth/[...nextauth]')) return false
+
+  try {
+    const body = request.postDataJSON() as { action?: unknown } | null
+    return body?.action === action
+  } catch {
+    return false
+  }
 }
 
 function assertSuccessfulAuthResponse(response: Response, action: 'Login' | 'Register'): void {
