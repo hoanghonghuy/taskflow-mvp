@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useUser } from '@/components/providers/user-provider'
@@ -27,27 +27,6 @@ export default function RegisterPage() {
   const [emailError, setEmailError] = useState<string | null>(null)
   const [passwordError, setPasswordError] = useState<string | null>(null)
   const [confirmPasswordError, setConfirmPasswordError] = useState<string | null>(null)
-
-  // Clear known dev/test credentials if they are ever auto-filled by the browser
-  useEffect(() => {
-    const isDevTestEmail = email === 'test@example.com' || email === 'dev@example.com'
-    const isDevTestPassword =
-      password === 'Password123!' || password === 'DevPassword123!'
-    const isDevTestConfirmPassword =
-      confirmPassword === 'Password123!' || confirmPassword === 'DevPassword123!'
-
-    if (isDevTestEmail) {
-      setEmail('')
-    }
-
-    if (isDevTestPassword) {
-      setPassword('')
-    }
-
-    if (isDevTestConfirmPassword) {
-      setConfirmPassword('')
-    }
-  }, [email, password, confirmPassword])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -115,7 +94,7 @@ export default function RegisterPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
+          <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off" noValidate>
             <div className="space-y-2">
               <label htmlFor="name" className="text-sm font-medium">
                 {t('auth.name')}
