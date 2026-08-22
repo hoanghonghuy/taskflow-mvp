@@ -22,14 +22,14 @@ const useCountUp = (end: number, duration = 650) => {
   useEffect(() => {
     const startValue = previousValueRef.current
     previousValueRef.current = end
+    let frame = 0
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (prefersReducedMotion) {
-      setCount(end)
-      return
+      frame = requestAnimationFrame(() => setCount(end))
+      return () => cancelAnimationFrame(frame)
     }
 
-    let frame = 0
     let startTimestamp: number | null = null
 
     const step = (timestamp: number) => {
@@ -117,7 +117,6 @@ export default function DashboardPage() {
 
     const todayStr = toYYYYMMDD(new Date())
     const habitsToday = state.habits.filter((habit) => habit.completions.includes(todayStr)).length
-
     return {
       today: todayTasks,
       upcoming: upcomingTasks,
