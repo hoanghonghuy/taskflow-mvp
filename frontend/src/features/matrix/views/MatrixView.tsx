@@ -16,9 +16,7 @@ import {
   TaskColumnShell,
 } from '@/components/layout/task-column-shell'
 import { isSharedListMember } from '@/lib/utils/list-access'
-import { TaskMoveControl } from '@/components/ui/task-move-control'
 import { cn } from '@/lib/utils'
-import type { TranslationKey } from '@/lib/i18n/types'
 
 interface QuadrantConfig {
   id: string
@@ -39,8 +37,6 @@ interface QuadrantProps {
   onDrop: (event: React.DragEvent) => void
   onTaskDragStart: (taskId: string) => void
   onTaskDragEnd: () => void
-  quadrants: QuadrantConfig[]
-  onMoveTask: (taskId: string, quadrantId: string) => void
   canMoveTask: (task: Task) => boolean
 }
 
@@ -53,8 +49,6 @@ const Quadrant: React.FC<QuadrantProps> = ({
   onDrop,
   onTaskDragStart,
   onTaskDragEnd,
-  quadrants,
-  onMoveTask,
   canMoveTask,
 }) => {
   const { t } = useI18n()
@@ -94,17 +88,6 @@ const Quadrant: React.FC<QuadrantProps> = ({
           tasks.map((task) => (
             <div key={task.id} className="group" onDragEnd={onTaskDragEnd}>
               <TaskItem task={task} isDraggable={canMoveTask(task)} onDragStart={onTaskDragStart} />
-              {canMoveTask(task) ? (
-                <TaskMoveControl
-                  label={t('matrix.changePriority' as TranslationKey)}
-                  value={config.id}
-                  options={quadrants.map((quadrant) => ({
-                    value: quadrant.id,
-                    label: t(quadrant.titleKey),
-                  }))}
-                  onMove={(quadrantId) => onMoveTask(task.id, quadrantId)}
-                />
-              ) : null}
             </div>
           ))
         ) : (
@@ -200,11 +183,6 @@ const MatrixView: React.FC = () => {
     void updateTask({ ...task, priority: dropPriority }, { silent: true })
   }
 
-  const handleMoveTask = (taskId: string, quadrantId: string) => {
-    const target = QUADRANT_CONFIG.find((config) => config.id === quadrantId)
-    if (target) moveTaskToPriority(taskId, target.dropPriority)
-  }
-
   return (
     <AppPage>
       <AppPageHeader
@@ -251,8 +229,6 @@ const MatrixView: React.FC = () => {
                 setDraggedTaskId(null)
                 setDragOverQuadrantId(null)
               }}
-              quadrants={QUADRANT_CONFIG}
-              onMoveTask={handleMoveTask}
               canMoveTask={canMoveTask}
             />
           ))}

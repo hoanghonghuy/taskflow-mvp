@@ -223,11 +223,6 @@ const BoardView: React.FC<BoardViewProps> = ({ onOpenTaskForm }) => {
                     if (canManageColumns) setDraggedColumnId(columnId)
                   }}
                   columns={columnsForList}
-                  onMoveTask={(taskId, columnId) => {
-                    if (canManageColumns) {
-                      void moveTaskToColumn(taskId, columnId, effectiveSelectedListId)
-                    }
-                  }}
                   onMoveColumn={(offset) => handleMoveColumn(column.id, offset)}
                   canMoveUp={columnIndex > 0}
                   canMoveDown={columnIndex < columnsForList.length - 1}

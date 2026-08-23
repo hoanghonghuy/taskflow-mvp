@@ -341,7 +341,6 @@
     "title": "Kanban board view",
     "noLists": "No lists available. Create a list first.",
     "addTask": "Add Task",
-    "moveTask": "Move task to column",
     "selectList": "Select board list",
     "addColumn": "Add Column",
     "columnName": "Column name",
@@ -982,8 +981,7 @@
     "title": "Priority Matrix",
     "subtitle": "Open tasks grouped by priority level.",
     "description": "Each quadrant represents a priority bucket (High/Urgent, Medium, Low, None). Use this view to see what needs attention first.",
-    "dragHint": "Drag a task or use its priority selector to move it.",
-    "changePriority": "Change task priority",
+    "dragHint": "Drag a task to move it.",
     "priorities": {
       "high": "High / Urgent",
       "medium": "Medium",

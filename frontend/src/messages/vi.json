@@ -341,7 +341,6 @@
     "title": "Chế độ xem bảng Kanban",
     "noLists": "Không có danh sách nào. Tạo danh sách trước.",
     "addTask": "Thêm Nhiệm vụ",
-    "moveTask": "Chuyển nhiệm vụ sang cột",
     "selectList": "Chọn danh sách bảng",
     "addColumn": "Thêm Cột",
     "columnName": "Tên cột",
@@ -982,8 +981,7 @@
     "title": "Ma trận Ưu tiên",
     "subtitle": "Nhiệm vụ chưa hoàn thành được nhóm theo mức ưu tiên.",
     "description": "Mỗi góc phần tư tương ứng một mức ưu tiên (Cao/Khẩn cấp, Trung bình, Thấp, Không có). Dùng view này để biết việc nào cần làm trước.",
-    "dragHint": "Kéo nhiệm vụ hoặc dùng bộ chọn ưu tiên để di chuyển.",
-    "changePriority": "Đổi mức ưu tiên nhiệm vụ",
+    "dragHint": "Kéo nhiệm vụ để di chuyển.",
     "priorities": {
       "high": "Cao / Khẩn cấp",
       "medium": "Trung bình",

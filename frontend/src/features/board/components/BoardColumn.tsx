@@ -20,7 +20,6 @@ import {
   TaskColumnHeader,
   TaskColumnShell,
 } from '@/components/layout/task-column-shell'
-import { TaskMoveControl } from '@/components/ui/task-move-control'
 import { IconButton } from '@/components/ui/icon-button'
 import type { Column, Task } from '@/types'
 
@@ -32,7 +31,6 @@ interface BoardColumnProps {
   onOpenTaskForm?: (defaultValues?: { listId?: string; columnId?: string }) => void
   onColumnDragStart: (columnId: string) => void
   columns: Column[]
-  onMoveTask: (taskId: string, columnId: string) => void
   onMoveColumn: (offset: -1 | 1) => void
   canMoveUp: boolean
   canMoveDown: boolean
@@ -47,7 +45,6 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
   onOpenTaskForm,
   onColumnDragStart,
   columns,
-  onMoveTask,
   onMoveColumn,
   canMoveUp,
   canMoveDown,
@@ -212,14 +209,6 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
                 isDraggable={canManageColumns}
                 onDragStart={onTaskDragStart}
               />
-              {canManageColumns && columns.length > 1 ? (
-                <TaskMoveControl
-                  label={t('board.moveTask' as TranslationKey)}
-                  value={column.id}
-                  options={columns.map((target) => ({ value: target.id, label: target.name }))}
-                  onMove={(columnId) => onMoveTask(task.id, columnId)}
-                />
-              ) : null}
             </div>
           ))
         )}
