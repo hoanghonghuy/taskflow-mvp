@@ -5,7 +5,7 @@ import { Task, Priority } from '@/types'
 import { useTaskManager } from '@/components/providers/task-manager-provider'
 import { useTaskActions } from '@/lib/hooks/use-task-manager'
 import { useConfirmation } from '@/lib/hooks/use-confirmation'
-import { 
+import {
   PlayCircleIcon,
   BellIcon,
   RepeatIcon,
@@ -24,17 +24,16 @@ import { HighlightText } from '@/components/ui/highlight-text'
 import { IconButton } from '@/components/ui/icon-button'
 import { isSharedListMember } from '@/lib/utils/list-access'
 
-// Helper functions to replace date-fns
 const isToday = (date: Date): boolean => {
   const today = new Date()
   return date.getDate() === today.getDate() &&
-         date.getMonth() === today.getMonth() &&
-         date.getFullYear() === today.getFullYear()
+    date.getMonth() === today.getMonth() &&
+    date.getFullYear() === today.getFullYear()
 }
 
 const isPast = (date: Date): boolean => {
   const today = new Date()
-  today.setHours(0, 0, 0, 0) // Compare with start of today
+  today.setHours(0, 0, 0, 0)
   return date.getTime() < today.getTime()
 }
 
@@ -47,7 +46,14 @@ interface TaskItemProps {
   highlightTerm?: string
 }
 
-const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onDrop, listName, highlightTerm }) => {
+const TaskItem: React.FC<TaskItemProps> = ({
+  task,
+  isDraggable,
+  onDragStart,
+  onDrop,
+  listName,
+  highlightTerm,
+}) => {
   const { state, dispatch } = useTaskManager()
   const { t } = useI18n()
   const { settings } = useSettings()
@@ -58,26 +64,24 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
   const [isSubtasksOpen, setIsSubtasksOpen] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false
     const originalId = task.id.split('_')[0]
-    const stored = window.localStorage.getItem(`task-subtasks-open-${originalId}`)
-    return stored === 'true'
+    return window.localStorage.getItem(`task-subtasks-open-${originalId}`) === 'true'
   })
 
   const parentList = state.lists.find((list) => list.id === task.listId) ?? null
   const isReadOnly = isSharedListMember(parentList, user?.id)
   const canDrag = isDraggable && !task.completed && !isReadOnly
+  const assignee = allUsers?.find((candidate) => candidate.id === task.assigneeId) || null
 
-  const assignee = allUsers?.find(u => u.id === task.assigneeId) || null
-
-  const handleToggle = (e: React.MouseEvent) => {
-    e.stopPropagation()
+  const handleToggle = (event: React.MouseEvent) => {
+    event.stopPropagation()
     if (isReadOnly) return
     void toggleTask(task.id)
   }
 
-  const handleToggleSubtasksVisibility = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setIsSubtasksOpen(prev => {
-      const next = !prev
+  const handleToggleSubtasksVisibility = (event: React.MouseEvent) => {
+    event.stopPropagation()
+    setIsSubtasksOpen((previous) => {
+      const next = !previous
       if (typeof window !== 'undefined') {
         const originalId = task.id.split('_')[0]
         window.localStorage.setItem(`task-subtasks-open-${originalId}`, next ? 'true' : 'false')
@@ -86,29 +90,27 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
     })
   }
 
-  const handleSubtaskToggle = (e: React.MouseEvent, subtaskId: string) => {
-    e.stopPropagation()
+  const handleSubtaskToggle = (event: React.MouseEvent, subtaskId: string) => {
+    event.stopPropagation()
     if (isReadOnly) return
-    const newSubtasks = task.subtasks.map(st =>
-      st.id === subtaskId ? { ...st, completed: !st.completed } : st
+    const newSubtasks = task.subtasks.map((subtask) =>
+      subtask.id === subtaskId ? { ...subtask, completed: !subtask.completed } : subtask,
     )
     void syncSubtasks(task.id, newSubtasks)
   }
 
   const handleSelect = () => {
-    const originalId = task.id.split('_')[0] // Handle recurring instances
-    dispatch({ type: 'SET_SELECTED_TASK', payload: originalId })
+    dispatch({ type: 'SET_SELECTED_TASK', payload: task.id.split('_')[0] })
   }
 
-  const handleStartFocus = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    const originalId = task.id.split('_')[0]
-    dispatch({ type: 'SET_FOCUSED_TASK', payload: originalId })
+  const handleStartFocus = (event: React.MouseEvent) => {
+    event.stopPropagation()
+    dispatch({ type: 'SET_FOCUSED_TASK', payload: task.id.split('_')[0] })
     dispatch({ type: 'START_TIMER' })
   }
 
-  const handleQuickDelete = async (e: React.MouseEvent) => {
-    e.stopPropagation()
+  const handleQuickDelete = async (event: React.MouseEvent) => {
+    event.stopPropagation()
     if (isReadOnly) return
     const ok = await confirm({
       title: t('taskDetail.deleteConfirm.title', { title: task.title }),
@@ -116,196 +118,189 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
       confirmText: t('taskDetail.deleteConfirm.confirm'),
       variant: 'destructive',
     })
-    if (!ok) return
-    void deleteTask(task.id)
+    if (ok) void deleteTask(task.id)
   }
-  
-  const handleDragStart = (e: React.DragEvent) => {
-    e.stopPropagation()
-    if (canDrag && onDragStart) {
-      e.dataTransfer.effectAllowed = 'move'
-      e.dataTransfer.setData('taskId', task.id.split('_')[0])
-      onDragStart(task.id)
-    }
+
+  const handleDragStart = (event: React.DragEvent) => {
+    event.stopPropagation()
+    if (!canDrag || !onDragStart) return
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.setData('taskId', task.id.split('_')[0])
+    onDragStart(task.id)
   }
-  
-  const handleDrop = (e: React.DragEvent) => {
+
+  const handleDrop = (event: React.DragEvent) => {
     if (canDrag && onDrop) {
-      e.stopPropagation()
+      event.stopPropagation()
       onDrop(task.id)
     }
     setIsDragOver(false)
   }
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault() // Necessary for drop to work
-    e.stopPropagation()
-    if (isDraggable) {
-      setIsDragOver(true)
-    }
-  }
-  
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.stopPropagation()
-    setIsDragOver(false)
+  const handleDragOver = (event: React.DragEvent) => {
+    event.preventDefault()
+    event.stopPropagation()
+    if (canDrag) setIsDragOver(true)
   }
 
-  const dueDateLabel = () => {
-    if (!task.dueDate) return null
-    const date = new Date(task.dueDate)
-    const isDuePast = isPast(date) && !isToday(date)
-    const color = isDuePast ? 'text-destructive' : 'text-muted-foreground'
-
-    const locale = settings.language || undefined
-
-    return (
-      <span className={`text-xs ${color}`}>
-        {date.toLocaleDateString(locale, { month: 'short', day: 'numeric' })}
-      </span>
-    )
-  }
-  
-  // Ensure task has a priority, default to 'none'
   const taskPriority = (task.priority || 'none') as Priority
-  const priorityClasses = PRIORITY_MAP[taskPriority] || PRIORITY_MAP['none']
+  const priorityClasses = PRIORITY_MAP[taskPriority] || PRIORITY_MAP.none
   const checkboxStyle = !task.completed
     ? { borderColor: priorityClasses.checkboxBorderValue }
     : undefined
 
-  const progressIndicator = () => {
-    if (task.subtasks && task.subtasks.length > 0) {
-      const completed = task.subtasks.filter(st => st.completed).length
-      return (
-        <span className="text-xs flex items-center gap-1 text-muted-foreground">
-          <CheckCircleIcon className="h-4 w-4" />
-          {completed}/{task.subtasks.length}
-        </span>
-      )
-    }
-    return null
-  }
+  const dueDate = task.dueDate ? new Date(task.dueDate) : null
+  const dueDateIsPast = dueDate ? isPast(dueDate) && !isToday(dueDate) : false
+  const locale = settings.language || undefined
+  const completedSubtasks = task.subtasks.filter((subtask) => subtask.completed).length
 
   return (
     <div>
-      <div 
+      <div
         onClick={handleSelect}
         draggable={canDrag}
         onDragStart={handleDragStart}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
+        onDragLeave={(event) => {
+          event.stopPropagation()
+          setIsDragOver(false)
+        }}
         onDragEnd={() => setIsDragOver(false)}
-        className={`
-          group flex items-center p-3 bg-card shadow-sm relative
-          transition-[box-shadow,background-color,opacity] duration-200 ease-in-out
-          ${canDrag ? 'cursor-grab' : 'cursor-pointer'}
-          ${task.completed ? 'opacity-50' : 'opacity-100'}
-          ${isDragOver ? 'bg-primary/10 shadow-lg' : 'hover:shadow-md'}
-          ${task.subtasks.length > 0 && isSubtasksOpen ? 'rounded-t-lg' : 'rounded-lg'}
-        `}
+        className={`group relative flex min-h-16 items-center gap-3 border border-border/60 bg-card px-3 py-3 transition-[border-color,box-shadow,background-color,opacity,transform] duration-150 motion-reduce:transition-none sm:px-4 ${
+          task.subtasks.length > 0 && isSubtasksOpen ? 'rounded-t-xl' : 'rounded-xl'
+        } ${canDrag ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'} ${
+          task.completed ? 'opacity-60' : 'opacity-100'
+        } ${
+          isDragOver
+            ? 'border-primary/60 bg-primary/5 shadow-md'
+            : 'hover:border-border hover:shadow-sm focus-within:border-primary/40'
+        }`}
       >
         <button
+          type="button"
           onClick={handleToggle}
           disabled={isReadOnly}
           aria-label={task.completed ? t('taskItem.aria.markIncomplete') : t('taskItem.aria.markComplete')}
-          className={`
-            h-5 w-5 rounded shrink-0
-            flex items-center justify-center 
-            transition-transform duration-150 transform hover:scale-110
-            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
-            ${isReadOnly ? 'cursor-not-allowed opacity-60' : ''}
-            ${task.completed 
-              ? 'bg-primary border-2 border-primary' 
-              : `bg-transparent border-2 ${priorityClasses.checkboxBorderColor}`
-            }
-          `}
+          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 transition-[transform,background-color,border-color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none ${
+            isReadOnly ? 'cursor-not-allowed opacity-60' : 'hover:scale-105'
+          } ${task.completed ? 'border-primary bg-primary' : `bg-transparent ${priorityClasses.checkboxBorderColor}`}`}
           style={checkboxStyle}
         >
-          {task.completed && <CheckIcon className="h-3.5 w-3.5 text-primary-foreground" />}
+          {task.completed && <CheckIcon className="h-4 w-4 text-primary-foreground" />}
         </button>
-        <div className="ml-4 grow flex items-center gap-2 min-w-0">
-          <button
-            type="button"
-            aria-label={task.title}
-            onClick={(event) => {
-              event.stopPropagation()
-              handleSelect()
-            }}
-            className="flex min-w-0 flex-col text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+
+        <button
+          type="button"
+          aria-label={task.title}
+          onClick={(event) => {
+            event.stopPropagation()
+            handleSelect()
+          }}
+          className="min-w-0 flex-1 text-left focus-visible:outline-none"
+        >
+          <p
+            className={`truncate text-sm font-medium leading-5 ${
+              task.completed ? 'line-through text-muted-foreground' : 'text-foreground'
+            }`}
           >
-            <p className={`text-sm truncate ${task.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
-              <HighlightText text={task.title} term={highlightTerm} />
-            </p>
-            {listName && (
-              <span className="text-[11px] text-muted-foreground truncate">{listName}</span>
+            <HighlightText text={task.title} term={highlightTerm} />
+          </p>
+
+          <div className="mt-1.5 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+            {listName && <span className="max-w-36 truncate">{listName}</span>}
+            {dueDate && (
+              <span className={dueDateIsPast ? 'font-medium text-destructive' : undefined}>
+                {dueDate.toLocaleDateString(locale, { month: 'short', day: 'numeric' })}
+              </span>
             )}
-          </button>
+            {task.subtasks.length > 0 && (
+              <span className="inline-flex items-center gap-1">
+                <CheckCircleIcon className="h-3.5 w-3.5" />
+                {completedSubtasks}/{task.subtasks.length}
+              </span>
+            )}
+            {task.recurrence && (
+              <RepeatIcon
+                className="h-3.5 w-3.5"
+                title={t('taskItem.title.repeats', { rule: task.recurrence.type })}
+              />
+            )}
+            {task.reminderMinutes && (
+              <BellIcon
+                className="h-3.5 w-3.5"
+                title={t('taskItem.title.reminder', { minutes: task.reminderMinutes })}
+              />
+            )}
+          </div>
+        </button>
+
+        {assignee && <Avatar user={assignee} className="h-7 w-7 shrink-0" />}
+
+        <div className="flex shrink-0 items-center gap-0.5">
           {task.subtasks.length > 0 && (
             <IconButton
               onClick={handleToggleSubtasksVisibility}
-              size="sm"
+              size="md"
               variant="toolbar"
-              revealOnHover
-              className="rounded-full"
+              aria-label={`${task.title}: ${completedSubtasks}/${task.subtasks.length}`}
+              className="rounded-lg"
             >
               {isSubtasksOpen ? <ArrowUpIcon className="h-4 w-4" /> : <ArrowDownIcon className="h-4 w-4" />}
             </IconButton>
           )}
-        </div>
-        <div className="flex items-center gap-2 ml-auto text-sm text-muted-foreground">
+
           {!task.completed && (
             <IconButton
               onClick={handleStartFocus}
-              size="lg"
+              size="md"
+              variant="toolbar"
               revealOnHover
-              className="hover:text-primary"
+              className="rounded-lg hover:text-primary"
               aria-label={t('taskItem.aria.startFocus')}
             >
-              <PlayCircleIcon className="h-6 w-6" />
+              <PlayCircleIcon className="h-5 w-5" />
             </IconButton>
           )}
+
           {!isReadOnly && (
             <IconButton
               onClick={handleQuickDelete}
               size="md"
               variant="destructive"
               revealOnHover
+              className="rounded-lg"
               aria-label={t('task.delete')}
             >
-              <TrashIcon className="h-5 w-5" />
+              <TrashIcon className="h-4.5 w-4.5" />
             </IconButton>
           )}
-          <div className="flex items-center gap-1.5">
-            {progressIndicator()}
-            {dueDateLabel()}
-            {task.recurrence && <RepeatIcon className="h-4 w-4" title={t('taskItem.title.repeats', { rule: task.recurrence.type })} />}
-            {task.reminderMinutes && <BellIcon className="h-4 w-4" title={t('taskItem.title.reminder', { minutes: task.reminderMinutes })} />}
-            {assignee && <Avatar user={assignee} className="h-5 w-5 md:h-6 md:w-6 shrink-0" />}
-          </div>
         </div>
       </div>
+
       {isSubtasksOpen && task.subtasks.length > 0 && (
-        <div className="bg-card rounded-b-lg pl-8 pr-4 pb-3 pt-3 border border-t-0 border-border">
-          <div className="space-y-2">
-            {task.subtasks.map(subtask => (
-              <div key={subtask.id} className="flex items-center gap-3">
+        <div className="rounded-b-xl border border-t-0 border-border/60 bg-card/70 px-4 pb-3 pt-2 animate-accordion-down motion-reduce:animate-none sm:pl-12">
+          <div className="space-y-1.5">
+            {task.subtasks.map((subtask) => (
+              <div key={subtask.id} className="flex min-h-9 items-center gap-3 rounded-lg px-2 hover:bg-secondary/45">
                 <button
-                  onClick={(e) => handleSubtaskToggle(e, subtask.id)}
+                  type="button"
+                  onClick={(event) => handleSubtaskToggle(event, subtask.id)}
+                  disabled={isReadOnly}
                   aria-label={subtask.completed ? t('taskItem.aria.markIncomplete') : t('taskItem.aria.markComplete')}
-                  className={`
-                    h-4 w-4 rounded-sm shrink-0
-                    flex items-center justify-center 
-                    transition-colors duration-150
-                    focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring
-                    ${subtask.completed 
-                      ? 'bg-primary border border-primary' 
-                      : 'bg-transparent border border-muted-foreground/50'
-                    }
-                  `}
+                  className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border transition-colors duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring motion-reduce:transition-none ${
+                    subtask.completed
+                      ? 'border-primary bg-primary'
+                      : 'border-muted-foreground/50 bg-transparent'
+                  } ${isReadOnly ? 'cursor-not-allowed opacity-60' : ''}`}
                 >
                   {subtask.completed && <CheckIcon className="h-2.5 w-2.5 text-primary-foreground" />}
                 </button>
-                <p className={`text-sm grow ${subtask.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                <p
+                  className={`min-w-0 flex-1 truncate text-sm ${
+                    subtask.completed ? 'line-through text-muted-foreground' : 'text-foreground'
+                  }`}
+                >
                   {subtask.title}
                 </p>
               </div>
@@ -318,4 +313,3 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, isDraggable, onDragStart, onD
 }
 
 export default TaskItem
-

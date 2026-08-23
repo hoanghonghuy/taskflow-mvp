@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
-import { clearAuthSession } from './helpers/auth'
+import { clearAuthSession, submitLogin } from './helpers/auth'
 import { waitForAppReady } from './helpers/app-ready'
+import { E2E_PASSWORD } from './helpers/test-data'
 
 test.describe('Form Validation', () => {
   test('register rejects invalid email format', async ({ page }) => {
@@ -15,9 +16,9 @@ test.describe('Form Validation', () => {
 
     // Should show validation error and stay on register page
     await expect(page).toHaveURL(/\/register/, { timeout: 10_000 })
-    await expect(page.getByText(/invalid email|email không hợp lệ/i).first()).toBeVisible({
-      timeout: 5_000,
-    })
+    await expect(
+      page.getByText(/valid email address|invalid email|email không hợp lệ/i).first(),
+    ).toBeVisible({ timeout: 5_000 })
   })
 
   test('register rejects mismatched passwords', async ({ page }) => {
@@ -76,15 +77,19 @@ test.describe('Form Validation', () => {
 
     await page.getByRole('button', { name: 'Login' }).click()
 
-    // Should show error and stay on login page
+    // Keep the assertion compatible with the intentionally generic auth failure message.
     await expect(
-      page.getByText(/invalid.*credentials|incorrect|wrong|sai|không đúng/i).first(),
+      page
+        .getByText(/check your credentials|invalid.*credentials|incorrect|wrong|sai|không đúng/i)
+        .first(),
     ).toBeVisible({ timeout: 15_000 })
     await expect(page).toHaveURL(/\/login/)
   })
 
   test('task form requires title', async ({ page }) => {
-    // Use existing auth session
+    await submitLogin(page, { email: 'user@gmail.com', password: E2E_PASSWORD })
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 15_000 })
+
     await page.goto('/list')
     await waitForAppReady(page)
 

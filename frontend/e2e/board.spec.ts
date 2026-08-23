@@ -22,9 +22,17 @@ test.describe('Board', () => {
     // Select a fresh list to avoid stale data from manual QA
     const listSelect = page.locator('select[aria-label]:visible').first()
     await expect(listSelect).toBeVisible()
-    
-    // Select "Personal" list which should be empty
-    await listSelect.selectOption({ label: /personal/i })
+
+    // Select the Personal list in either supported locale.
+    const personalOption = listSelect
+      .locator('option')
+      .filter({ hasText: /personal|cá nhân/i })
+      .first()
+    const personalValue = await personalOption.getAttribute('value')
+    if (!personalValue) {
+      throw new Error('Personal list option was not available on the board')
+    }
+    await listSelect.selectOption(personalValue)
     await page.waitForTimeout(500)
 
     // Give React time to render and any duplicate key warnings to appear
@@ -34,12 +42,12 @@ test.describe('Board', () => {
     const duplicateKeyErrors = consoleMessages.filter(msg =>
       msg.includes('Encountered two children with the same key')
     )
-    
+
     // Log all errors for debugging
     if (duplicateKeyErrors.length > 0) {
       console.log('Duplicate key errors found:', duplicateKeyErrors)
     }
-    
+
     // Note: This test may still fail if there's stale data - consider it a warning
     // The important fix is in BoardView.tsx deduplication logic
     expect(duplicateKeyErrors.length).toBeLessThanOrEqual(3) // Allow some tolerance for stale data

@@ -86,7 +86,7 @@ const getColorOption = (value: string | undefined) => {
   const normalized = value
     ? LEGACY_HEX_COLORS[value.toLowerCase()] ?? value
     : COUNTDOWN_COLOR_OPTIONS[0].value
-  return COUNTDOWN_COLOR_OPTIONS.find(option => option.value === normalized) ?? COUNTDOWN_COLOR_OPTIONS[0]
+  return COUNTDOWN_COLOR_OPTIONS.find((option) => option.value === normalized) ?? COUNTDOWN_COLOR_OPTIONS[0]
 }
 
 interface CountdownTimeLeft {
@@ -103,26 +103,14 @@ const calculateTimeLeft = (targetDate: string, now: number = Date.now()): Countd
   const difference = target - now
 
   if (difference <= 0) {
-    return {
-      days: 0,
-      hours: 0,
-      minutes: 0,
-      seconds: 0,
-      total: 0,
-      isPast: true,
-    }
+    return { days: 0, hours: 0, minutes: 0, seconds: 0, total: 0, isPast: true }
   }
 
-  const days = Math.floor(difference / (1000 * 60 * 60 * 24))
-  const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-  const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))
-  const seconds = Math.floor((difference % (1000 * 60)) / 1000)
-
   return {
-    days,
-    hours,
-    minutes,
-    seconds,
+    days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+    hours: Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+    minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
+    seconds: Math.floor((difference % (1000 * 60)) / 1000),
     total: difference,
     isPast: false,
   }
@@ -136,212 +124,198 @@ export const useCountdown = () => {
   const [notifiedEvents, setNotifiedEvents] = useState<Set<string>>(new Set())
   const { t } = useI18n()
 
-  // Update tick every second for live countdowns
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTick(Date.now())
-    }, 1000)
-
+    const timer = setInterval(() => setTick(Date.now()), 1000)
     return () => clearInterval(timer)
   }, [])
 
-  // Request notification permission when user has countdown events
-  useEffect(() => {
-    if (typeof window === 'undefined' || !('Notification' in window)) return
-    if (Notification.permission !== 'default' || countdownEvents.length === 0) return
-    void Notification.requestPermission()
-  }, [countdownEvents.length])
-
-  // Check for completed countdowns and send notifications
   useEffect(() => {
     const now = Date.now()
-    countdownEvents.forEach(event => {
+    countdownEvents.forEach((event) => {
       const targetTime = new Date(event.targetDate).getTime()
-      
-      // Check if countdown just completed (within last 5 seconds)
       if (targetTime <= now && targetTime > now - 5000 && !notifiedEvents.has(event.id)) {
-        // Send browser notification
-        if ('Notification' in window && Notification.permission === 'granted') {
-          new Notification(
-            t('countdown.notifications.completedTitle' as TranslationKey),
-            {
+        if (
+          typeof window !== 'undefined' &&
+          'Notification' in window &&
+          Notification.permission === 'granted'
+        ) {
+          try {
+            new Notification(t('countdown.notifications.completedTitle' as TranslationKey), {
               body: t('countdown.notifications.completedBody' as TranslationKey, { title: event.title }),
               icon: '/favicon.ico',
-              tag: `countdown-${event.id}`
-            },
-          )
+              tag: `countdown-${event.id}`,
+            })
+          } catch (notificationError) {
+            console.error('Failed to show countdown browser notification', notificationError)
+          }
         }
-        
-        // Send toast notification
+
         success(
           t('countdown.notifications.completedTitle' as TranslationKey),
           t('countdown.notifications.completedBody' as TranslationKey, { title: event.title }),
         )
-        
-        // Mark as notified to prevent duplicates
-        setNotifiedEvents(prev => new Set(prev).add(event.id))
+        setNotifiedEvents((previous) => new Set(previous).add(event.id))
       }
     })
   }, [tick, countdownEvents, notifiedEvents, success, t])
 
-  // Memoized sorted events
-  const sortedEvents = useMemo(() => {
-    return [...countdownEvents].sort((a, b) => {
-      const dateA = new Date(a.targetDate).getTime()
-      const dateB = new Date(b.targetDate).getTime()
-      return dateA - dateB
-    })
-  }, [countdownEvents])
+  const sortedEvents = useMemo(
+    () =>
+      [...countdownEvents].sort(
+        (a, b) => new Date(a.targetDate).getTime() - new Date(b.targetDate).getTime(),
+      ),
+    [countdownEvents],
+  )
 
-  // Separate upcoming and completed events
   const { upcomingEvents, completedEvents } = useMemo(() => {
-    const now = tick
     const upcoming: CountdownEvent[] = []
     const completed: CountdownEvent[] = []
 
-    sortedEvents.forEach(event => {
-      if (new Date(event.targetDate).getTime() > now) {
-        upcoming.push(event)
-      } else {
-        completed.push(event)
-      }
+    sortedEvents.forEach((event) => {
+      if (new Date(event.targetDate).getTime() > tick) upcoming.push(event)
+      else completed.push(event)
     })
 
     return { upcomingEvents: upcoming, completedEvents: completed }
   }, [sortedEvents, tick])
 
-  // Calculate time left for each event (recomputed on every tick so UI stays live)
-  const eventsWithTimeLeft = useMemo(() => {
-    return countdownEvents.map(event => ({
-      ...event,
-      timeLeft: calculateTimeLeft(event.targetDate, tick),
-      colorOption: getColorOption(event.color),
-    }))
-  }, [countdownEvents, tick])
+  const eventsWithTimeLeft = useMemo(
+    () =>
+      countdownEvents.map((event) => ({
+        ...event,
+        timeLeft: calculateTimeLeft(event.targetDate, tick),
+        colorOption: getColorOption(event.color),
+      })),
+    [countdownEvents, tick],
+  )
 
-  // CRUD operations
-  const addCountdown = useCallback(async (countdown: Omit<CountdownEvent, 'id' | 'createdAt'>) => {
-    try {
-      const created = await countdownApi.createCountdown({
-        title: countdown.title,
-        targetDate: countdown.targetDate,
-        color: countdown.color,
-      })
+  const addCountdown = useCallback(
+    async (countdown: Omit<CountdownEvent, 'id' | 'createdAt'>): Promise<boolean> => {
+      try {
+        const created = await countdownApi.createCountdown({
+          title: countdown.title,
+          targetDate: countdown.targetDate,
+          color: countdown.color,
+        })
 
-      if (created) {
+        if (!created) throw new Error('Create countdown returned no data')
+
         dispatch(countdownActions.add(created))
         success(
           t('countdown.notifications.addedTitle' as TranslationKey),
           t('countdown.notifications.addedBody' as TranslationKey, { title: created.title }),
         )
-        return
+        return true
+      } catch (caughtError) {
+        console.error('Failed to create countdown via API', caughtError)
+        error(
+          t('countdown.notifications.addFailedTitle' as TranslationKey),
+          caughtError instanceof Error
+            ? caughtError.message
+            : t('countdown.notifications.addFailedBody' as TranslationKey),
+        )
+        return false
       }
-    } catch (e) {
-      console.error('Failed to create countdown via API', e)
-      error(
-        t('countdown.notifications.addFailedTitle' as TranslationKey),
-        e instanceof Error ? e.message : t('countdown.notifications.addFailedBody' as TranslationKey),
-      )
-    }
-  }, [dispatch, error, success, t])
+    },
+    [dispatch, error, success, t],
+  )
 
-  const updateCountdown = useCallback(async (id: string, updates: Partial<CountdownEvent>) => {
-    const existingCountdown = countdownEvents.find(c => c.id === id)
-    if (!existingCountdown) {
-      error(
-        t('countdown.notifications.updateFailedTitle' as TranslationKey),
-        t('countdown.notifications.updateFailedBody' as TranslationKey),
-      )
-      return
-    }
-
-    const payload: { title?: string; targetDate?: string; color?: string } = {}
-    if (typeof updates.title === 'string') payload.title = updates.title
-    if (typeof updates.targetDate === 'string') payload.targetDate = updates.targetDate
-    if (typeof updates.color === 'string') payload.color = updates.color
-
-    try {
-      const updated = await countdownApi.updateCountdown(id, payload)
-      if (!updated) {
-        throw new Error('Update countdown returned no data')
+  const updateCountdown = useCallback(
+    async (id: string, updates: Partial<CountdownEvent>): Promise<boolean> => {
+      const existingCountdown = countdownEvents.find((countdown) => countdown.id === id)
+      if (!existingCountdown) {
+        error(
+          t('countdown.notifications.updateFailedTitle' as TranslationKey),
+          t('countdown.notifications.updateFailedBody' as TranslationKey),
+        )
+        return false
       }
 
-      dispatch(countdownActions.update(updated))
-      success(
-        t('countdown.notifications.updatedTitle' as TranslationKey),
-        t('countdown.notifications.updatedBody' as TranslationKey, { title: updated.title }),
-      )
-    } catch (e) {
-      console.error('Failed to update countdown via API', e)
-      error(
-        t('countdown.notifications.updateFailedTitle' as TranslationKey),
-        e instanceof Error ? e.message : t('countdown.notifications.updateFailedBody' as TranslationKey),
-      )
-    }
-  }, [dispatch, countdownEvents, success, error, t])
+      const payload: { title?: string; targetDate?: string; color?: string } = {}
+      if (typeof updates.title === 'string') payload.title = updates.title
+      if (typeof updates.targetDate === 'string') payload.targetDate = updates.targetDate
+      if (typeof updates.color === 'string') payload.color = updates.color
 
-  const deleteCountdown = useCallback(async (id: string) => {
-    const countdownToDelete = countdownEvents.find(c => c.id === id)
-    if (!countdownToDelete) {
-      error(
-        t('countdown.notifications.deleteFailedTitle' as TranslationKey),
-        t('countdown.notifications.deleteFailedBody' as TranslationKey),
-      )
-      return
-    }
+      try {
+        const updated = await countdownApi.updateCountdown(id, payload)
+        if (!updated) throw new Error('Update countdown returned no data')
 
-    try {
-      await countdownApi.deleteCountdown(id)
-      dispatch(countdownActions.delete(id))
-      success(
-        t('countdown.notifications.deletedTitle' as TranslationKey),
-        t('countdown.notifications.deletedBody' as TranslationKey, { title: countdownToDelete.title }),
-      )
-    } catch (e) {
-      console.error('Failed to delete countdown via API', e)
-      error(
-        t('countdown.notifications.deleteFailedTitle' as TranslationKey),
-        e instanceof Error ? e.message : t('countdown.notifications.deleteFailedBody' as TranslationKey),
-      )
-    }
-  }, [dispatch, countdownEvents, success, error, t])
+        dispatch(countdownActions.update(updated))
+        success(
+          t('countdown.notifications.updatedTitle' as TranslationKey),
+          t('countdown.notifications.updatedBody' as TranslationKey, { title: updated.title }),
+        )
+        return true
+      } catch (caughtError) {
+        console.error('Failed to update countdown via API', caughtError)
+        error(
+          t('countdown.notifications.updateFailedTitle' as TranslationKey),
+          caughtError instanceof Error
+            ? caughtError.message
+            : t('countdown.notifications.updateFailedBody' as TranslationKey),
+        )
+        return false
+      }
+    },
+    [countdownEvents, dispatch, error, success, t],
+  )
 
-  // Form state helpers
+  const deleteCountdown = useCallback(
+    async (id: string): Promise<boolean> => {
+      const countdownToDelete = countdownEvents.find((countdown) => countdown.id === id)
+      if (!countdownToDelete) {
+        error(
+          t('countdown.notifications.deleteFailedTitle' as TranslationKey),
+          t('countdown.notifications.deleteFailedBody' as TranslationKey),
+        )
+        return false
+      }
+
+      try {
+        await countdownApi.deleteCountdown(id)
+        dispatch(countdownActions.delete(id))
+        success(
+          t('countdown.notifications.deletedTitle' as TranslationKey),
+          t('countdown.notifications.deletedBody' as TranslationKey, { title: countdownToDelete.title }),
+        )
+        return true
+      } catch (caughtError) {
+        console.error('Failed to delete countdown via API', caughtError)
+        error(
+          t('countdown.notifications.deleteFailedTitle' as TranslationKey),
+          caughtError instanceof Error
+            ? caughtError.message
+            : t('countdown.notifications.deleteFailedBody' as TranslationKey),
+        )
+        return false
+      }
+    },
+    [countdownEvents, dispatch, error, success, t],
+  )
+
   const createFormState = useCallback(() => {
     const defaultColor = COUNTDOWN_COLOR_OPTIONS[0].value
-    return {
-      name: '',
-      date: null as Date | null,
-      color: defaultColor,
-    }
+    return { name: '', date: null as Date | null, color: defaultColor }
   }, [])
 
-  const resetFormState = useCallback((setter: (state: CountdownFormState) => void) => {
-    setter(createFormState())
-  }, [createFormState])
+  const resetFormState = useCallback(
+    (setter: (state: CountdownFormState) => void) => setter(createFormState()),
+    [createFormState],
+  )
 
   return {
-    // Data
     countdownEvents,
     upcomingEvents,
     completedEvents,
     eventsWithTimeLeft,
     tick,
-    
-    // Configuration
     colorOptions: COUNTDOWN_COLOR_OPTIONS,
     getColorOption,
-    
-    // Actions
     addCountdown,
     updateCountdown,
     deleteCountdown,
-    
-    // Form helpers
     createFormState,
     resetFormState,
-    
-    // Utilities
     calculateTimeLeft,
   }
 }

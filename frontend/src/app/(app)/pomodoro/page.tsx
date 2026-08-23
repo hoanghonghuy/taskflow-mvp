@@ -1,9 +1,8 @@
 'use client'
 
 import React from 'react'
-import PomodoroView from '@/features/pomodoro/views/PomodoroView'
+import PomodoroFocusView from '@/features/pomodoro/views/PomodoroFocusView'
 
 export default function PomodoroPage() {
-  return <PomodoroView />
+  return <PomodoroFocusView />
 }
-

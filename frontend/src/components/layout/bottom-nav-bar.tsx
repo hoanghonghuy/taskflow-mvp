@@ -1,12 +1,12 @@
 'use client'
 
-import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSettings } from '@/components/providers/settings-provider'
 import { useI18n } from '@/lib/i18n/hooks'
 import { MenuIcon } from '@/lib/icons'
 import type { View } from '@/types'
 import { APP_FEATURES, getPathForView, getViewFromPathname } from '@/lib/navigation/features'
-import { useRouter, usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 
 interface MoreMenuProps {
   hiddenViews: View[]
@@ -22,20 +22,14 @@ const MoreMenu: React.FC<MoreMenuProps> = ({ hiddenViews, currentView, onClose }
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        onClose()
-      }
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) onClose()
     }
-
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose()
-      }
+      if (event.key === 'Escape') onClose()
     }
 
     document.addEventListener('mousedown', handleClickOutside)
     document.addEventListener('keydown', handleKeyDown)
-
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
       document.removeEventListener('keydown', handleKeyDown)
@@ -43,45 +37,45 @@ const MoreMenu: React.FC<MoreMenuProps> = ({ hiddenViews, currentView, onClose }
   }, [onClose])
 
   useEffect(() => {
-    if (firstItemRef.current) {
-      firstItemRef.current.focus()
-    }
+    firstItemRef.current?.focus()
   }, [])
 
   const handleSelect = (view: View) => {
-    router.push(getPathForView(view))
     onClose()
+    router.push(getPathForView(view))
   }
 
   return (
     <div
       ref={menuRef}
-      className="absolute bottom-full right-0 mb-2 w-48 rounded-xl border border-border/80 bg-card shadow-lg backdrop-blur-xl animate-fade-in"
+      role="menu"
+      className="absolute bottom-full right-2 mb-2 w-52 overflow-hidden rounded-xl border border-border/80 bg-card p-2 shadow-xl animate-in fade-in-0 slide-in-from-bottom-2 duration-150 motion-reduce:animate-none"
     >
-      <div className="p-2 space-y-1">
-        {hiddenViews.map((view, index) => {
-          const feature = APP_FEATURES.find(f => f.view === view)
-          if (!feature) return null
-          const Icon = feature.icon
-          const isActive = currentView === view
-          return (
-            <button
-              key={view}
-              ref={index === 0 ? firstItemRef : undefined}
-              onClick={() => handleSelect(view)}
-              aria-current={isActive ? 'page' : undefined}
-              className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg border transition-colors ${
-                isActive
-                  ? 'border-border bg-muted text-foreground'
-                  : 'border-transparent text-foreground hover:bg-muted/50'
-              }`}
-            >
-              <Icon className="h-5 w-5 text-muted-foreground" />
-              <span>{t(feature.label)}</span>
-            </button>
-          )
-        })}
-      </div>
+      {hiddenViews.map((view, index) => {
+        const feature = APP_FEATURES.find((item) => item.view === view)
+        if (!feature) return null
+        const Icon = feature.icon
+        const isActive = currentView === view
+
+        return (
+          <button
+            key={view}
+            ref={index === 0 ? firstItemRef : undefined}
+            type="button"
+            role="menuitem"
+            onClick={() => handleSelect(view)}
+            aria-current={isActive ? 'page' : undefined}
+            className={`flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none ${
+              isActive
+                ? 'bg-primary/10 font-medium text-primary'
+                : 'text-foreground hover:bg-muted/60'
+            }`}
+          >
+            <Icon className="h-5 w-5 shrink-0" />
+            <span className="truncate">{t(feature.label)}</span>
+          </button>
+        )
+      })}
     </div>
   )
 }
@@ -100,13 +94,13 @@ function BottomNavButton({ feature, isActive, onSelect, label }: BottomNavButton
       type="button"
       onClick={() => onSelect(feature.view)}
       aria-current={isActive ? 'page' : undefined}
-      className={`bottom-nav-button relative flex flex-col items-center justify-center gap-1 flex-1 mx-1 text-xs ${
-        isActive ? 'text-foreground font-semibold' : 'text-muted-foreground'
+      className={`bottom-nav-button relative mx-0.5 flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-lg text-[10px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring motion-reduce:transition-none ${
+        isActive ? 'font-semibold text-primary' : 'text-muted-foreground'
       }`}
       data-active={isActive ? 'true' : undefined}
     >
-      <Icon className="h-6 w-6 relative" />
-      <span className="relative max-w-full truncate font-medium">{label}</span>
+      <Icon className="relative h-5 w-5" />
+      <span className="relative w-full truncate px-1 font-medium">{label}</span>
       <span className="bottom-nav-indicator" aria-hidden="true" />
     </button>
   )
@@ -119,27 +113,36 @@ export default function BottomNavBar() {
   const pathname = usePathname()
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false)
 
-  const bottomNavActions = useMemo(() => {
-    return settings.bottomNavActions ?? ['dashboard', 'list', 'board', 'calendar']
-  }, [settings.bottomNavActions])
+  const bottomNavActions = useMemo(
+    () => settings.bottomNavActions ?? ['dashboard', 'list', 'board', 'calendar'],
+    [settings.bottomNavActions],
+  )
 
   const { visibleFeatures, hiddenFeatures } = useMemo(() => {
-    const visible = APP_FEATURES.filter(f => bottomNavActions.includes(f.view))
-    const hidden = APP_FEATURES.filter(f => !bottomNavActions.includes(f.view)).map(f => f.view)
+    const visible = APP_FEATURES.filter((feature) => bottomNavActions.includes(feature.view))
+    const hidden = APP_FEATURES.filter((feature) => !bottomNavActions.includes(feature.view)).map(
+      (feature) => feature.view,
+    )
     return { visibleFeatures: visible, hiddenFeatures: hidden }
   }, [bottomNavActions])
 
   const currentView = getViewFromPathname(pathname)
-
-  const handleFeatureSelect = useCallback((view: View) => {
-    router.push(getPathForView(view))
-  }, [router])
-
   const hasHiddenActive = hiddenFeatures.includes(currentView)
 
+  const handleFeatureSelect = useCallback(
+    (view: View) => {
+      setIsMoreMenuOpen(false)
+      router.push(getPathForView(view))
+    },
+    [router],
+  )
+
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[calc(4rem+env(safe-area-inset-bottom,0px))] pb-[env(safe-area-inset-bottom,0px)] bg-card border-t border-border flex items-stretch justify-around z-30 shadow-lg">
-      {visibleFeatures.map(feature => (
+    <nav
+      aria-label={t('feature.more')}
+      className="fixed bottom-0 left-0 right-0 z-30 flex h-[calc(4rem+env(safe-area-inset-bottom,0px))] items-stretch justify-around border-t border-border bg-card/95 px-1 pb-[env(safe-area-inset-bottom,0px)] shadow-lg backdrop-blur-md md:hidden"
+    >
+      {visibleFeatures.map((feature) => (
         <BottomNavButton
           key={feature.view}
           feature={feature}
@@ -148,27 +151,26 @@ export default function BottomNavBar() {
           label={t(feature.label)}
         />
       ))}
+
       {hiddenFeatures.length > 0 && (
-        <div className="relative flex-1 flex">
-          {(() => {
-            const isMoreActive = isMoreMenuOpen || hasHiddenActive
-            return (
+        <div className="relative flex min-w-0 flex-1">
           <button
             type="button"
-            onClick={() => setIsMoreMenuOpen(p => !p)}
+            onClick={() => setIsMoreMenuOpen((open) => !open)}
             aria-haspopup="menu"
-            aria-expanded={isMoreActive}
-            className={`bottom-nav-button relative flex flex-col items-center justify-center gap-1 w-full mx-1 text-[10px] ${
-              isMoreActive ? 'text-foreground font-semibold' : 'text-muted-foreground'
+            aria-expanded={isMoreMenuOpen}
+            className={`bottom-nav-button relative mx-0.5 flex w-full flex-col items-center justify-center gap-1 rounded-lg text-[10px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring motion-reduce:transition-none ${
+              isMoreMenuOpen || hasHiddenActive
+                ? 'font-semibold text-primary'
+                : 'text-muted-foreground'
             }`}
-            data-active={isMoreActive ? 'true' : undefined}
+            data-active={isMoreMenuOpen || hasHiddenActive ? 'true' : undefined}
           >
-            <MenuIcon className="h-6 w-6" />
-            <span className="relative max-w-full truncate text-[10px] font-medium">{t('feature.more')}</span>
+            <MenuIcon className="h-5 w-5" />
+            <span className="w-full truncate px-1 font-medium">{t('feature.more')}</span>
             <span className="bottom-nav-indicator" aria-hidden="true" />
           </button>
-            )
-          })()}
+
           {isMoreMenuOpen && (
             <MoreMenu
               hiddenViews={hiddenFeatures}

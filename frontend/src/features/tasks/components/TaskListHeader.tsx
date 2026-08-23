@@ -13,6 +13,7 @@ import {
   ArrowDownIcon,
 } from '@/lib/icons'
 import { Avatar } from '@/components/ui/avatar'
+import { IconButton } from '@/components/ui/icon-button'
 import type { SortOrder } from '@/lib/utils/task-helpers'
 
 interface TaskListHeaderProps {
@@ -45,103 +46,117 @@ const TaskListHeader: React.FC<TaskListHeaderProps> = ({
   const { t } = useI18n()
 
   const renderSortIcon = () => {
-    if (sortOrder === 'dueDateAsc') return <ArrowUpIcon className="h-5 w-5 text-muted-foreground" />
-    if (sortOrder === 'dueDateDesc') return <ArrowDownIcon className="h-5 w-5 text-muted-foreground" />
-    return <ArrowsUpDownIcon className="h-5 w-5 text-muted-foreground" />
+    if (sortOrder === 'dueDateAsc') return <ArrowUpIcon className="h-5 w-5" />
+    if (sortOrder === 'dueDateDesc') return <ArrowDownIcon className="h-5 w-5" />
+    return <ArrowsUpDownIcon className="h-5 w-5" />
   }
 
   return (
-    <header className="shrink-0 grid grid-cols-[minmax(0,1fr),auto] md:grid-cols-3 items-center px-4 py-3 md:p-6 border-b border-border gap-2 md:gap-4">
-      <div className="flex items-center gap-3 md:gap-4">
-        <h1 className="hidden md:block text-lg md:text-2xl font-bold truncate">{title}</h1>
-        {listMembers.length > 0 && (
-          <div className="flex items-center -space-x-2">
-            {listMembers.slice(0, 3).map(member => (
-              <Avatar key={member.id} user={member} className="w-7 h-7 border-2 border-background" />
-            ))}
-            {listMembers.length > 3 && (
-              <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center text-xs font-semibold border-2 border-background">
-                +{listMembers.length - 3}
+    <header className="shrink-0 border-b border-border px-4 py-4 md:px-6 md:py-5">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex min-w-0 items-center gap-3">
+            <h1 className="truncate text-xl font-bold tracking-tight md:text-2xl">{title}</h1>
+            {listMembers.length > 0 && (
+              <div className="flex shrink-0 items-center -space-x-2" aria-label={`${listMembers.length}`}>
+                {listMembers.slice(0, 3).map((member) => (
+                  <Avatar
+                    key={member.id}
+                    user={member}
+                    className="h-7 w-7 border-2 border-background"
+                  />
+                ))}
+                {listMembers.length > 3 && (
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-secondary text-xs font-semibold">
+                    +{listMembers.length - 3}
+                  </div>
+                )}
               </div>
             )}
           </div>
-        )}
-      </div>
-
-      <div className="hidden md:flex items-center justify-center md:col-start-2">
-        {onBriefing && (
-          <button
-            type="button"
-            onClick={onBriefing}
-            className="flex items-center gap-2 px-3 py-2 bg-secondary rounded-md cursor-pointer hover:bg-muted transition-colors"
-            aria-label={t('mainContent.dailyBriefing')}
-          >
-            <SparklesIcon className="h-5 w-5 text-primary" />
-            <span className="text-sm text-muted-foreground hidden sm:inline">
-              {t('mainContent.dailyBriefing')}
-            </span>
-          </button>
-        )}
-      </div>
-
-      <div className="flex items-center gap-1.5 justify-end col-start-2 md:col-start-3">
-        {onSearch && (
-          <button
-            type="button"
-            onClick={onSearch}
-            className="p-2 rounded-md hover:bg-secondary transition-colors"
-            aria-label={t('mainContent.searchTasks')}
-          >
-            <SearchIcon className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
-          </button>
-        )}
-        {onSortToggle && (
-          <button
-            type="button"
-            onClick={onSortToggle}
-            className="p-2 rounded-md hover:bg-secondary transition-colors"
-            aria-label={t('mainContent.sortTasks')}
-          >
-            {renderSortIcon()}
-          </button>
-        )}
-        <div className="hidden md:flex items-center gap-2" title={t('mainContent.historyLocalNote')}>
-          {onUndo && (
-            <button 
-              type="button"
-              onClick={onUndo} 
-              disabled={!canUndo} 
-              className="p-2 rounded-md hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
-              aria-label={t('mainContent.undo')}
-              title={t('mainContent.undoTooltip')}
-            >
-              <UndoIcon className="h-5 w-5 text-muted-foreground" />
-            </button>
+          {sortOrder !== 'default' && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t('mainContent.sortTasks')}: {sortOrder === 'dueDateAsc' ? '↑' : '↓'}
+            </p>
           )}
-          {onRedo && (
-            <button 
-              type="button"
-              onClick={onRedo} 
-              disabled={!canRedo} 
-              className="p-2 rounded-md hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
-              aria-label={t('mainContent.redo')}
-              title={t('mainContent.redoTooltip')}
-            >
-              <RedoIcon className="h-5 w-5 text-muted-foreground" />
-            </button>
-          )}
-          {onClearHistory && (
+        </div>
+
+        <div className="flex shrink-0 items-center gap-1">
+          {onBriefing && (
             <button
               type="button"
-              onClick={onClearHistory}
-              disabled={!canUndo && !canRedo}
-              className="p-2 rounded-md hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
-              aria-label={t('mainContent.clearHistory')}
-              title={t('mainContent.clearHistoryTooltip')}
+              onClick={onBriefing}
+              className="hidden items-center gap-2 rounded-lg border border-border/60 bg-secondary/70 px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:flex"
+              aria-label={t('mainContent.dailyBriefing')}
             >
-              <TrashIcon className="h-5 w-5 text-muted-foreground" />
+              <SparklesIcon className="h-4 w-4 text-primary" />
+              <span>{t('mainContent.dailyBriefing')}</span>
             </button>
           )}
+
+          {onSearch && (
+            <IconButton
+              onClick={onSearch}
+              size="lg"
+              variant="toolbar"
+              aria-label={t('mainContent.searchTasks')}
+              title={t('mainContent.searchTasks')}
+            >
+              <SearchIcon className="h-5 w-5" />
+            </IconButton>
+          )}
+
+          {onSortToggle && (
+            <IconButton
+              onClick={onSortToggle}
+              size="lg"
+              variant="toolbar"
+              aria-label={t('mainContent.sortTasks')}
+              title={t('mainContent.sortTasks')}
+              className={sortOrder !== 'default' ? 'bg-primary/10 text-primary' : undefined}
+            >
+              {renderSortIcon()}
+            </IconButton>
+          )}
+
+          <div className="hidden items-center md:flex" title={t('mainContent.historyLocalNote')}>
+            {onUndo && (
+              <IconButton
+                onClick={onUndo}
+                disabled={!canUndo}
+                size="md"
+                variant="toolbar"
+                aria-label={t('mainContent.undo')}
+                title={t('mainContent.undoTooltip')}
+              >
+                <UndoIcon className="h-5 w-5" />
+              </IconButton>
+            )}
+            {onRedo && (
+              <IconButton
+                onClick={onRedo}
+                disabled={!canRedo}
+                size="md"
+                variant="toolbar"
+                aria-label={t('mainContent.redo')}
+                title={t('mainContent.redoTooltip')}
+              >
+                <RedoIcon className="h-5 w-5" />
+              </IconButton>
+            )}
+            {onClearHistory && (
+              <IconButton
+                onClick={onClearHistory}
+                disabled={!canUndo && !canRedo}
+                size="md"
+                variant="toolbar"
+                aria-label={t('mainContent.clearHistory')}
+                title={t('mainContent.clearHistoryTooltip')}
+              >
+                <TrashIcon className="h-5 w-5" />
+              </IconButton>
+            )}
+          </div>
         </div>
       </div>
     </header>
@@ -149,4 +164,3 @@ const TaskListHeader: React.FC<TaskListHeaderProps> = ({
 }
 
 export default TaskListHeader
-
