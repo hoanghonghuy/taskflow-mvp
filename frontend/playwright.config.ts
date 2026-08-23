@@ -110,6 +110,7 @@ export default defineConfig({
       name: 'validation',
       testMatch: /validation\.spec\.ts/,
       use: { ...devices['Desktop Chrome'] },
+      dependencies: ['setup'],
     },
     {
       name: 'chromium',

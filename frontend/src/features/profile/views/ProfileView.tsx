@@ -10,7 +10,7 @@ import { toYYYYMMDD } from '@/lib/utils/date-helpers'
 import { AppPage, AppPageMain } from '@/components/layout/app-page'
 import { AppPageHeader } from '@/components/layout/app-page-header'
 import { Button } from '@/components/ui/button'
-import { StatCard } from '@/components/ui/stat-card'
+import { Input } from '@/components/ui/input'
 import { useToast } from '@/lib/hooks/use-toast'
 import * as profileApi from '@/lib/api/profile'
 
@@ -36,13 +36,14 @@ const ProfileView: React.FC = () => {
 
   const localStats = useMemo<ProfileSummary>(() => {
     const totalTasks = state.tasks.length
-    const completedTasks = state.tasks.filter(t => t.completed).length
+    const completedTasks = state.tasks.filter((task) => task.completed).length
     const totalHabits = state.habits.length
     const today = toYYYYMMDD(new Date())
-    const completedHabitsToday = state.habits.filter(h => h.completions.includes(today)).length
-    const totalFocusTime = state.pomodoro.focusHistory.reduce((acc, curr) => acc + curr.duration, 0)
-    const totalPomos = state.pomodoro.focusHistory.length
-    const unlockedAchievements = state.unlockedAchievements?.length || 0
+    const completedHabitsToday = state.habits.filter((habit) => habit.completions.includes(today)).length
+    const totalFocusTime = state.pomodoro.focusHistory.reduce(
+      (total, session) => total + session.duration,
+      0,
+    )
 
     return {
       totalTasks,
@@ -51,12 +52,12 @@ const ProfileView: React.FC = () => {
       totalHabits,
       completedHabitsToday,
       totalFocusTime,
-      totalPomos,
-      unlockedAchievements,
+      totalPomos: state.pomodoro.focusHistory.length,
+      unlockedAchievements: state.unlockedAchievements?.length || 0,
     }
-  }, [state])
+  }, [state.tasks, state.habits, state.pomodoro.focusHistory, state.unlockedAchievements])
 
-  const [remoteStats, setRemoteStats] = useState<ProfileSummary | null>(null)
+  const [remoteStats, setRemoteStats] = useState<Partial<ProfileSummary> | null>(null)
 
   useEffect(() => {
     let isMounted = true
@@ -64,31 +65,23 @@ const ProfileView: React.FC = () => {
     const loadProfileSummary = async () => {
       try {
         const data = (await profileApi.fetchProfileSummary()) as Partial<ProfileSummary> | null
-        if (!data || !isMounted) return
-
-        setRemoteStats(prev => ({
-          totalTasks: data.totalTasks ?? prev?.totalTasks ?? localStats.totalTasks,
-          completedTasks: data.completedTasks ?? prev?.completedTasks ?? localStats.completedTasks,
-          completionRate: data.completionRate ?? prev?.completionRate ?? localStats.completionRate,
-          totalHabits: data.totalHabits ?? prev?.totalHabits ?? localStats.totalHabits,
-          completedHabitsToday: data.completedHabitsToday ?? prev?.completedHabitsToday ?? localStats.completedHabitsToday,
-          totalFocusTime: data.totalFocusTime ?? prev?.totalFocusTime ?? localStats.totalFocusTime,
-          totalPomos: data.totalPomos ?? prev?.totalPomos ?? localStats.totalPomos,
-          unlockedAchievements: data.unlockedAchievements ?? prev?.unlockedAchievements ?? localStats.unlockedAchievements,
-        }))
+        if (data && isMounted) setRemoteStats(data)
       } catch (error) {
         console.error('Failed to load profile summary from backend', error)
       }
     }
 
+    setRemoteStats(null)
     void loadProfileSummary()
-
     return () => {
       isMounted = false
     }
-  }, [localStats])
+  }, [user?.id])
 
-  const stats = remoteStats ?? localStats
+  const stats = useMemo<ProfileSummary>(
+    () => ({ ...localStats, ...remoteStats }),
+    [localStats, remoteStats],
+  )
 
   const handleStartEdit = () => {
     setEditName(user?.name ?? '')
@@ -100,8 +93,8 @@ const ProfileView: React.FC = () => {
     setEditName('')
   }
 
-  const handleSaveName = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSaveName = async (event: React.FormEvent) => {
+    event.preventDefault()
     const trimmed = editName.trim()
     if (!trimmed || trimmed === user?.name) {
       handleCancelEdit()
@@ -117,8 +110,8 @@ const ProfileView: React.FC = () => {
       }
       success(t('profile.updateSuccessTitle'), t('profile.updateSuccessBody'))
       setIsEditing(false)
-    } catch (err) {
-      console.error('Failed to update profile name', err)
+    } catch (error) {
+      console.error('Failed to update profile name', error)
       showError(t('profile.updateFailedTitle'), t('profile.updateFailedBody'))
     } finally {
       setIsSaving(false)
@@ -128,99 +121,132 @@ const ProfileView: React.FC = () => {
   const formatDuration = (seconds: number) => {
     const hours = Math.floor(seconds / 3600)
     const minutes = Math.floor((seconds % 3600) / 60)
-    if (hours > 0) return `${hours}h ${minutes}m`
-    return `${minutes}m`
+    return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`
   }
+
+  const habitProgress =
+    stats.totalHabits > 0
+      ? Math.round((stats.completedHabitsToday / stats.totalHabits) * 100)
+      : 0
+
+  const overviewItems = [
+    {
+      key: 'tasks',
+      icon: <CheckCircleIcon className="h-5 w-5" />,
+      label: t('profile.tasksCompleted'),
+      value: `${stats.completedTasks}/${stats.totalTasks}`,
+      detail: `${stats.completionRate}% ${t('profile.completionRate')}`,
+      progress: stats.completionRate,
+      className: 'text-primary',
+    },
+    {
+      key: 'habits',
+      icon: <CalendarIcon className="h-5 w-5" />,
+      label: t('dashboard.stat.habits'),
+      value: `${stats.completedHabitsToday}/${stats.totalHabits}`,
+      detail: t('profile.completedToday'),
+      progress: habitProgress,
+      className: 'text-[hsl(var(--color-habits-summary-completed))]',
+    },
+    {
+      key: 'focus',
+      icon: <ClockIcon className="h-5 w-5" />,
+      label: t('pomodoro.focusTime'),
+      value: formatDuration(stats.totalFocusTime),
+      detail: `${stats.totalPomos} ${t('profile.sessions')}`,
+      progress: null,
+      className: 'text-[hsl(var(--color-pomodoro-focus))]',
+    },
+    {
+      key: 'achievements',
+      icon: <TrophyIcon className="h-5 w-5" />,
+      label: t('profile.achievements'),
+      value: String(stats.unlockedAchievements),
+      detail: t('profile.unlocked'),
+      progress: null,
+      className: 'text-[hsl(var(--color-habits-summary-streak))]',
+    },
+  ]
 
   return (
     <AppPage>
       <AppPageHeader
         title={t('nav.profile')}
         subtitle={t('profile.subtitle')}
+        hideOnMobile={false}
       />
       <AppPageMain className="py-4 md:py-6">
-        <div className="max-w-4xl mx-auto space-y-6">
-          {/* Profile Card */}
-          <div className="bg-card border border-border rounded-lg p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-6">
-              <Avatar user={user} className="w-20 h-20 shrink-0" />
-              <div className="flex-1 min-w-0">
+        <div className="mx-auto max-w-4xl space-y-5 md:space-y-6">
+          <section className="rounded-2xl border border-border/70 bg-card p-4 shadow-sm sm:p-6">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+              <Avatar user={user} className="h-20 w-20 shrink-0 sm:h-24 sm:w-24" />
+              <div className="min-w-0 flex-1">
                 {isEditing ? (
-                  <form onSubmit={handleSaveName} className="space-y-3 max-w-md">
-                    <label className="block text-sm font-medium text-muted-foreground">
+                  <form onSubmit={handleSaveName} className="max-w-md space-y-3">
+                    <label htmlFor="profile-display-name" className="block text-sm font-medium">
                       {t('profile.name')}
                     </label>
-                    <input
-                      type="text"
+                    <Input
+                      id="profile-display-name"
                       value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                      className="w-full px-3 py-2 rounded-md border border-border bg-background text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      onChange={(event) => setEditName(event.target.value)}
                       autoFocus
                       required
                       minLength={1}
                     />
-                    <div className="flex gap-2">
-                      <Button
-                        type="submit"
-                        disabled={isSaving || !editName.trim()}
-                      >
+                    <div className="flex flex-wrap gap-2">
+                      <Button type="submit" disabled={isSaving || !editName.trim()}>
                         {t('profile.save')}
                       </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handleCancelEdit}
-                        disabled={isSaving}
-                      >
+                      <Button type="button" variant="outline" onClick={handleCancelEdit} disabled={isSaving}>
                         {t('profile.cancel')}
                       </Button>
                     </div>
                   </form>
                 ) : (
-                  <>
-                    <h2 className="text-2xl font-bold truncate">{user?.name}</h2>
-                    <p className="text-muted-foreground truncate">{user?.email}</p>
-                    <Button
-                      type="button"
-                      variant="link"
-                      onClick={handleStartEdit}
-                      className="mt-3 h-auto px-0"
-                    >
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                    <div className="min-w-0">
+                      <h2 className="truncate text-2xl font-bold tracking-tight">{user?.name}</h2>
+                      <p className="mt-1 truncate text-sm text-muted-foreground">{user?.email}</p>
+                    </div>
+                    <Button type="button" variant="outline" size="sm" onClick={handleStartEdit}>
                       {t('profile.edit')}
                     </Button>
-                  </>
+                  </div>
                 )}
               </div>
             </div>
-          </div>
+          </section>
 
-          {/* Statistics Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <StatCard
-              icon={<CheckCircleIcon className="h-6 w-6 text-primary" />}
-              label={t('profile.tasksCompleted')}
-              value={`${stats.completedTasks}/${stats.totalTasks}`}
-              description={`${stats.completionRate}% ${t('profile.completionRate')}`}
-            />
-            <StatCard
-              icon={<CalendarIcon className="h-6 w-6 text-[hsl(var(--color-habits-summary-completed))]" />}
-              label={t('dashboard.stat.habits')}
-              value={`${stats.completedHabitsToday}/${stats.totalHabits}`}
-              description={t('profile.completedToday')}
-            />
-            <StatCard
-              icon={<ClockIcon className="h-6 w-6 text-[hsl(var(--color-pomodoro-focus))]" />}
-              label={t('pomodoro.focusTime')}
-              value={formatDuration(stats.totalFocusTime)}
-              description={`${stats.totalPomos} ${t('profile.sessions')}`}
-            />
-            <StatCard
-              icon={<TrophyIcon className="h-6 w-6 text-[hsl(var(--color-habits-summary-streak))]" />}
-              label={t('profile.achievements')}
-              value={stats.unlockedAchievements}
-              description={t('profile.unlocked')}
-            />
-          </div>
+          <section className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {overviewItems.map((item) => (
+              <div
+                key={item.key}
+                className="rounded-xl border border-border/70 bg-card p-4 transition-[border-color,box-shadow] duration-150 hover:border-border hover:shadow-sm motion-reduce:transition-none sm:p-5"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+                      {item.label}
+                    </p>
+                    <p className="mt-2 text-2xl font-semibold tabular-nums text-foreground">{item.value}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{item.detail}</p>
+                  </div>
+                  <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted/60 ${item.className}`}>
+                    {item.icon}
+                  </span>
+                </div>
+                {item.progress !== null && (
+                  <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-muted">
+                    <div
+                      className={`h-full rounded-full bg-current transition-[width] duration-300 motion-reduce:transition-none ${item.className}`}
+                      style={{ width: `${Math.max(0, Math.min(100, item.progress))}%` }}
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+          </section>
         </div>
       </AppPageMain>
     </AppPage>
@@ -228,4 +254,3 @@ const ProfileView: React.FC = () => {
 }
 
 export default ProfileView
-

@@ -77,7 +77,7 @@ describe('SettingsProvider', () => {
     await waitFor(() => expect(screen.getByText('light')).toBeInTheDocument())
   })
 
-  it('migrates anonymous settings into the user cache on login so theme does not reset to light', async () => {
+  it('migrates anonymous appearance preferences without leaking account-scoped settings on login', async () => {
     localStorage.setItem(
       'settings',
       JSON.stringify({ language: 'en', theme: 'dark', notifications: false }),
@@ -110,7 +110,7 @@ describe('SettingsProvider', () => {
     await waitFor(() => expect(screen.getByText('dark')).toBeInTheDocument())
     expect(JSON.parse(localStorage.getItem(settingsStorageKey('user-login'))!)).toMatchObject({
       theme: 'dark',
-      notifications: false,
+      notifications: true,
     })
   })
 

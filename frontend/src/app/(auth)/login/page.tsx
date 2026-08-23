@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useUser } from '@/components/providers/user-provider'
@@ -23,21 +23,6 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [emailError, setEmailError] = useState<string | null>(null)
   const [passwordError, setPasswordError] = useState<string | null>(null)
-
-  // Clear known dev/test credentials if they are ever auto-filled by the browser
-  useEffect(() => {
-    const isDevTestEmail = email === 'test@example.com' || email === 'dev@example.com'
-    const isDevTestPassword =
-      password === 'Password123!' || password === 'DevPassword123!'
-
-    if (isDevTestEmail) {
-      setEmail('')
-    }
-
-    if (isDevTestPassword) {
-      setPassword('')
-    }
-  }, [email, password])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
