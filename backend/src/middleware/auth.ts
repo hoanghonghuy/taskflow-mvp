@@ -12,7 +12,7 @@ declare global {
   }
 }
 
-export function requireAuth(req: Request, res: Response, next: NextFunction): void {
+export async function requireAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
   const header = req.headers.authorization
   if (!header?.startsWith('Bearer ')) {
     res.status(401).json({ error: 'unauthorized', message: 'Authentication required' })
@@ -23,6 +23,19 @@ export function requireAuth(req: Request, res: Response, next: NextFunction): vo
   const payload = verifyToken(token)
   if (!payload?.userId) {
     res.status(401).json({ error: 'unauthorized', message: 'Invalid or expired token' })
+    return
+  }
+
+  // Token có thể còn hợp lệ về chữ ký nhưng user đã bị xóa (vd reset DB).
+  // Không kiểm tra sẽ gây lỗi FK khi các repository upsert theo userId.
+  try {
+    const user = await authRepository.findUserById(payload.userId)
+    if (!user) {
+      res.status(401).json({ error: 'unauthorized', message: 'Invalid or expired token' })
+      return
+    }
+  } catch (err) {
+    next(err)
     return
   }
 

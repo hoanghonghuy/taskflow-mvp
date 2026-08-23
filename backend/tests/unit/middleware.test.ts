@@ -27,24 +27,47 @@ function mockRes(): Response & { statusCode: number; body: unknown } {
 }
 
 describe('middleware/auth', () => {
-  it('returns 401 without bearer token', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('returns 401 without bearer token', async () => {
     const req = { headers: {} } as Request
     const res = mockRes()
     const next = jest.fn()
-    requireAuth(req, res, next)
+    await requireAuth(req, res, next)
     expect(res.statusCode).toBe(401)
     expect(next).not.toHaveBeenCalled()
   })
 
-  it('attaches userId for valid token', () => {
+  it('attaches userId for valid token when user exists', async () => {
+    jest.mocked(authRepository.findUserById).mockResolvedValue({
+      id: 'u1',
+      name: 'A',
+      email: 'a@t.com',
+      passwordHash: 'h',
+      role: 'USER',
+      createdAt: new Date(),
+    })
     const token = signToken({ userId: 'u1', email: 'a@t.com', name: 'A', role: 'USER' })
     const req = { headers: { authorization: `Bearer ${token}` } } as Request
     const res = mockRes()
     const next = jest.fn()
-    requireAuth(req, res, next)
+    await requireAuth(req, res, next)
     expect(req.userId).toBe('u1')
     expect(req.userRole).toBe('USER')
     expect(next).toHaveBeenCalled()
+  })
+
+  it('returns 401 when token is valid but user no longer exists', async () => {
+    jest.mocked(authRepository.findUserById).mockResolvedValue(null)
+    const token = signToken({ userId: 'ghost', email: 'g@t.com', name: 'G', role: 'USER' })
+    const req = { headers: { authorization: `Bearer ${token}` } } as Request
+    const res = mockRes()
+    const next = jest.fn()
+    await requireAuth(req, res, next)
+    expect(res.statusCode).toBe(401)
+    expect(next).not.toHaveBeenCalled()
   })
 })
 
