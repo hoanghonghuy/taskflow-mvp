@@ -220,14 +220,14 @@ const PomodoroFocusView: React.FC = () => {
       <SunIcon className="h-4 w-4" />
     )
 
-  const primaryActionLabel = pomodoro.isActive
+  const primaryActionLabel = pomodoro.isActive && !pomodoro.isPaused
     ? t('pomodoro.pause')
     : pomodoro.isPaused
       ? t('pomodoro.resume')
       : t('pomodoro.start')
 
   const handlePrimaryAction = () => {
-    if (pomodoro.isActive) {
+    if (pomodoro.isActive && !pomodoro.isPaused) {
       pauseTimer()
       return
     }
@@ -498,7 +498,7 @@ const PomodoroFocusView: React.FC = () => {
                   onClick={handlePrimaryAction}
                   className={`order-1 w-full gap-2 px-8 sm:w-auto ${visuals.button}`}
                 >
-                  {pomodoro.isActive ? (
+                  {pomodoro.isActive && !pomodoro.isPaused ? (
                     <PauseIcon className="h-4 w-4" />
                   ) : (
                     <PlayCircleIcon className="h-4 w-4" />

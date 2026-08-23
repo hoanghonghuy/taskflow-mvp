@@ -51,7 +51,7 @@ export function TaskColumnShell({
         variant === 'board' &&
           'w-full min-h-[260px] md:w-72 md:shrink-0 md:min-h-[calc(100dvh-220px)]',
         variant === 'matrix' &&
-          'min-h-[160px] md:min-h-[260px]',
+          'min-h-[160px] md:h-[420px]',
         isDragOver && 'border-primary bg-primary/5',
         className,
       )}
