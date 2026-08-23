@@ -37,6 +37,17 @@ const SERVER_SYNCED_ACTIONS = new Set<Action['type']>([
   'SET_UNLOCKED_ACHIEVEMENTS',
 ])
 
+/**
+ * Timer mutations are high-frequency and purely client-side; stacking them onto
+ * undo would grow `past` unbounded (~1 entry/second while the timer runs).
+ */
+const TIMER_ACTIONS = new Set<Action['type']>([
+  'START_TIMER',
+  'PAUSE_TIMER',
+  'RESET_TIMER',
+  'TICK_TIMER',
+])
+
 export function historyReducer(historyState: HistoryState, action: Action): HistoryState {
   switch (action.type) {
     case 'UNDO': {
@@ -96,6 +107,13 @@ export function historyReducer(historyState: HistoryState, action: Action): Hist
           present: newPresent,
           future: [],
         }
+      }
+
+      // Timer ticks update present in place; they must not pollute undo history.
+      if (TIMER_ACTIONS.has(action.type)) {
+        return historyState
+          ? { ...historyState, present: newPresent }
+          : { past: [], present: newPresent, future: [] }
       }
 
       return {

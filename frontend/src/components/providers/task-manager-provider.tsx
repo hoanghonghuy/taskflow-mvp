@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useReducer, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { createContext, useContext, useReducer, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useI18n } from '@/lib/i18n/hooks'
 import { taskActions, listActions, habitActions, pomodoroActions } from '@/lib/store/task-manager/actions'
 import { historyReducer } from '@/lib/store/task-manager/history-reducer'
@@ -33,6 +33,41 @@ interface HistoryState {
 }
 
 const TaskManagerContext = createContext<TaskManagerContextType | undefined>(undefined)
+
+/**
+ * True when the only difference between two states is `pomodoro.remainingTime`
+ * (i.e. a TICK_TIMER). Used to skip the expensive localStorage write that would
+ * otherwise run ~once/second while the timer is active.
+ */
+export function isOnlyRemainingTimeChange(prev: AppState, next: AppState): boolean {
+  if (prev === next) return false
+  if (prev.pomodoro.remainingTime === next.pomodoro.remainingTime) return false
+
+  const prevPomodoro = prev.pomodoro
+  const nextPomodoro = next.pomodoro
+  return (
+    prevPomodoro.isActive === nextPomodoro.isActive &&
+    prevPomodoro.isPaused === nextPomodoro.isPaused &&
+    prevPomodoro.currentSession === nextPomodoro.currentSession &&
+    prevPomodoro.focusedTaskId === nextPomodoro.focusedTaskId &&
+    prevPomodoro.focusedHabitId === nextPomodoro.focusedHabitId &&
+    prevPomodoro.sessionsCompleted === nextPomodoro.sessionsCompleted &&
+    prevPomodoro.focusHistory === nextPomodoro.focusHistory &&
+    prevPomodoro.settings === nextPomodoro.settings &&
+    prev.tasks === next.tasks &&
+    prev.lists === next.lists &&
+    prev.columns === next.columns &&
+    prev.habits === next.habits &&
+    prev.countdownEvents === next.countdownEvents &&
+    prev.tags === next.tags &&
+    prev.unlockedAchievements === next.unlockedAchievements &&
+    prev.selectedTaskId === next.selectedTaskId &&
+    prev.activeListId === next.activeListId &&
+    prev.activeTag === next.activeTag &&
+    prev.sortOrder === next.sortOrder &&
+    prev.view === next.view
+  )
+}
 
 export function TaskManagerProvider({ children }: { children: React.ReactNode }) {
   const { t } = useI18n()
@@ -96,7 +131,7 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
       dispatch({
         type: 'LOAD_STATE',
         payload: {
-          ...historyState.present,
+          ...presentRef.current,
           tasks,
           lists,
           columns,
@@ -112,11 +147,20 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
     } finally {
       setIsHydrating(false)
     }
-  }, [dispatch, historyState.present, isAuthenticated])
+  }, [dispatch, isAuthenticated])
 
-  // Save to localStorage whenever state changes (debounced)
+  // Save to localStorage whenever state changes (debounced). Skip timer ticks
+  // (only remainingTime changed) to avoid a full JSON.stringify every second.
+  const previousPresentRef = useRef(historyState.present)
   useEffect(() => {
     if (!isAuthenticated) {
+      return
+    }
+
+    const previous = previousPresentRef.current
+    previousPresentRef.current = historyState.present
+
+    if (isOnlyRemainingTimeChange(previous, historyState.present)) {
       return
     }
 
@@ -436,19 +480,31 @@ export function TaskManagerProvider({ children }: { children: React.ReactNode })
   const canUndo = historyState.past.length > 0
   const canRedo = historyState.future.length > 0
 
+  const contextValue = useMemo(
+    () => ({
+      state: historyState.present,
+      dispatch,
+      canUndo,
+      canRedo,
+      isHydrating,
+      hydrationError,
+      syncFromBackend,
+      retryHydration,
+    }),
+    [
+      historyState.present,
+      dispatch,
+      canUndo,
+      canRedo,
+      isHydrating,
+      hydrationError,
+      syncFromBackend,
+      retryHydration,
+    ],
+  )
+
   return (
-    <TaskManagerContext.Provider
-      value={{
-        state: historyState.present,
-        dispatch,
-        canUndo,
-        canRedo,
-        isHydrating,
-        hydrationError,
-        syncFromBackend,
-        retryHydration,
-      }}
-    >
+    <TaskManagerContext.Provider value={contextValue}>
       {children}
     </TaskManagerContext.Provider>
   )

@@ -66,4 +66,40 @@ describe('historyReducer', () => {
     expect(afterUpdate.present.tasks[0]?.title).toBe('B')
     expect(afterUpdate.past).toHaveLength(0)
   })
+
+  it.each(['TICK_TIMER', 'START_TIMER', 'PAUSE_TIMER'] as const)(
+    'does not stack %s onto undo past',
+    (actionType) => {
+      const initial: HistoryState = {
+        past: [],
+        present: emptyState({
+          pomodoro: {
+            isActive: false,
+            isPaused: false,
+            remainingTime: 25 * 60,
+            currentSession: 'focus',
+            sessionsCompleted: 0,
+            focusHistory: [],
+            settings: {
+              focusDuration: 25,
+              shortBreakDuration: 5,
+              longBreakDuration: 15,
+              sessionsUntilLongBreak: 4,
+            },
+            focusedTaskId: null,
+            focusedHabitId: null,
+          },
+        }),
+        future: [],
+      }
+
+      let current = initial
+      for (let i = 0; i < 5; i++) {
+        current = historyReducer(current, { type: actionType })
+      }
+
+      expect(current.past).toHaveLength(0)
+      expect(current.future).toHaveLength(0)
+    },
+  )
 })

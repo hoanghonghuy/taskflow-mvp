@@ -154,13 +154,16 @@ const TaskList: React.FC<TaskListProps> = ({ onAddTask }) => {
     [summary, t],
   )
 
-  const handleDragStart = (taskId: string) => setDraggedTaskId(taskId)
-  const handleDrop = (droppedOnId: string) => {
-    if (draggedTaskId && draggedTaskId !== droppedOnId) {
-      void reorderTasks(draggedTaskId, droppedOnId)
-    }
-    setDraggedTaskId(null)
-  }
+  const handleDragStart = useCallback((taskId: string) => setDraggedTaskId(taskId), [])
+  const handleDrop = useCallback(
+    (droppedOnId: string) => {
+      if (draggedTaskId && draggedTaskId !== droppedOnId) {
+        void reorderTasks(draggedTaskId, droppedOnId)
+      }
+      setDraggedTaskId(null)
+    },
+    [draggedTaskId, reorderTasks],
+  )
 
   const emptyStateVariant = resolveEmptyStateVariant(
     state.activeListId,
