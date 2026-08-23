@@ -6,7 +6,7 @@ import { useListActions, useTaskActions } from '@/components/providers/task-mana
 import { useI18n } from '@/lib/i18n/hooks'
 import { useUser } from '@/components/providers/user-provider'
 import { SPECIAL_LISTS_CONFIG, TAG_COLORS } from '@/lib/task-constants'
-import { ListBulletIcon, PlusIcon, TagIcon, TrashIcon, ArrowDownIcon, UserPlusIcon, ChatBubbleLeftRightIcon } from '@/lib/icons'
+import { ListBulletIcon, PlusIcon, TagIcon, TrashIcon, ArrowDownIcon, UserPlusIcon, ChatBubbleLeftRightIcon, MoreHorizontalIcon } from '@/lib/icons'
 import Avatar from '@/components/ui/avatar'
 import ProfileDropdown from '@/components/auth/profile-dropdown'
 import { ListEditDialog } from '@/components/layout/list-edit-dialog'
@@ -15,6 +15,7 @@ import { useConfirmation } from '@/components/providers/confirmation-provider'
 import { useToast } from '@/components/providers/toast-provider'
 import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { IconButton } from '@/components/ui/icon-button'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import type { List } from '@/types'
 import { isOwnedList } from '@/lib/utils/list-access'
 
@@ -140,6 +141,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
         tabIndex={0}
         onClick={handleClick}
         onKeyDown={handleKeyDown}
+        data-active={isActive}
         className={`w-full flex items-center justify-between text-sm px-3 py-2 rounded-md transition-colors group cursor-pointer ${
           isActive
             ? 'bg-muted text-foreground font-medium'
@@ -244,10 +246,11 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                     const taskCount = state.tasks.filter(t => t.listId === list.id && !t.completed).length
                     const canManageList = isOwnedList(list, user?.id)
                     const showActions = canManageList && !isInboxList(list)
+                    const isActive = state.activeListId === list.id && !state.activeTag
                     return (
                       <NavItem
                         key={list.id}
-                        isActive={state.activeListId === list.id && !state.activeTag}
+                        isActive={isActive}
                         onClick={() => {
                           dispatch({ type: 'SET_ACTIVE_LIST', payload: list.id })
                           router.push('/list')
@@ -263,10 +266,11 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                           <span className="truncate text-left">{list.name}</span>
                         </div>
                         <div className="ml-2 flex shrink-0 items-center">
+                          {/* Desktop: Hover to show all actions */}
                           <div
-                            className={`flex min-w-16 items-center justify-end gap-0.5 md:w-16 ${
+                            className={`hidden md:flex items-center justify-end gap-0.5 w-16 transition-all duration-200 ${
                               showActions
-                                ? 'opacity-100 md:opacity-0 md:group-hover:opacity-100'
+                                ? 'opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto'
                                 : 'pointer-events-none opacity-0'
                             }`}
                           >
@@ -274,7 +278,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                               <>
                                 <IconButton
                                   size="sm"
-                                  className="size-11 p-2 hover:text-primary md:size-auto md:p-0.5"
+                                  className="size-auto p-0.5 hover:text-primary"
                                   onClick={(e) => { e.stopPropagation(); setEditingList(list) }}
                                   aria-label={t('sidebar.aria.editList', { listName: list.name })}
                                 >
@@ -283,7 +287,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                                 {onShareList && (
                                   <IconButton
                                     size="sm"
-                                    className="size-11 p-2 hover:text-primary md:size-auto md:p-0.5"
+                                    className="size-auto p-0.5 hover:text-primary"
                                     onClick={(e) => { e.stopPropagation(); onShareList(list.id); }}
                                     aria-label={t('sidebar.aria.shareList', { listName: list.name })}
                                   >
@@ -293,7 +297,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                                 <IconButton
                                   size="sm"
                                   variant="destructive"
-                                  className="size-11 p-2 md:size-auto md:p-0.5"
+                                  className="size-auto p-0.5"
                                   onClick={(e) => { e.stopPropagation(); handleDeleteList(list.id, list.name); }}
                                   aria-label={t('sidebar.aria.deleteList', { listName: list.name })}
                                 >
@@ -302,6 +306,61 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                               </>
                             )}
                           </div>
+
+                          {/* Mobile: A single elegant three-dot actions menu */}
+                          {showActions && (
+                            <div className="flex md:hidden items-center mr-1">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <IconButton
+                                    size="sm"
+                                    className={`size-8 p-1 rounded-full transition-all duration-200 ${
+                                      isActive 
+                                        ? 'opacity-100' 
+                                        : 'opacity-40 hover:opacity-100'
+                                    }`}
+                                    onClick={(e) => e.stopPropagation()}
+                                    aria-label={t('sidebar.aria.listActions', { listName: list.name })}
+                                  >
+                                    <MoreHorizontalIcon className="h-4 w-4" />
+                                  </IconButton>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-40 z-[70]">
+                                  <DropdownMenuItem
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      setEditingList(list)
+                                    }}
+                                  >
+                                    <span className="text-xs font-semibold mr-1">✎</span>
+                                    {t('sidebar.editList') || 'Sửa'}
+                                  </DropdownMenuItem>
+                                  {onShareList && (
+                                    <DropdownMenuItem
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        onShareList(list.id)
+                                      }}
+                                    >
+                                      <UserPlusIcon className="h-4 w-4 mr-1" />
+                                      {t('sidebar.shareList') || 'Chia sẻ'}
+                                    </DropdownMenuItem>
+                                  )}
+                                  <DropdownMenuItem
+                                    variant="destructive"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      handleDeleteList(list.id, list.name)
+                                    }}
+                                  >
+                                    <TrashIcon className="h-4 w-4 mr-1" />
+                                    {t('sidebar.deleteList') || 'Xóa'}
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          )}
+
                           <span className="w-5 text-right text-xs font-medium tabular-nums text-muted-foreground">
                             {taskCount}
                           </span>
@@ -351,18 +410,18 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                               onClose()
                             }
                           }}
-                          className={`grow flex items-center gap-3 text-left ${state.activeTag === tag ? 'font-medium text-foreground' : ''}`}
+                          className={`grow flex items-center gap-3 text-left min-w-0 ${state.activeTag === tag ? 'font-medium text-foreground' : ''}`}
                         >
-                          <TagIcon className="h-5 w-5" />
+                          <TagIcon className="h-5 w-5 shrink-0" />
                           <span className="truncate flex-1">{tag}</span>
                         </button>
-                        <div className="flex items-center gap-2 pl-2">
+                        <div className="flex items-center gap-2 pl-2 shrink-0">
                           <span className="text-xs font-medium text-muted-foreground">{taskCount}</span>
-                          <span className={`w-2 h-2 rounded-full ${getTagColor(tag)}`}></span>
+                          <span className={`w-2 h-2 rounded-full shrink-0 ${getTagColor(tag)}`}></span>
                           <IconButton
                             size="sm"
                             variant="destructive"
-                            className="size-11 p-2 opacity-100 md:size-auto md:p-0.5 md:opacity-0 md:group-hover:opacity-100"
+                            className="size-11 p-2 opacity-100 md:size-auto md:p-0.5 md:opacity-0 md:group-hover:opacity-100 shrink-0"
                             onClick={() => handleDeleteTag(tag)}
                             aria-label={t('sidebar.aria.deleteTag', { tagName: tag })}
                           >
