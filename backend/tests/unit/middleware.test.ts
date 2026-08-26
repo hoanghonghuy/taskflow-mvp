@@ -140,8 +140,11 @@ describe('middleware/errorHandler', () => {
 
   it('handles unknown errors', () => {
     const res = mockRes()
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
     errorHandler(new Error('boom'), {} as Request, res, jest.fn())
     expect(res.statusCode).toBe(500)
+    expect(consoleErrorSpy).toHaveBeenCalledWith('[error]', expect.any(Error))
+    consoleErrorSpy.mockRestore()
   })
 
   it('handles production AppError with status 500', () => {
@@ -156,8 +159,10 @@ describe('middleware/errorHandler', () => {
 
   it('handles non-Error throw', () => {
     const res = mockRes()
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
     errorHandler('string error' as unknown as Error, {} as Request, res, jest.fn())
     expect(res.statusCode).toBe(500)
+    consoleErrorSpy.mockRestore()
   })
 
   it('asyncHandler forwards errors', async () => {
