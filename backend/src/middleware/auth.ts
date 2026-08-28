@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from 'express'
 import { verifyToken } from '../lib/jwt'
+import { sendError } from '../lib/response'
 import * as authRepository from '../repositories/authRepository'
 import { isAdminRole } from '../types/roles'
 
@@ -15,14 +16,14 @@ declare global {
 export async function requireAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
   const header = req.headers.authorization
   if (!header?.startsWith('Bearer ')) {
-    res.status(401).json({ error: 'unauthorized', message: 'Authentication required' })
+    sendError(res, 401, 'unauthorized', 'Authentication required')
     return
   }
 
   const token = header.slice(7)
   const payload = verifyToken(token)
   if (!payload?.userId) {
-    res.status(401).json({ error: 'unauthorized', message: 'Invalid or expired token' })
+    sendError(res, 401, 'unauthorized', 'Invalid or expired token')
     return
   }
 
@@ -31,7 +32,7 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
   try {
     const user = await authRepository.findUserById(payload.userId)
     if (!user) {
-      res.status(401).json({ error: 'unauthorized', message: 'Invalid or expired token' })
+      sendError(res, 401, 'unauthorized', 'Invalid or expired token')
       return
     }
   } catch (err) {
@@ -48,13 +49,13 @@ export async function requireAdmin(req: Request, res: Response, next: NextFuncti
   try {
     const userId = req.userId
     if (!userId) {
-      res.status(401).json({ error: 'unauthorized', message: 'Authentication required' })
+      sendError(res, 401, 'unauthorized', 'Authentication required')
       return
     }
 
     const user = await authRepository.findUserById(userId)
     if (!user || !isAdminRole(user.role)) {
-      res.status(403).json({ error: 'forbidden', message: 'Admin access required' })
+      sendError(res, 403, 'forbidden', 'Admin access required')
       return
     }
 
