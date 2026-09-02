@@ -9,9 +9,16 @@ export interface VerifiedAccessToken {
   role: AccessTokenRole
 }
 
+const DEV_JWT_KEY = 'dev-jwt-key-change-me-in-production-32b'
+
 export function getJwtVerificationConfig() {
+  const jwtKey = process.env.JWT_KEY?.trim()
+  if (!jwtKey && process.env.NODE_ENV === 'production') {
+    throw new Error('[config] Required JWT_KEY is missing')
+  }
+
   return {
-    key: process.env.JWT_KEY || 'dev-jwt-key-change-me-in-production-32b',
+    key: jwtKey || DEV_JWT_KEY,
     issuer: process.env.JWT_ISSUER || 'Taskflow',
     audience: process.env.JWT_AUDIENCE || 'TaskflowClient',
   }
