@@ -16,14 +16,14 @@ function parseAiProvider(value: string | undefined): AiProvider {
 
 function warnIfMissing(name: string, value: string | undefined, fallback?: string): string {
   if (!value || value.trim() === '') {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(`[config] Required ${name} is missing`)
+    }
     if (fallback !== undefined) {
       console.warn(`[config] Missing ${name}; using development default`)
       return fallback
     }
     console.error(`[config] Required ${name} is missing`)
-    if (process.env.NODE_ENV === 'production') {
-      process.exit(1)
-    }
     return ''
   }
   return value
