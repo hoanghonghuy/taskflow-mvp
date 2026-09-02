@@ -17,6 +17,12 @@ describe('config', () => {
     expect(config.jwt.key).toContain('dev-jwt')
   })
 
+  it('fails fast for missing JWT_KEY in production', async () => {
+    delete process.env.JWT_KEY
+    process.env.NODE_ENV = 'production'
+    await expect(import('../../src/config')).rejects.toThrow('Required JWT_KEY is missing')
+  })
+
   it('reads PORT from environment', async () => {
     process.env.PORT = '5134'
     const { config } = await import('../../src/config')
