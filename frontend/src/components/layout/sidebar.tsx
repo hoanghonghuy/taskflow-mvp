@@ -320,7 +320,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                                         : 'opacity-40 hover:opacity-100'
                                     }`}
                                     onClick={(e) => e.stopPropagation()}
-                                    aria-label={t('sidebar.aria.listActions', { listName: list.name })}
+                                    aria-label={t('feature.more')}
                                   >
                                     <MoreHorizontalIcon className="h-4 w-4" />
                                   </IconButton>
@@ -333,7 +333,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                                     }}
                                   >
                                     <span className="text-xs font-semibold mr-1">✎</span>
-                                    {t('sidebar.editList') || 'Sửa'}
+                                    {t('common.edit')}
                                   </DropdownMenuItem>
                                   {onShareList && (
                                     <DropdownMenuItem
@@ -343,7 +343,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                                       }}
                                     >
                                       <UserPlusIcon className="h-4 w-4 mr-1" />
-                                      {t('sidebar.shareList') || 'Chia sẻ'}
+                                      {t('sidebar.aria.shareList', { listName: list.name })}
                                     </DropdownMenuItem>
                                   )}
                                   <DropdownMenuItem
@@ -354,7 +354,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
                                     }}
                                   >
                                     <TrashIcon className="h-4 w-4 mr-1" />
-                                    {t('sidebar.deleteList') || 'Xóa'}
+                                    {t('common.delete')}
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
