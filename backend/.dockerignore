@@ -9,3 +9,13 @@ data
 coverage
 tests
 .git
+.github
+*.log
+npm-debug.log*
+Dockerfile*
+docker-compose.yml
+docker-entrypoint.dev.sh
+.dockerignore
+*.md
+.vscode
+.idea
