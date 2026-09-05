@@ -125,9 +125,27 @@ export const useCountdown = () => {
   const { t } = useI18n()
 
   useEffect(() => {
-    const timer = setInterval(() => setTick(Date.now()), 1000)
-    return () => clearInterval(timer)
-  }, [])
+    const hasUpcomingEvents = countdownEvents.some(
+      (event) => new Date(event.targetDate).getTime() > Date.now(),
+    )
+    if (!hasUpcomingEvents) return
+
+    let timeoutId: number | null = null
+    let intervalId: number | null = null
+
+    const startTicking = () => {
+      setTick(Date.now())
+      intervalId = window.setInterval(() => setTick(Date.now()), 1000)
+    }
+
+    const delayToNextSecond = 1000 - (Date.now() % 1000)
+    timeoutId = window.setTimeout(startTicking, delayToNextSecond)
+
+    return () => {
+      if (timeoutId !== null) window.clearTimeout(timeoutId)
+      if (intervalId !== null) window.clearInterval(intervalId)
+    }
+  }, [countdownEvents])
 
   useEffect(() => {
     const now = Date.now()

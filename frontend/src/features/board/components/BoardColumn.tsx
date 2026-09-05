@@ -133,7 +133,7 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
         ) : canManageColumns ? (
           <button
             type="button"
-            className="flex min-w-0 grow items-center justify-between gap-2 rounded-md px-1 py-1 text-left transition-colors hover:bg-muted/50"
+            className="cursor-pointer flex min-w-0 grow items-center justify-between gap-2 rounded-md px-1 py-1 text-left transition-colors hover:bg-muted/60"
             onClick={() => setIsRenaming(true)}
           >
             <span className="truncate text-sm font-semibold">{column.name}</span>

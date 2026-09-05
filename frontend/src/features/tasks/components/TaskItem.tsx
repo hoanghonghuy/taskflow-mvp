@@ -174,7 +174,7 @@ const TaskItem: React.FC<TaskItemProps> = ({
         } ${
           isDragOver
             ? 'border-primary/60 bg-primary/5 shadow-md'
-            : 'hover:border-border hover:shadow-sm focus-within:border-primary/40'
+            : 'hover:bg-muted/20 hover:border-border hover:shadow-sm focus-within:border-primary/40'
         }`}
       >
         <button
@@ -183,7 +183,7 @@ const TaskItem: React.FC<TaskItemProps> = ({
           disabled={isReadOnly}
           aria-label={task.completed ? t('taskItem.aria.markIncomplete') : t('taskItem.aria.markComplete')}
           className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 transition-[transform,background-color,border-color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none ${
-            isReadOnly ? 'cursor-not-allowed opacity-60' : 'hover:scale-105'
+            isReadOnly ? 'cursor-not-allowed opacity-60' : 'hover:scale-105 motion-reduce:hover:scale-100'
           } ${task.completed ? 'border-primary bg-primary' : `bg-transparent ${priorityClasses.checkboxBorderColor}`}`}
           style={checkboxStyle}
         >
@@ -197,7 +197,7 @@ const TaskItem: React.FC<TaskItemProps> = ({
             event.stopPropagation()
             handleSelect()
           }}
-          className="min-w-0 flex-1 text-left focus-visible:outline-none"
+          className="min-w-0 flex-1 cursor-pointer text-left focus-visible:outline-none"
         >
           <p
             className={`truncate text-sm font-medium leading-5 ${
@@ -279,7 +279,7 @@ const TaskItem: React.FC<TaskItemProps> = ({
       </div>
 
       {isSubtasksOpen && task.subtasks.length > 0 && (
-        <div className="rounded-b-xl border border-t-0 border-border/60 bg-card/70 px-4 pb-3 pt-2 animate-accordion-down motion-reduce:animate-none sm:pl-12">
+        <div className="rounded-b-xl border border-t-0 border-border/60 bg-card/70 px-4 pb-3 pt-2 animate-in fade-in-0 slide-in-from-top-1 duration-200 motion-reduce:animate-none sm:pl-12">
           <div className="space-y-1.5">
             {task.subtasks.map((subtask) => (
               <div key={subtask.id} className="flex min-h-9 items-center gap-3 rounded-lg px-2 hover:bg-secondary/45">

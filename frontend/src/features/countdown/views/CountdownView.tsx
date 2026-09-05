@@ -159,7 +159,7 @@ const CountdownView: React.FC = () => {
               'flex h-10 w-10 items-center justify-center rounded-full border transition-[border-color,box-shadow,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none',
               isSelected
                 ? 'border-transparent ring-2 ring-offset-2 ring-(--countdown-picker-ring)'
-                : 'border-border/70 hover:scale-105 hover:border-border',
+                : 'border-border/70 hover:scale-105 hover:border-border motion-reduce:hover:scale-100',
             )}
             style={{ '--countdown-picker-ring': option.border } as React.CSSProperties}
           >

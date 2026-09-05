@@ -98,6 +98,13 @@ describe('responsive layout contracts', () => {
     expect(countdown).toContain('grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3')
   })
 
+  it('accounts for the heatmap axis gap so the last week column is not clipped', () => {
+    const heatmap = src('components/dashboard/ProductivityHeatmap.tsx')
+    expect(heatmap).toContain('const AXIS_GAP = 12')
+    expect(heatmap).toContain('effectiveWidth > labelsWidth + AXIS_GAP')
+    expect(heatmap).toContain('effectiveWidth - labelsWidth - AXIS_GAP')
+  })
+
   it('prefers shared Button / IconButton for common profile and habit actions', () => {
     const profile = src('features/profile/views/ProfileView.tsx')
     expect(profile).toContain("from '@/components/ui/button'")

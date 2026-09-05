@@ -65,6 +65,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
   const pendingSyncRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingPayloadRef = useRef<Task | null>(null)
   const pendingRollbackRef = useRef<Task | null>(null)
+  const dueDateInputRef = useRef<HTMLInputElement | null>(null)
   const updateTaskApiRef = useRef(updateTaskApi)
   updateTaskApiRef.current = updateTaskApi
 
@@ -114,6 +115,12 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
     ? new Date(task.createdAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })
     : null
   const progressPercent = task.subtasks.length > 0 ? (completedSubtasks / task.subtasks.length) * 100 : 0
+
+  const focusDateInput = (input: HTMLInputElement | null) => {
+    if (!input || isReadOnly) return
+    input.focus()
+    input.showPicker?.()
+  }
 
   const formatFocusTime = (seconds: number): string => {
     if (seconds < 60) return `${seconds}s`
@@ -381,7 +388,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
     <AccessibleModalSurface
       aria-label={task.title}
       onClose={handleClose}
-      className="flex h-full w-full flex-col overflow-hidden border-l border-border bg-card shadow-[-8px_0_24px_rgba(0,0,0,0.06)] md:max-w-xl md:animate-slide-in"
+      className="flex h-full w-full flex-col overflow-hidden border-l border-border bg-card shadow-[-8px_0_24px_rgba(0,0,0,0.06)] md:max-w-xl"
     >
       <header className="flex shrink-0 items-center justify-between gap-3 border-b border-border bg-secondary/20 px-4 py-3">
         <div className="flex min-w-0 items-center gap-3">
@@ -537,11 +544,14 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
           </PropertyRow>
           <PropertyRow label={t('taskDetail.dueDateLabel')} controlId="task-due-date">
             <input
+              ref={dueDateInputRef}
               id="task-due-date"
               type="date"
               value={task.dueDate ? toYYYYMMDD(new Date(task.dueDate)) : ''}
               readOnly={isReadOnly}
               onChange={(e) => applyTaskUpdates({ dueDate: e.target.value ? dateOnlyInputToIso(e.target.value) : undefined })}
+              onClick={() => focusDateInput(dueDateInputRef.current)}
+              onFocus={() => focusDateInput(dueDateInputRef.current)}
               className={fieldControlClassName}
             />
           </PropertyRow>

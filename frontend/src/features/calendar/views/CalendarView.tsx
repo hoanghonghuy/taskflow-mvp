@@ -305,11 +305,17 @@ const CalendarView: React.FC = () => {
                         setDraggedTaskId(null)
                         setDragOverDateKey(null)
                       }}
-                      className={`relative min-h-[54px] border-b border-r border-border p-1 text-left transition-[background-color,box-shadow] duration-150 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring motion-reduce:transition-none md:min-h-[130px] md:p-1.5 ${
+                      className={`cursor-pointer relative min-h-[54px] border-b border-r border-border p-1 text-left transition-[background-color,box-shadow] duration-150 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring motion-reduce:transition-none md:min-h-[130px] md:p-1.5 ${
                         isCurrentMonthDate ? 'bg-card' : 'bg-muted/25 text-muted-foreground'
                       } ${isSelectedDate ? 'z-10 bg-primary/5 shadow-[inset_0_0_0_2px_hsl(var(--primary))]' : ''} ${
                         isTodayDate && !isSelectedDate ? 'bg-primary/[0.035]' : ''
-                      } ${isDragOverDay ? 'z-20 bg-primary/10 shadow-[inset_0_0_0_2px_hsl(var(--primary))]' : ''}`}
+                      } ${isDragOverDay ? 'z-20 bg-primary/10 shadow-[inset_0_0_0_2px_hsl(var(--primary))]' : ''} ${
+                        !isSelectedDate && !isDragOverDay
+                          ? isCurrentMonthDate
+                            ? 'hover:bg-muted/30'
+                            : 'hover:bg-muted/40'
+                          : ''
+                      }`}
                     >
                       <div className="flex h-full flex-col">
                         <div className="mb-0.5 flex items-center gap-1 md:mb-1">
@@ -384,7 +390,7 @@ const CalendarView: React.FC = () => {
                         key={task.id}
                         type="button"
                         onClick={() => handleTaskClick(task)}
-                        className="flex min-h-14 w-full items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 p-3 text-left transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none"
+                        className="cursor-pointer flex min-h-14 w-full items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 p-3 text-left transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none"
                       >
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-medium">{task.title}</p>

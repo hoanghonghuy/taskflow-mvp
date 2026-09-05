@@ -161,7 +161,11 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose }) => {
             {!activeSearching && !activeError && activeResults.map(task => {
               const matchMeta = getSearchMatchMeta(task, trimmedTerm)
               return (
-                <div key={task.id} onClick={() => handleTaskSelect(task)} className="cursor-pointer">
+                <div
+                  key={task.id}
+                  onClick={() => handleTaskSelect(task)}
+                  className="cursor-pointer rounded-xl transition-colors hover:bg-muted/20"
+                >
                   <TaskItem 
                     task={task} 
                     isDraggable={false} 

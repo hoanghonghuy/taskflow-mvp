@@ -91,7 +91,7 @@ export function ListEditDialog({ list, open, onOpenChange }: ListEditDialogProps
                   type="button"
                   aria-label={t('sidebar.editList.colorOption', { color: preset })}
                   onClick={() => setColor(preset)}
-                  className={`h-8 w-8 rounded-full border-2 transition-transform hover:scale-105 ${
+                  className={`h-8 w-8 rounded-full border-2 transition-transform hover:scale-105 motion-reduce:hover:scale-100 ${
                     color === preset ? 'border-foreground ring-2 ring-primary/40' : 'border-transparent'
                   }`}
                   style={{ backgroundColor: preset }}

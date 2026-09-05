@@ -250,7 +250,7 @@ export default function DashboardPage() {
                 onClick={() => {
                   openList('today')
                 }}
-                className="group flex min-h-32 items-start gap-4 rounded-xl border border-border/70 bg-card p-4 text-left transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none sm:p-5"
+                className="group flex min-h-32 cursor-pointer items-start gap-4 rounded-xl border border-border/70 bg-card p-4 text-left transition-[border-color,background-color,box-shadow,transform] duration-150 hover:bg-muted/20 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:p-5"
               >
                 <div className="rounded-xl bg-[hsl(var(--color-dashboard-today)/0.1)] p-3 text-[hsl(var(--color-dashboard-today))]">
                   <CalendarDayIcon className="h-6 w-6" />
@@ -269,7 +269,7 @@ export default function DashboardPage() {
                 onClick={() => {
                   openList('upcoming')
                 }}
-                className="group flex min-h-32 items-start gap-4 rounded-xl border border-border/70 bg-card p-4 text-left transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none sm:p-5"
+                className="group flex min-h-32 cursor-pointer items-start gap-4 rounded-xl border border-border/70 bg-card p-4 text-left transition-[border-color,background-color,box-shadow,transform] duration-150 hover:bg-muted/20 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:p-5"
               >
                 <div className="rounded-xl bg-[hsl(var(--color-dashboard-upcoming)/0.1)] p-3 text-[hsl(var(--color-dashboard-upcoming))]">
                   <CalendarIcon className="h-6 w-6" />
@@ -289,7 +289,7 @@ export default function DashboardPage() {
                   dispatch({ type: 'SET_VIEW', payload: 'habit' })
                   router.push('/habits')
                 }}
-                className="group flex min-h-32 items-start gap-4 rounded-xl border border-border/70 bg-card p-4 text-left transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none sm:p-5"
+                className="group flex min-h-32 cursor-pointer items-start gap-4 rounded-xl border border-border/70 bg-card p-4 text-left transition-[border-color,background-color,box-shadow,transform] duration-150 hover:bg-muted/20 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:p-5"
               >
                 <div className="rounded-xl bg-[hsl(var(--color-dashboard-habits)/0.1)] p-3 text-[hsl(var(--color-dashboard-habits))]">
                   <RepeatIcon className="h-6 w-6" />
@@ -522,13 +522,18 @@ function DashboardTaskPanel({
               <button
                 type="button"
                 onClick={() => onTaskClick(task)}
-                className={`flex w-full ${taskAlignmentClassName} justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-secondary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring motion-reduce:transition-none sm:px-5`}
+                className={`group cursor-pointer flex w-full ${taskAlignmentClassName} justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-secondary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring motion-reduce:transition-none sm:px-5`}
               >
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{task.title || fallbackTitle}</p>
                   {renderMeta(task)}
                 </div>
-                <span className="text-sm text-muted-foreground" aria-hidden>→</span>
+                <span
+                  className="text-sm text-muted-foreground transition-transform motion-reduce:transition-none group-hover:translate-x-0.5"
+                  aria-hidden
+                >
+                  →
+                </span>
               </button>
             </li>
           ))}

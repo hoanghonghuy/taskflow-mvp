@@ -29,7 +29,7 @@ const segmentedControlVariants = cva('inline-flex items-center border bg-muted p
 
 const segmentedItemVariants = cva(
   [
-    'inline-flex items-center justify-center font-medium transition-colors',
+    'cursor-pointer inline-flex items-center justify-center font-medium transition-colors',
     'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
     'disabled:pointer-events-none disabled:opacity-50',
   ].join(' '),
@@ -45,7 +45,7 @@ const segmentedItemVariants = cva(
       },
       active: {
         true: 'bg-background text-foreground shadow-sm',
-        false: 'text-muted-foreground hover:text-foreground',
+        false: 'text-muted-foreground hover:bg-background/60 hover:text-foreground',
       },
       fullWidth: {
         true: 'flex-1',

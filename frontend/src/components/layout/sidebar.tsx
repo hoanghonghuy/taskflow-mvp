@@ -144,7 +144,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
         data-active={isActive}
         className={`w-full flex items-center justify-between text-sm px-3 py-2 rounded-md transition-colors group cursor-pointer ${
           isActive
-            ? 'bg-muted text-foreground font-medium'
+            ? 'bg-muted text-foreground font-medium hover:bg-muted/70'
             : 'text-foreground/90 hover:bg-muted/50'
         }`}
       >
@@ -168,14 +168,14 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
             onClose()
           }
         }}
-        className={`fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity motion-reduce:transition-none ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       ></div>
       <aside
         inert={!isOpen}
         aria-hidden={!isOpen}
         className={`
         fixed md:relative inset-y-0 left-0 bg-card flex flex-col shrink-0 z-50
-        w-64 transition-transform md:transition-all duration-300 ease-in-out overflow-hidden border-border
+        w-64 transition-transform md:transition-all duration-300 ease-in-out motion-reduce:transition-none overflow-hidden border-border
         ${isOpen 
           ? 'p-4 border-r translate-x-0 md:w-64'
           : 'p-4 -translate-x-full md:w-0 md:p-0 md:border-r-0 md:translate-x-0'
@@ -193,7 +193,7 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
           <Dialog open={isProfileDialogOpen} onOpenChange={setProfileDialogOpen}>
             <DialogTrigger asChild>
               <button
-                className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card md:hidden"
+                className="cursor-pointer flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card md:hidden"
               >
                 <Avatar user={user} className="w-9 h-9" />
                 <span className="text-sm font-semibold truncate max-w-28">{user?.name || t('profile.viewProfile')}</span>
@@ -236,11 +236,11 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
             <div className="flex items-center justify-between px-3 mb-2">
                     <h2 className="text-xs font-semibold text-muted-foreground">{t('sidebar.myLists')}</h2>
               <button onClick={() => setIsListsExpanded(!isListsExpanded)} className="flex size-11 items-center justify-center rounded-md hover:bg-muted/50 md:size-auto md:p-1">
-                <ArrowDownIcon className={`h-4 w-4 text-muted-foreground transition-transform ${!isListsExpanded && '-rotate-90'}`} />
+                <ArrowDownIcon className={`h-4 w-4 text-muted-foreground transition-transform motion-reduce:transition-none ${!isListsExpanded && '-rotate-90'}`} />
               </button>
             </div>
             {isListsExpanded && (
-              <div className="animate-accordion-down overflow-hidden">
+              <div className="animate-in fade-in-0 slide-in-from-top-1 duration-200 overflow-hidden motion-reduce:animate-none">
                 <div className="space-y-1">
                   {state.lists.map(list => {
                     const taskCount = state.tasks.filter(t => t.listId === list.id && !t.completed).length
@@ -387,11 +387,11 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
             <div className="flex items-center justify-between px-3 mb-2">
                     <h2 className="text-xs font-semibold text-muted-foreground">{t('sidebar.tags')}</h2>
               <button onClick={() => setIsTagsExpanded(!isTagsExpanded)} className="flex size-11 items-center justify-center rounded-md hover:bg-muted/50 md:size-auto md:p-1">
-                <ArrowDownIcon className={`h-4 w-4 text-muted-foreground transition-transform ${!isTagsExpanded && '-rotate-90'}`} />
+                <ArrowDownIcon className={`h-4 w-4 text-muted-foreground transition-transform motion-reduce:transition-none ${!isTagsExpanded && '-rotate-90'}`} />
               </button>
             </div>
             {isTagsExpanded && (
-              <div className="animate-accordion-down overflow-hidden">
+              <div className="animate-in fade-in-0 slide-in-from-top-1 duration-200 overflow-hidden motion-reduce:animate-none">
                 <div className="space-y-1">
                   {allTags.map(tag => {
                     const taskCount = state.tasks.filter(t => t.tags.includes(tag) && !t.completed).length

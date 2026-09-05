@@ -464,7 +464,7 @@ const PomodoroFocusView: React.FC = () => {
                     cy="50"
                   />
                   <circle
-                    className={`${visuals.text} transition-[stroke-dashoffset] duration-1000 ease-linear motion-reduce:transition-none`}
+                    className={`${visuals.text} transition-[stroke-dashoffset] duration-150 ease-linear motion-reduce:transition-none`}
                     strokeWidth="5"
                     strokeDasharray={TIMER_CIRCUMFERENCE}
                     strokeDashoffset={TIMER_CIRCUMFERENCE * (1 - progress)}

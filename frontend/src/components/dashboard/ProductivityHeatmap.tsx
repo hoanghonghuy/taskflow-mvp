@@ -10,6 +10,7 @@ import type { FocusSession } from '@/types'
 const CELL_SIZE = 12 // w-3
 const CELL_GAP = 4   // gap-1
 const WEEK_WIDTH = CELL_SIZE + CELL_GAP
+const AXIS_GAP = 12  // gap-3 between day labels and heatmap grid
 
 /** Format local date thành YYYY-MM-DD. Tránh UTC của toISOString() lệch ngày
  *  với user ở múi giờ dương/âm (khớp với backend `todayDateString()` VN). */
@@ -131,7 +132,10 @@ const ProductivityHeatmap: React.FC = () => {
     // Use a minimum width if containerWidth is 0 to ensure heatmap renders
     const effectiveWidth = containerWidth > 0 ? containerWidth : 400
 
-    const availableWidth = effectiveWidth > labelsWidth ? effectiveWidth - labelsWidth : 0
+    const availableWidth =
+      effectiveWidth > labelsWidth + AXIS_GAP
+        ? effectiveWidth - labelsWidth - AXIS_GAP
+        : 0
     const numWeeks = Math.max(1, Math.min(52, Math.floor(availableWidth / WEEK_WIDTH)))
     
     const today = new Date()

@@ -219,7 +219,12 @@ const TaskList: React.FC<TaskListProps> = ({ onAddTask }) => {
             </p>
           </div>
           {onAddTask && (
-            <Button type="button" size="sm" onClick={onAddTask} className="gap-2">
+            <Button
+              type="button"
+              size="sm"
+              onClick={onAddTask}
+              className="gap-2"
+            >
               <PlusIcon className="h-4 w-4" />
               <span className="hidden sm:inline">{t('taskList.addTask')}</span>
             </Button>
@@ -279,7 +284,7 @@ const TaskList: React.FC<TaskListProps> = ({ onAddTask }) => {
           <button
             type="button"
             onClick={() => setIsCompletedOpen((open) => !open)}
-            className="flex min-h-12 w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-secondary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring motion-reduce:transition-none sm:px-5"
+            className="group cursor-pointer flex min-h-12 w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-secondary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring motion-reduce:transition-none sm:px-5"
             aria-expanded={isCompletedOpen}
           >
             <span>
@@ -289,13 +294,13 @@ const TaskList: React.FC<TaskListProps> = ({ onAddTask }) => {
               </span>
             </span>
             {isCompletedOpen ? (
-              <ArrowUpIcon className="h-4 w-4 text-muted-foreground" />
+              <ArrowUpIcon className="h-4 w-4 text-muted-foreground transition-transform motion-reduce:transition-none group-hover:translate-x-0.5" />
             ) : (
-              <ArrowDownIcon className="h-4 w-4 text-muted-foreground" />
+              <ArrowDownIcon className="h-4 w-4 text-muted-foreground transition-transform motion-reduce:transition-none group-hover:translate-x-0.5" />
             )}
           </button>
           {isCompletedOpen && (
-            <div className="space-y-2 border-t border-border/50 p-3 animate-accordion-down overflow-hidden sm:p-4 motion-reduce:animate-none">
+            <div className="space-y-2 border-t border-border/50 p-3 animate-in fade-in-0 slide-in-from-top-1 duration-200 overflow-hidden sm:p-4 motion-reduce:animate-none">
               {completedTasks.map((task) => (
                 <TaskItem key={task.id} task={task} isDraggable={false} />
               ))}

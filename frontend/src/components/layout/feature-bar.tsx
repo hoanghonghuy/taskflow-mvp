@@ -25,7 +25,7 @@ function NavButton({ label, onClick, isActive, children, className }: NavButtonP
       title={label}
       aria-label={label}
       aria-current={isActive ? 'page' : undefined}
-      className={`relative w-12 h-12 flex items-center justify-center rounded-xl transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+      className={`relative w-12 h-12 cursor-pointer flex items-center justify-center rounded-xl transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
         isActive
           ? 'bg-muted text-foreground'
           : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
@@ -107,7 +107,7 @@ export default function FeatureBar({ onSidebarToggle }: FeatureBarProps) {
         <button
           type="button"
           onClick={() => setDropdownOpen(prev => !prev)}
-          className="p-1 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          className="cursor-pointer rounded-full p-1 transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           <Avatar user={user} className="w-10 h-10" />
         </button>
