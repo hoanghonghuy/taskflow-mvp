@@ -82,6 +82,8 @@ services:
     restart: unless-stopped
     depends_on:
       - frontend
+    environment:
+      UPSTREAM_FRONTEND: frontend:3000
     ports:
       - "80:80"
       - "443:443"

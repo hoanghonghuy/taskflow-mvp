@@ -1,4 +1,4 @@
 taskflow-mvp.duckdns.org {
 	encode gzip
-	reverse_proxy frontend:3000
+	reverse_proxy {$UPSTREAM_FRONTEND:frontend:3000}
 }

@@ -9,7 +9,8 @@
 |---|---|
 | `frontend/` | Giao diện Next.js, hỗ trợ tiếng Việt và tiếng Anh |
 | `backend/` | REST API với Express và Prisma |
-| `docker-compose.yml` | Môi trường phát triển gồm frontend, backend và PostgreSQL |
+| `docker-compose.yml` | Môi trường full Docker: frontend, backend, PostgreSQL, Caddy |
+| `docker-compose.local.yml` | Môi trường local-dev: PostgreSQL + Caddy trong Docker |
 
 ## Yêu cầu
 
@@ -18,12 +19,12 @@
 
 ## Chạy bằng Docker
 
-Sao chép các tệp cấu hình môi trường:
+### Full Docker
+
+Sao chép tệp cấu hình môi trường:
 
 ```bash
 cp .env.example .env
-cp backend/.env.example backend/.env
-cp frontend/.env.example frontend/.env
 ```
 
 Khởi động toàn bộ ứng dụng:
@@ -36,7 +37,7 @@ Các địa chỉ mặc định:
 
 | Thành phần | Địa chỉ |
 |---|---|
-| Frontend | http://localhost:3000 |
+| Frontend | https://taskflow-mvp.duckdns.org |
 | Backend API | http://localhost:8081 |
 | PostgreSQL | `localhost:5434` |
 
@@ -52,49 +53,78 @@ Muốn xóa cả dữ liệu PostgreSQL:
 docker compose down -v
 ```
 
-## Biến môi trường
+### Local app + Docker infra
 
-Các tệp `.env` không được commit. Tạo chúng từ các tệp mẫu tương ứng:
+Mode này giữ `postgres` và `caddy` trong Docker, còn `backend` / `frontend`
+chạy trực tiếp trên host để sửa file là áp dụng ngay tại chỗ.
 
-| Tệp | Nội dung chính |
-|---|---|
-| [`.env.example`](.env.example) | Port, PostgreSQL và cấu hình kết nối giữa các container |
-| [`backend/.env.example`](backend/.env.example) | JWT, database, CORS và AI provider |
-| [`frontend/.env.example`](frontend/.env.example) | Backend URL, mock mode và cấu hình JWT |
-
-Khi chạy backend trực tiếp trên máy, đặt `BACKEND_URL` trong
-`frontend/.env` thành `http://localhost:8080`. Khi chạy bằng Docker, dùng
-`http://localhost:8081`.
-
-## Chạy từng service ở local
-
-Khởi động PostgreSQL:
+Khởi động hạ tầng:
 
 ```bash
-docker compose up -d postgres
+cp .env.example .env
+docker compose -f docker-compose.local.yml up -d
 ```
 
 Chạy backend:
 
 ```bash
 cd backend
+cp .env.example .env
 npm install
 npx prisma migrate deploy
 npx prisma generate
 npm run dev
 ```
 
-Backend chạy tại http://localhost:8080.
-
-Mở terminal khác để chạy frontend:
+Chạy frontend ở terminal khác:
 
 ```bash
 cd frontend
+cp .env.example .env
 npm install
 npm run dev
 ```
 
-Frontend chạy tại http://localhost:3000.
+Khi đó:
+
+| Thành phần | Địa chỉ |
+|---|---|
+| Frontend local | http://localhost:3000 |
+| Backend local | http://localhost:8080 |
+| DuckDNS + HTTPS | https://taskflow-mvp.duckdns.org |
+| PostgreSQL | `localhost:5434` |
+
+`Caddy` trong Docker sẽ proxy từ `taskflow-mvp.duckdns.org` vào frontend local
+ở `localhost:3000`.
+
+## Biến môi trường
+
+Các tệp `.env` không được commit. Dùng theo mode:
+
+| Tệp | Nội dung chính |
+|---|---|
+| [`.env.example`](.env.example) | Nguồn env cho Docker Compose (`docker-compose.yml`, `docker-compose.local.yml`) |
+| [`backend/.env.example`](backend/.env.example) | Env cho backend khi chạy trực tiếp trên host |
+| [`frontend/.env.example`](frontend/.env.example) | Env cho frontend khi chạy trực tiếp trên host |
+
+Khi chạy backend trực tiếp trên máy, đặt `BACKEND_URL` trong
+`frontend/.env` thành `http://localhost:8080`. Khi chạy full Docker, frontend
+container sẽ tự dùng `http://backend:8080` qua `BACKEND_INTERNAL_URL` từ `.env`
+gốc.
+
+## Chạy từng service ở local
+
+Nếu chỉ cần database:
+
+```bash
+docker compose -f docker-compose.local.yml up -d postgres
+```
+
+Nếu muốn vừa có database vừa có HTTPS/DuckDNS qua Caddy:
+
+```bash
+docker compose -f docker-compose.local.yml up -d
+```
 
 ## Tính năng
 
@@ -110,7 +140,7 @@ Frontend chạy tại http://localhost:3000.
 
 ### Admin
 
-Thêm vào `backend/.env`:
+Thêm vào `.env` khi chạy full Docker, hoặc `backend/.env` khi chạy backend local:
 
 ```env
 ADMIN_EMAIL=admin@taskflow.app
@@ -123,7 +153,7 @@ Backend sẽ tự tạo hoặc cập nhật tài khoản admin khi khởi độn
 
 ### Demo user
 
-Thêm vào `backend/.env`:
+Thêm vào `.env` khi chạy full Docker, hoặc `backend/.env` khi chạy backend local:
 
 ```env
 DEMO_EMAIL=demo@taskflow.app

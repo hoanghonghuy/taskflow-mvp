@@ -13,7 +13,7 @@ API backend cho `taskflow-mvp` — Express + Prisma + PostgreSQL 16.
 | File | Phạm vi |
 |------|---------|
 | `backend/.env` | JWT, `DATABASE_URL`, AI, `CORS_ORIGIN`, `PORT` |
-| `.env` (repo root) | Docker Compose: `DATABASE_URL_DOCKER`, `BACKEND_PORT`, Postgres |
+| `.env` (repo root) | Docker Compose: full Docker hoặc local infra (`postgres`/`caddy`) |
 
 ```bash
 cp .env.example .env              # repo root — nếu chạy Docker
@@ -43,8 +43,8 @@ User có thể ghi đè API key qua Settings (`geminiApiKey` — dùng chung cho
 ## Chạy local
 
 ```bash
-# Từ repo root — bật Postgres (port host 5434)
-docker compose up -d postgres
+# Từ repo root — bật Postgres local-dev (port host 5434)
+docker compose -f docker-compose.local.yml up -d postgres
 
 cd backend
 cp .env.example .env
@@ -54,12 +54,12 @@ npx prisma generate
 npm run dev          # http://localhost:8080
 ```
 
-Frontend (`frontend/.env`): `BACKEND_URL=http://localhost:8080` khi backend chạy `npm run dev`; `http://localhost:8081` khi backend chạy trong Docker (`BACKEND_PORT` ở `.env` gốc).
+Frontend (`frontend/.env`): `BACKEND_URL=http://localhost:8080` khi backend chạy `npm run dev`; ở full Docker, frontend container sẽ dùng `BACKEND_INTERNAL_URL=http://backend:8080` từ `.env` gốc.
 
 ## Docker (full stack)
 
 ```bash
-# Từ repo root — dev + hot reload (mặc định)
+# Từ repo root — full Docker dev + hot reload (mặc định)
 docker compose up -d
 
 # Production image
