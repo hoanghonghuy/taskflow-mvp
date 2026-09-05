@@ -58,18 +58,25 @@ describe('seedDemoUser', () => {
     const user = await prisma.user.findUnique({ where: { email: 'demo-seed@test.com' } })
     expect(user?.role).toBe('USER')
 
-    const [tasks, habits, countdowns, sessions, settings] = await Promise.all([
+    const [tasks, highPriorityTasks, completedTasks, habits, countdowns, sessions, settings] =
+      await Promise.all([
       prisma.todoTask.count({ where: { userId: user!.id } }),
+      prisma.todoTask.count({
+        where: { userId: user!.id, priority: { in: ['high', 'urgent'] } },
+      }),
+      prisma.todoTask.count({ where: { userId: user!.id, completed: true } }),
       prisma.habit.count({ where: { userId: user!.id } }),
       prisma.countdownEvent.count({ where: { userId: user!.id } }),
       prisma.pomodoroSession.count({ where: { userId: user!.id } }),
       prisma.userSettings.findUnique({ where: { userId: user!.id } }),
-    ])
+      ])
 
-    expect(tasks).toBeGreaterThanOrEqual(10)
+    expect(tasks).toBeGreaterThanOrEqual(18)
+    expect(highPriorityTasks).toBeGreaterThanOrEqual(6)
+    expect(completedTasks).toBeGreaterThanOrEqual(6)
     expect(habits).toBe(4)
     expect(countdowns).toBe(3)
-    expect(sessions).toBeGreaterThanOrEqual(8)
+    expect(sessions).toBeGreaterThanOrEqual(12)
     expect(settings?.language).toBe('vi')
     expect(settings?.boardColumnsJson).toContain('demo-col-backlog')
   })
@@ -84,7 +91,7 @@ describe('seedDemoUser', () => {
 
     const user = await prisma.user.findUnique({ where: { email: 'demo-idempotent@test.com' } })
     const tasks = await prisma.todoTask.count({ where: { userId: user!.id } })
-    expect(tasks).toBe(11)
+    expect(tasks).toBe(22)
   })
 
   it('does not downgrade ADMIN role when DEMO_EMAIL collides with admin', async () => {

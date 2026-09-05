@@ -4,7 +4,7 @@ import React, { useMemo, useState, useEffect, useRef } from 'react'
 import { useTaskManager } from '@/lib/hooks/use-task-manager'
 import { useI18n } from '@/lib/i18n/hooks'
 import type { TranslationKey } from '@/lib/i18n/types'
-import { CalendarDayIcon, CalendarIcon, RepeatIcon, SparklesIcon } from '@/lib/icons'
+import { CalendarDayIcon, CalendarIcon, CheckCircleIcon, FlagIcon, RepeatIcon, SparklesIcon } from '@/lib/icons'
 import ProductivityHeatmap from '@/components/dashboard/ProductivityHeatmap'
 import { useRouter } from 'next/navigation'
 import { useModal } from '@/components/providers/modal-provider'
@@ -13,6 +13,8 @@ import { AppPage, AppPageMain } from '@/components/layout/app-page'
 import { AppPageHeader } from '@/components/layout/app-page-header'
 import { Button } from '@/components/ui/button'
 import { AI_FEATURES_ENABLED } from '@/lib/feature-flags'
+import { PRIORITY_MAP } from '@/lib/task-constants'
+import type { Task } from '@/types'
 import * as profileApi from '@/lib/api/profile'
 
 const useCountUp = (end: number, duration = 650) => {
@@ -173,7 +175,39 @@ export default function DashboardPage() {
         (a, b) =>
           new Date(a.dueDate as string).getTime() - new Date(b.dueDate as string).getTime(),
       )
-      .slice(0, 5)
+      .slice(0, 4)
+  }, [state.tasks])
+
+  const desktopFocusTasks = useMemo(() => {
+    const priorityOrder = {
+      urgent: 0,
+      high: 1,
+      medium: 2,
+      low: 3,
+      none: 4,
+    } as const
+
+    return state.tasks
+      .filter((task) => !task.completed && (task.priority === 'urgent' || task.priority === 'high'))
+      .sort((a, b) => {
+        const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority]
+        if (priorityDiff !== 0) return priorityDiff
+
+        const aDueTime = a.dueDate ? new Date(a.dueDate).getTime() : Number.MAX_SAFE_INTEGER
+        const bDueTime = b.dueDate ? new Date(b.dueDate).getTime() : Number.MAX_SAFE_INTEGER
+        return aDueTime - bDueTime
+      })
+      .slice(0, 4)
+  }, [state.tasks])
+
+  const recentlyCompletedTasks = useMemo(() => {
+    return state.tasks
+      .filter((task) => task.completed && task.completedAt)
+      .sort(
+        (a, b) =>
+          new Date(b.completedAt as string).getTime() - new Date(a.completedAt as string).getTime(),
+      )
+      .slice(0, 4)
   }, [state.tasks])
 
   const getGreeting = () => {
@@ -181,6 +215,16 @@ export default function DashboardPage() {
     if (hour < 12) return t('dashboard.greeting.morning')
     if (hour < 18) return t('dashboard.greeting.afternoon')
     return t('dashboard.greeting.evening')
+  }
+
+  const getTaskCountLabel = (count: number) =>
+    count === 1
+      ? t('taskList.summary.tasks', { count })
+      : t('taskList.summary.tasks_plural', { count })
+
+  const openList = (listId?: string) => {
+    if (listId) dispatch({ type: 'SET_ACTIVE_LIST', payload: listId })
+    router.push('/list')
   }
 
   const openTask = (taskId: string, listId?: string) => {
@@ -204,8 +248,7 @@ export default function DashboardPage() {
               <button
                 type="button"
                 onClick={() => {
-                  dispatch({ type: 'SET_ACTIVE_LIST', payload: 'today' })
-                  router.push('/list')
+                  openList('today')
                 }}
                 className="group flex min-h-32 items-start gap-4 rounded-xl border border-border/70 bg-card p-4 text-left transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none sm:p-5"
               >
@@ -224,8 +267,7 @@ export default function DashboardPage() {
               <button
                 type="button"
                 onClick={() => {
-                  dispatch({ type: 'SET_ACTIVE_LIST', payload: 'upcoming' })
-                  router.push('/list')
+                  openList('upcoming')
                 }}
                 className="group flex min-h-32 items-start gap-4 rounded-xl border border-border/70 bg-card p-4 text-left transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none sm:p-5"
               >
@@ -278,78 +320,120 @@ export default function DashboardPage() {
               </div>
               <ProductivityHeatmap />
             </section>
+
+            <DashboardTaskPanel
+              className="hidden lg:block"
+              icon={<CheckCircleIcon className="h-4 w-4" />}
+              title={t('dashboard.recentCompletions.title' as TranslationKey)}
+              subtitle={t('dashboard.recentCompletions.subtitle' as TranslationKey)}
+              tasks={recentlyCompletedTasks}
+              countLabel={getTaskCountLabel(recentlyCompletedTasks.length)}
+              emptyMessage={t('dashboard.recentCompletions.empty' as TranslationKey)}
+              fallbackTitle={t('dashboard.todayPlan.untitled' as TranslationKey)}
+              onTaskClick={(task) => openTask(task.id, task.listId)}
+              renderMeta={(task) => {
+                const completedAtLabel = new Date(task.completedAt as string).toLocaleString(
+                  settings.language || undefined,
+                  {
+                    day: '2-digit',
+                    month: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  },
+                )
+
+                return (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {completedAtLabel}
+                  </p>
+                )
+              }}
+            />
           </div>
 
           <aside className="space-y-4 lg:space-y-6">
-            <section className="overflow-hidden rounded-xl border border-border/70 bg-card">
-              <div className="border-b border-border/60 px-4 py-4 sm:px-5">
-                <h2 className="text-lg font-semibold">
-                  {t('dashboard.todayPlan.title' as TranslationKey)}
-                </h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {t('dashboard.todayPlan.subtitle' as TranslationKey)}
-                </p>
-              </div>
-
-              {todayPlanTasks.length === 0 ? (
-                <div className="px-5 py-8 text-center">
-                  <CheckCircleIconFallback />
-                  <p className="mt-3 text-sm font-medium text-foreground">
-                    {t('dashboard.todayPlan.empty' as TranslationKey)}
-                  </p>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="mt-4"
-                    onClick={() => {
-                      dispatch({ type: 'SET_ACTIVE_LIST', payload: 'today' })
-                      router.push('/list')
-                    }}
-                  >
-                    {t('taskList.summary.today')}
-                  </Button>
-                </div>
-              ) : (
-                <ul className="divide-y divide-border/50">
-                  {todayPlanTasks.map((task) => {
-                    const due = new Date(task.dueDate as string)
-                    const isTaskOverdue = isOverdue(due)
-                    const timeLabel = due.toLocaleTimeString(settings.language || undefined, {
-                      hour: '2-digit',
-                      minute: '2-digit',
+            <DashboardTaskPanel
+              className="hidden lg:block"
+              icon={<FlagIcon className="h-4 w-4" />}
+              title={t('dashboard.desktopFocus.title' as TranslationKey)}
+              subtitle={t('dashboard.desktopFocus.subtitle' as TranslationKey)}
+              tasks={desktopFocusTasks}
+              countLabel={getTaskCountLabel(desktopFocusTasks.length)}
+              emptyMessage={t('dashboard.desktopFocus.empty' as TranslationKey)}
+              fallbackTitle={t('dashboard.todayPlan.untitled' as TranslationKey)}
+              emptyAction={
+                <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => openList()}>
+                  {t('dashboard.desktopFocus.openList' as TranslationKey)}
+                </Button>
+              }
+              onTaskClick={(task) => openTask(task.id, task.listId)}
+              taskAlignmentClassName="items-start"
+              renderMeta={(task) => {
+                const priorityMeta = PRIORITY_MAP[task.priority] || PRIORITY_MAP.none
+                const dueLabel = task.dueDate
+                  ? new Date(task.dueDate).toLocaleDateString(settings.language || undefined, {
+                      day: '2-digit',
+                      month: '2-digit',
                     })
-                    const statusLabel = isTaskOverdue
-                      ? t('dashboard.todayPlan.status.overdue' as TranslationKey)
-                      : t('dashboard.todayPlan.status.today' as TranslationKey)
+                  : t('dashboard.desktopFocus.noDueDate' as TranslationKey)
 
-                    return (
-                      <li key={task.id}>
-                        <button
-                          type="button"
-                          onClick={() => openTask(task.id, task.listId)}
-                          className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-secondary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring motion-reduce:transition-none sm:px-5"
-                        >
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-medium">
-                              {task.title || t('dashboard.todayPlan.untitled' as TranslationKey)}
-                            </p>
-                            <p
-                              className={`mt-1 text-xs ${
-                                isTaskOverdue ? 'font-medium text-destructive' : 'text-muted-foreground'
-                              }`}
-                            >
-                              {statusLabel} · {timeLabel}
-                            </p>
-                          </div>
-                          <span className="text-sm text-muted-foreground" aria-hidden>→</span>
-                        </button>
-                      </li>
-                    )
-                  })}
-                </ul>
-              )}
-            </section>
+                return (
+                  <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                    <span
+                      className="h-2 w-2 rounded-full"
+                      style={{ backgroundColor: priorityMeta.checkboxBorderValue }}
+                      aria-hidden
+                    />
+                    <span>{t(priorityMeta.label as TranslationKey)}</span>
+                    <span aria-hidden>·</span>
+                    <span>{dueLabel}</span>
+                  </div>
+                )
+              }}
+            />
+
+            <DashboardTaskPanel
+              icon={<CalendarDayIcon className="h-4 w-4" />}
+              title={t('dashboard.todayPlan.title' as TranslationKey)}
+              subtitle={t('dashboard.todayPlan.subtitle' as TranslationKey)}
+              tasks={todayPlanTasks}
+              countLabel={getTaskCountLabel(todayPlanTasks.length)}
+              emptyMessage={t('dashboard.todayPlan.empty' as TranslationKey)}
+              fallbackTitle={t('dashboard.todayPlan.untitled' as TranslationKey)}
+              emptyAction={
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="mt-4"
+                  onClick={() => openList('today')}
+                >
+                  {t('taskList.summary.today')}
+                </Button>
+              }
+              onTaskClick={(task) => openTask(task.id, task.listId)}
+              renderMeta={(task) => {
+                const due = new Date(task.dueDate as string)
+                const isTaskOverdue = isOverdue(due)
+                const timeLabel = due.toLocaleTimeString(settings.language || undefined, {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })
+                const statusLabel = isTaskOverdue
+                  ? t('dashboard.todayPlan.status.overdue' as TranslationKey)
+                  : t('dashboard.todayPlan.status.today' as TranslationKey)
+
+                return (
+                  <p
+                    className={`mt-1 text-xs ${
+                      isTaskOverdue ? 'font-medium text-destructive' : 'text-muted-foreground'
+                    }`}
+                  >
+                    {statusLabel} · {timeLabel}
+                  </p>
+                )
+              }}
+            />
 
             {AI_FEATURES_ENABLED && (
               <section className="rounded-xl border border-border/70 bg-card p-4">
@@ -372,6 +456,85 @@ export default function DashboardPage() {
         </div>
       </AppPageMain>
     </AppPage>
+  )
+}
+
+type DashboardTaskPanelProps = {
+  className?: string
+  icon: React.ReactNode
+  title: string
+  subtitle: string
+  tasks: Task[]
+  countLabel?: string
+  emptyMessage: string
+  fallbackTitle: string
+  emptyAction?: React.ReactNode
+  onTaskClick: (task: Task) => void
+  renderMeta: (task: Task) => React.ReactNode
+  taskAlignmentClassName?: string
+}
+
+function DashboardTaskPanel({
+  className,
+  icon,
+  title,
+  subtitle,
+  tasks,
+  countLabel,
+  emptyMessage,
+  fallbackTitle,
+  emptyAction,
+  onTaskClick,
+  renderMeta,
+  taskAlignmentClassName = 'items-center',
+}: DashboardTaskPanelProps) {
+  return (
+    <section className={`${className ? `${className} ` : ''}overflow-hidden rounded-xl border border-border/70 bg-card`}>
+      <div className="border-b border-border/60 px-4 py-4 sm:px-5">
+        <div className="flex items-center gap-3">
+          <div className="rounded-lg bg-primary/10 p-2 text-primary">
+            {icon}
+          </div>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-lg font-semibold">{title}</h2>
+              {countLabel ? (
+                <span className="inline-flex items-center rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-secondary-foreground">
+                  {countLabel}
+                </span>
+              ) : null}
+            </div>
+            <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
+          </div>
+        </div>
+      </div>
+
+      {tasks.length === 0 ? (
+        <div className="px-5 py-8 text-center">
+          <CheckCircleIconFallback />
+          <p className="mt-3 text-sm font-medium text-foreground">{emptyMessage}</p>
+          {emptyAction}
+        </div>
+      ) : (
+        <ul className="max-h-[200px] overflow-y-auto divide-y divide-border/50">
+          {tasks.map((task) => (
+            <li key={task.id}>
+              <button
+                type="button"
+                onClick={() => onTaskClick(task)}
+                className={`flex w-full ${taskAlignmentClassName} justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-secondary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring motion-reduce:transition-none sm:px-5`}
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">{task.title || fallbackTitle}</p>
+                  {renderMeta(task)}
+                </div>
+                <span className="text-sm text-muted-foreground" aria-hidden>→</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   )
 }
 

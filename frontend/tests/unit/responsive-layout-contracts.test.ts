@@ -64,6 +64,35 @@ describe('responsive layout contracts', () => {
     )
   })
 
+  it('adds a desktop-only priority panel to the dashboard aside', () => {
+    const dashboard = src('app/(app)/dashboard/page.tsx')
+    expect(dashboard).toContain("t('dashboard.desktopFocus.title' as TranslationKey)")
+    expect(dashboard).toContain('hidden lg:block')
+  })
+
+  it('reuses a shared dashboard task panel shell and clear desktop focus copy', () => {
+    const dashboard = src('app/(app)/dashboard/page.tsx')
+    expect(dashboard).toContain('function DashboardTaskPanel(')
+    expect(dashboard).toContain("t('dashboard.desktopFocus.openList' as TranslationKey)")
+  })
+
+  it('adds a desktop-only recent completions panel under the heatmap', () => {
+    const dashboard = src('app/(app)/dashboard/page.tsx')
+    expect(dashboard).toContain("t('dashboard.recentCompletions.title' as TranslationKey)")
+    expect(dashboard).toContain('recentlyCompletedTasks')
+  })
+
+  it('shows task-count badges in shared dashboard task panels', () => {
+    const dashboard = src('app/(app)/dashboard/page.tsx')
+    expect(dashboard).toContain("t('taskList.summary.tasks'")
+    expect(dashboard).toContain("t('taskList.summary.tasks_plural'")
+  })
+
+  it('caps dashboard task panels and enables internal scrolling for dense data', () => {
+    const dashboard = src('app/(app)/dashboard/page.tsx')
+    expect(dashboard).toContain('max-h-[200px] overflow-y-auto')
+  })
+
   it('prefers shared Button / IconButton for common profile and habit actions', () => {
     const profile = src('features/profile/views/ProfileView.tsx')
     expect(profile).toContain("from '@/components/ui/button'")

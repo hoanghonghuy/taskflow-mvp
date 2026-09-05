@@ -126,6 +126,18 @@
       "habits": "Thói quen đã hoàn thành"
     },
     "heatmapTitle": "Bản đồ nhiệt Năng suất",
+    "desktopFocus": {
+      "title": "Ưu tiên cần chú ý",
+      "subtitle": "Các việc ưu tiên cao cần xem ngay.",
+      "empty": "Hiện chưa có việc ưu tiên cao nào.",
+      "noDueDate": "Chưa có hạn",
+      "openList": "Mở danh sách công việc"
+    },
+    "recentCompletions": {
+      "title": "Hoàn thành gần đây",
+      "subtitle": "Những việc bạn vừa xử lý xong.",
+      "empty": "Chưa có việc nào hoàn thành gần đây."
+    },
     "todayPlan": {
       "title": "Kế hoạch hôm nay",
       "subtitle": "Các nhiệm vụ quan trọng đến hạn hôm nay hoặc đã quá hạn.",

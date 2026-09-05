@@ -132,6 +132,20 @@ describe('backendFetchAuthed', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
+  it('passes through backend 401 when no auth cookies are present', async () => {
+    const fetchMock = vi.mocked(fetch)
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ error: 'unauthorized' }), { status: 401 }),
+    )
+
+    const { backendFetchAuthed } = await import('@/lib/server/backend-authed-fetch')
+    const response = await backendFetchAuthed(createReq(), createRes(), '/api/profile/summary')
+
+    expect(response.status).toBe(401)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock.mock.calls[0][0]).toBe('http://backend.test/api/profile/summary')
+  })
+
   it('refreshes first when only refresh cookie is present', async () => {
     const fetchMock = vi.mocked(fetch)
     fetchMock

@@ -126,6 +126,18 @@
       "habits": "Habits Completed"
     },
     "heatmapTitle": "Productivity Heatmap",
+    "desktopFocus": {
+      "title": "Priority Focus",
+      "subtitle": "High-priority tasks to review first.",
+      "empty": "There are no high-priority tasks right now.",
+      "noDueDate": "No due date",
+      "openList": "Open task list"
+    },
+    "recentCompletions": {
+      "title": "Recent Completions",
+      "subtitle": "Tasks you wrapped up most recently.",
+      "empty": "No tasks have been completed recently."
+    },
     "todayPlan": {
       "title": "Today plan",
       "subtitle": "Top tasks that are due today or overdue.",

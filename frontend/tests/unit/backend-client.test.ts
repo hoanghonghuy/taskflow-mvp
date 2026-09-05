@@ -24,15 +24,14 @@ describe('backend-client', () => {
     expect(res.status).toBe(200)
   })
 
-  it('requires explicit dev credentials when mock mode is disabled outside production', async () => {
+  it('calls backend directly without legacy dev auto-login when mock mode is disabled', async () => {
     vi.stubEnv('MOCK_MODE', 'false')
-    vi.stubEnv('DEV_USER_EMAIL', '')
-    vi.stubEnv('DEV_USER_PASSWORD', '')
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 401 })))
 
     const { backendFetch } = await import('@/lib/server/backend-client')
+    const res = await backendFetch('/api/tasks')
 
-    await expect(backendFetch('/api/tasks')).rejects.toThrow(
-      'DEV_USER_EMAIL is required when MOCK_MODE=false outside production',
-    )
+    expect(res.status).toBe(401)
+    expect(fetch).toHaveBeenCalledWith('http://localhost:8080/api/tasks', {})
   })
 })
