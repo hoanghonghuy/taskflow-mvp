@@ -338,7 +338,7 @@ const CountdownView: React.FC = () => {
                   {t('countdown.noUpcoming')}
                 </p>
               ) : (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
                   {upcomingWithTime.map((event) => {
                     const isNext = event.id === nextUpcomingId
                     const isEditing = editingId === event.id
@@ -349,7 +349,7 @@ const CountdownView: React.FC = () => {
                       <Card
                         key={event.id}
                         className={cn(
-                          'relative overflow-hidden transition-[border-color,box-shadow] duration-150 motion-reduce:transition-none',
+                          'relative h-full overflow-hidden transition-[border-color,box-shadow] duration-150 motion-reduce:transition-none',
                           isNext && 'border-primary/30 shadow-sm',
                         )}
                       >
@@ -465,9 +465,9 @@ const CountdownView: React.FC = () => {
                   <h2 className="text-lg font-semibold">{t('countdown.completedSection')}</h2>
                   <Badge variant="secondary">{completedEvents.length}</Badge>
                 </div>
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2 2xl:grid-cols-3">
                   {completedEvents.map((event) => (
-                    <Card key={event.id} className="opacity-80">
+                    <Card key={event.id} className="h-full opacity-80">
                       <CardHeader className="pb-2">
                         <CardTitle className="text-base">{event.title}</CardTitle>
                         <CardDescription>

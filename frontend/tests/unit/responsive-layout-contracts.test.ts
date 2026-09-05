@@ -93,6 +93,11 @@ describe('responsive layout contracts', () => {
     expect(dashboard).toContain('max-h-[200px] overflow-y-auto')
   })
 
+  it('keeps countdown cards at two columns until very wide desktops', () => {
+    const countdown = src('features/countdown/views/CountdownView.tsx')
+    expect(countdown).toContain('grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3')
+  })
+
   it('prefers shared Button / IconButton for common profile and habit actions', () => {
     const profile = src('features/profile/views/ProfileView.tsx')
     expect(profile).toContain("from '@/components/ui/button'")
@@ -178,6 +183,9 @@ describe('responsive layout contracts', () => {
     )
     expect(src('features/countdown/views/CountdownView.tsx')).toContain(
       'flex flex-col gap-4 rounded-lg border border-border-subtle/80',
+    )
+    expect(src('features/countdown/views/CountdownView.tsx')).toContain(
+      'grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3',
     )
     expect(src('components/auth/profile-dropdown.tsx')).toContain('shadow-lg')
     expect(src('components/auth/profile-dropdown.tsx')).not.toContain('shadow-2xl')
