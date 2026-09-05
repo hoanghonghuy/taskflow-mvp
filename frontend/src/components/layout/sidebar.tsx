@@ -41,8 +41,14 @@ export function Sidebar({ isOpen, onClose, onChatbotToggle, onShareList }: Sideb
   const addToast = useToast()
   const [newList, setNewList] = useState('')
   const [newTag, setNewTag] = useState('')
-  const [isListsExpanded, setIsListsExpanded] = useState(true)
-  const [isTagsExpanded, setIsTagsExpanded] = useState(true)
+  const [isListsExpanded, setIsListsExpanded] = useState(() => {
+    if (typeof window === 'undefined') return true
+    return localStorage.getItem('sidebar-lists-expanded') !== 'false'
+  })
+  const [isTagsExpanded, setIsTagsExpanded] = useState(() => {
+    if (typeof window === 'undefined') return true
+    return localStorage.getItem('sidebar-tags-expanded') !== 'false'
+  })
   const [isProfileDialogOpen, setProfileDialogOpen] = useState(false)
   const [editingList, setEditingList] = useState<List | null>(null)
 

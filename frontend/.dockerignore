@@ -7,7 +7,6 @@ npm-debug.log*
 Dockerfile*
 .dockerignore
 docker-compose.yml
-docker-entrypoint.dev.sh
 .env*
 *.md
 *.log

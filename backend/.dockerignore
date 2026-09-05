@@ -14,7 +14,6 @@ tests
 npm-debug.log*
 Dockerfile*
 docker-compose.yml
-docker-entrypoint.dev.sh
 .dockerignore
 *.md
 .vscode

@@ -78,7 +78,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [textToAnalyze, setTextToAnalyze] = useState('')
   const [isAnalyzing, setIsAnalyzing] = useState(false)
-  
+
   useEffect(() => {
     // Ensure columnId is valid for the selected listId, or clear it
     const columnsForList = state.columns.filter(c => c.listId === listId)
@@ -131,7 +131,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
       setIsSubmitting(false)
     }
   }
-  
+
   const handleAnalyzeText = async () => {
     if (!textToAnalyze.trim()) return
     runIfEnabled(() => void analyzeTextWithAi())
@@ -183,7 +183,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
         onClose={onClose}
         className="bg-card rounded-lg shadow-lg w-full max-w-lg flex flex-col max-h-[calc(100dvh-2rem)]"
       >
-        <header className="p-4 border-b border-border flex items-center justify-between">
+        {/* Header - fixed at top */}
+        <header className="shrink-0 p-4 border-b border-border flex items-center justify-between">
           <h2 className="text-lg font-semibold">{t('taskForm.newTask')}</h2>
           <button
             type="button"
@@ -194,8 +195,9 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
             <CloseIcon className="h-5 w-5 text-muted-foreground" />
           </button>
         </header>
-        
-        <div className="p-6 overflow-y-auto">
+
+        {/* Body - scrollable */}
+        <div className="flex-1 min-h-0 overflow-y-auto p-6">
           {showAiAssist && (
             <div className="mb-6 p-4 bg-linear-to-br from-primary/5 to-primary/10 border border-primary/20 rounded-lg">
               <div className="flex items-center gap-2 mb-3">
@@ -211,10 +213,10 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
                 rows={3}
                 className="w-full p-3 bg-background/50 border border-border rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-primary/50 transition-colors"
               />
-              <button 
-                onClick={handleAnalyzeText} 
-                disabled={isAnalyzing || !textToAnalyze.trim()} 
-                className="mt-3 w-full text-sm flex items-center justify-center gap-2 px-4 py-2.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm"
+              <button
+                onClick={handleAnalyzeText}
+                disabled={isAnalyzing || !textToAnalyze.trim()}
+                className="mt-3 w-full text-sm flex items-center justify-center gap-2 px-4 py-2.5 rounded-md bg-primary text-primary-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm"
               >
                 {isAnalyzing ? (
                   <Skeleton className="h-4 w-4 rounded" />
@@ -242,7 +244,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
                 required
               />
             </div>
-            
+
             <div className="space-y-2">
               <label htmlFor="task-form-description" className="text-sm font-semibold text-foreground">
                 {t('taskForm.descriptionLabel')}
@@ -256,9 +258,9 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
                 className="w-full p-3 bg-secondary/50 border border-border rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-primary/50 transition-colors resize-none"
               />
             </div>
-            
+
             <div className="border-t border-border pt-4"></div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label htmlFor="task-form-due-date" className="text-sm font-semibold text-foreground flex items-center gap-2">
@@ -278,10 +280,10 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
                   <FlagIcon className="h-4 w-4 text-muted-foreground" />
                   {t('taskForm.priorityLabel')}
                 </label>
-                <select 
+                <select
                   id="task-form-priority"
-                  value={priority} 
-                  onChange={e => setPriority(e.target.value as Priority)} 
+                  value={priority}
+                  onChange={e => setPriority(e.target.value as Priority)}
                   className="w-full p-3 bg-secondary/50 border border-border rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-primary/50 transition-colors appearance-none cursor-pointer"
                 >
                   {(Object.keys(PRIORITY_MAP) as (keyof typeof PRIORITY_MAP)[]).map(priorityKey => {
@@ -351,18 +353,18 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
                 </select>
               </div>
             </div>
-            
+
             <div className="border-t border-border pt-4"></div>
-            
+
             <div className="space-y-2">
               <label htmlFor="task-form-list" className="text-sm font-semibold text-foreground flex items-center gap-2">
                 <ListBulletIcon className="h-4 w-4 text-muted-foreground" />
                 {t('taskForm.listLabel')}
               </label>
-              <select 
+              <select
                 id="task-form-list"
-                value={listId} 
-                onChange={e => setListId(e.target.value)} 
+                value={listId}
+                onChange={e => setListId(e.target.value)}
                 className="w-full p-3 bg-secondary/50 border border-border rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-primary/50 transition-colors appearance-none cursor-pointer"
               >
                 {ownedLists.map((list) => (
@@ -374,17 +376,17 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
                 ))}
               </select>
             </div>
-            
+
             {columnsForList.length > 0 && (
               <div className="space-y-2">
                 <label htmlFor="task-form-column" className="text-sm font-semibold text-foreground flex items-center gap-2">
                   <ViewColumnsIcon className="h-4 w-4 text-muted-foreground" />
                   {t('board.columnName')}
                 </label>
-                <select 
+                <select
                   id="task-form-column"
-                  value={columnId || ''} 
-                  onChange={e => setColumnId(e.target.value || undefined)} 
+                  value={columnId || ''}
+                  onChange={e => setColumnId(e.target.value || undefined)}
                   className="w-full p-3 bg-secondary/50 border border-border rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-primary/50 transition-colors appearance-none cursor-pointer"
                 >
                   {columnsForList.map(column => (
@@ -393,28 +395,35 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, defaultValues }) => {
                 </select>
               </div>
             )}
-            <footer className="mt-4 pt-4 border-t border-border flex flex-col sm:flex-row justify-end gap-3 bg-secondary/0">
-              <button 
-                type="button"
-                onClick={onClose}
-                className="px-5 py-2.5 bg-secondary text-secondary-foreground rounded-md text-sm font-semibold hover:bg-secondary/80 transition-colors order-2 sm:order-1"
-              >
-                {t('common.cancel')}
-              </button>
-              <button 
-                type="submit"
-                disabled={isSubmitting}
-                className="px-5 py-2.5 bg-primary text-primary-foreground rounded-md text-sm font-semibold hover:bg-primary/90 transition-[colors,box-shadow] shadow-sm hover:shadow-md order-1 sm:order-2 disabled:opacity-60 disabled:pointer-events-none"
-              >
-                {t('taskForm.createTask')}
-              </button>
-            </footer>
           </form>
         </div>
+
+        {/* Footer - fixed at bottom, always visible */}
+        <footer className="shrink-0 p-4 border-t border-border flex flex-col sm:flex-row justify-end gap-3 bg-card">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-5 py-2.5 bg-secondary text-secondary-foreground rounded-md text-sm font-semibold hover:bg-secondary/80 transition-colors order-2 sm:order-1"
+          >
+            {t('common.cancel')}
+          </button>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            onClick={(e) => {
+              const form = e.currentTarget.closest('[aria-label]')?.querySelector('form')
+              if (form instanceof HTMLFormElement) {
+                form.requestSubmit()
+              }
+            }}
+            className="px-5 py-2.5 bg-primary text-primary-foreground rounded-md text-sm font-semibold transition-shadow shadow-sm hover:shadow-lg hover:-translate-y-px motion-reduce:hover:translate-y-0 order-1 sm:order-2 disabled:opacity-60 disabled:pointer-events-none"
+          >
+            {t('taskForm.createTask')}
+          </button>
+        </footer>
       </AccessibleModalSurface>
     </div>
   )
 }
 
 export default TaskForm
-
