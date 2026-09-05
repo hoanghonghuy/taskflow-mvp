@@ -10,7 +10,11 @@ export async function findListsByUserId(userId: string): Promise<TodoList[]> {
 }
 
 /** Lists owned by user + lists shared with user as member. */
-export async function findListsAccessibleByUserId(userId: string): Promise<TodoList[]> {
+export async function findListsAccessibleByUserId(
+  userId: string,
+  skip?: number,
+  take?: number,
+): Promise<TodoList[]> {
   const [owned, shared] = await Promise.all([
     findListsByUserId(userId),
     prisma.todoList.findMany({
@@ -23,11 +27,35 @@ export async function findListsAccessibleByUserId(userId: string): Promise<TodoL
   ])
 
   const seen = new Set<string>()
-  return [...owned, ...shared].filter((list) => {
+  const allLists = [...owned, ...shared].filter((list) => {
     if (seen.has(list.id)) return false
     seen.add(list.id)
     return true
   })
+
+
+  
+  // Apply pagination if skip/take are provided
+  if (skip !== undefined && take !== undefined) {
+    return allLists.slice(skip, skip + take)
+  }
+
+  return allLists
+}
+
+/** Count total lists accessible by user (owned + shared). */
+export async function countListsAccessibleByUserId(userId: string): Promise<number> {
+  const [owned, shared] = await Promise.all([
+    prisma.todoList.count({ where: { userId } }),
+    prisma.todoList.count({
+      where: {
+        userId: { not: userId },
+        members: membersContainUserId(userId),
+      },
+    }),
+  ])
+
+  return owned + shared
 }
 
 export async function findSharedListIdsForMember(userId: string): Promise<string[]> {

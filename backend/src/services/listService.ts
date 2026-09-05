@@ -33,9 +33,25 @@ function normalizeColor(input: unknown, fallback: string): string {
   return value
 }
 
-export async function listLists(userId: string): Promise<ListDto[]> {
-  const lists = await listRepository.findListsAccessibleByUserId(userId)
-  return lists.map(mapListToDto)
+export async function listLists(
+  userId: string,
+  page: number,
+  limit: number,
+): Promise<{ lists: ListDto[]; totalPages: number; currentPage: number; totalItems: number }> {
+  const skip = (page - 1) * limit
+  const [lists, totalItems] = await Promise.all([
+    listRepository.findListsAccessibleByUserId(userId, skip, limit),
+    listRepository.countListsAccessibleByUserId(userId),
+  ])
+  
+  const totalPages = Math.ceil(totalItems / limit)
+  
+  return { 
+    lists: lists.map(mapListToDto),
+    totalPages,
+    currentPage: page,
+    totalItems,
+  }
 }
 
 export async function getList(userId: string, id: string): Promise<ListDto | null> {
