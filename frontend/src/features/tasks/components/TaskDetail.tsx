@@ -469,10 +469,10 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ taskId }) => {
                 <span>{dueDateDisplay}</span>
               </MetaChip>
             )}
-            {task.totalFocusTime && task.totalFocusTime > 0 && (
+            {Boolean(task.totalFocusTime && task.totalFocusTime > 0) && (
               <MetaChip>
                 <StopwatchIcon className="h-3.5 w-3.5" />
-                <span>{formatFocusTime(task.totalFocusTime)}</span>
+                <span>{formatFocusTime(task.totalFocusTime ?? 0)}</span>
               </MetaChip>
             )}
             {task.subtasks.length > 0 && (

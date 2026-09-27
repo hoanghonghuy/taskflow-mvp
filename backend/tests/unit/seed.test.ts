@@ -74,8 +74,8 @@ describe('seedDemoUser', () => {
     expect(tasks).toBeGreaterThanOrEqual(18)
     expect(highPriorityTasks).toBeGreaterThanOrEqual(6)
     expect(completedTasks).toBeGreaterThanOrEqual(6)
-    expect(habits).toBe(6)
-    expect(countdowns).toBe(5)
+    expect(habits).toBe(9)
+    expect(countdowns).toBe(8)
     expect(sessions).toBeGreaterThanOrEqual(12)
     expect(settings?.language).toBe('vi')
     expect(settings?.boardColumnsJson).toContain('demo-col-backlog')
@@ -91,7 +91,7 @@ describe('seedDemoUser', () => {
 
     const user = await prisma.user.findUnique({ where: { email: 'demo-idempotent@test.com' } })
     const tasks = await prisma.todoTask.count({ where: { userId: user!.id } })
-    expect(tasks).toBe(34)
+    expect(tasks).toBe(54)
   })
 
   it('adds expanded demo data to an existing demo user without duplicates', async () => {
@@ -109,8 +109,9 @@ describe('seedDemoUser', () => {
       prisma.countdownEvent.findMany({ where: { userId: user!.id } }),
     ])
 
-    expect(tasks).toHaveLength(34)
+    expect(tasks).toHaveLength(54)
     expect(new Set(tasks.map((task) => task.title)).size).toBe(tasks.length)
+    expect(tasks.map((task) => task.title)).toContain('Lên kịch bản demo cho nhà đầu tư')
     expect(habits.map((habit) => habit.name)).toContain('Viết nhật ký cuối ngày')
     expect(countdowns.map((event) => event.title)).toContain('Gia hạn domain/app hosting')
   })

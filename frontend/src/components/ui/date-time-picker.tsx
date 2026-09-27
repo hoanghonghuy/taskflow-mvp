@@ -52,9 +52,10 @@ export function DateTimePicker({
     onChange(clampToMin(next, min))
   }
 
-  const timeValue = value
-    ? value.toISOString().slice(11, 16)
-    : (min ?? new Date()).toISOString().slice(11, 16)
+  const timeSource = value ?? min ?? new Date()
+  const timeValue = `${String(timeSource.getHours()).padStart(2, '0')}:${String(
+    timeSource.getMinutes(),
+  ).padStart(2, '0')}`
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
