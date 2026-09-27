@@ -372,6 +372,215 @@ export async function seedDemoUserContent(userId: string, listIds: DemoListIds):
       },
     })
   }
+
+  await seedExpandedDemoUserContent(userId, listIds)
+}
+
+export async function seedExpandedDemoUserContent(
+  userId: string,
+  listIds: DemoListIds,
+): Promise<void> {
+  const { inboxId, workId, personalId } = listIds
+  const cols = DEMO_BOARD_COLUMN_IDS
+
+  const existingTaskTitles = new Set(
+    (
+      await prisma.todoTask.findMany({
+        where: { userId },
+        select: { title: true },
+      })
+    ).map((task) => task.title),
+  )
+
+  const expandedTaskSpecs = [
+    {
+      title: 'Lập kế hoạch roadmap tháng tới',
+      description: 'Chốt mục tiêu, phạm vi MVP tiếp theo và các mốc bàn giao.',
+      listId: workId,
+      columnId: cols.backlog,
+      priority: 'high',
+      dueDate: daysFromNow(3, 10),
+      tags: ['planning', 'roadmap'],
+      subtasks: [
+        { id: 'st-roadmap-1', title: 'Tổng hợp feedback từ demo user', completed: true },
+        { id: 'st-roadmap-2', title: 'Ưu tiên 5 việc quan trọng nhất', completed: false },
+      ],
+      sortOrder: 22,
+    },
+    {
+      title: 'Gọi nhà cung cấp Internet',
+      listId: personalId,
+      priority: 'medium',
+      dueDate: daysFromNow(1, 16),
+      tags: ['personal', 'call'],
+      sortOrder: 23,
+    },
+    {
+      title: 'Kiểm thử flow đăng ký tài khoản',
+      listId: workId,
+      columnId: cols.inProgress,
+      priority: 'urgent',
+      dueDate: daysFromNow(0, 20),
+      tags: ['qa', 'auth'],
+      sortOrder: 24,
+    },
+    {
+      title: 'Chuẩn bị nội dung bài viết LinkedIn',
+      listId: workId,
+      columnId: cols.review,
+      priority: 'medium',
+      dueDate: daysFromNow(2, 14),
+      tags: ['content', 'marketing'],
+      sortOrder: 25,
+    },
+    {
+      title: 'Sắp xếp lại góc làm việc',
+      listId: personalId,
+      priority: 'low',
+      dueDate: daysFromNow(6, 9),
+      tags: ['home'],
+      sortOrder: 26,
+    },
+    {
+      title: 'Tạo checklist backup dữ liệu',
+      listId: inboxId,
+      priority: 'high',
+      dueDate: daysFromNow(4, 11),
+      tags: ['ops', 'backup'],
+      sortOrder: 27,
+    },
+    {
+      title: 'Phân tích task bị trễ tuần này',
+      listId: workId,
+      columnId: cols.done,
+      priority: 'medium',
+      completed: true,
+      completedAt: daysAgo(0, 12),
+      dueDate: daysAgo(0, 11),
+      tags: ['analytics'],
+      sortOrder: 28,
+    },
+    {
+      title: 'Đặt vé xem phim cuối tuần',
+      listId: personalId,
+      priority: 'none',
+      completed: true,
+      completedAt: daysAgo(1, 21),
+      dueDate: daysAgo(1, 18),
+      tags: ['fun'],
+      sortOrder: 29,
+    },
+    {
+      title: 'Follow up báo giá phần mềm',
+      listId: inboxId,
+      priority: 'urgent',
+      dueDate: daysAgo(2, 15),
+      tags: ['sales', 'overdue'],
+      sortOrder: 30,
+    },
+    {
+      title: 'Viết test cho module calendar',
+      listId: workId,
+      columnId: cols.backlog,
+      priority: 'high',
+      dueDate: daysFromNow(8, 10),
+      tags: ['test', 'calendar'],
+      sortOrder: 31,
+    },
+    {
+      title: 'Cập nhật hồ sơ cá nhân',
+      listId: personalId,
+      priority: 'medium',
+      dueDate: daysFromNow(9, 19),
+      tags: ['profile'],
+      sortOrder: 32,
+    },
+    {
+      title: 'Tổng kết chi phí dự án',
+      listId: workId,
+      columnId: cols.done,
+      priority: 'low',
+      completed: true,
+      completedAt: daysAgo(3, 17),
+      dueDate: daysAgo(3, 15),
+      tags: ['finance', 'project'],
+      sortOrder: 33,
+    },
+  ] as const
+
+  for (const spec of expandedTaskSpecs) {
+    if (existingTaskTitles.has(spec.title)) continue
+
+    await prisma.todoTask.create({
+      data: {
+        userId,
+        title: spec.title,
+        description: 'description' in spec ? spec.description : null,
+        listId: spec.listId,
+        columnId: 'columnId' in spec ? spec.columnId : null,
+        priority: spec.priority,
+        completed: 'completed' in spec ? spec.completed : false,
+        completedAt: 'completedAt' in spec ? spec.completedAt : null,
+        dueDate: 'dueDate' in spec ? spec.dueDate : null,
+        tags: toJsonString('tags' in spec ? spec.tags : []),
+        subtasks: toJsonString('subtasks' in spec ? spec.subtasks : []),
+        sortOrder: spec.sortOrder,
+      },
+    })
+  }
+
+  const existingHabitNames = new Set(
+    (
+      await prisma.habit.findMany({
+        where: { userId },
+        select: { name: true },
+      })
+    ).map((habit) => habit.name),
+  )
+
+  const expandedHabitSpecs = [
+    { name: 'Viết nhật ký cuối ngày', completionCount: 6 },
+    { name: 'Đi bộ 5000 bước', completionCount: 8 },
+  ]
+
+  for (const habit of expandedHabitSpecs) {
+    if (existingHabitNames.has(habit.name)) continue
+
+    await prisma.habit.create({
+      data: {
+        userId,
+        name: habit.name,
+        completions: toJsonString(habitDateOffsets(habit.completionCount)),
+      },
+    })
+  }
+
+  const existingCountdownTitles = new Set(
+    (
+      await prisma.countdownEvent.findMany({
+        where: { userId },
+        select: { title: true },
+      })
+    ).map((event) => event.title),
+  )
+
+  const expandedCountdownSpecs = [
+    { title: 'Gia hạn domain/app hosting', targetDate: daysFromNow(30), color: '#ef4444' },
+    { title: 'Sinh nhật mẹ', targetDate: daysFromNow(90), color: '#ec4899' },
+  ]
+
+  for (const event of expandedCountdownSpecs) {
+    if (existingCountdownTitles.has(event.title)) continue
+
+    await prisma.countdownEvent.create({
+      data: {
+        userId,
+        title: event.title,
+        targetDate: event.targetDate,
+        color: event.color,
+      },
+    })
+  }
 }
 
 export async function clearDemoUserContent(userId: string): Promise<void> {

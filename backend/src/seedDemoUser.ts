@@ -2,7 +2,11 @@ import { hashPassword } from './lib/password'
 import { prisma } from './lib/prisma'
 import * as listRepository from './repositories/listRepository'
 import { seedDefaultListsForUser } from './seed'
-import { clearDemoUserContent, seedDemoUserContent } from './seed/demoUserContent'
+import {
+  clearDemoUserContent,
+  seedDemoUserContent,
+  seedExpandedDemoUserContent,
+} from './seed/demoUserContent'
 
 export async function seedDemoUser(): Promise<void> {
   const email = process.env.DEMO_EMAIL?.trim().toLowerCase()
@@ -48,10 +52,6 @@ export async function seedDemoUser(): Promise<void> {
   await seedDefaultListsForUser(user.id)
 
   const taskCount = await prisma.todoTask.count({ where: { userId: user.id } })
-  if (taskCount > 0 && !force) {
-    console.log(`[seed] DEMO user already has data (${taskCount} tasks); skip seeding`)
-    return
-  }
 
   if (force && taskCount > 0) {
     await clearDemoUserContent(user.id)
@@ -65,6 +65,16 @@ export async function seedDemoUser(): Promise<void> {
 
   if (!inbox || !work || !personal) {
     console.error('[seed] DEMO user missing default lists; cannot seed content')
+    return
+  }
+
+  if (taskCount > 0 && !force) {
+    await seedExpandedDemoUserContent(user.id, {
+      inboxId: inbox.id,
+      workId: work.id,
+      personalId: personal.id,
+    })
+    console.log(`[seed] DEMO user already has data (${taskCount} tasks); synced expanded demo content`)
     return
   }
 

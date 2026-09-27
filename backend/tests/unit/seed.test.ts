@@ -74,8 +74,8 @@ describe('seedDemoUser', () => {
     expect(tasks).toBeGreaterThanOrEqual(18)
     expect(highPriorityTasks).toBeGreaterThanOrEqual(6)
     expect(completedTasks).toBeGreaterThanOrEqual(6)
-    expect(habits).toBe(4)
-    expect(countdowns).toBe(3)
+    expect(habits).toBe(6)
+    expect(countdowns).toBe(5)
     expect(sessions).toBeGreaterThanOrEqual(12)
     expect(settings?.language).toBe('vi')
     expect(settings?.boardColumnsJson).toContain('demo-col-backlog')
@@ -91,7 +91,28 @@ describe('seedDemoUser', () => {
 
     const user = await prisma.user.findUnique({ where: { email: 'demo-idempotent@test.com' } })
     const tasks = await prisma.todoTask.count({ where: { userId: user!.id } })
-    expect(tasks).toBe(22)
+    expect(tasks).toBe(34)
+  })
+
+  it('adds expanded demo data to an existing demo user without duplicates', async () => {
+    process.env.DEMO_EMAIL = 'demo-expanded@test.com'
+    process.env.DEMO_PASSWORD = 'DemoPass123!'
+
+    const { seedDemoUser } = await import('../../src/seedDemoUser')
+    await seedDemoUser()
+    await seedDemoUser()
+
+    const user = await prisma.user.findUnique({ where: { email: 'demo-expanded@test.com' } })
+    const [tasks, habits, countdowns] = await Promise.all([
+      prisma.todoTask.findMany({ where: { userId: user!.id } }),
+      prisma.habit.findMany({ where: { userId: user!.id } }),
+      prisma.countdownEvent.findMany({ where: { userId: user!.id } }),
+    ])
+
+    expect(tasks).toHaveLength(34)
+    expect(new Set(tasks.map((task) => task.title)).size).toBe(tasks.length)
+    expect(habits.map((habit) => habit.name)).toContain('Viết nhật ký cuối ngày')
+    expect(countdowns.map((event) => event.title)).toContain('Gia hạn domain/app hosting')
   })
 
   it('does not downgrade ADMIN role when DEMO_EMAIL collides with admin', async () => {
