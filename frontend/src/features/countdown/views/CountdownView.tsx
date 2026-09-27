@@ -349,8 +349,7 @@ const CountdownView: React.FC = () => {
                       <Card
                         key={event.id}
                         className={cn(
-                          'relative h-full overflow-hidden transition-[border-color,box-shadow] duration-150 motion-reduce:transition-none',
-                          isNext && 'border-primary/30 shadow-sm',
+                          'relative h-full overflow-hidden border-border/70 shadow-sm transition-[border-color,box-shadow] duration-150 motion-reduce:transition-none',
                         )}
                       >
                         <div

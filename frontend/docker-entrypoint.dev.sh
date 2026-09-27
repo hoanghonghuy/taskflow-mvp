@@ -8,7 +8,7 @@ MARKER=node_modules/.taskflow-lock-hash
 
 if [ ! -d node_modules/.bin ] || [ ! -f "$MARKER" ] || [ "$(cat "$MARKER" 2>/dev/null)" != "$LOCK_HASH" ]; then
   echo "[frontend] Installing npm dependencies..."
-  npm ci
+  npm ci --no-audit --no-fund && npm cache clean --force
   mkdir -p node_modules
   echo "$LOCK_HASH" > "$MARKER"
 fi
